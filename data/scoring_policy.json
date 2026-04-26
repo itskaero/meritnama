@@ -1,0 +1,32 @@
+{
+  "2021": {
+    "label": "Jan 2021",
+    "description": "MBBS 50% + House Job + Experience",
+    "mbbs_weight": 50,
+    "notes": "Early PHF policy"
+  },
+  "2022": {
+    "label": "2022",
+    "description": "MBBS 50% + House Job + Experience + Research",
+    "mbbs_weight": 50,
+    "notes": "Research component added"
+  },
+  "2023": {
+    "label": "2023",
+    "description": "MBBS 40% + House Job + Experience + Hard Area",
+    "mbbs_weight": 40,
+    "notes": "MBBS weight reduced to 40%"
+  },
+  "2024": {
+    "label": "2024",
+    "description": "MBBS 40% + House Job + Experience + Hard Area + Research",
+    "mbbs_weight": 40,
+    "notes": "Combined policy"
+  },
+  "2025": {
+    "label": "2025",
+    "description": "MBBS 40% + House Job + Experience + Hard Area + Research",
+    "mbbs_weight": 40,
+    "notes": "Current policy"
+  }
+}
