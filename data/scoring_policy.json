@@ -1,32 +1,235 @@
 {
-  "2021": {
-    "label": "Jan 2021",
-    "description": "MBBS 50% + House Job + Experience",
-    "mbbs_weight": 50,
-    "notes": "Early PHF policy"
+  "active_policy": "2026",
+  "_note": "This file drives the merit calculator AND the policy history tab. Modify 'components' to add/remove calculator fields. Set 'included': false to hide a component without deleting it. Each year key represents the dominant induction of that calendar year. total_marks must equal the sum of all included max_marks.",
+  "year_total_max": {
+    "2020": 95,
+    "2021": 95,
+    "2022": 95,
+    "2023": 95,
+    "2024": 95,
+    "2025": 60,
+    "2026": 30
   },
-  "2022": {
-    "label": "2022",
-    "description": "MBBS 50% + House Job + Experience + Research",
-    "mbbs_weight": 50,
-    "notes": "Research component added"
-  },
-  "2023": {
-    "label": "2023",
-    "description": "MBBS 40% + House Job + Experience + Hard Area",
-    "mbbs_weight": 40,
-    "notes": "MBBS weight reduced to 40%"
-  },
-  "2024": {
-    "label": "2024",
-    "description": "MBBS 40% + House Job + Experience + Hard Area + Research",
-    "mbbs_weight": 40,
-    "notes": "Combined policy"
-  },
-  "2025": {
-    "label": "2025",
-    "description": "MBBS 40% + House Job + Experience + Hard Area + Research",
-    "mbbs_weight": 40,
-    "notes": "Current policy"
+  "policies": {
+    "2020": {
+      "label": "2020 (Induction 8 -- Jul 2020)",
+      "induction": 8,
+      "total_marks": 95,
+      "policy_ref": "Pre-March 2021 policy (document unavailable -- inferred from continuity with Ind 9--14)",
+      "components": [
+        {"key":"matric_ssc","label":"Matric / SSC","max_marks":5,"type":"percentage","description":"Enter Matric marks as percentage (obtained / total x 100). Scaled to 5 marks.","included":true},
+        {"key":"intermediate_hssc","label":"Intermediate / HSSC","max_marks":7,"type":"percentage","description":"Enter Intermediate marks as percentage. Scaled to 7 marks.","included":true},
+        {"key":"mbbs_bds_degree","label":"MBBS / BDS Aggregate","max_marks":20,"type":"percentage","description":"Your MBBS/BDS aggregate % (sum of all professional marks / total x 100). Scaled to 20 marks.","included":true},
+        {"key":"part_1","label":"FCPS Part-I / MD / MS / MDS Part-I","max_marks":40,"type":"percentage","description":"PART-I score as percentage. FCPS-I pass without score = 100%. Scaled to 40 marks.","included":true},
+        {"key":"house_job","label":"House Job","max_marks":5,"type":"tiered_select","tiers":[{"label":"Punjab grad -- parent/affiliated institution (5 pts)","value":5},{"label":"Punjab grad -- elsewhere in Pakistan (2.5 pts)","value":2.5},{"label":"Outside-Punjab grad -- Punjab hospital (2.5 pts)","value":2.5},{"label":"Foreign grad -- Punjab Teaching Hospital (2.5 pts)","value":2.5},{"label":"Not completed (0 pts)","value":0}],"description":"Select your house job status.","included":true},
+        {"key":"parent_institute","label":"Parent Institute","max_marks":5,"type":"boolean","description":"Tick if applying to the same institution you graduated from (SHC&ME-controlled only).","included":true},
+        {"key":"experience","label":"Service Experience","max_marks":10,"type":"years","per_year":2,"description":"Post-house-job service at primary/secondary/tertiary healthcare facilities. ~2 marks/year approximate. Max 10 marks.","included":true},
+        {"key":"university_positions","label":"University-Level Positions","max_marks":3,"type":"count","per_item":0.6,"description":"1st/2nd/3rd position in University-level professional exams. MBBS: 0.6 pts/pos. BDS: 0.75 pts/pos. Max 3 pts.","included":true},
+        {"key":"attempts_in_mbbs","label":"1st-Attempt MBBS Professionals","max_marks":0,"type":"count","per_item":1,"description":"Not included in this year.","included":false},
+        {"key":"experience_hard_area","label":"Hard Area Service","max_marks":0,"type":"months","per_3_months":0,"description":"Not included in this year.","included":false},
+        {"key":"mdcat","label":"MDCAT Score","max_marks":0,"type":"score","score_max":1100,"description":"Not applicable for this year.","included":false},
+        {"key":"fcps_jcat","label":"FCPS Part-I / JCAT (pass/fail)","max_marks":0,"type":"boolean","description":"Not applicable for this year.","included":false}
+      ],
+      "notes": "Pre-March 2021 policy. Formula inferred -- PART-I dominates at 40 marks. Total: 95 marks.",
+      "tidbits": [
+        "PART-I is the dominant component at 40 marks -- FCPS/MD/MS performance is critical.",
+        "Matric + Intermediate contribute 12 marks -- early academic record counts.",
+        "Total out of 95 -- a closing merit of 85.68 corresponds to ~90.2% of the maximum."
+      ]
+    },
+    "2021": {
+      "label": "2021 (Inductions 9--10)",
+      "induction": "9-10",
+      "total_marks": 95,
+      "policy_ref": "SO(ME)7-6/2020(CIP) dated 11 March 2021",
+      "components": [
+        {"key":"matric_ssc","label":"Matric / SSC","max_marks":5,"type":"percentage","description":"Enter Matric marks as percentage (obtained / total x 100). Scaled to 5 marks.","included":true},
+        {"key":"intermediate_hssc","label":"Intermediate / HSSC","max_marks":7,"type":"percentage","description":"Enter Intermediate marks as percentage. Scaled to 7 marks.","included":true},
+        {"key":"mbbs_bds_degree","label":"MBBS / BDS Aggregate","max_marks":20,"type":"percentage","description":"Your MBBS/BDS aggregate % (sum of all professional marks / total x 100). Scaled to 20 marks.","included":true},
+        {"key":"part_1","label":"FCPS Part-I / MD / MS / MDS Part-I","max_marks":40,"type":"percentage","description":"PART-I score as percentage. FCPS-I pass without score = 100%. Scaled to 40 marks.","included":true},
+        {"key":"house_job","label":"House Job","max_marks":5,"type":"tiered_select","tiers":[{"label":"Punjab grad -- parent/affiliated institution (5 pts)","value":5},{"label":"Punjab grad -- elsewhere in Pakistan (2.5 pts)","value":2.5},{"label":"Outside-Punjab grad -- Punjab hospital (2.5 pts)","value":2.5},{"label":"Foreign grad -- Punjab Teaching Hospital (2.5 pts)","value":2.5},{"label":"Not completed (0 pts)","value":0}],"description":"Select your house job status.","included":true},
+        {"key":"parent_institute","label":"Parent Institute","max_marks":5,"type":"boolean","description":"Tick if applying to the same institution you graduated from (SHC&ME-controlled only).","included":true},
+        {"key":"experience","label":"Service Experience","max_marks":10,"type":"years","per_year":2,"description":"Primary (BHUs/RHCs): 1.25 pts/3mo max 2yr. Secondary (THQ/DHQ): 0.75 pts/3mo max 3y4m. Tertiary (PKLI/RC/MIKD): 0.5 pts/3mo max 5yr. PG training excluded. ~2 pts/year approximate.","included":true},
+        {"key":"university_positions","label":"University-Level Positions","max_marks":3,"type":"count","per_item":0.6,"description":"University-level professional exam positions. MBBS: 0.6 pts/pos. BDS: 0.75 pts/pos. Max 3 pts.","included":true},
+        {"key":"attempts_in_mbbs","label":"1st-Attempt MBBS Professionals","max_marks":0,"type":"count","per_item":1,"description":"Not included in this year's formula.","included":false},
+        {"key":"experience_hard_area","label":"Hard Area Service","max_marks":0,"type":"months","per_3_months":0,"description":"Not included in this year's formula.","included":false},
+        {"key":"mdcat","label":"MDCAT Score","max_marks":0,"type":"score","score_max":1100,"description":"Not applicable for this year.","included":false},
+        {"key":"fcps_jcat","label":"FCPS Part-I / JCAT (pass/fail)","max_marks":0,"type":"boolean","description":"Not applicable for this year.","included":false}
+      ],
+      "notes": "Original March 2021 PPM. PART-I (40 marks) + Matric/Inter/MBBS aggregate + house job + parent institute + experience + university positions. Total: 95 marks.",
+      "tidbits": [
+        "PART-I exam result is the largest single component at 40 marks -- FCPS-I pass awarded full 40 marks.",
+        "Matric (5) + Intermediate (7) = 12 marks -- early academic record matters.",
+        "MBBS aggregate (20 marks) rewards consistent professional exam performance.",
+        "University positions: 0.6 pts/position (MBBS), 0.75 pts/position (BDS) at university level only.",
+        "Total out of 95, not 100. Observed max: 80.68 (Jan 2021), 80.68 (Jul 2021)."
+      ]
+    },
+    "2022": {
+      "label": "2022 (Inductions 11--12)",
+      "induction": "11-12",
+      "total_marks": 95,
+      "policy_ref": "SO(ME)7-6/2020(CIP) dated 11 March 2021",
+      "components": [
+        {"key":"matric_ssc","label":"Matric / SSC","max_marks":5,"type":"percentage","description":"Enter Matric marks as percentage. Scaled to 5 marks.","included":true},
+        {"key":"intermediate_hssc","label":"Intermediate / HSSC","max_marks":7,"type":"percentage","description":"Enter Intermediate marks as percentage. Scaled to 7 marks.","included":true},
+        {"key":"mbbs_bds_degree","label":"MBBS / BDS Aggregate","max_marks":20,"type":"percentage","description":"MBBS/BDS aggregate % (sum of professional marks / total x 100). Scaled to 20 marks.","included":true},
+        {"key":"part_1","label":"FCPS Part-I / MD / MS / MDS Part-I","max_marks":40,"type":"percentage","description":"PART-I score %. FCPS-I pass = 100%. Scaled to 40 marks.","included":true},
+        {"key":"house_job","label":"House Job","max_marks":5,"type":"tiered_select","tiers":[{"label":"Punjab grad -- parent/affiliated institution (5 pts)","value":5},{"label":"Punjab grad -- elsewhere in Pakistan (2.5 pts)","value":2.5},{"label":"Outside-Punjab grad -- Punjab hospital (2.5 pts)","value":2.5},{"label":"Foreign grad -- Punjab Teaching Hospital (2.5 pts)","value":2.5},{"label":"Not completed (0 pts)","value":0}],"description":"Select your house job status.","included":true},
+        {"key":"parent_institute","label":"Parent Institute","max_marks":5,"type":"boolean","description":"Tick if applying to your graduating institution (SHC&ME-controlled only).","included":true},
+        {"key":"experience","label":"Service Experience","max_marks":10,"type":"years","per_year":2,"description":"Primary/secondary/tertiary healthcare experience (tiered). ~2 marks/year approximate. Max 10 marks.","included":true},
+        {"key":"university_positions","label":"University-Level Positions","max_marks":3,"type":"count","per_item":0.6,"description":"MBBS: 0.6 pts/pos. BDS: 0.75 pts/pos. Max 3 pts.","included":true},
+        {"key":"attempts_in_mbbs","label":"1st-Attempt MBBS Professionals","max_marks":0,"type":"count","per_item":1,"description":"Not included in this year.","included":false},
+        {"key":"experience_hard_area","label":"Hard Area Service","max_marks":0,"type":"months","per_3_months":0,"description":"Not included in this year.","included":false},
+        {"key":"mdcat","label":"MDCAT Score","max_marks":0,"type":"score","score_max":1100,"description":"Not applicable.","included":false},
+        {"key":"fcps_jcat","label":"FCPS Part-I / JCAT (pass/fail)","max_marks":0,"type":"boolean","description":"Not applicable.","included":false}
+      ],
+      "notes": "Same March 2021 PPM formula. Total: 95 marks. Observed max: 77.93 (Jan 2022), 80.61 (Jul 2022).",
+      "tidbits": [
+        "Formula identical to 2021 -- consistent year-on-year for inductions 9--14.",
+        "PART-I (40 marks) + Matric + Inter + MBBS aggregate dominates the formula.",
+        "Jan 2022 observed max: 77.93. Jul 2022 observed max: 80.61."
+      ]
+    },
+    "2023": {
+      "label": "2023 (Inductions 13--14)",
+      "induction": "13-14",
+      "total_marks": 95,
+      "policy_ref": "SO(ME)7-6/2020(CIP) dated 11 March 2021",
+      "components": [
+        {"key":"matric_ssc","label":"Matric / SSC","max_marks":5,"type":"percentage","description":"Enter Matric marks as percentage. Scaled to 5 marks.","included":true},
+        {"key":"intermediate_hssc","label":"Intermediate / HSSC","max_marks":7,"type":"percentage","description":"Enter Intermediate marks as percentage. Scaled to 7 marks.","included":true},
+        {"key":"mbbs_bds_degree","label":"MBBS / BDS Aggregate","max_marks":20,"type":"percentage","description":"MBBS/BDS aggregate %. Scaled to 20 marks.","included":true},
+        {"key":"part_1","label":"FCPS Part-I / MD / MS / MDS Part-I","max_marks":40,"type":"percentage","description":"PART-I score %. FCPS-I pass = 100%. Scaled to 40 marks.","included":true},
+        {"key":"house_job","label":"House Job","max_marks":5,"type":"tiered_select","tiers":[{"label":"Punjab grad -- parent/affiliated institution (5 pts)","value":5},{"label":"Punjab grad -- elsewhere in Pakistan (2.5 pts)","value":2.5},{"label":"Outside-Punjab grad -- Punjab hospital (2.5 pts)","value":2.5},{"label":"Foreign grad -- Punjab Teaching Hospital (2.5 pts)","value":2.5},{"label":"Not completed (0 pts)","value":0}],"description":"Select your house job status.","included":true},
+        {"key":"parent_institute","label":"Parent Institute","max_marks":5,"type":"boolean","description":"Tick if applying to your graduating institution (SHC&ME-controlled only).","included":true},
+        {"key":"experience","label":"Service Experience","max_marks":10,"type":"years","per_year":2,"description":"Primary/secondary/tertiary healthcare experience (tiered). ~2 marks/year approximate. Max 10 marks.","included":true},
+        {"key":"university_positions","label":"University-Level Positions","max_marks":3,"type":"count","per_item":0.6,"description":"MBBS: 0.6 pts/pos. BDS: 0.75 pts/pos. Max 3 pts.","included":true},
+        {"key":"attempts_in_mbbs","label":"1st-Attempt MBBS Professionals","max_marks":0,"type":"count","per_item":1,"description":"Not included in this year.","included":false},
+        {"key":"experience_hard_area","label":"Hard Area Service","max_marks":0,"type":"months","per_3_months":0,"description":"Not included in this year.","included":false},
+        {"key":"mdcat","label":"MDCAT Score","max_marks":0,"type":"score","score_max":1100,"description":"Not applicable.","included":false},
+        {"key":"fcps_jcat","label":"FCPS Part-I / JCAT (pass/fail)","max_marks":0,"type":"boolean","description":"Not applicable.","included":false}
+      ],
+      "notes": "Same formula as 2021--2022. Highest observed max in PART-I era: 87.94 (Jan 2023). Total: 95 marks.",
+      "tidbits": [
+        "Highest observed max merit in PART-I era: 87.94 in Jan 2023 -- most competitive PART-I cohort.",
+        "Formula unchanged from previous two years -- strong cross-year comparability.",
+        "Jul 2023 observed max: 84.98 -- slight decrease from Jan 2023."
+      ]
+    },
+    "2024": {
+      "label": "2024 (Inductions 15--16)",
+      "induction": "15-16",
+      "total_marks": 95,
+      "policy_ref": "New PPM: SO(ME-I)7-1/2024(CIP) dated 15 May 2024 -- superseded all prior policies. Jan 2024 amendment (Ind 15) briefly added 'Attempts in MBBS' (total 100 marks) before being superseded.",
+      "components": [
+        {"key":"matric_ssc","label":"Matric / SSC","max_marks":5,"type":"percentage","description":"Enter Matric marks as percentage. Scaled to 5 marks.","included":true},
+        {"key":"intermediate_hssc","label":"Intermediate / HSSC","max_marks":7,"type":"percentage","description":"Enter Intermediate marks as percentage. Scaled to 7 marks.","included":true},
+        {"key":"mbbs_bds_degree","label":"MBBS / BDS Aggregate","max_marks":20,"type":"percentage","description":"MBBS/BDS aggregate % (sum of professional marks / total x 100). Scaled to 20 marks.","included":true},
+        {"key":"part_1","label":"FCPS Part-I / MD / MS / MDS Part-I","max_marks":40,"type":"percentage","description":"PART-I score %. FCPS-I pass without score = 100%. Scaled to 40 marks.","included":true},
+        {"key":"house_job","label":"House Job","max_marks":5,"type":"tiered_select","tiers":[{"label":"Punjab grad -- parent/affiliated institution (5 pts)","value":5},{"label":"Punjab grad -- elsewhere in Pakistan (2.5 pts)","value":2.5},{"label":"Outside-Punjab grad -- Punjab hospital (2.5 pts)","value":2.5},{"label":"Foreign grad -- Punjab Teaching Hospital (2.5 pts)","value":2.5},{"label":"Not completed (0 pts)","value":0}],"description":"Select your house job status.","included":true},
+        {"key":"parent_institute","label":"Parent Institute","max_marks":5,"type":"boolean","description":"Tick if applying to your graduating institution (SHC&ME-controlled only).","included":true},
+        {"key":"experience","label":"Service Experience","max_marks":10,"type":"years","per_year":2,"description":"Primary (BHUs/RHCs): 1.25 pts/3mo max 2yr. Secondary (THQ/DHQ): 0.75 pts/3mo max 3y4m. Tertiary (PKLI/RC/MIKD): 0.5 pts/3mo max 5yr. PG training excluded. ~2 pts/year approximate.","included":true},
+        {"key":"university_positions","label":"University-Level Positions","max_marks":3,"type":"count","per_item":0.6,"description":"MBBS: 0.6 pts/pos. BDS: 0.75 pts/pos. Max 3 pts.","included":true},
+        {"key":"attempts_in_mbbs","label":"1st-Attempt MBBS Professionals (Ind 15 only)","max_marks":5,"type":"count","per_item":1,"description":"Jan 2024 amendment only (Ind 15): 1.0 pt per professional where >=75% in 1st attempt; 0.5 pt otherwise. Max 5 pts. Removed in May 2024 PPM. Enable this and set total_marks to 100 to model Ind 15.","included":false},
+        {"key":"experience_hard_area","label":"Hard Area Service","max_marks":0,"type":"months","per_3_months":0,"description":"Not included in this year's formula.","included":false},
+        {"key":"mdcat","label":"MDCAT Score","max_marks":0,"type":"score","score_max":1100,"description":"Not applicable.","included":false},
+        {"key":"fcps_jcat","label":"FCPS Part-I / JCAT (pass/fail)","max_marks":0,"type":"boolean","description":"Not applicable.","included":false}
+      ],
+      "notes": "May 2024 PPM superseded all prior policies but maintained the same formula at 95 marks. Jan 2024 amendment (attempts_in_mbbs) was short-lived.",
+      "tidbits": [
+        "New PPM issued May 2024 officially repealed March 2021 policy, but scoring formula is unchanged.",
+        "Jan 2024 amendment briefly added 'Attempts in MBBS' (5 marks, total 100) -- then removed in May 2024 PPM.",
+        "To model Jan 2024 (Ind 15): enable 'attempts_in_mbbs' and set total_marks to 100.",
+        "Observed max 2024: 85.92 out of 95 -- consistent with prior PART-I era years."
+      ]
+    },
+    "2025": {
+      "label": "2025 (Inductions 17--19)",
+      "induction": "17-19",
+      "total_marks": 60,
+      "policy_ref": "SO(ME-I)7-17/2024(CIS)(JAN 2025) dated 28 Oct 2024. Confirmed for Ind 19 by SO(ME-I)7-5/2025(CIS)(JULY 2025) dated 19 May 2025.",
+      "components": [
+        {"key":"matric_ssc","label":"Matric / SSC","max_marks":5,"type":"percentage","description":"Enter Matric marks as percentage. Scaled to 5 marks.","included":true},
+        {"key":"intermediate_hssc","label":"Intermediate / HSSC","max_marks":7,"type":"percentage","description":"Enter Intermediate marks as percentage. Scaled to 7 marks.","included":true},
+        {"key":"mbbs_bds_degree","label":"MBBS / BDS Aggregate","max_marks":20,"type":"percentage","description":"Your MBBS/BDS aggregate % (sum of all professional marks / total x 100). Scaled to 20 marks.","included":true},
+        {"key":"part_1","label":"FCPS Part-I / MD / MS / MDS Part-I","max_marks":0,"type":"percentage","description":"REMOVED from formula as of October 2024. No longer included in merit calculation.","included":false},
+        {"key":"house_job","label":"House Job","max_marks":5,"type":"tiered_select","tiers":[{"label":"Punjab grad -- parent/affiliated institution (5 pts)","value":5},{"label":"Punjab grad -- elsewhere in Pakistan (2.5 pts)","value":2.5},{"label":"Outside-Punjab grad -- Punjab hospital (2.5 pts)","value":2.5},{"label":"Foreign grad -- Punjab Teaching Hospital (2.5 pts)","value":2.5},{"label":"Not completed (0 pts)","value":0}],"description":"Select your house job status.","included":true},
+        {"key":"parent_institute","label":"Parent Institute","max_marks":5,"type":"boolean","description":"Tick if applying to your graduating institution (SHC&ME-controlled only).","included":true},
+        {"key":"experience","label":"Service Experience","max_marks":10,"type":"years","per_year":0,"description":"Primary (BHUs/RHCs): 1.25 pts/3mo max 2yr. Secondary (THQ/DHQ): 0.75 pts/3mo max 3y4m. Tertiary (PKLI/RC/MIKD): 0.5 pts/3mo max 5yr. PG training excluded. Note: reducing to 5 pts from Jan 2026. ~2 pts/yr approximate.","included":true},
+        {"key":"experience_hard_area","label":"Hard Area Service (BHUs/RHCs)","max_marks":5,"type":"months","per_3_months":1.25,"description":"Service at notified Hard Area BHUs/RHCs (SHCMED ref: SO(ME-I)7-17/2024(CIS) dated 29-10-2024). 1.25 pts per 3 consecutive months. Maximum 1 year = 5 pts. Enter months of hard area service (max 12).","included":true},
+        {"key":"university_positions","label":"University-Level Positions","max_marks":3,"type":"count","per_item":0.6,"description":"MBBS: 0.6 pts/pos. BDS: 0.75 pts/pos. Max 3 pts.","included":true},
+        {"key":"attempts_in_mbbs","label":"1st-Attempt MBBS Professionals","max_marks":0,"type":"count","per_item":1,"description":"Not included in this year.","included":false},
+        {"key":"mdcat","label":"MDCAT Score","max_marks":0,"type":"score","score_max":1100,"description":"Not applicable.","included":false},
+        {"key":"fcps_jcat","label":"FCPS Part-I / JCAT (pass/fail)","max_marks":0,"type":"boolean","description":"Not applicable.","included":false}
+      ],
+      "notes": "MAJOR change: PART-I (40 marks) REMOVED. Hard Area Service (5 marks) added. Total drops from 95 -> 60 marks. Raw scores NOT comparable to prior years -- use Centile view.",
+      "tidbits": [
+        "Biggest formula change in PRP history: PART-I exam removed entirely (was 40/95 marks = 42% of total).",
+        "New component: Hard Area Service -- 1.25 pts per 3 months at notified BHUs/RHCs, max 5 pts (1 year).",
+        "Total maximum is now 60 marks -- raw scores directly incomparable to 2021--2024 data.",
+        "Use Centile view (% of max) for cross-year comparison: observed max ~46.6 = 77.7% of 60.",
+        "Hard Area and Experience both to be reduced/discontinued from Jan 2026 (Ind 20)."
+      ]
+    },
+    "2026-1": {
+      "label": "2026 (Induction 20 -- Dec 2025/Jan 2026)",
+      "induction": 20,
+      "total_marks": 35,
+      "policy_ref": "Notification dated 26 November 2025. Completely new formula. Matric/Inter/PART-I/Parent Institute removed. MDCAT and FCPS/JCAT introduced.",
+      "components": [
+        {"key":"mdcat","label":"MDCAT Score","max_marks":2,"type":"score","score_max":1100,"description":"Your MDCAT score out of 1100. Scaled to 2 marks.","included":true},
+        {"key":"mbbs_bds_degree","label":"MBBS / BDS Degree Aggregate","max_marks":15,"type":"percentage","description":"Your MBBS/BDS aggregate % (sum of professional marks / total x 100). Scaled to 15 marks.","included":true},
+        {"key":"experience","label":"Service Experience","max_marks":5,"type":"years","per_year":1.25,"description":"Post-house-job service at government health facilities. ~1.25 marks/year approximate. Max 5 marks. Detailed tier structure pending publication.","included":true},
+        {"key":"university_positions","label":"University-Level Positions","max_marks":3,"type":"count","per_item":0.6,"description":"1st/2nd/3rd position in University-level professional exams. MBBS: 0.6 pts/pos. BDS: 0.75 pts/pos. Max 3 pts.","included":true},
+        {"key":"house_job","label":"House Job","max_marks":5,"type":"tiered_select","tiers":[{"label":"Completed -- Punjab institution (5 pts)","value":5},{"label":"Completed -- outside Punjab or foreign (2.5 pts)","value":2.5},{"label":"Not completed (0 pts)","value":0}],"description":"Select your house job status.","included":true},
+        {"key":"fcps_jcat","label":"FCPS Part-I / JCAT (pass/fail)","max_marks":5,"type":"boolean","description":"Tick if you have passed FCPS Part-I OR hold a JCAT qualification. 5 marks (pass/fail -- not score-scaled).","included":true},
+        {"key":"matric_ssc","label":"Matric / SSC","max_marks":0,"type":"percentage","description":"REMOVED from formula from November 2025 onwards.","included":false},
+        {"key":"intermediate_hssc","label":"Intermediate / HSSC","max_marks":0,"type":"percentage","description":"REMOVED from formula from November 2025 onwards.","included":false},
+        {"key":"part_1","label":"FCPS Part-I score-based (40 marks era)","max_marks":0,"type":"percentage","description":"Replaced by FCPS/JCAT boolean (5 pts) from November 2025.","included":false},
+        {"key":"parent_institute","label":"Parent Institute","max_marks":0,"type":"boolean","description":"REMOVED from formula from November 2025 onwards.","included":false},
+        {"key":"experience_hard_area","label":"Hard Area Service","max_marks":0,"type":"months","per_3_months":0,"description":"DISCONTINUED from January 2026 induction onwards.","included":false},
+        {"key":"attempts_in_mbbs","label":"1st-Attempt MBBS Professionals","max_marks":0,"type":"count","per_item":0,"description":"Not included in this formula.","included":false}
+      ],
+      "notes": "Completely new formula from November 2025. Matric/Inter/PART-I/Parent Institute all removed. MDCAT (2 pts) and FCPS/JCAT pass (5 pts) introduced. Total: 35 marks.",
+      "tidbits": [
+        "Complete overhaul: total drops from 60 to 35 marks. Formula components restructured.",
+        "MDCAT introduced (2 marks) -- benefits recent graduates who scored well on MDCAT.",
+        "FCPS/JCAT: now 5 marks pass/fail (was 40 marks score-based in 2020--2024) -- massive reduction.",
+        "Matric + Intermediate removed -- 12 marks that no longer matter for merit.",
+        "Parent institute bonus removed -- where you graduated no longer gives marks.",
+        "Hard Area service discontinued -- rural service no longer rewarded.",
+        "Observed max 2026: 29.07 out of 35 = 83.1% of maximum achievable."
+      ]
+    },
+    "2026": {
+      "label": "2026 (Induction 21 - June / July 2026)",
+      "induction": 21,
+      "total_marks": 30,
+      "policy_ref": "Notification dated 26 November 2025. Completely new formula. Matric/Inter/PART-I/Parent Institute removed. MDCAT and FCPS/JCAT introduced.",
+      "components": [
+        {"key":"mdcat","label":"MDCAT Score","max_marks":2,"type":"score","score_max":1100,"description":"Your MDCAT score out of 1100. Scaled to 2 marks.","included":true},
+        {"key":"mbbs_bds_degree","label":"MBBS / BDS Degree Aggregate","max_marks":15,"type":"percentage","description":"Your MBBS/BDS aggregate % (sum of professional marks / total x 100). Scaled to 15 marks.","included":true},
+        {"key":"experience","label":"Service Experience","max_marks":5,"type":"years","per_year":1.25,"description":"Post-house-job service at government health facilities. ~1.25 marks/year approximate. Max 5 marks. Detailed tier structure pending publication.","included":false},
+        {"key":"university_positions","label":"University-Level Positions","max_marks":3,"type":"count","per_item":0.6,"description":"1st/2nd/3rd position in University-level professional exams. MBBS: 0.6 pts/pos. BDS: 0.75 pts/pos. Max 3 pts.","included":true},
+        {"key":"house_job","label":"House Job","max_marks":5,"type":"tiered_select","tiers":[{"label":"Completed -- Punjab institution (5 pts)","value":5},{"label":"Completed -- outside Punjab or foreign (2.5 pts)","value":2.5},{"label":"Not completed (0 pts)","value":0}],"description":"Select your house job status.","included":true},
+        {"key":"fcps_jcat","label":"FCPS Part-I / JCAT (pass/fail)","max_marks":5,"type":"boolean","description":"Tick if you have passed FCPS Part-I OR hold a JCAT qualification. 5 marks (pass/fail -- not score-scaled).","included":true},
+        {"key":"matric_ssc","label":"Matric / SSC","max_marks":0,"type":"percentage","description":"REMOVED from formula from November 2025 onwards.","included":false},
+        {"key":"intermediate_hssc","label":"Intermediate / HSSC","max_marks":0,"type":"percentage","description":"REMOVED from formula from November 2025 onwards.","included":false},
+        {"key":"part_1","label":"FCPS Part-I score-based (40 marks era)","max_marks":0,"type":"percentage","description":"Replaced by FCPS/JCAT boolean (5 pts) from November 2025.","included":false},
+        {"key":"parent_institute","label":"Parent Institute","max_marks":0,"type":"boolean","description":"REMOVED from formula from November 2025 onwards.","included":false},
+        {"key":"experience_hard_area","label":"Hard Area Service","max_marks":0,"type":"months","per_3_months":0,"description":"DISCONTINUED from January 2026 induction onwards.","included":false},
+        {"key":"attempts_in_mbbs","label":"1st-Attempt MBBS Professionals","max_marks":0,"type":"count","per_item":0,"description":"Not included in this formula.","included":false}
+      ],
+      "notes": "Slightly changed from Induction 20 (Dec/Jan 2026) . Matric/Inter/PART-I/Parent Institute all removed. Experience Marks discontinued. Total: 30 marks.",
+      "tidbits": [
+        "Complete overhaul: total drops from 60 to 30 marks. Formula components restructured.",
+        "MDCAT introduced (2 marks) -- benefits recent graduates who scored well on MDCAT.",
+        "FCPS/JCAT: now 5 marks pass/fail (was 40 marks score-based in 2020--2024) -- massive reduction.",
+        "Matric + Intermediate removed -- 12 marks that no longer matter for merit.",
+        "Parent institute bonus removed -- where you graduated no longer gives marks.",
+        "Hard Area service  and Experience marks discontinued -- rural service no longer rewarded."
+      ]
+    }
   }
 }

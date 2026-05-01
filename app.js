@@ -21,6 +21,9 @@ const LOADING_TIPS = [
   '🔍 Filter by quota (Punjab / Federal / Army) to see relevant cutoffs.',
 ];
 
+// Year → total max marks, populated from scoring_policy.json after data load
+const YEAR_TOTAL_MAX = {};
+
 const MERIT_BANDS = [
   { id: 'top',  label: 'Top Tier',  emoji: '🏆', min: 80,  max: Infinity, cls: 'band-top',  desc: 'Exceptional score! Almost every specialty is within reach.' },
   { id: 'high', label: 'High',      emoji: '⭐', min: 60,  max: 80,       cls: 'band-high', desc: 'Strong score. Many competitive specialties are accessible.' },
@@ -46,6 +49,7 @@ const App = {
     trends:           null,
     specialtyRanking: null,
     scoringPolicy:    null,
+    policyImpact:     null,
   },
   ui: {
     activeTab: 'predictor',
@@ -56,6 +60,9 @@ const App = {
     lastMerit:      null,
     lastProgram:    '',
     lastQuota:      '',
+    trendMode:           'percentile',   // 'raw' | 'percentile'
+    explorerDisplayMode: 'centile',      // 'raw' | 'centile'
+    yearMeritCache:      null,
   },
 };
 
@@ -65,7 +72,7 @@ const App = {
 
 async function fetchJSON(file, label) {
   setLoadingDetail(`Loading ${label}…`);
-  const res = await fetch(DATA_BASE + file);
+  const res = await fetch(DATA_BASE + file, { cache: 'no-store' });
   if (!res.ok) throw new Error(`Failed to load ${file}: ${res.status}`);
   return res.json();
 }
@@ -116,10 +123,16 @@ async function loadAllData() {
     const scoringPolicy = await fetchJSON('scoring_policy.json', 'scoring policy');
     setLoadingProgress(96);
 
+    // policy_impact.json is optional (only exists after pipeline run)
+    let policyImpact = null;
+    try { policyImpact = await fetchJSON('policy_impact.json', 'policy impact'); } catch (_) {}
+    setLoadingProgress(100);
+
     App.data.flatLookup       = flatLookup;
     App.data.trends           = trends;
     App.data.specialtyRanking = specialtyRanking;
     App.data.scoringPolicy    = scoringPolicy;
+    App.data.policyImpact     = policyImpact;
 
     setLoadingDetail(`Ready — ${flatLookup.length.toLocaleString()} records loaded`);
     setLoadingProgress(100);
@@ -212,8 +225,12 @@ function classifyOutcome(userMerit, closingMerit) {
   return 'unlikely';
 }
 
-function predictOptions(userMerit, program = '', quota = '', yearRef = 'latest') {
+function predictOptions(userMerit, program = '', quota = '', yearRef = 'latest', mode = 'centile') {
   if (isNaN(userMerit)) return [];
+
+  const usesCentile = mode === 'centile';
+  const policyMax   = usesCentile ? getActivePolicyMax() : null;
+  const userPct     = (usesCentile && policyMax) ? (userMerit / policyMax) * 100 : null;
 
   const results = App.data.flatLookup
     .filter(r =>
@@ -221,18 +238,39 @@ function predictOptions(userMerit, program = '', quota = '', yearRef = 'latest')
       (!quota   || r.quota   === quota)
     )
     .map(row => {
-      const cm = yearRef === 'latest'
-        ? row.latest_merit
-        : (row.yearly_merit?.[String(yearRef)] ?? row.latest_merit);
-
-      if (cm == null) return null;
-      const outcome = classifyOutcome(userMerit, cm);
-      return {
-        ...row,
-        used_closing_merit: cm,
-        outcome,
-        delta: userMerit - cm,
-      };
+      if (usesCentile && userPct != null) {
+        // Compare user's % of max against this row's avg % of max across all years
+        const cmpPct = row.avg_pct_of_max;
+        if (cmpPct == null) return null;
+        const delta = userPct - cmpPct;
+        // Thresholds in percentage-point units (~equivalent to old raw margins scaled)
+        const outcome = delta >= -2.5 ? 'likely' : delta >= -8.0 ? 'borderline' : 'unlikely';
+        return {
+          ...row,
+          used_closing_merit: row.avg_closing_merit,
+          used_pct_of_max: cmpPct,
+          user_pct_of_max: userPct,
+          outcome,
+          delta,           // in % units
+          mode: 'centile',
+        };
+      } else {
+        // Raw mode: compare against specific year or latest raw merit
+        const cm = yearRef === 'latest'
+          ? row.latest_merit
+          : (row.yearly_merit?.[String(yearRef)] ?? row.latest_merit);
+        if (cm == null) return null;
+        const outcome = classifyOutcome(userMerit, cm);
+        return {
+          ...row,
+          used_closing_merit: cm,
+          user_pct_of_max: null,
+          used_pct_of_max: null,
+          outcome,
+          delta: userMerit - cm,
+          mode: 'raw',
+        };
+      }
     })
     .filter(Boolean);
 
@@ -318,10 +356,524 @@ function compBadge(c) {
 }
 
 // ═══════════════════════════════════════════════════════
-// INIT / DATA READY
+// YEARLY PERCENTILE PRE-COMPUTATION
 // ═══════════════════════════════════════════════════════
 
+/**
+ * For each flatLookup record, populate yearly_percentile if not already
+ * present from the pipeline. Percentile is within (year, program) cohort
+ * so it's meaningful across years even when scoring formulas changed.
+ */
+function computeYearlyPercentiles() {
+  // Build cache: { "year_program": [merit, ...] }
+  const cache = {};
+  for (const row of App.data.flatLookup) {
+    for (const [year, merit] of Object.entries(row.yearly_merit || {})) {
+      const key = `${year}_${row.program}`;
+      if (!cache[key]) cache[key] = [];
+      cache[key].push(merit);
+    }
+  }
+  App.ui.yearMeritCache = cache;
+
+  // Populate yearly_percentile on each row (skip if already set by pipeline)
+  for (const row of App.data.flatLookup) {
+    if (row.yearly_percentile && Object.keys(row.yearly_percentile).length > 0) continue;
+    const yp = {};
+    for (const [year, merit] of Object.entries(row.yearly_merit || {})) {
+      const key = `${year}_${row.program}`;
+      const all = cache[key] || [];
+      if (all.length > 0) {
+        const below = all.filter(v => v < merit).length;
+        yp[year] = Math.round((below / all.length) * 100);
+      }
+    }
+    row.yearly_percentile = yp;
+  }
+}
+
+function computeMeritPercentOfMax() {
+  const sp = App.data.scoringPolicy;
+  // Populate YEAR_TOTAL_MAX from year_total_max or policies block
+  if (sp?.year_total_max) {
+    for (const [yr, max] of Object.entries(sp.year_total_max)) {
+      YEAR_TOTAL_MAX[Number(yr)] = max;
+    }
+  } else if (sp?.policies) {
+    for (const [yr, pol] of Object.entries(sp.policies)) {
+      if (pol.total_marks) YEAR_TOTAL_MAX[Number(yr)] = pol.total_marks;
+    }
+  }
+
+  for (const row of App.data.flatLookup) {
+    const pom = {};
+    for (const [year, merit] of Object.entries(row.yearly_merit || {})) {
+      const totalMax = YEAR_TOTAL_MAX[Number(year)];
+      if (totalMax) pom[year] = (merit / totalMax) * 100;
+    }
+    row.yearly_pct_of_max = pom;
+    const pomVals = Object.values(pom);
+    row.latest_pct_of_max  = pom[String(row.latest_year)] ?? pom[row.latest_year] ?? null;
+    row.avg_pct_of_max     = pomVals.length ? pomVals.reduce((a, b) => a + b, 0) / pomVals.length : null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// MERIT CALCULATOR TAB
+// ═══════════════════════════════════════════════════════
+
+const CALC_SAVED_KEY = 'prp_calc_merit_v2';
+
+function getSavedCalcMerit() {
+  try { return JSON.parse(localStorage.getItem(CALC_SAVED_KEY) || 'null'); }
+  catch { return null; }
+}
+
+function saveCalcMerit(data) {
+  localStorage.setItem(CALC_SAVED_KEY, JSON.stringify(data));
+}
+
+function clearCalcMerit() {
+  localStorage.removeItem(CALC_SAVED_KEY);
+}
+
+/** Returns { key, policy } for the active/expected calculator policy */
+function getActivePolicyForCalc() {
+  const sp = App.data.scoringPolicy;
+  if (!sp) return null;
+  if (sp.policies) {
+    // Use expected_policy if defined, else active_policy
+    const key = sp.expected_policy || sp.active_policy;
+    const policy = sp.policies[key];
+    if (policy) return { key, policy, isExpected: key === sp.expected_policy };
+    // Fallback: last key
+    const keys = Object.keys(sp.policies).sort();
+    const lastKey = keys[keys.length - 1];
+    return { key: lastKey, policy: sp.policies[lastKey], isExpected: false };
+  }
+  // Legacy flat format
+  const years = Object.keys(sp).sort();
+  const last  = years[years.length - 1];
+  return { key: last, policy: sp[last], isExpected: false };
+}
+
+/** Returns the total marks for the currently active/calculator policy (used for centile conversion) */
+function getActivePolicyMax() {
+  const active = getActivePolicyForCalc();
+  if (active?.policy?.total_marks) return active.policy.total_marks;
+  // Fallback: latest known year max
+  const keys = Object.keys(YEAR_TOTAL_MAX).map(Number).sort();
+  return keys.length ? YEAR_TOTAL_MAX[keys[keys.length - 1]] : null;
+}
+
+let _lastCalcResult = null;
+
+function setupCalculatorTab() {
+  document.getElementById('calcRunBtn')?.addEventListener('click', runCalculator);
+  document.getElementById('calcResetBtn')?.addEventListener('click', () => {
+    document.getElementById('calcForm')?.reset();
+    document.getElementById('calcResult')?.classList.add('hidden');
+    _lastCalcResult = null;
+  });
+  document.getElementById('calcSaveBtn')?.addEventListener('click', () => {
+    if (!_lastCalcResult) return;
+    saveCalcMerit(_lastCalcResult);
+    showCalcSavedBanner();
+    updateAutoFillFromSaved();
+    // Pre-fill predictor input (don't run yet)
+    const predInput = document.getElementById('userMerit');
+    if (predInput) predInput.value = _lastCalcResult.total.toFixed(2);
+    switchToTab('predictor');
+  });
+  document.getElementById('calcStratBtn')?.addEventListener('click', () => {
+    if (!_lastCalcResult) return;
+    saveCalcMerit(_lastCalcResult);
+    updateAutoFillFromSaved();
+    const stratInput = document.getElementById('stratMerit');
+    if (stratInput) stratInput.value = _lastCalcResult.total.toFixed(2);
+    switchToTab('strategy');
+    runStrategy();
+  });
+  document.getElementById('calcUseSaved')?.addEventListener('click', () => {
+    const saved = getSavedCalcMerit();
+    if (!saved) return;
+    const predInput = document.getElementById('userMerit');
+    if (predInput) predInput.value = saved.total.toFixed(2);
+    switchToTab('predictor');
+    runPredictor();
+  });
+  document.getElementById('calcUseStrategy')?.addEventListener('click', () => {
+    const saved = getSavedCalcMerit();
+    if (!saved) return;
+    const stratInput = document.getElementById('stratMerit');
+    if (stratInput) stratInput.value = saved.total.toFixed(2);
+    switchToTab('strategy');
+    runStrategy();
+  });
+  document.getElementById('calcClearSaved')?.addEventListener('click', () => {
+    clearCalcMerit();
+    document.getElementById('calcSavedBanner')?.classList.add('hidden');
+  });
+
+  buildCalculatorForm();
+  showCalcSavedBanner();
+}
+
+function buildCalculatorForm() {
+  const info = getActivePolicyForCalc();
+  if (!info) return;
+  const { key, policy, isExpected } = info;
+
+  // Update policy info bar
+  const badge   = document.getElementById('calcPolicyBadge');
+  const label   = document.getElementById('calcPolicyLabel');
+  const noteEl  = document.getElementById('calcPolicyNote');
+  const warning = document.getElementById('calcPolicyWarning');
+
+  if (badge)   badge.textContent = `Induction ${policy.induction || key}`;
+  if (label)   label.textContent = policy.label || key;
+  if (noteEl)  noteEl.textContent = policy.notes || '';
+  if (warning) warning.classList.toggle('hidden', !isExpected);
+
+  // Update total marks
+  const outEl = document.getElementById('calcResultOut');
+  if (outEl) outEl.textContent = `/ ${policy.total_marks || 100}`;
+
+  // Build form
+  const form = document.getElementById('calcForm');
+  if (!form) return;
+  const included = (policy.components || []).filter(c => c.included !== false);
+  form.innerHTML = included.map(comp => buildComponentInputHtml(comp)).join('');
+}
+
+function buildComponentInputHtml(comp) {
+  const { key, label, max_marks, type, description, per_year, per_item, score_max } = comp;
+  let inputHtml = '';
+
+  if (type === 'boolean') {
+    inputHtml = `
+      <div class="calc-checkbox-wrap">
+        <input type="checkbox" id="calc_${key}" name="${key}" class="calc-checkbox" />
+        <label for="calc_${key}" class="calc-checkbox-label">Yes — ${max_marks} marks</label>
+      </div>`;
+  } else if (type === 'percentage') {
+    inputHtml = `
+      <input type="number" id="calc_${key}" name="${key}" class="calc-input"
+             placeholder="e.g. 72.5" min="0" max="100" step="0.01" />
+      <span class="calc-input-hint">Enter your MBBS aggregate % · Max contribution: ${max_marks} marks</span>`;
+  } else if (type === 'years') {
+    const maxYrs = Math.floor(max_marks / (per_year || 1));
+    inputHtml = `
+      <input type="number" id="calc_${key}" name="${key}" class="calc-input"
+             placeholder="Years" min="0" max="${maxYrs}" step="0.5" />
+      <span class="calc-input-hint">${per_year} mark(s)/year · Max ${maxYrs} year(s) = ${max_marks} marks</span>`;
+  } else if (type === 'count') {
+    const maxCnt = Math.floor(max_marks / (per_item || 1));
+    inputHtml = `
+      <input type="number" id="calc_${key}" name="${key}" class="calc-input"
+             placeholder="Count" min="0" max="${maxCnt}" step="1" />
+      <span class="calc-input-hint">${per_item} mark(s) each · Max ${maxCnt} item(s) = ${max_marks} marks</span>`;
+  } else if (type === 'score') {
+    const maxSc = score_max || 1100;
+    inputHtml = `
+      <input type="number" id="calc_${key}" name="${key}" class="calc-input"
+             placeholder="e.g. 850" min="0" max="${maxSc}" step="1" />
+      <span class="calc-input-hint">Out of ${maxSc} · Scaled to ${max_marks} marks</span>`;
+  } else if (type === 'tiered_select') {
+    const opts = (comp.tiers || []).map(t =>
+      `<option value="${t.value}">${esc(t.label)}</option>`
+    ).join('');
+    inputHtml = `
+      <select id="calc_${key}" name="${key}" class="calc-input">
+        <option value="">— Select —</option>
+        ${opts}
+      </select>
+      <span class="calc-input-hint">Select the option that applies to you · Max: ${max_marks} marks</span>`;
+  } else if (type === 'months') {
+    const per3mo  = comp.per_3_months || 1.25;
+    const maxMons = Math.round(max_marks / per3mo * 3);
+    inputHtml = `
+      <input type="number" id="calc_${key}" name="${key}" class="calc-input"
+             placeholder="Months" min="0" max="${maxMons}" step="1" />
+      <span class="calc-input-hint">${per3mo} mark(s) per 3 months · Max ${maxMons} months = ${max_marks} marks</span>`;
+  }
+
+  return `
+    <div class="calc-form-group">
+      <div class="calc-form-label-row">
+        <label for="calc_${key}" class="calc-form-label">${esc(label)}</label>
+        <span class="calc-form-max">${max_marks} pts</span>
+      </div>
+      ${description ? `<p class="calc-form-desc">${esc(description)}</p>` : ''}
+      ${inputHtml}
+    </div>`;
+}
+
+function runCalculator() {
+  const info = getActivePolicyForCalc();
+  if (!info) return;
+  const { key, policy } = info;
+
+  const included = (policy.components || []).filter(c => c.included !== false);
+  let total = 0;
+  const breakdown = [];
+
+  for (const comp of included) {
+    const { key: ck, label, max_marks, type, per_year, per_item, score_max } = comp;
+    const el = document.getElementById(`calc_${ck}`);
+    if (!el) continue;
+
+    let contribution = 0;
+    let valueStr = '—';
+
+    if (type === 'boolean') {
+      contribution = el.checked ? max_marks : 0;
+      valueStr     = el.checked ? 'Yes' : 'No';
+    } else if (type === 'percentage') {
+      const pct = parseFloat(el.value);
+      if (!isNaN(pct) && el.value !== '') {
+        contribution = Math.min((pct / 100) * max_marks, max_marks);
+        valueStr     = `${pct}%`;
+      }
+    } else if (type === 'years') {
+      const yrs = parseFloat(el.value);
+      if (!isNaN(yrs) && el.value !== '') {
+        contribution = Math.min(yrs * (per_year || 1), max_marks);
+        valueStr     = `${yrs} yr(s)`;
+      }
+    } else if (type === 'count') {
+      const cnt = parseFloat(el.value);
+      if (!isNaN(cnt) && el.value !== '') {
+        contribution = Math.min(cnt * (per_item || 1), max_marks);
+        valueStr     = String(cnt);
+      }
+    } else if (type === 'score') {
+      const sc  = parseFloat(el.value);
+      const msc = score_max || 1100;
+      if (!isNaN(sc) && el.value !== '') {
+        contribution = Math.min((sc / msc) * max_marks, max_marks);
+        valueStr     = String(sc);
+      }
+    } else if (type === 'tiered_select') {
+      const val = parseFloat(el.value);
+      if (!isNaN(val) && el.value !== '') {
+        contribution = Math.min(val, max_marks);
+        valueStr     = el.options[el.selectedIndex]?.text || String(val);
+      }
+    } else if (type === 'months') {
+      const months = parseFloat(el.value);
+      const per3mo = comp.per_3_months || 1.25;
+      if (!isNaN(months) && el.value !== '') {
+        contribution = Math.min(Math.floor(months / 3) * per3mo, max_marks);
+        valueStr     = `${months} month(s)`;
+      }
+    }
+
+    total += contribution;
+    breakdown.push({
+      label,
+      contribution: Math.round(contribution * 100) / 100,
+      max: max_marks,
+      value: valueStr,
+    });
+  }
+
+  total = Math.round(total * 100) / 100;
+  _lastCalcResult = {
+    total,
+    breakdown,
+    policyKey:   key,
+    policyLabel: policy.label,
+    totalMarks:  policy.total_marks || 100,
+    calculatedAt: Date.now(),
+  };
+
+  // Show result
+  const resultBox   = document.getElementById('calcResult');
+  const valueEl     = document.getElementById('calcResultValue');
+  const breakdownEl = document.getElementById('calcBreakdown');
+  const bandEl      = document.getElementById('calcResultBand');
+
+  if (valueEl) valueEl.textContent = total.toFixed(2);
+  if (resultBox) resultBox.classList.remove('hidden');
+
+  // Show merit band
+  if (bandEl) {
+    const allMerits = App.data.flatLookup.map(r => r.latest_merit).filter(v => v != null);
+    const band = getMeritBand(total, allMerits);
+    bandEl.textContent = `${band.emoji} ${band.label}`;
+    bandEl.className = `calc-result-badge ${band.cls}`;
+  }
+
+  if (breakdownEl) {
+    breakdownEl.innerHTML = breakdown.map(b => {
+      const fillPct = b.max > 0 ? (b.contribution / b.max * 100).toFixed(1) : 0;
+      return `
+        <div class="calc-breakdown-row">
+          <span class="calc-breakdown-label">${esc(b.label)}</span>
+          <span class="calc-breakdown-value">${esc(b.value)}</span>
+          <div class="calc-breakdown-bar-wrap">
+            <div class="calc-breakdown-bar" style="width:${fillPct}%"></div>
+          </div>
+          <span class="calc-breakdown-pts">${b.contribution.toFixed(2)} / ${b.max}</span>
+        </div>`;
+    }).join('');
+  }
+
+  resultBox?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function showCalcSavedBanner() {
+  const saved  = getSavedCalcMerit();
+  const banner = document.getElementById('calcSavedBanner');
+  if (!banner) return;
+  if (!saved) { banner.classList.add('hidden'); return; }
+  banner.classList.remove('hidden');
+  const scoreEl = document.getElementById('calcSavedScore');
+  const polEl   = document.getElementById('calcSavedPolicy');
+  if (scoreEl) scoreEl.textContent = Number(saved.total).toFixed(2);
+  if (polEl)   polEl.textContent   = saved.policyLabel ? `(${saved.policyLabel})` : '';
+}
+
+function updateAutoFillFromSaved() {
+  const saved = getSavedCalcMerit();
+  if (!saved) return;
+  const merit = saved.total;
+  // Only auto-fill if currently empty
+  const predInput  = document.getElementById('userMerit');
+  const stratInput = document.getElementById('stratMerit');
+  if (predInput  && !predInput.value)  predInput.value  = merit.toFixed(2);
+  if (stratInput && !stratInput.value) stratInput.value = merit.toFixed(2);
+}
+
+// ═══════════════════════════════════════════════════════
+// POLICY HISTORY TAB
+// ═══════════════════════════════════════════════════════
+
+function setupPolicyTab() {
+  // Nothing to setup at init — rendered when tab is activated
+}
+
+function renderPolicyTab() {
+  const sp = App.data.scoringPolicy;
+  if (!sp || !sp.policies) return;
+
+  const policies    = sp.policies;
+  const policyKeys  = Object.keys(policies).sort();
+
+  // ── Collect all component keys/labels across all years ──
+  const allCompKeys   = [];
+  const allCompLabels = {};
+  for (const key of policyKeys) {
+    for (const comp of policies[key].components || []) {
+      if (!allCompLabels[comp.key]) {
+        allCompKeys.push(comp.key);
+        allCompLabels[comp.key] = comp.label;
+      }
+    }
+  }
+
+  // ── Comparison table ──
+  const table = document.getElementById('policyComparisonTable');
+  if (table) {
+    const headerCells = policyKeys.map(k =>
+      `<th style="white-space:nowrap">${esc(policies[k].label || k)}</th>`
+    ).join('');
+
+    const dataRows = allCompKeys.map(ck => {
+      const cells = policyKeys.map(pk => {
+        const comp = (policies[pk].components || []).find(c => c.key === ck);
+        if (!comp) return '<td><span class="policy-cell-na">—</span></td>';
+        const inc = comp.included !== false;
+        return `<td><span class="${inc ? 'policy-cell-in' : 'policy-cell-out'}">${inc ? comp.max_marks + ' pts' : 'Removed'}</span></td>`;
+      }).join('');
+      return `<tr><td><strong>${esc(allCompLabels[ck] || ck)}</strong></td>${cells}</tr>`;
+    }).join('');
+
+    const totalRow = `<tr class="policy-total-row">
+      <td><strong>Total Marks</strong></td>
+      ${policyKeys.map(pk => `<td><strong>${policies[pk].total_marks || '—'}</strong></td>`).join('')}
+    </tr>`;
+
+    table.innerHTML = `
+      <thead><tr><th>Component</th>${headerCells}</tr></thead>
+      <tbody>${dataRows}${totalRow}</tbody>`;
+  }
+
+  // ── Timeline cards (latest first) ──
+  const timeline = document.getElementById('policyTimeline');
+  if (!timeline) return;
+
+  timeline.innerHTML = [...policyKeys].reverse().map(key => {
+    const pol       = policies[key];
+    const isExpected = key.includes('expected') || key === sp.expected_policy;
+    const included   = (pol.components || []).filter(c => c.included !== false);
+    const excluded   = (pol.components || []).filter(c => c.included === false);
+
+    // Merge in distribution stats if available
+    let statsHtml = '';
+    const impact = App.data.policyImpact;
+    const yearNum = isNaN(Number(key)) ? null : Number(key);
+    if (impact && yearNum && impact[String(yearNum)]) {
+      const programs = impact[String(yearNum)].programs || {};
+      const statRows = Object.entries(programs).map(([prog, s]) =>
+        `<tr>
+          <td>${esc(prog)}</td>
+          <td>${s.count}</td>
+          <td>${s.mean?.toFixed(2) ?? '—'}</td>
+          <td>${s.stddev?.toFixed(2) ?? '—'}</td>
+          <td>${s.p25?.toFixed(2) ?? '—'} / ${s.p50?.toFixed(2) ?? '—'} / ${s.p75?.toFixed(2) ?? '—'}</td>
+        </tr>`
+      ).join('');
+      if (statRows) {
+        statsHtml = `
+          <div class="policy-stats-section">
+            <h4>📊 Distribution Stats (from actual data)</h4>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr><th>Program</th><th>Records</th><th>Mean</th><th>σ</th><th>P25 / P50 / P75</th></tr></thead>
+                <tbody>${statRows}</tbody>
+              </table>
+            </div>
+          </div>`;
+      }
+    }
+
+    return `
+      <div class="policy-card${isExpected ? ' policy-card-expected' : ''}">
+        <div class="policy-card-header">
+          <div class="policy-card-title">
+            <span class="policy-card-year">${esc(pol.label || key)}</span>
+            ${isExpected ? '<span class="policy-expected-badge">⚠️ Expected — Not Confirmed</span>' : ''}
+          </div>
+          <div class="policy-card-total">${pol.total_marks || '?'} total marks</div>
+        </div>
+        ${pol.notes ? `<p class="policy-card-notes">${esc(pol.notes)}</p>` : ''}
+        <div class="policy-components-grid">
+          ${included.map(c => `
+            <div class="policy-comp-pill policy-comp-in">
+              <span class="policy-comp-name">${esc(c.label)}</span>
+              <span class="policy-comp-marks">${c.max_marks} pts</span>
+            </div>`).join('')}
+          ${excluded.map(c => `
+            <div class="policy-comp-pill policy-comp-out">
+              <span class="policy-comp-name">${esc(c.label)}</span>
+              <span class="policy-comp-marks">Not included</span>
+            </div>`).join('')}
+        </div>
+        ${pol.tidbits?.length ? `
+          <div class="policy-tidbits">
+            <h4>💡 Key Notes for This Cycle</h4>
+            <ul>${pol.tidbits.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
+          </div>` : ''}
+        ${statsHtml}
+      </div>`;
+  }).join('');
+}
+
 function onDataReady() {
+  computeYearlyPercentiles();   // enrich flatLookup with yearly_percentile
+  computeMeritPercentOfMax();   // enrich flatLookup with yearly_pct_of_max
   populateAllFilters();
   setupTabNavigation();
   setupPredictorTab();
@@ -330,6 +882,8 @@ function onDataReady() {
   setupTrendsTab();
   setupRankingsTab();
   setupStrategyTab();
+  setupCalculatorTab();
+  setupPolicyTab();
   setupToolsTab();
   initTooltips();
   showWelcomeModal();
@@ -342,6 +896,8 @@ function onDataReady() {
   setupMeritContextBar();
   handleURLParams();
   showKbdHint();
+  // Auto-fill from saved calculator merit
+  updateAutoFillFromSaved();
 }
 
 function updateHeaderMeta() {
@@ -438,11 +994,28 @@ function setupTabNavigation() {
 }
 
 function onTabActivated(tab) {
-  if (tab === 'specialty') renderSpecialtyGrid();
-  if (tab === 'hospital')  renderHospitalGrid();
-  if (tab === 'rankings')  renderRankingsTab();
-  if (tab === 'trends')    renderTrendsTab();
-  if (tab === 'tools')     renderShortlist();
+  if (tab === 'specialty')   renderSpecialtyGrid();
+  if (tab === 'hospital')    renderHospitalGrid();
+  if (tab === 'rankings')    renderRankingsTab();
+  if (tab === 'trends')      renderTrendsTab();
+  if (tab === 'tools')       renderShortlist();
+  if (tab === 'policy')      renderPolicyTab();
+}
+
+// ═══════════════════════════════════════════════════════
+// MODAL HELPERS
+// ═══════════════════════════════════════════════════════
+
+function openModal(modalEl) {
+  if (!modalEl) return;
+  modalEl.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(modalEl) {
+  if (!modalEl) return;
+  modalEl.classList.add('hidden');
+  document.body.style.overflow = '';
 }
 
 // ═══════════════════════════════════════════════════════
@@ -513,10 +1086,10 @@ function showWelcomeModal() {
   if (localStorage.getItem('prp_welcomed')) return;
   const modal = document.getElementById('welcomeModal');
   if (!modal) return;
-  modal.classList.remove('hidden');
+  openModal(modal);
 
   function dismiss() {
-    modal.classList.add('hidden');
+    closeModal(modal);
     localStorage.setItem('prp_welcomed', '1');
   }
 
@@ -589,13 +1162,16 @@ function runPredictor() {
     return;
   }
 
-  const results = predictOptions(merit, prog, quota, yearV === 'latest' ? 'latest' : Number(yearV));
+  // Always use centile mode: convert user score to % of active policy max, compare against avg_pct_of_max.
+  // This makes the predictor cross-year comparable regardless of which induction scoring formula is active.
+  const results = predictOptions(merit, prog, quota, yearV === 'latest' ? 'latest' : Number(yearV), 'centile');
   App.ui.predictorResults = results;
 
-  // Compute percentile from all closing merits in scope
-  const allMerits = results.map(r => r.used_closing_merit).filter(v => v != null);
-  const pct = getPercentile(merit, allMerits);
-  const band = getMeritBand(merit, allMerits);
+  // Percentile insight: compare userPct against all historical avg_pct_of_max values
+  const userPct   = results[0]?.user_pct_of_max ?? null;
+  const allPcts   = results.map(r => r.used_pct_of_max).filter(v => v != null);
+  const pct       = userPct != null ? getPercentile(userPct, allPcts) : 0;
+  const band      = userPct != null ? getMeritBand(userPct, allPcts) : getMeritBand(merit, []);
 
   const likely     = results.filter(r => r.outcome === 'likely').length;
   const borderline = results.filter(r => r.outcome === 'borderline').length;
@@ -607,22 +1183,25 @@ function runPredictor() {
   document.getElementById('insightLikelyVal').textContent   = likely;
   document.getElementById('insightBorderlineVal').textContent = borderline;
 
-  // Policy notice
-  const refYear = yearV === 'latest' ? getLatestYear() : Number(yearV);
-  const policy  = App.data.scoringPolicy?.[refYear];
-  if (policy) {
-    document.getElementById('policyNotice').classList.remove('hidden');
-    document.getElementById('policyText').textContent =
-      `Year ${refYear} scoring: ${policy.description}. ${policy.notes}`;
-  } else {
-    document.getElementById('policyNotice').classList.add('hidden');
+  // Policy notice — show active policy used for centile conversion
+  const policyMax = getActivePolicyMax();
+  const activePol = getActivePolicyForCalc();
+  const policyNoticeEl = document.getElementById('policyNotice');
+  const policyTextEl   = document.getElementById('policyText');
+  if (activePol?.policy && policyNoticeEl && policyTextEl) {
+    policyNoticeEl.classList.remove('hidden');
+    const userPctStr = userPct != null ? ` (${num(userPct, 1)}% of ${policyMax}-mark max)` : '';
+    policyTextEl.textContent =
+      `Score interpreted as: ${activePol.policy.label || activePol.key}${userPctStr}. Comparing against historical % of max for cross-year accuracy.`;
+  } else if (policyNoticeEl) {
+    policyNoticeEl.classList.add('hidden');
   }
 
   document.getElementById('predictorResults').classList.remove('hidden');
   renderPredictorTable();
 
-  // Draw merit distribution chart
-  Charts.drawDistributionChart(allMerits, merit);
+  // Draw merit distribution chart using pct values for cross-year context
+  Charts.drawDistributionChart(allPcts, userPct ?? merit);
 
   // Save to recent scores
   saveRecentScore(merit);
@@ -661,8 +1240,8 @@ function renderPredictorTable() {
         <td>${esc(r.specialty)}</td>
         <td>${esc(r.hospital)}</td>
         <td>${esc(r.quota)}</td>
-        <td><strong>${num(r.used_closing_merit)}</strong></td>
-        <td>${num(r.avg_closing_merit)}</td>
+        <td><strong>${r.used_pct_of_max != null ? num(r.used_pct_of_max, 1) + '%' : num(r.used_closing_merit)}</strong></td>
+        <td>${r.avg_pct_of_max != null ? num(r.avg_pct_of_max, 1) + '%' : num(r.avg_closing_merit)}</td>
         <td>${trendBadge(r.trend)}</td>
         <td>${volBadge(r.volatility)}</td>
         <td>${confBadge(r.confidence)}</td>
@@ -696,10 +1275,20 @@ function setupSpecialtyTab() {
   document.getElementById('specSearch').addEventListener('input', renderSpecialtyGrid);
 
   document.getElementById('specModalClose').addEventListener('click', () => {
-    document.getElementById('specialtyModal').classList.add('hidden');
+    closeModal(document.getElementById('specialtyModal'));
   });
   document.getElementById('specModalOverlay').addEventListener('click', () => {
-    document.getElementById('specialtyModal').classList.add('hidden');
+    closeModal(document.getElementById('specialtyModal'));
+  });
+
+  // Centile / raw toggle
+  document.querySelectorAll('.explorer-view-btn[data-tab="spec"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      App.ui.explorerDisplayMode = btn.dataset.view;
+      document.querySelectorAll('.explorer-view-btn[data-tab="spec"]')
+              .forEach(b => b.classList.toggle('active', b === btn));
+      renderSpecialtyGrid();
+    });
   });
 }
 
@@ -708,7 +1297,7 @@ function renderSpecialtyGrid() {
   const quota   = document.getElementById('specQuota').value;
   const search  = document.getElementById('specSearch').value.toLowerCase().trim();
 
-  // Build specialty aggregate from ranking data
+  // Build specialty aggregate from ranking data + enrich with pct_of_max from flatLookup
   const entries = [];
   for (const [prog, quotas] of Object.entries(App.data.specialtyRanking)) {
     if (program && prog !== program) continue;
@@ -716,6 +1305,14 @@ function renderSpecialtyGrid() {
       if (quota && q !== quota) continue;
       for (const [spec, data] of Object.entries(specs)) {
         if (search && !spec.toLowerCase().includes(search)) continue;
+        // Compute pct_of_max from flatLookup rows
+        const rows = App.data.flatLookup.filter(r =>
+          r.program === prog && r.quota === q && r.specialty === spec
+        );
+        const pomVals  = rows.map(r => r.avg_pct_of_max).filter(v => v != null);
+        const latPom   = rows.map(r => r.latest_pct_of_max).filter(v => v != null);
+        data.avg_pct_of_max    = pomVals.length  ? pomVals.reduce((a, b) => a + b, 0) / pomVals.length  : null;
+        data.latest_pct_of_max = latPom.length   ? latPom.reduce((a, b) => a + b, 0) / latPom.length   : null;
         entries.push(data);
       }
     }
@@ -729,7 +1326,17 @@ function renderSpecialtyGrid() {
     return;
   }
 
-  grid.innerHTML = entries.map(e => `
+  grid.innerHTML = entries.map(e => {
+    const isCentile   = App.ui.explorerDisplayMode === 'centile';
+    const avgDisplay  = isCentile
+      ? (e.avg_pct_of_max    != null ? num(e.avg_pct_of_max,    1) + '%' : '—')
+      : num(e.avg_closing_merit);
+    const latDisplay  = isCentile
+      ? (e.latest_pct_of_max != null ? num(e.latest_pct_of_max, 1) + '%' : '—')
+      : num(e.latest_avg_closing);
+    const avgLabel    = isCentile ? 'Avg % of Max' : 'Avg Merit';
+    const latLabel    = isCentile ? 'Latest % of Max' : 'Latest Avg';
+    return `
     <div class="spec-card"
          data-program="${esc(e.program)}"
          data-quota="${esc(e.quota)}"
@@ -738,16 +1345,16 @@ function renderSpecialtyGrid() {
          role="button"
          aria-label="View ${esc(e.specialty)} details">
       <h4>${esc(e.specialty)}</h4>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px">${esc(e.program)} · ${esc(e.quota)}</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px">${esc(e.program)} \u00b7 ${esc(e.quota)}</div>
       ${compBadge(e.competitiveness)}
       <div class="card-meta">
         <div class="card-stat">
-          <span class="card-stat-label">Avg Merit</span>
-          <span class="card-stat-value">${num(e.avg_closing_merit)}</span>
+          <span class="card-stat-label">${avgLabel}</span>
+          <span class="card-stat-value">${avgDisplay}</span>
         </div>
         <div class="card-stat">
-          <span class="card-stat-label">Latest Avg</span>
-          <span class="card-stat-value">${num(e.latest_avg_closing)}</span>
+          <span class="card-stat-label">${latLabel}</span>
+          <span class="card-stat-value">${latDisplay}</span>
         </div>
         <div class="card-stat">
           <span class="card-stat-label">Hospitals</span>
@@ -759,7 +1366,7 @@ function renderSpecialtyGrid() {
         </div>
       </div>
     </div>
-  `).join('');
+  `}).join('');
 
   grid.querySelectorAll('.spec-card').forEach(card => {
     const open = () => openSpecialtyModal(
@@ -771,56 +1378,152 @@ function renderSpecialtyGrid() {
 }
 
 function openSpecialtyModal(program, quota, specialty) {
-  const modal   = document.getElementById('specialtyModal');
-  const title   = document.getElementById('specModalTitle');
-  const stats   = document.getElementById('specModalStats');
-  const tbody   = document.getElementById('specHospitalBody');
+  const modal  = document.getElementById('specialtyModal');
+  const title  = document.getElementById('specModalTitle');
+  const stats  = document.getElementById('specModalStats');
 
   title.textContent = `${specialty} — ${program} · ${quota}`;
 
-  // Gather hospital rows for this specialty
-  const hospitals = App.data.flatLookup.filter(r =>
+  // Full hospital rows for this specialty
+  const allHospRows = App.data.flatLookup.filter(r =>
     r.program === program && r.quota === quota && r.specialty === specialty
   );
 
-  // Stats
-  const avgMerit  = hospitals.reduce((s, r) => s + r.avg_closing_merit, 0) / hospitals.length;
-  const latestAvg = hospitals.reduce((s, r) => s + r.latest_merit, 0) / hospitals.length;
-  const totalSeats = hospitals.reduce((s, r) => {
-    const ys = Object.values(r.yearly_seats || {});
-    return s + (ys.length ? ys[ys.length - 1] : 0);
-  }, 0);
+  // Collect all years across these rows
+  const allYears = [...new Set(
+    allHospRows.flatMap(r => Object.keys(r.yearly_merit || {}).map(Number))
+  )].sort((a, b) => a - b);
 
-  stats.innerHTML = `
-    <div class="modal-stat"><div class="modal-stat-val">${hospitals.length}</div><div class="modal-stat-lbl">Hospitals</div></div>
-    <div class="modal-stat"><div class="modal-stat-val">${num(avgMerit)}</div><div class="modal-stat-lbl">Avg Merit</div></div>
-    <div class="modal-stat"><div class="modal-stat-val">${num(latestAvg)}</div><div class="modal-stat-lbl">Latest Avg</div></div>
-    <div class="modal-stat"><div class="modal-stat-val">${totalSeats}</div><div class="modal-stat-lbl">Total Seats</div></div>
-  `;
+  // Populate hospital filter
+  const hospSel = document.getElementById('specModalHospFilter');
+  hospSel.innerHTML = '<option value="">All Hospitals</option>' +
+    allHospRows.map(r => `<option value="${esc(r.hospital)}">${esc(r.hospital)}</option>`).join('');
 
-  // Table
-  tbody.innerHTML = hospitals
-    .sort((a, b) => b.avg_closing_merit - a.avg_closing_merit)
-    .map(r => {
+  // Populate year filter
+  const yearSel = document.getElementById('specModalYearFilter');
+  yearSel.innerHTML = '<option value="">All Years</option>' +
+    allYears.map(y => `<option value="${y}">${y}</option>`).join('');
+
+  // Display mode (pct / raw)
+  let displayMode = 'pct';
+
+  function getDisplayVal(row, year = null) {
+    if (year) {
+      const raw = row.yearly_merit?.[String(year)] ?? null;
+      if (raw == null) return null;
+      if (displayMode === 'pct') {
+        const max = YEAR_TOTAL_MAX[year];
+        return max ? (raw / max) * 100 : raw;
+      }
+      return raw;
+    }
+    return displayMode === 'pct'
+      ? (row.avg_pct_of_max ?? row.avg_closing_merit)
+      : row.avg_closing_merit;
+  }
+
+  function getLatestVal(row) {
+    if (displayMode === 'pct') return row.latest_pct_of_max ?? row.latest_merit;
+    return row.latest_merit;
+  }
+
+  function valLabel() { return displayMode === 'pct' ? '% of Max' : 'Merit'; }
+
+  function render() {
+    const hospFilter = hospSel.value;
+    const yearFilter = yearSel.value ? Number(yearSel.value) : null;
+
+    let rows = hospFilter
+      ? allHospRows.filter(r => r.hospital === hospFilter)
+      : allHospRows;
+
+    // Stats (always from full set)
+    const avgVal  = allHospRows.reduce((s, r) => s + (getDisplayVal(r) ?? 0), 0) / allHospRows.length;
+    const latVal  = allHospRows.reduce((s, r) => s + (getLatestVal(r) ?? 0), 0) / allHospRows.length;
+    const totalSeats = allHospRows.reduce((s, r) => {
+      const ys = Object.values(r.yearly_seats || {});
+      return s + (ys.length ? ys[ys.length - 1] : 0);
+    }, 0);
+    stats.innerHTML = `
+      <div class="modal-stat"><div class="modal-stat-val">${allHospRows.length}</div><div class="modal-stat-lbl">Hospitals</div></div>
+      <div class="modal-stat"><div class="modal-stat-val">${num(avgVal, 1)}${displayMode==='pct'?'%':''}</div><div class="modal-stat-lbl">Avg ${valLabel()}</div></div>
+      <div class="modal-stat"><div class="modal-stat-val">${num(latVal, 1)}${displayMode==='pct'?'%':''}</div><div class="modal-stat-lbl">Latest Avg ${valLabel()}</div></div>
+      <div class="modal-stat"><div class="modal-stat-val">${totalSeats}</div><div class="modal-stat-lbl">Total Seats</div></div>
+    `;
+
+    // Column headers
+    const suffix = displayMode === 'pct' ? '% of Max' : 'Merit';
+    document.getElementById('specColAvg').textContent    = `Avg ${suffix}`;
+    document.getElementById('specColLatest').textContent = `Latest ${suffix}`;
+
+    // Main trend chart
+    Charts.drawSpecTrendChart(rows, specialty, displayMode, yearFilter);
+
+    // Table
+    const tbody = document.getElementById('specHospitalBody');
+    const sortedRows = [...rows].sort((a, b) => (getDisplayVal(b) ?? 0) - (getDisplayVal(a) ?? 0));
+    tbody.innerHTML = sortedRows.map(r => {
+      const avgDisplay = yearFilter
+        ? (getDisplayVal(r, yearFilter) != null ? num(getDisplayVal(r, yearFilter), 1) + (displayMode==='pct'?'%':'') : '—')
+        : (getDisplayVal(r) != null ? num(getDisplayVal(r), 1) + (displayMode==='pct'?'%':'') : '—');
+      const latDisplay = num(getLatestVal(r), 1) + (displayMode==='pct'?'%':'');
       const ys = r.yearly_seats || {};
-      const latestSeatYr = Object.keys(ys).sort().pop();
-      const latestSeats  = latestSeatYr ? ys[latestSeatYr] : '—';
+      const latSeat = Object.keys(ys).sort().pop();
+      const seats = latSeat ? ys[latSeat] : '—';
       return `
-        <tr>
+        <tr class="clickable-row" data-hospital="${esc(r.hospital)}" title="Click to see yearly trend">
           <td>${esc(r.hospital)}</td>
-          <td><strong>${num(r.avg_closing_merit)}</strong></td>
-          <td>${num(r.latest_merit)}</td>
-          <td>${latestSeats}</td>
+          <td><strong>${avgDisplay}</strong></td>
+          <td>${latDisplay}</td>
+          <td>${seats}</td>
           <td>${trendBadge(r.trend)}</td>
           <td>${volBadge(r.volatility)}</td>
-        </tr>
-      `;
+        </tr>`;
     }).join('');
 
-  // Trend chart
-  Charts.drawSpecTrendChart(hospitals, specialty);
+    // Row click → drill down
+    tbody.querySelectorAll('.clickable-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const hosp = row.dataset.hospital;
+        const hospRow = allHospRows.find(r => r.hospital === hosp);
+        if (!hospRow) return;
+        const drillArea  = document.getElementById('specDrillArea');
+        const drillTitle = document.getElementById('specDrillTitle');
+        const prevActive = tbody.querySelector('.clickable-row.active');
+        if (prevActive === row && !drillArea.classList.contains('hidden')) {
+          drillArea.classList.add('hidden');
+          row.classList.remove('active');
+          return;
+        }
+        tbody.querySelectorAll('.clickable-row').forEach(r => r.classList.remove('active'));
+        row.classList.add('active');
+        drillTitle.textContent = `${hosp} — yearly trend`;
+        drillArea.classList.remove('hidden');
+        Charts.drawDrillYearlyChart('specDrillChart', hospRow, displayMode);
+      });
+    });
+  }
 
-  modal.classList.remove('hidden');
+  // Wire filters
+  hospSel.onchange = render;
+  yearSel.onchange = render;
+
+  // Wire display toggle
+  modal.querySelectorAll('.modal-toggle-btn[data-modal-view="spec"]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.view === displayMode);
+    btn.onclick = () => {
+      displayMode = btn.dataset.view;
+      modal.querySelectorAll('.modal-toggle-btn[data-modal-view="spec"]').forEach(b =>
+        b.classList.toggle('active', b === btn));
+      render();
+    };
+  });
+
+  // Reset drill area on open
+  document.getElementById('specDrillArea').classList.add('hidden');
+
+  render();
+  openModal(modal);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -832,10 +1535,20 @@ function setupHospitalTab() {
   document.getElementById('hospSearch').addEventListener('input', renderHospitalGrid);
 
   document.getElementById('hospModalClose').addEventListener('click', () => {
-    document.getElementById('hospitalModal').classList.add('hidden');
+    closeModal(document.getElementById('hospitalModal'));
   });
   document.getElementById('hospModalOverlay').addEventListener('click', () => {
-    document.getElementById('hospitalModal').classList.add('hidden');
+    closeModal(document.getElementById('hospitalModal'));
+  });
+
+  // Centile / raw toggle
+  document.querySelectorAll('.explorer-view-btn[data-tab="hosp"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      App.ui.explorerDisplayMode = btn.dataset.view;
+      document.querySelectorAll('.explorer-view-btn[data-tab="hosp"]')
+              .forEach(b => b.classList.toggle('active', b === btn));
+      renderHospitalGrid();
+    });
   });
 }
 
@@ -865,8 +1578,12 @@ function renderHospitalGrid() {
   const sorted = [...hospMap.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 
   grid.innerHTML = sorted.map(([hosp, data]) => {
-    const avgMerit = data.rows.reduce((s, r) => s + r.avg_closing_merit, 0) / data.rows.length;
-    const programs = [...new Set(data.rows.map(r => r.program))].join(', ');
+    const avgMerit    = data.rows.reduce((s, r) => s + r.avg_closing_merit, 0) / data.rows.length;
+    const programs    = [...new Set(data.rows.map(r => r.program))].join(', ');
+    const isCentile   = App.ui.explorerDisplayMode === 'centile';
+    const avgPom      = data.rows.reduce((s, r) => s + (r.avg_pct_of_max ?? 0), 0) / data.rows.length;
+    const avgDisplay  = isCentile ? num(avgPom, 1) + '%' : num(avgMerit);
+    const avgLabel    = isCentile ? 'Avg % of Max' : 'Avg Merit';
     return `
       <div class="hosp-card"
            data-hospital="${esc(hosp)}"
@@ -882,8 +1599,8 @@ function renderHospitalGrid() {
             <span class="card-stat-value">${data.specialties.size}</span>
           </div>
           <div class="card-stat">
-            <span class="card-stat-label">Avg Merit</span>
-            <span class="card-stat-value">${num(avgMerit)}</span>
+            <span class="card-stat-label">${avgLabel}</span>
+            <span class="card-stat-value">${avgDisplay}</span>
           </div>
         </div>
       </div>
@@ -898,35 +1615,125 @@ function renderHospitalGrid() {
 }
 
 function openHospitalModal(hospital, program) {
-  const rows = App.data.flatLookup.filter(r =>
+  const allRows = App.data.flatLookup.filter(r =>
     r.hospital === hospital && (!program || r.program === program)
   );
 
   document.getElementById('hospModalTitle').textContent = hospital;
 
-  const tbody = document.getElementById('hospSpecBody');
-  tbody.innerHTML = rows
-    .sort((a, b) => b.avg_closing_merit - a.avg_closing_merit)
-    .map(r => {
+  // Collect all years and specialties
+  const allYears = [...new Set(
+    allRows.flatMap(r => Object.keys(r.yearly_merit || {}).map(Number))
+  )].sort((a, b) => a - b);
+
+  const specSel = document.getElementById('hospModalSpecFilter');
+  specSel.innerHTML = '<option value="">All Specialties</option>' +
+    [...new Set(allRows.map(r => r.specialty))].sort()
+      .map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+
+  const yearSel = document.getElementById('hospModalYearFilter');
+  yearSel.innerHTML = '<option value="">All Years</option>' +
+    allYears.map(y => `<option value="${y}">${y}</option>`).join('');
+
+  let displayMode = 'pct';
+
+  function getDisplayVal(row, year = null) {
+    if (year) {
+      const raw = row.yearly_merit?.[String(year)] ?? null;
+      if (raw == null) return null;
+      if (displayMode === 'pct') {
+        const max = YEAR_TOTAL_MAX[year];
+        return max ? (raw / max) * 100 : raw;
+      }
+      return raw;
+    }
+    return displayMode === 'pct'
+      ? (row.avg_pct_of_max ?? row.avg_closing_merit)
+      : row.avg_closing_merit;
+  }
+
+  function getLatestVal(row) {
+    return displayMode === 'pct' ? (row.latest_pct_of_max ?? row.latest_merit) : row.latest_merit;
+  }
+
+  function render() {
+    const specFilter = specSel.value;
+    const yearFilter = yearSel.value ? Number(yearSel.value) : null;
+
+    let rows = specFilter ? allRows.filter(r => r.specialty === specFilter) : allRows;
+
+    // Column headers
+    const suffix = displayMode === 'pct' ? '% of Max' : 'Merit';
+    document.getElementById('hospColAvg').textContent    = `Avg ${suffix}`;
+    document.getElementById('hospColLatest').textContent = `Latest ${suffix}`;
+
+    // Main chart
+    Charts.drawHospSpecChart(rows, hospital, displayMode, yearFilter);
+
+    // Table
+    const tbody = document.getElementById('hospSpecBody');
+    const sortedRows = [...rows].sort((a, b) => (getDisplayVal(b) ?? 0) - (getDisplayVal(a) ?? 0));
+    tbody.innerHTML = sortedRows.map(r => {
+      const avgDisplay = yearFilter
+        ? (getDisplayVal(r, yearFilter) != null ? num(getDisplayVal(r, yearFilter), 1) + (displayMode==='pct'?'%':'') : '—')
+        : (getDisplayVal(r) != null ? num(getDisplayVal(r), 1) + (displayMode==='pct'?'%':'') : '—');
+      const latDisplay = num(getLatestVal(r), 1) + (displayMode==='pct'?'%':'');
       const ys = r.yearly_seats || {};
-      const latestSeatYr = Object.keys(ys).sort().pop();
-      const latestSeats  = latestSeatYr ? ys[latestSeatYr] : '—';
+      const latSeat = Object.keys(ys).sort().pop();
+      const seats = latSeat ? ys[latSeat] : '—';
       return `
-        <tr>
+        <tr class="clickable-row" data-specialty="${esc(r.specialty)}" data-quota="${esc(r.quota)}" title="Click to see yearly trend">
           <td>${esc(r.specialty)}</td>
           <td>${esc(r.quota)}</td>
-          <td><strong>${num(r.avg_closing_merit)}</strong></td>
-          <td>${num(r.latest_merit)}</td>
-          <td>${latestSeats}</td>
+          <td><strong>${avgDisplay}</strong></td>
+          <td>${latDisplay}</td>
+          <td>${seats}</td>
           <td>${trendBadge(r.trend)}</td>
-        </tr>
-      `;
+        </tr>`;
     }).join('');
 
-  // Chart
-  Charts.drawHospSpecChart(rows, hospital);
+    // Row click → drill down
+    tbody.querySelectorAll('.clickable-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const spec  = row.dataset.specialty;
+        const quota = row.dataset.quota;
+        const specRow = allRows.find(r => r.specialty === spec && r.quota === quota);
+        if (!specRow) return;
+        const drillArea  = document.getElementById('hospDrillArea');
+        const drillTitle = document.getElementById('hospDrillTitle');
+        const prevActive = tbody.querySelector('.clickable-row.active');
+        if (prevActive === row && !drillArea.classList.contains('hidden')) {
+          drillArea.classList.add('hidden');
+          row.classList.remove('active');
+          return;
+        }
+        tbody.querySelectorAll('.clickable-row').forEach(r => r.classList.remove('active'));
+        row.classList.add('active');
+        drillTitle.textContent = `${spec} (${quota}) — yearly trend`;
+        drillArea.classList.remove('hidden');
+        Charts.drawDrillYearlyChart('hospDrillChart', specRow, displayMode);
+      });
+    });
+  }
 
-  document.getElementById('hospitalModal').classList.remove('hidden');
+  specSel.onchange = render;
+  yearSel.onchange = render;
+
+  const modal = document.getElementById('hospitalModal');
+  modal.querySelectorAll('.modal-toggle-btn[data-modal-view="hosp"]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.view === displayMode);
+    btn.onclick = () => {
+      displayMode = btn.dataset.view;
+      modal.querySelectorAll('.modal-toggle-btn[data-modal-view="hosp"]').forEach(b =>
+        b.classList.toggle('active', b === btn));
+      render();
+    };
+  });
+
+  document.getElementById('hospDrillArea').classList.add('hidden');
+
+  render();
+  openModal(modal);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -954,6 +1761,32 @@ function setupTrendsTab() {
     renderTrendsTab();
   });
   trendHosp.addEventListener('change', renderTrendsTab);
+
+  // Percentile / raw toggle
+  document.getElementById('trendModeRaw')?.addEventListener('click', () => {
+    App.ui.trendMode = 'raw';
+    document.getElementById('trendModeRaw').classList.add('active');
+    document.getElementById('trendModePercentile').classList.remove('active');
+    const hint = document.getElementById('trendModeHint');
+    if (hint) hint.textContent = 'Raw merit values — not directly comparable across years (different scoring formulas).';
+    renderTrendsTab();
+  });
+  document.getElementById('trendModePercentile')?.addEventListener('click', () => {
+    App.ui.trendMode = 'percentile';
+    document.getElementById('trendModePercentile').classList.add('active');
+    document.getElementById('trendModeRaw').classList.remove('active');
+    const hint = document.getElementById('trendModeHint');
+    if (hint) hint.textContent = 'Percentile rank within each year\'s cohort — cross-year comparable even when scoring formula changed.';
+    renderTrendsTab();
+  });
+
+  // Set initial toggle state
+  const rawBtn = document.getElementById('trendModeRaw');
+  const pctBtn = document.getElementById('trendModePercentile');
+  if (rawBtn && pctBtn) {
+    rawBtn.classList.toggle('active', App.ui.trendMode === 'raw');
+    pctBtn.classList.toggle('active', App.ui.trendMode === 'percentile');
+  }
 }
 
 function renderTrendsTab() {
@@ -974,6 +1807,7 @@ function renderTrendsTab() {
   if (!specialty && rows.length === 0) {
     note.textContent = 'Select a specialty to view closing merit trends.';
     Charts.clearChart('trendLineChart');
+    updatePolicyAnnotation([]);
     return;
   }
 
@@ -981,8 +1815,39 @@ function renderTrendsTab() {
     ? `Showing trend for ${rows[0].hospital}`
     : `Showing trends for ${rows.length} hospitals`;
 
-  Charts.drawTrendLineChart(rows);
+  Charts.drawTrendLineChart(rows, App.ui.trendMode);
   Charts.drawVolatilityChart(rows.length > 0 ? rows : App.data.flatLookup.slice(0, 50));
+  updatePolicyAnnotation(rows);
+}
+
+function updatePolicyAnnotation(rows) {
+  const annEl = document.getElementById('trendPolicyAnnotation');
+  if (!annEl) return;
+  const sp = App.data.scoringPolicy;
+  if (!sp || !sp.policies) { annEl.classList.add('hidden'); return; }
+
+  // Collect all years that appear in these rows
+  const years = new Set();
+  for (const row of rows) {
+    Object.keys(row.yearly_merit || {}).forEach(y => years.add(Number(y)));
+  }
+  if (!years.size) { annEl.classList.add('hidden'); return; }
+
+  const sortedYears = [...years].sort((a, b) => a - b);
+  let lastLabel = null;
+  const chips = sortedYears.map(yr => {
+    const pol = sp.policies[yr] || sp.policies[String(yr)];
+    if (!pol) return '';
+    const label = pol.label || String(yr);
+    if (label === lastLabel) return '';
+    lastLabel = label;
+    const included = (pol.components || []).filter(c => c.included !== false).map(c => c.label).join(', ');
+    return `<span class="trend-anno-chip" title="${esc(included)}">${esc(yr)}: ${esc(pol.notes || label)}</span>`;
+  }).filter(Boolean).join('');
+
+  if (!chips) { annEl.classList.add('hidden'); return; }
+  annEl.innerHTML = `<span class="trend-anno-label">\ud83d\udccc Policy per year:</span> ${chips}`;
+  annEl.classList.remove('hidden');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1053,9 +1918,12 @@ function runStrategy() {
 
   if (isNaN(merit)) { alert('Please enter a valid merit score.'); return; }
 
-  const results = predictOptions(merit, program, quota, 'latest');
-  const allMerits = results.map(r => r.used_closing_merit).filter(Boolean);
-  const band = getMeritBand(merit, allMerits);
+  // Use centile mode: convert user score to % of active policy max, compare against avg_pct_of_max.
+  // This ensures cross-induction comparability regardless of which scoring formula changed.
+  const results  = predictOptions(merit, program, quota, 'latest', 'centile');
+  const userPct  = results[0]?.user_pct_of_max ?? null;
+  const allPcts  = results.map(r => r.used_pct_of_max).filter(v => v != null);
+  const band     = userPct != null ? getMeritBand(userPct, allPcts) : getMeritBand(merit, []);
 
   // Show band card
   const bandCard = document.getElementById('stratBandCard');
@@ -1065,13 +1933,13 @@ function runStrategy() {
   document.getElementById('stratBandDesc').textContent   = band.desc;
   bandCard.classList.remove('hidden');
 
-  // Categorize
-  // Safe: user merit is clearly above closing (delta >= +1.5)
-  // Moderate: delta between -2 and +1.5
-  // Ambitious: delta between -5 and -2
-  const safe      = results.filter(r => r.delta >= 1.5);
-  const moderate  = results.filter(r => r.delta >= -2.0 && r.delta < 1.5);
-  const ambitious = results.filter(r => r.delta >= -5.0 && r.delta < -2.0);
+  // Categorize by delta in % units:
+  // Safe:      delta >= +3%   (clearly above historical threshold)
+  // Moderate:  delta  -2% to +3%
+  // Ambitious: delta  -8% to -2%
+  const safe      = results.filter(r => r.delta >= 3.0);
+  const moderate  = results.filter(r => r.delta >= -2.0 && r.delta < 3.0);
+  const ambitious = results.filter(r => r.delta >= -8.0 && r.delta < -2.0);
 
   safe.sort((a, b)      => b.delta - a.delta);
   moderate.sort((a, b)  => b.delta - a.delta);
@@ -1081,13 +1949,14 @@ function runStrategy() {
     if (arr.length === 0) return '<p style="color:var(--text-light);font-size:0.82rem;padding:8px">None in this category</p>';
     return arr.slice(0, 25).map(r => {
       const gapCls = r.delta >= 0 ? 'gap-positive' : r.delta >= -2 ? 'gap-small' : 'gap-negative';
-      const gapStr = r.delta >= 0 ? `+${num(r.delta)}` : num(r.delta);
+      const gapStr = (r.delta >= 0 ? '+' : '') + num(r.delta, 1) + '%';
+      const dispVal = r.used_pct_of_max != null ? num(r.used_pct_of_max, 1) + '% of max' : num(r.used_closing_merit);
       return `
         <div class="strat-item">
           <div class="strat-item-specialty">${esc(r.specialty)}</div>
           <div class="strat-item-hospital">${esc(r.hospital)}</div>
           <div class="strat-item-meta">
-            <span>Closing: ${num(r.used_closing_merit)}</span>
+            <span>Avg closing: ${dispVal}</span>
             <span class="strat-item-gap ${gapCls}">Δ ${gapStr}</span>
           </div>
         </div>
@@ -1100,9 +1969,9 @@ function runStrategy() {
   document.getElementById('stratAmbitious').innerHTML = stratItems(ambitious);
   document.getElementById('strategyColumns').classList.remove('hidden');
 
-  // Strategy chart
+  // Strategy chart — pass pct values for correct scale
   document.getElementById('stratChartCard').style.display = 'block';
-  Charts.drawStrategyChart(merit, results.slice(0, 40));
+  Charts.drawStrategyChart(userPct ?? merit, results.slice(0, 40));
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1125,7 +1994,7 @@ function setupBackToTop() {
 // ═══════════════════════════════════════════════════════
 
 function setupKeyboardShortcuts() {
-  const TABS = ['predictor', 'specialty', 'hospital', 'trends', 'rankings', 'strategy', 'guide', 'tools'];
+  const TABS = ['predictor', 'specialty', 'hospital', 'trends', 'rankings', 'strategy', 'calculator', 'guide', 'policy', 'tools'];
   document.addEventListener('keydown', e => {
     const tag = (e.target.tagName || '').toLowerCase();
     if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
@@ -1137,8 +2006,7 @@ function setupKeyboardShortcuts() {
       return;
     }
     if (e.key === 'Escape') {
-      document.querySelectorAll('.modal:not(.hidden)').forEach(m => m.classList.add('hidden'));
-      document.getElementById('welcomeModal')?.classList.add('hidden');
+      document.querySelectorAll('.modal:not(.hidden)').forEach(m => closeModal(m));
     }
   });
 }

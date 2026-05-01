@@ -39,7 +39,9 @@
   <button class="tab-btn" data-tab="trends">📈 Trends</button>
   <button class="tab-btn" data-tab="rankings">🏆 Rankings</button>
   <button class="tab-btn" data-tab="strategy">🎯 Strategy Tool</button>
+  <button class="tab-btn" data-tab="calculator">🧮 Calculator</button>
   <button class="tab-btn" data-tab="guide">📖 Guide</button>
+  <button class="tab-btn" data-tab="policy">📋 Policy</button>
   <button class="tab-btn" data-tab="tools">🛠️ Tools</button>
 </nav>
 
@@ -175,8 +177,8 @@
               <th>Specialty</th>
               <th>Hospital</th>
               <th>Quota</th>
-              <th>Closing Merit <i class="info-btn" data-tip="closing">i</i></th>
-              <th>Avg Merit</th>
+              <th>Avg Closing <i class="info-btn" data-tip="closing">i</i><br><small style="font-weight:400;color:var(--text-muted)">% of Max</small></th>
+              <th>Hist. Avg <br><small style="font-weight:400;color:var(--text-muted)">% of Max</small></th>
               <th>Trend</th>
               <th>Volatility <i class="info-btn" data-tip="volatility">i</i></th>
               <th>Confidence <i class="info-btn" data-tip="confidence">i</i></th>
@@ -219,37 +221,13 @@
       </div>
     </div>
 
-    <div id="specialtyGrid" class="specialty-grid"></div>
-
-    <!-- Specialty Detail Modal -->
-    <div id="specialtyModal" class="modal hidden">
-      <div class="modal-overlay" id="specModalOverlay"></div>
-      <div class="modal-box">
-        <button class="modal-close" id="specModalClose">✕</button>
-        <h3 id="specModalTitle"></h3>
-        <div class="modal-body">
-          <div class="modal-stats" id="specModalStats"></div>
-          <div class="chart-container">
-            <canvas id="specTrendChart"></canvas>
-          </div>
-          <div class="modal-table-wrap">
-            <table class="data-table" id="specHospitalTable">
-              <thead>
-                <tr>
-                  <th>Hospital</th>
-                  <th>Avg Closing Merit</th>
-                  <th>Latest Merit</th>
-                  <th>Seats (latest)</th>
-                  <th>Trend</th>
-                  <th>Volatility</th>
-                </tr>
-              </thead>
-              <tbody id="specHospitalBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+    <div class="explorer-view-toggle">
+      <span class="explorer-toggle-label">Display:</span>
+      <button class="explorer-view-btn" data-tab="spec" data-view="raw">Raw Merit</button>
+      <button class="explorer-view-btn active" data-tab="spec" data-view="centile">% of Max</button>
     </div>
+
+    <div id="specialtyGrid" class="specialty-grid"></div>
   </section>
 
   <!-- ───────────── TAB: HOSPITAL EXPLORER ───────────── -->
@@ -274,36 +252,16 @@
       </div>
     </div>
 
+    <div class="explorer-view-toggle">
+      <span class="explorer-toggle-label">Display:</span>
+      <button class="explorer-view-btn" data-tab="hosp" data-view="raw">Raw Merit</button>
+      <button class="explorer-view-btn active" data-tab="hosp" data-view="centile">% of Max</button>
+    </div>
+
     <div id="hospitalGrid" class="hospital-grid"></div>
 
     <!-- Hospital Detail Modal -->
-    <div id="hospitalModal" class="modal hidden">
-      <div class="modal-overlay" id="hospModalOverlay"></div>
-      <div class="modal-box wide">
-        <button class="modal-close" id="hospModalClose">✕</button>
-        <h3 id="hospModalTitle"></h3>
-        <div class="modal-body">
-          <div class="chart-container">
-            <canvas id="hospSpecChart"></canvas>
-          </div>
-          <div class="modal-table-wrap">
-            <table class="data-table" id="hospSpecTable">
-              <thead>
-                <tr>
-                  <th>Specialty</th>
-                  <th>Quota</th>
-                  <th>Avg Closing Merit</th>
-                  <th>Latest Merit</th>
-                  <th>Seats (latest)</th>
-                  <th>Trend</th>
-                </tr>
-              </thead>
-              <tbody id="hospSpecBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
+
   </section>
 
   <!-- ───────────── TAB: TRENDS ───────────── -->
@@ -342,10 +300,20 @@
       </div>
     </div>
 
+    <!-- Percentile / Raw toggle -->
+    <div class="trend-toggle-bar">
+      <span class="trend-toggle-label">View mode:</span>
+      <button class="trend-toggle-btn active" id="trendModeRaw" data-mode="raw">📊 Raw Merit</button>
+      <button class="trend-toggle-btn" id="trendModePercentile" data-mode="percentile">📈 Percentile (Cross-Year)</button>
+      <span class="trend-toggle-hint" id="trendModeHint">Raw merit values — switch to Percentile for cross-year comparison</span>
+    </div>
+
     <div class="charts-grid">
       <div class="card chart-card full-width">
         <h3>Closing Merit Over Years</h3>
         <p class="chart-note" id="trendChartNote">Select a specialty to view trend</p>
+        <!-- Policy change annotation bar -->
+        <div id="trendPolicyAnnotation" class="trend-policy-annotation hidden"></div>
         <div class="chart-container tall">
           <canvas id="trendLineChart"></canvas>
         </div>
@@ -728,43 +696,284 @@
 
   </section>
 
+  <!-- ───────────── TAB: CALCULATOR ───────────── -->
+  <section class="tab-content" id="tab-calculator">
+    <div class="section-header">
+      <h2>Merit Calculator</h2>
+      <p>Estimate your merit score from individual components. Your saved score auto-populates the Predictor and Strategy tools.</p>
+    </div>
+
+    <!-- Saved merit banner -->
+    <div id="calcSavedBanner" class="calc-saved-banner hidden">
+      <span class="calc-saved-label">✅ Saved Merit:</span>
+      <strong class="calc-saved-score" id="calcSavedScore"></strong>
+      <span class="calc-saved-policy" id="calcSavedPolicy"></span>
+      <div class="calc-saved-actions">
+        <button class="btn btn-sm" id="calcUseSaved">Use in Predictor →</button>
+        <button class="btn btn-sm" id="calcUseStrategy">Use in Strategy →</button>
+        <button class="btn btn-sm btn-danger-soft" id="calcClearSaved">× Clear</button>
+      </div>
+    </div>
+
+    <!-- Active policy info bar -->
+    <div class="card calc-policy-info" id="calcPolicyInfo">
+      <div class="calc-policy-header">
+        <span class="badge badge-info calc-policy-badge" id="calcPolicyBadge">Loading…</span>
+        <strong id="calcPolicyLabel"></strong>
+        <span class="calc-policy-note" id="calcPolicyNote"></span>
+      </div>
+      <p class="calc-policy-warning hidden" id="calcPolicyWarning">
+        ⚠️ This is the <em>expected</em> policy for the upcoming induction and has <strong>not yet been officially confirmed</strong> by PHF.
+      </p>
+    </div>
+
+    <!-- Dynamic form (built by JS from scoring_policy.json) -->
+    <div class="card" id="calcFormCard">
+      <form id="calcForm" class="calc-form">
+        <p class="calc-form-loading">Loading policy…</p>
+      </form>
+      <div class="calc-actions">
+        <button class="btn btn-primary btn-large" id="calcRunBtn">Calculate Merit</button>
+        <button class="btn" id="calcResetBtn">Reset</button>
+      </div>
+    </div>
+
+    <!-- Result box -->
+    <div id="calcResult" class="calc-result-box hidden">
+      <div class="calc-result-score">
+        <div>
+          <span class="calc-result-label">Estimated Merit Score</span>
+          <div class="calc-result-value-row">
+            <span class="calc-result-value" id="calcResultValue">—</span>
+            <span class="calc-result-out" id="calcResultOut">/ 100</span>
+          </div>
+        </div>
+        <div class="calc-result-badge" id="calcResultBand"></div>
+      </div>
+      <div class="calc-result-breakdown" id="calcBreakdown"></div>
+      <div class="calc-result-actions">
+        <button class="btn btn-primary" id="calcSaveBtn">💾 Save &amp; Use in Predictor</button>
+        <button class="btn" id="calcStratBtn">🎯 Send to Strategy Tool</button>
+      </div>
+    </div>
+
+    <div class="guide-warning calc-disclaimer">
+      <strong>⚠️ Disclaimer:</strong> This calculator is based on publicly known PHF policy components. Your actual merit calculated by PHF may differ due to rounding, verification steps, or policy updates not yet reflected here. Always verify your official score directly with PHF.
+    </div>
+  </section>
+
+  <!-- ───────────── TAB: POLICY ───────────── -->
+  <section class="tab-content" id="tab-policy">
+    <div class="section-header">
+      <h2>Scoring Policy History</h2>
+      <p>How the merit formula evolved across induction cycles — and why raw closing merits across years are not directly comparable without percentile normalization.</p>
+    </div>
+
+    <!-- Why percentiles matter callout -->
+    <div class="card policy-percentile-callout">
+      <h3>📊 Why Trends Show Percentiles by Default</h3>
+      <p>The total marks and included components changed significantly across cycles (e.g., 95 marks in 2021 vs 100 in 2024; research included in some years but not others). A closing merit of <strong>32</strong> in 2021 is not the same as <strong>32</strong> in 2024. Percentile rank within each year's cohort gives a fair cross-year comparison.</p>
+    </div>
+
+    <!-- Component comparison table -->
+    <div class="card">
+      <h3>Component Comparison Across Years</h3>
+      <div class="table-wrap">
+        <table class="data-table" id="policyComparisonTable">
+          <tbody><tr><td style="color:var(--text-muted)">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Per-cycle cards (timeline) -->
+    <div id="policyTimeline" class="policy-timeline">
+      <!-- populated by JS -->
+    </div>
+  </section>
+
 </main>
 
 <!-- ═══════════════════════ GUIDE TAB ═══════════════════════ -->
 <!-- Note: rendered inside main by JS, but we inject the section after main for clarity -->
 
+<!-- ═══════════════════════ SPECIALTY MODAL ═══════════════════════ -->
+<div id="specialtyModal" class="modal hidden">
+  <div class="modal-overlay" id="specModalOverlay"></div>
+  <div class="modal-box wide">
+    <button class="modal-close" id="specModalClose">✕</button>
+    <h3 id="specModalTitle"></h3>
+    <div class="modal-body">
+      <div class="modal-stats" id="specModalStats"></div>
+
+      <!-- Filters row -->
+      <div class="modal-filters">
+        <div class="modal-filter-group">
+          <label>Hospital</label>
+          <select id="specModalHospFilter"><option value="">All Hospitals</option></select>
+        </div>
+        <div class="modal-filter-group">
+          <label>Year</label>
+          <select id="specModalYearFilter"><option value="">All Years</option></select>
+        </div>
+        <div class="modal-filter-group" style="align-self:flex-end">
+          <label>Display</label>
+          <div class="modal-toggle-group">
+            <button class="modal-toggle-btn active" data-modal-view="spec" data-view="pct">% of Max</button>
+            <button class="modal-toggle-btn" data-modal-view="spec" data-view="raw">Raw</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main trend chart: all hospitals over years -->
+      <div class="chart-container" style="margin-bottom:12px">
+        <canvas id="specTrendChart"></canvas>
+      </div>
+
+      <!-- Drill-down: selected hospital yearly breakdown -->
+      <div id="specDrillArea" class="modal-drill-area hidden">
+        <div class="modal-drill-title" id="specDrillTitle"></div>
+        <div class="chart-container" style="height:180px">
+          <canvas id="specDrillChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="modal-table-wrap">
+        <table class="data-table" id="specHospitalTable">
+          <thead>
+            <tr>
+              <th>Hospital</th>
+              <th id="specColAvg">Avg % of Max</th>
+              <th id="specColLatest">Latest % of Max</th>
+              <th>Seats (latest)</th>
+              <th>Trend</th>
+              <th>Volatility</th>
+            </tr>
+          </thead>
+          <tbody id="specHospitalBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ HOSPITAL MODAL ═══════════════════════ -->
+<div id="hospitalModal" class="modal hidden">
+  <div class="modal-overlay" id="hospModalOverlay"></div>
+  <div class="modal-box wide">
+    <button class="modal-close" id="hospModalClose">✕</button>
+    <h3 id="hospModalTitle"></h3>
+    <div class="modal-body">
+
+      <!-- Filters row -->
+      <div class="modal-filters">
+        <div class="modal-filter-group">
+          <label>Specialty</label>
+          <select id="hospModalSpecFilter"><option value="">All Specialties</option></select>
+        </div>
+        <div class="modal-filter-group">
+          <label>Year</label>
+          <select id="hospModalYearFilter"><option value="">All Years</option></select>
+        </div>
+        <div class="modal-filter-group" style="align-self:flex-end">
+          <label>Display</label>
+          <div class="modal-toggle-group">
+            <button class="modal-toggle-btn active" data-modal-view="hosp" data-view="pct">% of Max</button>
+            <button class="modal-toggle-btn" data-modal-view="hosp" data-view="raw">Raw</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main chart: specialties at this hospital -->
+      <div class="chart-container" style="margin-bottom:12px">
+        <canvas id="hospSpecChart"></canvas>
+      </div>
+
+      <!-- Drill-down: selected specialty yearly breakdown -->
+      <div id="hospDrillArea" class="modal-drill-area hidden">
+        <div class="modal-drill-title" id="hospDrillTitle"></div>
+        <div class="chart-container" style="height:180px">
+          <canvas id="hospDrillChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="modal-table-wrap">
+        <table class="data-table" id="hospSpecTable">
+          <thead>
+            <tr>
+              <th>Specialty</th>
+              <th>Quota</th>
+              <th id="hospColAvg">Avg % of Max</th>
+              <th id="hospColLatest">Latest % of Max</th>
+              <th>Seats (latest)</th>
+              <th>Trend</th>
+            </tr>
+          </thead>
+          <tbody id="hospSpecBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════════ WELCOME MODAL ═══════════════════════ -->
 <div id="welcomeModal" class="modal hidden">
   <div class="modal-overlay" id="welcomeOverlay"></div>
-  <div class="modal-box">
+  <div class="modal-box" style="max-width:640px">
     <div class="welcome-hero">
       <span class="welcome-icon">⚕️</span>
-      <h2>Welcome to PRP Merit Intelligence</h2>
-      <p>Your personal guide to understanding residency induction cutoffs — no medical knowledge required.</p>
+      <h2>Welcome to MeritNama</h2>
+      <p>Pakistan's residency induction analytics — 7 years of PHF merit data, all in one place.</p>
     </div>
+
     <div class="welcome-steps">
       <div class="welcome-step">
         <div class="step-num">1</div>
         <div class="step-text">
           <h4>Enter your merit score</h4>
-          <p>Go to <strong>Merit Predictor</strong> and type in your calculated merit score. We'll instantly show your chances for every specialty.</p>
+          <p>Go to <strong>Merit Predictor</strong> and enter your score under the <em>current</em> policy. The tool will automatically identify which policy applies and convert it to a <strong>% of maximum</strong>.</p>
         </div>
       </div>
+
       <div class="welcome-step">
         <div class="step-num">2</div>
         <div class="step-text">
-          <h4>Understand your results</h4>
-          <p><strong>✅ Very Likely</strong> = your score is safely above the cutoff. <strong>⚡ Close Call</strong> = borderline, but possible. <strong>❌ Difficult</strong> = cutoff is well above your score.</p>
+          <h4>Why % of max — not raw marks?</h4>
+          <p>The total marks changed drastically across years: <strong>95 marks</strong> (2020–2024) → <strong>60 marks</strong> (2025) → <strong>30–35 marks</strong> (2026). A raw score of 22 in 2026 is not the same as 22 in 2024. Converting every year's closing merit to <em>% of that year's maximum</em> makes all years directly comparable — a hospital that closes at 80% of max is equally competitive regardless of which year.</p>
         </div>
       </div>
+
       <div class="welcome-step">
         <div class="step-num">3</div>
         <div class="step-text">
-          <h4>Build your strategy</h4>
-          <p>Use the <strong>Strategy Tool</strong> to get a balanced shortlist of safe, moderate, and ambitious choices to apply to.</p>
+          <h4>How your score is compared</h4>
+          <p>Your raw score → converted to <strong>% of this year's max</strong>. Each hospital's historical closing merits are also expressed as % of their respective year's max, then averaged across all years. Your % is compared to each hospital's <strong>average historical %</strong> — giving you a cross-year, apples-to-apples prediction.</p>
+          <p style="margin-top:6px;font-size:0.82rem;color:var(--text-muted)">Example: You score 24/35 = <strong>68.6%</strong>. A hospital that historically closed at an average of 66% → you're +2.6% above its average → <em>Likely</em>.</p>
+        </div>
+      </div>
+
+      <div class="welcome-step">
+        <div class="step-num">4</div>
+        <div class="step-text">
+          <h4>Outcome labels explained</h4>
+          <p>
+            <strong>✅ Likely</strong> — your % is within 2.5 points of the hospital's avg %.<br>
+            <strong>⚡ Borderline</strong> — 2.5–8 points below the avg %.<br>
+            <strong>❌ Unlikely</strong> — more than 8 points below the avg %.
+          </p>
+        </div>
+      </div>
+
+      <div class="welcome-step">
+        <div class="step-num">5</div>
+        <div class="step-text">
+          <h4>Build your application strategy</h4>
+          <p>Use the <strong>Strategy Tool</strong> for a balanced shortlist: <em>Safe</em> (above avg), <em>Moderate</em> (near avg), and <em>Ambitious</em> (below avg but reachable) choices.</p>
         </div>
       </div>
     </div>
+
     <div class="welcome-actions">
       <button class="btn btn-primary" id="welcomeStart">Got It, Start! →</button>
       <button class="btn-ghost" id="welcomeSkip">Skip</button>

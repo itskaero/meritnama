@@ -1,0 +1,433 @@
+{
+  "2020": {
+    "year": 2020,
+    "policy_label": "2020 (Induction 8 -- Jul 2020)",
+    "policy_notes": "Pre-March 2021 policy. Formula inferred -- PART-I dominates at 40 marks. Total: 95 marks.",
+    "policy_tidbits": [
+      "PART-I is the dominant component at 40 marks -- FCPS/MD/MS performance is critical.",
+      "Matric + Intermediate contribute 12 marks -- early academic record counts.",
+      "Total out of 95 -- a closing merit of 85.68 corresponds to ~90.2% of the maximum."
+    ],
+    "active_components": [
+      "Matric / SSC",
+      "Intermediate / HSSC",
+      "MBBS / BDS Aggregate",
+      "FCPS Part-I / MD / MS / MDS Part-I",
+      "House Job",
+      "Parent Institute",
+      "Service Experience",
+      "University-Level Positions"
+    ],
+    "removed_components": [
+      "1st-Attempt MBBS Professionals",
+      "Hard Area Service",
+      "MDCAT Score",
+      "FCPS Part-I / JCAT (pass/fail)"
+    ],
+    "total_marks": 95,
+    "programs": {
+      "FCPS": {
+        "count": 363,
+        "mean": 67.6529,
+        "stddev": 9.2565,
+        "min": 44.0696,
+        "p25": 60.6057,
+        "p50": 69.025,
+        "p75": 75.4583,
+        "max": 84.55
+      },
+      "MD": {
+        "count": 132,
+        "mean": 64.2081,
+        "stddev": 8.1922,
+        "min": 43.2032,
+        "p25": 59.8325,
+        "p50": 65.0175,
+        "p75": 70.3458,
+        "max": 80.8275
+      },
+      "MS": {
+        "count": 174,
+        "mean": 58.4996,
+        "stddev": 7.7048,
+        "min": 40.4682,
+        "p25": 52.7296,
+        "p50": 58.7152,
+        "p75": 64.4892,
+        "max": 77.7167
+      }
+    }
+  },
+  "2021": {
+    "year": 2021,
+    "policy_label": "2021 (Inductions 9--10)",
+    "policy_notes": "Original March 2021 PPM. PART-I (40 marks) + Matric/Inter/MBBS aggregate + house job + parent institute + experience + university positions. Total: 95 marks.",
+    "policy_tidbits": [
+      "PART-I exam result is the largest single component at 40 marks -- FCPS-I pass awarded full 40 marks.",
+      "Matric (5) + Intermediate (7) = 12 marks -- early academic record matters.",
+      "MBBS aggregate (20 marks) rewards consistent professional exam performance.",
+      "University positions: 0.6 pts/position (MBBS), 0.75 pts/position (BDS) at university level only.",
+      "Total out of 95, not 100. Observed max: 80.68 (Jan 2021), 80.68 (Jul 2021)."
+    ],
+    "active_components": [
+      "Matric / SSC",
+      "Intermediate / HSSC",
+      "MBBS / BDS Aggregate",
+      "FCPS Part-I / MD / MS / MDS Part-I",
+      "House Job",
+      "Parent Institute",
+      "Service Experience",
+      "University-Level Positions"
+    ],
+    "removed_components": [
+      "1st-Attempt MBBS Professionals",
+      "Hard Area Service",
+      "MDCAT Score",
+      "FCPS Part-I / JCAT (pass/fail)"
+    ],
+    "total_marks": 95,
+    "programs": {
+      "FCPS": {
+        "count": 412,
+        "mean": 64.2573,
+        "stddev": 8.4341,
+        "min": 42.0348,
+        "p25": 58.4458,
+        "p50": 64.9875,
+        "p75": 71.1571,
+        "max": 80.4042
+      },
+      "MD": {
+        "count": 150,
+        "mean": 55.5819,
+        "stddev": 8.0377,
+        "min": 40.9,
+        "p25": 49.4733,
+        "p50": 53.8317,
+        "p75": 62.2733,
+        "max": 77.1858
+      },
+      "MS": {
+        "count": 187,
+        "mean": 53.2291,
+        "stddev": 6.8506,
+        "min": 37.5379,
+        "p25": 48.3925,
+        "p50": 53.424,
+        "p75": 57.1475,
+        "max": 74.1033
+      }
+    }
+  },
+  "2022": {
+    "year": 2022,
+    "policy_label": "2022 (Inductions 11--12)",
+    "policy_notes": "Same March 2021 PPM formula. Total: 95 marks. Observed max: 77.93 (Jan 2022), 80.61 (Jul 2022).",
+    "policy_tidbits": [
+      "Formula identical to 2021 -- consistent year-on-year for inductions 9--14.",
+      "PART-I (40 marks) + Matric + Inter + MBBS aggregate dominates the formula.",
+      "Jan 2022 observed max: 77.93. Jul 2022 observed max: 80.61."
+    ],
+    "active_components": [
+      "Matric / SSC",
+      "Intermediate / HSSC",
+      "MBBS / BDS Aggregate",
+      "FCPS Part-I / MD / MS / MDS Part-I",
+      "House Job",
+      "Parent Institute",
+      "Service Experience",
+      "University-Level Positions"
+    ],
+    "removed_components": [
+      "1st-Attempt MBBS Professionals",
+      "Hard Area Service",
+      "MDCAT Score",
+      "FCPS Part-I / JCAT (pass/fail)"
+    ],
+    "total_marks": 95,
+    "programs": {
+      "FCPS": {
+        "count": 419,
+        "mean": 61.6796,
+        "stddev": 8.5764,
+        "min": 43.6,
+        "p25": 54.3958,
+        "p50": 64.6542,
+        "p75": 68.6667,
+        "max": 76.0917
+      },
+      "MD": {
+        "count": 172,
+        "mean": 56.3384,
+        "stddev": 7.7631,
+        "min": 39.0574,
+        "p25": 50.7075,
+        "p50": 55.4026,
+        "p75": 62.3683,
+        "max": 73.6058
+      },
+      "MS": {
+        "count": 217,
+        "mean": 52.3579,
+        "stddev": 6.1233,
+        "min": 37.2901,
+        "p25": 48.3725,
+        "p50": 51.218,
+        "p75": 57.8375,
+        "max": 68.025
+      }
+    }
+  },
+  "2023": {
+    "year": 2023,
+    "policy_label": "2023 (Inductions 13--14)",
+    "policy_notes": "Same formula as 2021--2022. Highest observed max in PART-I era: 87.94 (Jan 2023). Total: 95 marks.",
+    "policy_tidbits": [
+      "Highest observed max merit in PART-I era: 87.94 in Jan 2023 -- most competitive PART-I cohort.",
+      "Formula unchanged from previous two years -- strong cross-year comparability.",
+      "Jul 2023 observed max: 84.98 -- slight decrease from Jan 2023."
+    ],
+    "active_components": [
+      "Matric / SSC",
+      "Intermediate / HSSC",
+      "MBBS / BDS Aggregate",
+      "FCPS Part-I / MD / MS / MDS Part-I",
+      "House Job",
+      "Parent Institute",
+      "Service Experience",
+      "University-Level Positions"
+    ],
+    "removed_components": [
+      "1st-Attempt MBBS Professionals",
+      "Hard Area Service",
+      "MDCAT Score",
+      "FCPS Part-I / JCAT (pass/fail)"
+    ],
+    "total_marks": 95,
+    "programs": {
+      "FCPS": {
+        "count": 425,
+        "mean": 73.7189,
+        "stddev": 6.9943,
+        "min": 53.6148,
+        "p25": 70.659,
+        "p50": 74.7526,
+        "p75": 78.275,
+        "max": 84.9806
+      },
+      "MD": {
+        "count": 180,
+        "mean": 58.5663,
+        "stddev": 7.0343,
+        "min": 38.8529,
+        "p25": 56.96,
+        "p50": 59.8613,
+        "p75": 62.9837,
+        "max": 70.9119
+      },
+      "MS": {
+        "count": 214,
+        "mean": 56.5688,
+        "stddev": 6.047,
+        "min": 38.8529,
+        "p25": 54.9537,
+        "p50": 58.095,
+        "p75": 60.1157,
+        "max": 68.1292
+      }
+    }
+  },
+  "2024": {
+    "year": 2024,
+    "policy_label": "2024 (Inductions 15--16)",
+    "policy_notes": "May 2024 PPM superseded all prior policies but maintained the same formula at 95 marks. Jan 2024 amendment (attempts_in_mbbs) was short-lived.",
+    "policy_tidbits": [
+      "New PPM issued May 2024 officially repealed March 2021 policy, but scoring formula is unchanged.",
+      "Jan 2024 amendment briefly added 'Attempts in MBBS' (5 marks, total 100) -- then removed in May 2024 PPM.",
+      "To model Jan 2024 (Ind 15): enable 'attempts_in_mbbs' and set total_marks to 100.",
+      "Observed max 2024: 85.92 out of 95 -- consistent with prior PART-I era years."
+    ],
+    "active_components": [
+      "Matric / SSC",
+      "Intermediate / HSSC",
+      "MBBS / BDS Aggregate",
+      "FCPS Part-I / MD / MS / MDS Part-I",
+      "House Job",
+      "Parent Institute",
+      "Service Experience",
+      "University-Level Positions"
+    ],
+    "removed_components": [
+      "1st-Attempt MBBS Professionals (Ind 15 only)",
+      "Hard Area Service",
+      "MDCAT Score",
+      "FCPS Part-I / JCAT (pass/fail)"
+    ],
+    "total_marks": 95,
+    "programs": {
+      "FCPS": {
+        "count": 443,
+        "mean": 74.8149,
+        "stddev": 4.447,
+        "min": 52.9928,
+        "p25": 71.5977,
+        "p50": 75.4364,
+        "p75": 76.9638,
+        "max": 85.7476
+      },
+      "MD": {
+        "count": 175,
+        "mean": 63.2686,
+        "stddev": 4.2351,
+        "min": 49.4808,
+        "p25": 61.7386,
+        "p50": 63.5382,
+        "p75": 65.2438,
+        "max": 73.3458
+      },
+      "MS": {
+        "count": 220,
+        "mean": 60.9681,
+        "stddev": 4.0642,
+        "min": 47.6157,
+        "p25": 59.883,
+        "p50": 61.5635,
+        "p75": 63.5081,
+        "max": 69.3616
+      }
+    }
+  },
+  "2025": {
+    "year": 2025,
+    "policy_label": "2025 (Inductions 17--19)",
+    "policy_notes": "MAJOR change: PART-I (40 marks) REMOVED. Hard Area Service (5 marks) added. Total drops from 95 -> 60 marks. Raw scores NOT comparable to prior years -- use Centile view.",
+    "policy_tidbits": [
+      "Biggest formula change in PRP history: PART-I exam removed entirely (was 40/95 marks = 42% of total).",
+      "New component: Hard Area Service -- 1.25 pts per 3 months at notified BHUs/RHCs, max 5 pts (1 year).",
+      "Total maximum is now 60 marks -- raw scores directly incomparable to 2021--2024 data.",
+      "Use Centile view (% of max) for cross-year comparison: observed max ~46.6 = 77.7% of 60.",
+      "Hard Area and Experience both to be reduced/discontinued from Jan 2026 (Ind 20)."
+    ],
+    "active_components": [
+      "Matric / SSC",
+      "Intermediate / HSSC",
+      "MBBS / BDS Aggregate",
+      "House Job",
+      "Parent Institute",
+      "Service Experience",
+      "Hard Area Service (BHUs/RHCs)",
+      "University-Level Positions"
+    ],
+    "removed_components": [
+      "FCPS Part-I / MD / MS / MDS Part-I",
+      "1st-Attempt MBBS Professionals",
+      "MDCAT Score",
+      "FCPS Part-I / JCAT (pass/fail)"
+    ],
+    "total_marks": 60,
+    "programs": {
+      "FCPS": {
+        "count": 436,
+        "mean": 34.821,
+        "stddev": 4.3852,
+        "min": 20.7401,
+        "p25": 31.5126,
+        "p50": 35.4172,
+        "p75": 37.0384,
+        "max": 46.5739
+      },
+      "MD": {
+        "count": 162,
+        "mean": 34.3467,
+        "stddev": 3.5673,
+        "min": 23.8579,
+        "p25": 32.3028,
+        "p50": 35.1963,
+        "p75": 36.0767,
+        "max": 46.532
+      },
+      "MS": {
+        "count": 186,
+        "mean": 31.3811,
+        "stddev": 3.9074,
+        "min": 23.9084,
+        "p25": 28.6222,
+        "p50": 30.2069,
+        "p75": 34.7123,
+        "max": 44.1368
+      }
+    }
+  },
+  "2026": {
+    "year": 2026,
+    "policy_label": "2026 (Induction 21 - June / July 2026)",
+    "policy_notes": "Slightly changed from Induction 20 (Dec/Jan 2026) . Matric/Inter/PART-I/Parent Institute all removed. Experience Marks discontinued. Total: 30 marks.",
+    "policy_tidbits": [
+      "Complete overhaul: total drops from 60 to 30 marks. Formula components restructured.",
+      "MDCAT introduced (2 marks) -- benefits recent graduates who scored well on MDCAT.",
+      "FCPS/JCAT: now 5 marks pass/fail (was 40 marks score-based in 2020--2024) -- massive reduction.",
+      "Matric + Intermediate removed -- 12 marks that no longer matter for merit.",
+      "Parent institute bonus removed -- where you graduated no longer gives marks.",
+      "Hard Area service  and Experience marks discontinued -- rural service no longer rewarded."
+    ],
+    "active_components": [
+      "MDCAT Score",
+      "MBBS / BDS Degree Aggregate",
+      "University-Level Positions",
+      "House Job",
+      "FCPS Part-I / JCAT (pass/fail)"
+    ],
+    "removed_components": [
+      "Service Experience",
+      "Matric / SSC",
+      "Intermediate / HSSC",
+      "FCPS Part-I score-based (40 marks era)",
+      "Parent Institute",
+      "Hard Area Service",
+      "1st-Attempt MBBS Professionals"
+    ],
+    "total_marks": 30,
+    "programs": {
+      "FCPS": {
+        "count": 430,
+        "mean": 24.0384,
+        "stddev": 2.1081,
+        "min": 13.9594,
+        "p25": 22.9348,
+        "p50": 23.7939,
+        "p75": 25.2613,
+        "max": 29.0715
+      },
+      "MDD": {
+        "count": 149,
+        "mean": 24.7789,
+        "stddev": 1.7547,
+        "min": 17.5819,
+        "p25": 24.0076,
+        "p50": 24.8432,
+        "p75": 26.0042,
+        "max": 28.8365
+      },
+      "MS": {
+        "count": 194,
+        "mean": 21.774,
+        "stddev": 1.9867,
+        "min": 13.3686,
+        "p25": 20.5374,
+        "p50": 21.4426,
+        "p75": 22.6786,
+        "max": 27.7649
+      },
+      "MD": {
+        "count": 149,
+        "mean": 24.3154,
+        "stddev": 1.7878,
+        "min": 17.46,
+        "p25": 23.491,
+        "p50": 24.266,
+        "p75": 25.545,
+        "max": 27.436
+      }
+    }
+  }
+}

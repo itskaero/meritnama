@@ -1,0 +1,13 @@
+# Raw source data — not committed (large, sensitive)
+officialMeritList/
+officialGazette/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# OS
+.DS_Store
+Thumbs.db

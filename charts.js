@@ -101,9 +101,12 @@ const Charts = {
   },
 
   // ─── Trend: closing merit over years ───
-  drawTrendLineChart(rows) {
+  drawTrendLineChart(rows, mode = 'raw') {
     const ctx = getOrDestroyChart('trendLineChart');
     if (!ctx) return;
+
+    const isPercentile = mode === 'percentile';
+    const dataField    = isPercentile ? 'yearly_percentile' : 'yearly_merit';
 
     // Collect all years across all rows
     const allYears = new Set();
@@ -114,7 +117,7 @@ const Charts = {
 
     const datasets = rows.slice(0, 15).map((row, i) => ({
       label: rows.length === 1 ? row.specialty : row.hospital,
-      data: years.map(y => row.yearly_merit?.[y] ?? null),
+      data: years.map(y => row[dataField]?.[String(y)] ?? row[dataField]?.[y] ?? null),
       borderColor: colorAt(i),
       backgroundColor: colorAt(i, 0.08),
       pointBackgroundColor: colorAt(i),
@@ -124,6 +127,10 @@ const Charts = {
       pointRadius: 4,
       pointHoverRadius: 6,
     }));
+
+    const yAxisLabel = isPercentile
+      ? 'Percentile rank within year (cross-year comparable)'
+      : 'Closing Merit (raw — not cross-year comparable)';
 
     const chart = new Chart(ctx, {
       type: 'line',
@@ -139,7 +146,13 @@ const Charts = {
           tooltip: {
             ...BASE_OPTIONS.plugins.tooltip,
             callbacks: {
-              label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(3) ?? 'N/A'}`,
+              label: ctx => {
+                const v = ctx.parsed.y;
+                if (v == null) return `${ctx.dataset.label}: N/A`;
+                return isPercentile
+                  ? `${ctx.dataset.label}: ${v.toFixed(1)}th percentile`
+                  : `${ctx.dataset.label}: ${v.toFixed(3)}`;
+              },
             },
           },
         },
@@ -147,7 +160,9 @@ const Charts = {
           ...BASE_OPTIONS.scales,
           y: {
             ...BASE_OPTIONS.scales.y,
-            title: { display: true, text: 'Closing Merit', color: '#5a6e85', font: { size: 11 } },
+            min: isPercentile ? 0 : undefined,
+            max: isPercentile ? 100 : undefined,
+            title: { display: true, text: yAxisLabel, color: '#5a6e85', font: { size: 11 } },
           },
           x: {
             ...BASE_OPTIONS.scales.x,
@@ -167,8 +182,13 @@ const Charts = {
 
     if (!allMerits || allMerits.length === 0) return;
 
+    // Detect if values are pct-of-max (0–100) or raw merit
+    const maxVal = Math.max(...allMerits);
+    const isPct  = maxVal <= 100 && maxVal > 0;
+    const xLabel = isPct ? 'Avg Closing (% of Max)' : 'Closing Merit';
+
     const min = Math.floor(Math.min(...allMerits));
-    const max = Math.ceil(Math.max(...allMerits));
+    const max = Math.ceil(maxVal);
     const bins = 20;
     const step = (max - min) / bins;
 
@@ -177,7 +197,7 @@ const Charts = {
     for (let i = 0; i < bins; i++) {
       const lo = min + i * step;
       const hi = lo + step;
-      labels.push(lo.toFixed(1));
+      labels.push(isPct ? lo.toFixed(0) + '%' : lo.toFixed(1));
       counts.push(allMerits.filter(v => v >= lo && v < hi).length);
     }
 
@@ -207,14 +227,14 @@ const Charts = {
           tooltip: {
             ...BASE_OPTIONS.plugins.tooltip,
             callbacks: {
-              title: ctx => `Merit ≈ ${ctx[0].label}`,
+              title: ctx => isPct ? `~${ctx[0].label} of max` : `Merit ≈ ${ctx[0].label}`,
               label: ctx => `${ctx.parsed.y} hospitals`,
             },
           },
         },
         scales: {
           ...BASE_OPTIONS.scales,
-          x: { ...BASE_OPTIONS.scales.x, title: { display: true, text: 'Closing Merit', color: '#5a6e85' } },
+          x: { ...BASE_OPTIONS.scales.x, title: { display: true, text: xLabel, color: '#5a6e85' } },
           y: { ...BASE_OPTIONS.scales.y, title: { display: true, text: 'Count', color: '#5a6e85' } },
         },
       },
@@ -328,17 +348,29 @@ const Charts = {
   },
 
   // ─── Specialty modal trend chart ───
-  drawSpecTrendChart(hospitalRows, specialty) {
+  drawSpecTrendChart(hospitalRows, specialty, displayMode = 'pct', yearFilter = null) {
     const ctx = getOrDestroyChart('specTrendChart');
     if (!ctx) return;
 
     const allYears = new Set();
     hospitalRows.forEach(r => Object.keys(r.yearly_merit || {}).forEach(y => allYears.add(Number(y))));
-    const years = [...allYears].sort((a, b) => a - b);
+    let years = [...allYears].sort((a, b) => a - b);
+    if (yearFilter) years = years.filter(y => y === yearFilter);
+
+    const isPct = displayMode === 'pct';
+    const yLabel = isPct ? '% of Max' : 'Closing Merit';
 
     const datasets = hospitalRows.slice(0, 12).map((row, i) => ({
       label: row.hospital.length > 30 ? row.hospital.slice(0, 30) + '…' : row.hospital,
-      data: years.map(y => row.yearly_merit?.[y] ?? null),
+      data: years.map(y => {
+        const raw = row.yearly_merit?.[y] ?? null;
+        if (raw == null) return null;
+        if (isPct) {
+          const max = YEAR_TOTAL_MAX[y];
+          return max ? parseFloat(((raw / max) * 100).toFixed(2)) : raw;
+        }
+        return raw;
+      }),
       borderColor: colorAt(i),
       backgroundColor: colorAt(i, 0.07),
       tension: 0.3,
@@ -354,21 +386,20 @@ const Charts = {
         ...BASE_OPTIONS,
         plugins: {
           ...BASE_OPTIONS.plugins,
-          legend: {
-            ...BASE_OPTIONS.plugins.legend,
-            display: hospitalRows.length <= 8,
-            position: 'bottom',
-          },
+          legend: { ...BASE_OPTIONS.plugins.legend, display: hospitalRows.length <= 8, position: 'bottom' },
           title: {
             display: true,
-            text: `Closing Merit Trend – ${specialty}`,
-            color: '#0f4c81',
-            font: { size: 13, weight: 'bold' },
+            text: `${isPct ? '% of Max' : 'Closing Merit'} Trend – ${specialty}`,
+            color: '#0f4c81', font: { size: 13, weight: 'bold' },
+          },
+          tooltip: {
+            ...BASE_OPTIONS.plugins.tooltip,
+            callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y != null ? c.parsed.y.toFixed(1) + (isPct ? '%' : '') : '—'}` },
           },
         },
         scales: {
           ...BASE_OPTIONS.scales,
-          y: { ...BASE_OPTIONS.scales.y, title: { display: true, text: 'Closing Merit', color: '#5a6e85' } },
+          y: { ...BASE_OPTIONS.scales.y, title: { display: true, text: yLabel, color: '#5a6e85' } },
         },
       },
     });
@@ -376,36 +407,61 @@ const Charts = {
   },
 
   // ─── Hospital modal chart ───
-  drawHospSpecChart(rows, hospital) {
+  drawHospSpecChart(rows, hospital, displayMode = 'pct', yearFilter = null) {
     const ctx = getOrDestroyChart('hospSpecChart');
     if (!ctx) return;
 
-    const sorted = [...rows].sort((a, b) => b.avg_closing_merit - a.avg_closing_merit).slice(0, 20);
+    const isPct = displayMode === 'pct';
+    const sorted = [...rows].sort((a, b) => {
+      const av = isPct ? (b.avg_pct_of_max ?? b.avg_closing_merit) : b.avg_closing_merit;
+      const bv = isPct ? (a.avg_pct_of_max ?? a.avg_closing_merit) : a.avg_closing_merit;
+      return av - bv;
+    }).slice(0, 20);
+
     const labels = sorted.map(r =>
       r.specialty.length > 20 ? r.specialty.slice(0, 20) + '…' : r.specialty
     );
 
+    const getVal = (r, yr) => {
+      if (yr) {
+        const raw = r.yearly_merit?.[String(yr)] ?? null;
+        if (raw == null) return null;
+        return isPct ? (YEAR_TOTAL_MAX[yr] ? (raw / YEAR_TOTAL_MAX[yr]) * 100 : raw) : raw;
+      }
+      return isPct ? (r.avg_pct_of_max ?? r.avg_closing_merit) : r.avg_closing_merit;
+    };
+    const getLatest = r => isPct ? (r.latest_pct_of_max ?? r.latest_merit) : r.latest_merit;
+
+    const yLabel = isPct ? '% of Max' : 'Closing Merit';
+
+    const datasets = yearFilter
+      ? [{
+          label: `${yearFilter} ${yLabel}`,
+          data: sorted.map(r => getVal(r, yearFilter)),
+          backgroundColor: sorted.map((_, i) => colorAt(i, 0.7)),
+          borderColor:     sorted.map((_, i) => colorAt(i)),
+          borderWidth: 1,
+        }]
+      : [
+          {
+            label: `Avg ${yLabel}`,
+            data: sorted.map(r => getVal(r)),
+            backgroundColor: sorted.map((_, i) => colorAt(i, 0.7)),
+            borderColor:     sorted.map((_, i) => colorAt(i)),
+            borderWidth: 1,
+          },
+          {
+            label: `Latest ${yLabel}`,
+            data: sorted.map(r => getLatest(r)),
+            backgroundColor: sorted.map((_, i) => colorAt(i, 0.3)),
+            borderColor:     sorted.map((_, i) => colorAt(i, 0.6)),
+            borderWidth: 1,
+          },
+        ];
+
     const chart = new Chart(ctx, {
       type: 'bar',
-      data: {
-        labels,
-        datasets: [
-          {
-            label: 'Avg Closing Merit',
-            data: sorted.map(r => r.avg_closing_merit),
-            backgroundColor: sorted.map((_, i) => colorAt(i, 0.7)),
-            borderColor: sorted.map((_, i) => colorAt(i)),
-            borderWidth: 1,
-          },
-          {
-            label: 'Latest Merit',
-            data: sorted.map(r => r.latest_merit),
-            backgroundColor: sorted.map((_, i) => colorAt(i, 0.3)),
-            borderColor: sorted.map((_, i) => colorAt(i, 0.6)),
-            borderWidth: 1,
-          },
-        ],
-      },
+      data: { labels, datasets },
       options: {
         ...BASE_OPTIONS,
         plugins: {
@@ -413,17 +469,102 @@ const Charts = {
           title: {
             display: true,
             text: `Specialties at ${hospital.length > 40 ? hospital.slice(0, 40) + '…' : hospital}`,
-            color: '#0f4c81',
-            font: { size: 13, weight: 'bold' },
+            color: '#0f4c81', font: { size: 13, weight: 'bold' },
+          },
+          tooltip: {
+            ...BASE_OPTIONS.plugins.tooltip,
+            callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y != null ? c.parsed.y.toFixed(1) + (isPct ? '%' : '') : '—'}` },
           },
         },
         scales: {
           x: { ...BASE_OPTIONS.scales.x, ticks: { ...BASE_OPTIONS.scales.x.ticks, maxRotation: 50, font: { size: 10 } } },
-          y: { ...BASE_OPTIONS.scales.y, title: { display: true, text: 'Closing Merit', color: '#5a6e85' } },
+          y: { ...BASE_OPTIONS.scales.y, title: { display: true, text: yLabel, color: '#5a6e85' } },
         },
       },
     });
     registerChart('hospSpecChart', chart);
+  },
+
+  // ─── Drill-down: single row yearly trend (used by both specialty & hospital modals) ───
+  drawDrillYearlyChart(canvasId, row, displayMode = 'pct') {
+    const ctx = getOrDestroyChart(canvasId);
+    if (!ctx) return;
+
+    const isPct = displayMode === 'pct';
+    const yearlyMerit = row.yearly_merit || {};
+    const yearlySeats = row.yearly_seats || {};
+    const years = Object.keys(yearlyMerit).map(Number).sort((a, b) => a - b);
+
+    const meritData = years.map(y => {
+      const raw = yearlyMerit[y];
+      if (isPct) {
+        const max = YEAR_TOTAL_MAX[y];
+        return max ? parseFloat(((raw / max) * 100).toFixed(2)) : raw;
+      }
+      return raw;
+    });
+
+    const seatsData = years.map(y => yearlySeats[y] ?? null);
+    const yLabel = isPct ? '% of Max' : 'Closing Merit';
+
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: years.map(String),
+        datasets: [
+          {
+            label: yLabel,
+            data: meritData,
+            backgroundColor: meritData.map((_, i) => colorAt(i, 0.65)),
+            borderColor:     meritData.map((_, i) => colorAt(i)),
+            borderWidth: 1,
+            yAxisID: 'yMerit',
+          },
+          {
+            label: 'Seats',
+            data: seatsData,
+            type: 'line',
+            borderColor: 'rgba(233,196,106,0.9)',
+            backgroundColor: 'rgba(233,196,106,0.15)',
+            borderWidth: 2,
+            pointRadius: 4,
+            fill: false,
+            tension: 0.2,
+            yAxisID: 'ySeats',
+          },
+        ],
+      },
+      options: {
+        ...BASE_OPTIONS,
+        plugins: {
+          ...BASE_OPTIONS.plugins,
+          legend: { ...BASE_OPTIONS.plugins.legend, display: true, position: 'top' },
+          tooltip: {
+            ...BASE_OPTIONS.plugins.tooltip,
+            callbacks: {
+              label: c => c.datasetIndex === 0
+                ? `${yLabel}: ${c.parsed.y != null ? c.parsed.y.toFixed(1) + (isPct ? '%' : '') : '—'}`
+                : `Seats: ${c.parsed.y ?? '—'}`,
+            },
+          },
+        },
+        scales: {
+          x: { ...BASE_OPTIONS.scales.x },
+          yMerit: {
+            ...BASE_OPTIONS.scales.y,
+            position: 'left',
+            title: { display: true, text: yLabel, color: '#5a6e85' },
+          },
+          ySeats: {
+            position: 'right',
+            grid: { drawOnChartArea: false },
+            ticks: { color: 'rgba(233,196,106,0.8)', font: { size: 10 } },
+            title: { display: true, text: 'Seats', color: 'rgba(233,196,106,0.8)' },
+          },
+        },
+      },
+    });
+    registerChart(canvasId, chart);
   },
 
   // ─── Strategy chart ───
@@ -431,16 +572,25 @@ const Charts = {
     const ctx = getOrDestroyChart('strategyChart');
     if (!ctx) return;
 
-    const sorted = [...results].sort((a, b) => b.used_closing_merit - a.used_closing_merit).slice(0, 35);
+    // Use % of max if available (centile mode), else fall back to raw closing merit
+    const usesPct = results[0]?.used_pct_of_max != null;
+    const sorted = [...results].sort((a, b) => {
+      const av = usesPct ? (b.used_pct_of_max ?? 0) : b.used_closing_merit;
+      const bv = usesPct ? (a.used_pct_of_max ?? 0) : a.used_closing_merit;
+      return av - bv;
+    }).slice(0, 35);
     const labels = sorted.map(r =>
       r.specialty.length > 18 ? r.specialty.slice(0, 18) + '…' : r.specialty
     );
-    const values = sorted.map(r => r.used_closing_merit);
+    const values = sorted.map(r => usesPct ? (r.used_pct_of_max ?? r.avg_pct_of_max) : r.used_closing_merit);
     const bgColors = sorted.map(r => {
       if (r.outcome === 'likely')     return 'rgba(42,157,143,0.7)';
       if (r.outcome === 'borderline') return 'rgba(233,196,106,0.7)';
       return 'rgba(231,111,81,0.7)';
     });
+
+    const yLabel = usesPct ? '% of Max' : 'Merit Score';
+    const valFmt = (v) => usesPct ? v.toFixed(1) + '%' : v.toFixed(2);
 
     const chart = new Chart(ctx, {
       type: 'bar',
@@ -448,14 +598,14 @@ const Charts = {
         labels,
         datasets: [
           {
-            label: 'Closing Merit',
+            label: usesPct ? 'Avg Closing (% of Max)' : 'Closing Merit',
             data: values,
             backgroundColor: bgColors,
             borderColor: bgColors.map(c => c.replace('0.7', '1')),
             borderWidth: 1,
           },
           {
-            label: 'Your Merit',
+            label: usesPct ? 'Your Score (% of Max)' : 'Your Merit',
             data: labels.map(() => userMerit),
             type: 'line',
             borderColor: '#e63946',
@@ -476,15 +626,15 @@ const Charts = {
             ...BASE_OPTIONS.plugins.tooltip,
             callbacks: {
               label: ctx => {
-                if (ctx.datasetIndex === 1) return `Your Merit: ${userMerit.toFixed(2)}`;
-                return `Closing Merit: ${ctx.parsed.y.toFixed(3)}`;
+                if (ctx.datasetIndex === 1) return `Your Score: ${valFmt(userMerit)}`;
+                return `Avg Closing: ${valFmt(ctx.parsed.y)}`;
               },
             },
           },
         },
         scales: {
           x: { ...BASE_OPTIONS.scales.x, ticks: { ...BASE_OPTIONS.scales.x.ticks, maxRotation: 60, font: { size: 10 } } },
-          y: { ...BASE_OPTIONS.scales.y, title: { display: true, text: 'Merit Score', color: '#5a6e85' } },
+          y: { ...BASE_OPTIONS.scales.y, title: { display: true, text: yLabel, color: '#5a6e85' } },
         },
       },
     });
