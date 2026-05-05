@@ -14,6 +14,31 @@ const LOADING_TIPS = [
   '🔍 Click any row in the Merit Table to see a full year-by-year breakdown.',
 ];
 
+// Rotating motivational Quranic verses — one shown randomly per page load
+const VERSES = [
+  { arabic: 'فَإِنَّ مَعَ الْعُسْرِ يُسْرًا', translation: 'So verily, with hardship comes ease.', ref: 'Surah Al-Inshirah 94:5' },
+  { arabic: 'إِنَّ مَعَ الْعُسْرِ يُسْرًا', translation: 'Indeed, with hardship will be ease.', ref: 'Surah Al-Inshirah 94:6' },
+  { arabic: 'وَلَا تَيْأَسُوا مِن رَّوْحِ اللَّهِ', translation: 'Do not despair of the mercy of Allah.', ref: 'Surah Yusuf 12:87' },
+  { arabic: 'وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ', translation: 'Whoever relies upon Allah — He is sufficient for him.', ref: 'Surah At-Talaq 65:3' },
+  { arabic: 'إِنَّ اللَّهَ لَا يُضِيعُ أَجْرَ الْمُحْسِنِينَ', translation: 'Allah does not allow the reward of the doers of good to be lost.', ref: 'Surah At-Tawbah 9:120' },
+  { arabic: 'وَعَسَىٰ أَن تَكْرَهُوا شَيْئًا وَهُوَ خَيْرٌ لَّكُمْ', translation: 'Perhaps you dislike a thing and it is good for you.', ref: 'Surah Al-Baqarah 2:216' },
+  { arabic: 'وَقُل رَّبِّ زِدْنِي عِلْمًا', translation: 'And say: My Lord, increase me in knowledge.', ref: 'Surah Ta-Ha 20:114' },
+  { arabic: 'حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ', translation: 'Allah is sufficient for us, and He is the best disposer of affairs.', ref: "Surah Ali 'Imran 3:173" },
+  { arabic: 'وَلَسَوْفَ يُعْطِيكَ رَبُّكَ فَتَرْضَىٰ', translation: 'Your Lord is going to give you, and you will be satisfied.', ref: 'Surah Ad-Duha 93:5' },
+  { arabic: 'أَلَمْ نَشْرَحْ لَكَ صَدْرَكَ', translation: 'Did We not expand for you your chest \u2014 and relieve you of your burden?', ref: 'Surah Al-Inshirah 94:1' },
+];
+
+function showDailyVerse() {
+  const el = document.getElementById('dailyVerse');
+  if (!el) return;
+  const v = VERSES[Math.floor(Math.random() * VERSES.length)];
+  el.innerHTML =
+    `<span class="dv-arabic">${v.arabic}</span>` +
+    `<span class="dv-translation">${v.translation}</span>` +
+    `<span class="dv-ref">${v.ref}</span>`;
+  el.classList.remove('hidden');
+}
+
 // Year → total max marks (populated after scoring_policy.json loads)
 const YEAR_TOTAL_MAX = {};
 
@@ -103,6 +128,7 @@ async function loadAllData() {
     stopLoadingTips();
     await new Promise(r => setTimeout(r, 450));
     hideLoading();
+    showDailyVerse();
     onDataReady();
   } catch (err) {
     stopLoadingTips();
@@ -133,6 +159,7 @@ function getLatestYear() { const y = getYears(); return y[y.length - 1]; }
 
 function computeMeritPercentOfMax() {
   const sp = App.data.scoringPolicy;
+  // Primary: year_total_max
   if (sp?.year_total_max) {
     for (const [yr, max] of Object.entries(sp.year_total_max)) YEAR_TOTAL_MAX[Number(yr)] = max;
   } else if (sp?.policies) {
@@ -140,10 +167,19 @@ function computeMeritPercentOfMax() {
       if (pol.total_marks) YEAR_TOTAL_MAX[Number(yr)] = pol.total_marks;
     }
   }
+
+  // Per-induction max — safe guard for years with two inductions (e.g. 2026: Ind 20=35, Ind 21=30)
+  const inductionMax = {};
+  if (sp?._induction_max) {
+    for (const [ind, max] of Object.entries(sp._induction_max)) inductionMax[Number(ind)] = max;
+  }
+
   for (const row of App.data.flatLookup) {
     const pom = {};
     for (const [year, merit] of Object.entries(row.yearly_merit || {})) {
-      const max = YEAR_TOTAL_MAX[Number(year)];
+      // Prefer per-induction max if the row carries an induction number for this year
+      const indNum = row.yearly_induction?.[year];
+      const max = (indNum && inductionMax[indNum]) ? inductionMax[indNum] : YEAR_TOTAL_MAX[Number(year)];
       if (max) pom[year] = (merit / max) * 100;
     }
     row.yearly_pct_of_max  = Object.keys(pom).length ? pom : (row.yearly_pct_of_max || {});
@@ -476,10 +512,12 @@ function openMeritSidebar(row) {
   }).join('');
 
   // Policy note for this record's latest year
+  // Check "YYYY-1" first (e.g. "2026-1" = Induction 20 which produced the actual data),
+  // before falling back to "YYYY" which may point to a future induction.
   const sp = App.data.scoringPolicy;
   let polNote = '';
   if (sp?.policies) {
-    const pol = sp.policies[latY] || sp.policies[String(latY)];
+    const pol = sp.policies[`${latY}-1`] || sp.policies[latY] || sp.policies[String(latY)];
     if (pol) polNote = `<div class="sidebar-pol-note">Policy: ${esc(pol.label || latY)} &middot; ${pol.total_marks} marks max</div>`;
   }
 
@@ -543,9 +581,19 @@ function setupPredictorTab() {
   document.getElementById('predBtn').addEventListener('click', runPredictor);
   document.getElementById('predMerit').addEventListener('keydown', e => { if (e.key === 'Enter') runPredictor(); });
 
+  function syncPredHints() {
+    const prog  = document.getElementById('predProgram');
+    const quota = document.getElementById('predQuota');
+    document.getElementById('predProgramHint')?.classList.toggle('visible', !prog.value);
+    document.getElementById('predQuotaHint')?.classList.toggle('visible',  !quota.value);
+  }
+
   document.getElementById('predProgram').addEventListener('change', () => {
     populateSelect(document.getElementById('predQuota'), getQuotas(document.getElementById('predProgram').value));
+    syncPredHints();
   });
+  document.getElementById('predQuota').addEventListener('change', syncPredHints);
+  syncPredHints();
 
   document.getElementById('predRecentList')?.addEventListener('click', e => {
     const chip = e.target.closest('.recent-chip');
@@ -570,12 +618,30 @@ function setupPredictorTab() {
     renderPredBuckets(App.ui.predResults, f);
   });
 
+  // Live % of max preview as user types
+  function updateMeritPctPreview() {
+    const el    = document.getElementById('predMerit');
+    const label = document.getElementById('predMeritPct');
+    if (!el || !label) return;
+    const merit = parseFloat(el.value);
+    const max   = getActivePolicyMax();
+    if (!isNaN(merit) && merit > 0 && max) {
+      const pct = (merit / max) * 100;
+      label.textContent = `= ${pct.toFixed(1)}% of ${max} marks`;
+      label.classList.remove('hidden');
+    } else {
+      label.classList.add('hidden');
+    }
+  }
+  document.getElementById('predMerit').addEventListener('input', updateMeritPctPreview);
+  updateMeritPctPreview();
+
   renderPredRecentScores();
   // Auto-fill from saved calculator merit
   const saved = getSavedCalcMerit();
   if (saved) {
     const el = document.getElementById('predMerit');
-    if (el && !el.value) el.value = saved.total.toFixed(2);
+    if (el && !el.value) { el.value = saved.total.toFixed(2); updateMeritPctPreview(); }
   }
 }
 
@@ -655,6 +721,11 @@ function runPredictor() {
   }
 
   document.getElementById('predResults').classList.remove('hidden');
+
+  // Show quota warning when no quota is selected (same hospital can appear in multiple buckets)
+  const quotaWarn = document.getElementById('predQuotaWarn');
+  if (quotaWarn) quotaWarn.classList.toggle('hidden', !!quota);
+
   renderPredBuckets(results, 'all');
 
   saveRecentScore(merit);
@@ -731,6 +802,7 @@ function predItemsHtml(rows, showBucket = false) {
       <div class="pred-item-main">
         <div class="pred-item-spec">${esc(r.specialty)}</div>
         <div class="pred-item-hosp">${esc(r.hospital)}</div>
+        <div class="pred-item-meta">${esc(r.program)}${r.quota ? ' &middot; ' + esc(r.quota) : ''}</div>
       </div>
       <div class="pred-item-stats">
         <span class="pred-item-avg">Avg: ${r.avg_pct_of_max != null ? num(r.avg_pct_of_max, 1) + '%' : num(r.avg_closing_merit)}</span>

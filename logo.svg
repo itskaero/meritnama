@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 120" width="340" height="120">
+  <defs>
+    <linearGradient id="cyanGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#4db8d9"/>
+      <stop offset="100%" stop-color="#3ecf8e"/>
+    </linearGradient>
+    <linearGradient id="goldGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#3ecf8e"/>
+      <stop offset="100%" stop-color="#4db8d9"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="340" height="120" rx="16" fill="#0d1626"/>
+  <!-- Subtle border -->
+  <rect x="1" y="1" width="338" height="118" rx="15" fill="none"
+        stroke="url(#cyanGreen)" stroke-width="1" opacity="0.2"/>
+  <!-- Glow corner accents -->
+  <circle cx="0"   cy="0"   r="60" fill="#3ecf8e" opacity="0.04"/>
+  <circle cx="340" cy="120" r="60" fill="#4db8d9" opacity="0.04"/>
+
+  <!-- Trend bars icon — left side -->
+  <rect x="18" y="72" width="9" height="18" rx="2.5" fill="#4db8d9" opacity="0.35"/>
+  <rect x="31" y="60" width="9" height="30" rx="2.5" fill="#4db8d9" opacity="0.50"/>
+  <rect x="44" y="47" width="9" height="43" rx="2.5" fill="url(#cyanGreen)" opacity="0.70"/>
+  <rect x="57" y="54" width="9" height="36" rx="2.5" fill="#3ecf8e" opacity="0.60"/>
+  <rect x="70" y="38" width="9" height="52" rx="2.5" fill="url(#cyanGreen)" filter="url(#glow)"/>
+  <!-- Trend line -->
+  <polyline points="22,73 35,61 48,48 61,55 74,39"
+    fill="none" stroke="#4db8d9" stroke-width="2.2"
+    stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+  <!-- Peak dot -->
+  <circle cx="74" cy="39" r="4" fill="#3ecf8e" filter="url(#glow)"/>
+
+  <!-- Divider -->
+  <line x1="100" y1="20" x2="100" y2="100"
+        stroke="url(#cyanGreen)" stroke-width="0.8" opacity="0.2"/>
+
+  <!-- Urdu main text: میرٹ نامہ — large, centred in right pane -->
+  <text x="222" y="72"
+    font-family="'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', 'Urdu Typesetting', 'Traditional Arabic', serif"
+    font-size="44" font-weight="700"
+    text-anchor="middle"
+    direction="rtl" unicode-bidi="embed"
+    fill="url(#goldGreen)" filter="url(#softGlow)">میرٹ نامہ</text>
+
+  <!-- Tagline below Urdu -->
+  <text x="222" y="96"
+    font-family="'Segoe UI', Arial, sans-serif"
+    font-size="9.5" font-weight="400" letter-spacing="2.5"
+    text-anchor="middle"
+    fill="#4db8d9" opacity="0.45">پی آر پی اِنڈکشن اینالیٹکس</text>
+</svg>

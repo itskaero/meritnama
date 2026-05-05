@@ -14,11 +14,11 @@
 <header class="site-header">
   <div class="header-inner">
     <div class="logo-area">
-      <img src="logo.png" class="logo-img" alt="Meritnama" />
-      <div>
+      <img src="logo.svg" class="logo-img" alt="Meritnama" />
+      <!--<div>
         <h1>MeritNama</h1>
         <p class="header-sub">PRP Induction Analytics</p>
-      </div>
+      </div>-->
     </div>
     <div class="header-meta" id="headerMeta">
       <span class="badge badge-info" id="dataStatus">Loading data&hellip;</span>
@@ -39,11 +39,24 @@
   <button class="tab-btn" data-tab="guide">&#10067; Guide</button>
 </nav>
 
+<!-- ======= AUTHOR BAR ======= -->
+<div class="author-bar">
+  Independent, community-built tool by
+  <a href="https://github.com/itskaero" target="_blank" rel="noopener">@itskaero</a>
+  &middot;
+  <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a>
+  &middot;
+  <span class="author-bar-note">Evolved from <em>prpdatastat</em> &mdash; now trend-based from official PHF gazette &amp; merit lists</span>
+</div>
+
+<!-- ======= VERSE BANNER ======= -->
+<div class="daily-verse hidden" id="dailyVerse"></div>
+
 <!-- ======= LOADING ======= -->
 <div id="loadingOverlay" class="loading-overlay">
   <div class="loading-box">
     <div class="loading-brand">
-      <img src="logo.png" class="loading-logo-img" alt="Meritnama" />
+      <img src="logo.svg" class="loading-logo-img" alt="Meritnama" />
       <h2>MeritNama</h2>
       <p>PRP Induction Analytics</p>
     </div>
@@ -124,14 +137,17 @@
         <div class="form-group">
           <label for="predMerit">Merit Score</label>
           <input type="number" id="predMerit" placeholder="e.g. 28.5" step="0.01" min="0" max="200" />
+          <span class="pred-merit-pct hidden" id="predMeritPct"></span>
         </div>
         <div class="form-group">
           <label for="predProgram">Program</label>
           <select id="predProgram"><option value="">All Programs</option></select>
+          <span class="select-all-hint" id="predProgramHint">All programs included &mdash; results may overlap</span>
         </div>
         <div class="form-group">
           <label for="predQuota">Quota</label>
           <select id="predQuota"><option value="">All Quotas</option></select>
+          <span class="select-all-hint" id="predQuotaHint">All quotas included &mdash; same hospital may appear in multiple columns</span>
         </div>
       </div>
       <button class="btn btn-primary btn-large" id="predBtn">Analyze My Score</button>
@@ -178,6 +194,31 @@
 
     <!-- Results section -->
     <div id="predResults" class="hidden">
+      <!-- How to read a card -->
+      <div class="pred-legend">
+        <div class="pred-legend-title">How to read a card</div>
+        <div class="pred-legend-items">
+          <span class="pred-legend-item"><span class="pred-legend-swatch swatch-safe"></span> Safe &mdash; your score comfortably exceeds avg</span>
+          <span class="pred-legend-item"><span class="pred-legend-swatch swatch-target"></span> Target &mdash; within &plusmn;5% of avg, worth applying</span>
+          <span class="pred-legend-item"><span class="pred-legend-swatch swatch-reach"></span> Reach &mdash; avg is higher, but trend may help</span>
+        </div>
+        <div class="pred-legend-row">
+          <code class="pred-legend-ex">Avg: 49.3%</code><span> Historical average closing merit (as % of max marks)</span>
+        </div>
+        <div class="pred-legend-row">
+          <code class="pred-legend-ex delta-safe">+25.1%</code><span> Your score minus avg &mdash; <span class="delta-safe">green</span> = above avg, <span class="delta-reach">amber</span> = below avg</span>
+        </div>
+        <div class="pred-legend-row">
+          <code class="pred-legend-ex trend-falling">&#8595; 47.8&ndash;50.8%</code><span> Projected range for next induction &mdash; <span class="trend-falling">&#8595; falling</span> or <span class="trend-rising">&#8593; rising</span> trend</span>
+        </div>
+        <div class="pred-legend-row">
+          <code class="pred-legend-ex conf-low">Low</code> <code class="pred-legend-ex conf-medium">Medium</code> <code class="pred-legend-ex conf-high">High</code><span> Confidence based on years of data available (4+ yrs = High)</span>
+        </div>
+      </div>
+      <!-- Quota warning -->
+      <div id="predQuotaWarn" class="pred-quota-warn hidden">
+        &#9888;&#65039; <strong>No quota selected.</strong> The same hospital may appear in multiple columns because each provincial quota has a different historical average. Select a quota for a focused view.
+      </div>
       <div class="pred-results-toolbar">
         <div class="tab-pills">
           <button class="pill active" data-filter="all">All</button>
@@ -606,6 +647,18 @@
 
     </div><!-- /guide-faq -->
 
+    <div class="guide-about">
+      <div class="guide-about-header">
+        <span class="guide-about-icon">&#128104;&#8205;&#128187;</span>
+        <div>
+          <strong>About the Author</strong>
+          <span class="guide-about-handle"><a href="https://github.com/itskaero" target="_blank" rel="noopener">@itskaero</a> &middot; <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a></span>
+        </div>
+      </div>
+      <p>MeritNama started as <strong>prpdatastat</strong> &mdash; a tool that built estimated merit lists by reading candidate preferences from an exposed PHF API. It worked, but it risked getting blocked and raised data-access concerns.</p>
+      <p>The current approach flips the model: instead of scraping live candidate data, MeritNama analyses <strong>historical trends from official gazette notifications and published merit lists</strong>. That data is public, stable, and impossible to block. Predictions are trend-based rather than crowd-sourced &mdash; safer for everyone, and more transparent about what it can and can&#8217;t know.</p>
+    </div>
+
     <div class="guide-warning" style="margin-top:32px">
       <strong>&#9888;&#65039; Important Disclaimer</strong><br />
       MeritNama is an independent, community-built tool. It is <strong>not affiliated with PHF, PGMI, or any government body</strong>. All data is sourced from publicly available official merit lists and gazette notifications. Predictions are provided for informational purposes only. <strong>Never make application decisions based solely on this tool.</strong> Always verify closing merits and eligibility criteria directly with PHF.
@@ -628,6 +681,7 @@
 <footer class="site-footer">
   <p>MeritNama &middot; Data from official PHF merit lists &middot; <span id="footerStats"></span></p>
   <p style="margin-top:4px;font-size:0.73rem">All predictions are based on historical data only. Always verify with official PHF / PGMI sources before making application decisions.</p>
+  <p style="margin-top:6px;font-size:0.72rem;opacity:0.55">Built by <a href="https://github.com/itskaero" target="_blank" rel="noopener" style="color:inherit">@itskaero</a> &middot; <a href="mailto:itskaero@gmail.com" style="color:inherit">itskaero@gmail.com</a></p>
 </footer>
 
 <script src="charts.js"></script>

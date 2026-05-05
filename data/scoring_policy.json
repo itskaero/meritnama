@@ -1,6 +1,12 @@
 {
   "active_policy": "2026",
   "_note": "This file drives the merit calculator AND the policy history tab. Modify 'components' to add/remove calculator fields. Set 'included': false to hide a component without deleting it. Each year key represents the dominant induction of that calendar year. total_marks must equal the sum of all included max_marks.",
+  "_induction_max": {
+    "_note": "Per-induction total marks. Used when two inductions share a calendar year (e.g. 2026 has Ind 20 = 35 marks, Ind 21 = 30 marks). flat_lookup rows should carry 'induction' field. Falls back to year_total_max if absent.",
+    "8":  95, "9":  95, "10": 95, "11": 95, "12": 95, "13": 95,
+    "14": 95, "15": 95, "16": 95, "17": 60, "18": 60, "19": 60,
+    "20": 35, "21": 30
+  },
   "year_total_max": {
     "2020": 95,
     "2021": 95,
@@ -8,8 +14,9 @@
     "2023": 95,
     "2024": 95,
     "2025": 60,
-    "2026": 30
+    "2026": 35
   },
+  "_year_total_max_note": "2026 = Induction 20 (Dec 2025/Jan 2026, 35 marks). Induction 21 (Jun 2026, 30 marks) uses active_policy '2026' for calculator only.",
   "policies": {
     "2020": {
       "label": "2020 (Induction 8 -- Jul 2020)",
