@@ -877,6 +877,31 @@ function buildCalculatorForm() {
   if (!form) return;
   const included = (policy.components || []).filter(c => c.included !== false);
   form.innerHTML = included.map(comp => buildComponentInputHtml(comp)).join('');
+  setupCalcSpecialInputs();
+}
+
+function setupCalcSpecialInputs() {
+  document.querySelectorAll('.calc-fj-type-sel').forEach(sel => {
+    sel.addEventListener('change', function () {
+      const k = this.dataset.compKey;
+      document.getElementById(`calc_${k}_fcps_div`)?.classList.toggle('hidden', this.value !== 'fcps');
+      document.getElementById(`calc_${k}_jcat_div`)?.classList.toggle('hidden', this.value !== 'jcat');
+    });
+  });
+  document.querySelectorAll('.calc-jcat-pct-input').forEach(inp => {
+    inp.addEventListener('input', function () {
+      const k = this.dataset.compKey;
+      const hintEl = document.getElementById(`calc_${k}_jcat_hint`);
+      if (!hintEl) return;
+      const pct = parseFloat(this.value);
+      if (isNaN(pct) || this.value === '') { hintEl.textContent = 'Enter percentage → marks assigned automatically'; return; }
+      const thresholds = JSON.parse(this.dataset.thresholds || '[]').slice().sort((a, b) => b.min - a.min);
+      const tier = thresholds.find(t => pct >= t.min);
+      hintEl.textContent = tier
+        ? `${pct}% → ${tier.value} mark${tier.value !== 1 ? 's' : ''} (${tier.label})`
+        : 'Enter percentage → marks assigned automatically';
+    });
+  });
 }
 
 function buildComponentInputHtml(comp) {
@@ -908,6 +933,30 @@ function buildComponentInputHtml(comp) {
       <option value="">— Select —</option>${opts}
     </select>
     <span class="calc-input-hint">Max: ${max_marks} marks</span>`;
+  } else if (type === 'fcps_jcat_combo') {
+    const fcpsTiers = (comp.fcps_tiers || []).map(t =>
+      `<option value="${t.marks}">${esc(t.label)} — ${t.marks} mark${t.marks !== 1 ? 's' : ''}</option>`).join('');
+    const jcatThresholds = JSON.stringify(comp.jcat_thresholds || []).replace(/'/g, '&#39;');
+    inputHtml = `<div class="calc-fj-wrap">
+      <select id="calc_${key}_type" data-comp-key="${esc(key)}" class="calc-input calc-fj-type-sel">
+        <option value="">— Select qualification —</option>
+        <option value="fcps">FCPS Part-I</option>
+        <option value="jcat">JCAT (passed before March 2026)</option>
+        <option value="none">Neither / Not applicable (0 marks)</option>
+      </select>
+      <div id="calc_${key}_fcps_div" class="calc-fj-sub hidden">
+        <select id="calc_${key}_attempt" class="calc-input calc-fj-sub-input">
+          <option value="">— Select attempt number —</option>${fcpsTiers}
+        </select>
+        <span class="calc-input-hint">Marks awarded by attempt: 1st=5, 2nd=4, 3rd=3, 4th+=0</span>
+      </div>
+      <div id="calc_${key}_jcat_div" class="calc-fj-sub hidden">
+        <input type="number" id="calc_${key}_jcat_pct" class="calc-input calc-fj-sub-input calc-jcat-pct-input"
+          data-comp-key="${esc(key)}" data-thresholds='${jcatThresholds}'
+          placeholder="JCAT % (e.g. 72.5)" min="0" max="100" step="0.1" />
+        <span class="calc-input-hint" id="calc_${key}_jcat_hint">Enter percentage → marks assigned automatically · Max: ${max_marks} marks</span>
+      </div>
+    </div>`;
   } else if (type === 'months') {
     const per3mo  = comp.per_3_months || 1.25;
     const maxMons = Math.round(max_marks / per3mo * 3);
@@ -935,8 +984,8 @@ function runCalculator() {
   const breakdown = [];
   for (const comp of included) {
     const { key: ck, label, max_marks, type, per_year, per_item, score_max } = comp;
-    const el = document.getElementById(`calc_${ck}`);
-    if (!el) continue;
+    const el = type === 'fcps_jcat_combo' ? null : document.getElementById(`calc_${ck}`);
+    if (!el && type !== 'fcps_jcat_combo') continue;
     let contribution = 0, valueStr = '—';
     if (type === 'boolean') {
       contribution = el.checked ? max_marks : 0;
@@ -956,6 +1005,28 @@ function runCalculator() {
     } else if (type === 'tiered_select') {
       const val = parseFloat(el.value);
       if (!isNaN(val) && el.value !== '') { contribution = Math.min(val, max_marks); valueStr = el.options[el.selectedIndex]?.text || String(val); }
+    } else if (type === 'fcps_jcat_combo') {
+      const typeEl = document.getElementById(`calc_${ck}_type`);
+      const qual = typeEl?.value;
+      if (qual === 'fcps') {
+        const attEl = document.getElementById(`calc_${ck}_attempt`);
+        const val = parseFloat(attEl?.value);
+        if (!isNaN(val) && attEl?.value !== '') {
+          contribution = Math.min(val, max_marks);
+          valueStr = `FCPS ${attEl.options[attEl.selectedIndex]?.text || String(val)}`;
+        }
+      } else if (qual === 'jcat') {
+        const pctEl = document.getElementById(`calc_${ck}_jcat_pct`);
+        const pct = parseFloat(pctEl?.value);
+        if (!isNaN(pct) && pctEl?.value !== '') {
+          const thresholds = (comp.jcat_thresholds || []).slice().sort((a, b) => b.min - a.min);
+          const tier = thresholds.find(t => pct >= t.min);
+          contribution = tier ? Math.min(tier.value, max_marks) : 0;
+          valueStr = `JCAT ${pct}% → ${contribution} mark${contribution !== 1 ? 's' : ''} (${tier?.label || '—'})`;
+        }
+      } else if (qual === 'none') {
+        valueStr = 'None / Not applicable'; contribution = 0;
+      }
     } else if (type === 'months') {
       const months = parseFloat(el.value), per3mo = comp.per_3_months || 1.25;
       if (!isNaN(months) && el.value !== '') { contribution = Math.min(Math.floor(months / 3) * per3mo, max_marks); valueStr = `${months} month(s)`; }
