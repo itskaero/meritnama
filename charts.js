@@ -176,8 +176,8 @@ const Charts = {
   },
 
   // ─── Distribution histogram (Predictor tab) ───
-  drawDistributionChart(allMerits, userMerit) {
-    const ctx = getOrDestroyChart('distributionChart');
+  drawDistributionChart(allMerits, userMerit, canvasId = 'distributionChart') {
+    const ctx = getOrDestroyChart(canvasId);
     if (!ctx) return;
 
     if (!allMerits || allMerits.length === 0) return;
@@ -239,7 +239,7 @@ const Charts = {
         },
       },
     });
-    registerChart('distributionChart', chart);
+    registerChart(canvasId, chart);
   },
 
   // ─── Volatility scatter/bar (Trends tab) ───
@@ -639,6 +639,120 @@ const Charts = {
       },
     });
     registerChart('strategyChart', chart);
+  },
+
+  // ─── Predictor distribution (predDistChart canvas) ───
+  drawPredDistributionChart(canvasId, allMerits, userMerit) {
+    this.drawDistributionChart(allMerits, userMerit, canvasId);
+  },
+
+  // ─── Sidebar trend chart (merit table row detail) ───
+  drawSidebarTrendChart(canvasId, row) {
+    const ctx = getOrDestroyChart(canvasId);
+    if (!ctx) return;
+
+    const years     = Object.keys(row.yearly_merit || {}).sort().map(Number);
+    if (!years.length) return;
+    const pctData   = years.map(y => row.yearly_pct_of_max?.[String(y)] ?? null);
+    const pctileData = years.map(y => row.yearly_percentile?.[String(y)] ?? null);
+    const seatsData = years.map(y => row.yearly_seats?.[String(y)] ?? null);
+
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: years.map(String),
+        datasets: [
+          {
+            label: '% of Max',
+            data: pctData,
+            borderColor: '#4db8d9',
+            backgroundColor: 'rgba(77,184,217,0.08)',
+            tension: 0.3,
+            fill: true,
+            yAxisID: 'yPct',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            borderWidth: 2,
+            spanGaps: false,
+          },
+          {
+            label: 'Percentile',
+            data: pctileData,
+            borderColor: '#3ecf8e',
+            borderDash: [4, 3],
+            tension: 0.3,
+            fill: false,
+            yAxisID: 'yPct',
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            borderWidth: 1.5,
+            spanGaps: false,
+          },
+          {
+            label: 'Seats',
+            data: seatsData,
+            borderColor: '#e8a627',
+            backgroundColor: 'rgba(232,166,39,0.15)',
+            tension: 0.2,
+            fill: false,
+            yAxisID: 'ySeats',
+            pointRadius: 4,
+            borderWidth: 1.5,
+            type: 'bar',
+            spanGaps: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        animation: { duration: 300 },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: { font: { size: 10 }, color: '#6b84a8', boxWidth: 10 },
+          },
+          tooltip: {
+            backgroundColor: 'rgba(13,20,42,0.96)',
+            borderColor: 'rgba(77,184,217,0.28)',
+            borderWidth: 1,
+            titleColor: '#4db8d9',
+            bodyColor: '#6b84a8',
+            callbacks: {
+              label(c) {
+                if (c.dataset.label === '% of Max')   return `% of Max: ${c.parsed.y != null ? c.parsed.y.toFixed(1) + '%' : '—'}`;
+                if (c.dataset.label === 'Percentile') return `Percentile: ${c.parsed.y != null ? c.parsed.y + 'th' : '—'}`;
+                return `Seats: ${c.parsed.y ?? '—'}`;
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            ticks: { color: '#6b84a8', font: { size: 10 } },
+          },
+          yPct: {
+            type: 'linear',
+            position: 'left',
+            min: 0,
+            max: 100,
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            ticks: { color: '#4db8d9', font: { size: 10 }, callback: v => v + '%' },
+          },
+          ySeats: {
+            type: 'linear',
+            position: 'right',
+            grid: { drawOnChartArea: false },
+            ticks: { color: '#e8a627', font: { size: 10 } },
+            min: 0,
+          },
+        },
+      },
+    });
+    registerChart(canvasId, chart);
   },
 
 };
