@@ -601,9 +601,16 @@
       .sim-summary-grid > div:nth-child(3) { border-top: 1px solid var(--border); }
     }
     @media (max-width: 600px) {
-      .sim-findme-bar { padding: 8px 12px; }
+      .sim-findme-bar { padding: 8px 12px; flex-wrap: wrap; gap: 6px; }
+      .sim-findme-bar .btn { flex-shrink: 0; }
+      #addManuallyBtn { margin-left: 0; width: 100%; }
       .sb-row { grid-template-columns: 28px 44px 16px 1fr auto; gap: 4px; font-size: 0.78rem; }
       .sim-grid { grid-template-columns: 1fr; }
+      /* hide lower-priority table columns on small screens */
+      #candTable th:nth-child(5),
+      #candTable th:nth-child(6),
+      #candTable td:nth-child(5),
+      #candTable td:nth-child(6) { display: none; }
     }
 
     /* ---------------------------------------------------------------
@@ -703,6 +710,9 @@
     </div>
     <div class="header-meta" id="headerMeta">
       <span class="badge badge-info" id="dataStatus">Loading&hellip;</span>
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </header>

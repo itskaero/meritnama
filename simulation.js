@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderNotifications();
 
   setupTabs();
+  setupHamburger();
   setupFindMe();
   setupCandidateFilters();
   applyAndRenderCandidates();
@@ -142,6 +143,7 @@ function showLoading(on) {
 // TAB NAVIGATION
 // ═══════════════════════════════════════════════════════════════════
 function setupTabs() {
+  const nav = document.getElementById('mainNav');
   document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
     btn.addEventListener('click', () => {
       const t = btn.dataset.tab;
@@ -150,7 +152,27 @@ function setupTabs() {
       btn.classList.add('active');
       document.getElementById(`tab-${t}`)?.classList.add('active');
       SIM.activeTab = t;
+      // close hamburger menu after tab selection on mobile
+      nav?.classList.remove('nav-open');
+      document.getElementById('hamburgerBtn')?.setAttribute('aria-expanded', 'false');
     });
+  });
+}
+
+function setupHamburger() {
+  const btn = document.getElementById('hamburgerBtn');
+  const nav = document.getElementById('mainNav');
+  if (!btn || !nav) return;
+  btn.addEventListener('click', () => {
+    const open = nav.classList.toggle('nav-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  // close when clicking outside
+  document.addEventListener('click', e => {
+    if (!nav.contains(e.target) && !btn.contains(e.target)) {
+      nav.classList.remove('nav-open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
   });
 }
 
