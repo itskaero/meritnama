@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support MeritNama — Keep the Data Flowing</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #080b12;
+      --surface:   #0e1420;
+      --card:      #131926;
+      --border:    rgba(99,179,237,.12);
+      --accent1:   #38bdf8;
+      --accent2:   #818cf8;
+      --danger:    #f472b6;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --radius:    14px;
+      --glow:      0 0 28px rgba(56,189,248,.18);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* ── animated mesh background ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 0%,   rgba(56,189,248,.07) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 80% 100%, rgba(129,140,248,.07) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 60% 50%,  rgba(244,114,182,.04) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+
+    /* ── header ── */
+    .header {
+      text-align: center;
+      padding: 3rem 0 2rem;
+    }
+    .header .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      background: rgba(56,189,248,.1);
+      border: 1px solid rgba(56,189,248,.25);
+      border-radius: 999px;
+      padding: .3rem .9rem;
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--accent1);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+    }
+    .header .badge .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent1);
+      animation: pulse 1.8s ease infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: .4; transform: scale(1.4); }
+    }
+    .header h1 {
+      font-size: clamp(1.9rem, 5vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -.02em;
+      background: linear-gradient(135deg, var(--accent1) 0%, var(--accent2) 60%, var(--danger) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: .6rem;
+    }
+    .header p {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── why it costs section ── */
+    .why-card {
+      background: linear-gradient(135deg, rgba(244,114,182,.06) 0%, rgba(129,140,248,.06) 100%);
+      border: 1px solid rgba(244,114,182,.18);
+      border-radius: var(--radius);
+      padding: 1.4rem 1.6rem;
+      margin: 2rem 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .why-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: linear-gradient(180deg, var(--danger), var(--accent2));
+      border-radius: 3px 0 0 3px;
+    }
+    .why-card .why-icon {
+      font-size: 1.4rem;
+      margin-bottom: .6rem;
+      display: block;
+    }
+    .why-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--danger);
+      margin-bottom: .5rem;
+      letter-spacing: .01em;
+    }
+    .why-card p {
+      font-size: .88rem;
+      color: #94a3b8;
+      margin-bottom: .5rem;
+    }
+    .why-card p:last-child { margin-bottom: 0; }
+    .why-card strong { color: var(--text); }
+
+    /* ── cost breakdown ── */
+    .cost-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .75rem;
+      margin: 1.5rem 0 2rem;
+      justify-content: center;
+    }
+    .cost-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .7rem 1.1rem;
+      text-align: center;
+      flex: 1 1 140px;
+    }
+    .cost-item .cost-val {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--accent1);
+      display: block;
+    }
+    .cost-item .cost-label {
+      font-size: .72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    /* ── amount cards ── */
+    .section-title {
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-bottom: .9rem;
+    }
+    .amounts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .75rem;
+      margin-bottom: 2rem;
+    }
+    .amount-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem .9rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .amount-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(56,189,248,.05), rgba(129,140,248,.05));
+      pointer-events: none;
+    }
+    .amount-card .pkr {
+      font-size: .7rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .amount-card .amount-val {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+      margin: .25rem 0;
+    }
+    .amount-card .amount-note {
+      font-size: .72rem;
+      color: var(--muted);
+    }
+    /* ── payment tabs ── */
+    .tabs {
+      display: flex;
+      gap: .5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .3rem;
+      margin-bottom: 1.25rem;
+    }
+    .tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      padding: .65rem 1rem;
+      font-size: .88rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background .2s, color .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .45rem;
+    }
+    .tab-btn.active {
+      background: var(--card);
+      color: var(--accent1);
+      box-shadow: 0 1px 8px rgba(0,0,0,.3);
+    }
+    .tab-btn svg { flex-shrink: 0; }
+
+    /* ── panel ── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── bank transfer card ── */
+    .bank-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+    .bank-header {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .bank-logo {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #1a3a5c, #0d2240);
+      border: 1px solid rgba(56,189,248,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .6rem;
+      font-weight: 800;
+      color: var(--accent1);
+      letter-spacing: .04em;
+      flex-shrink: 0;
+      line-height: 1.2;
+      text-align: center;
+    }
+    .bank-name { font-weight: 700; font-size: 1rem; }
+    .bank-sub  { font-size: .78rem; color: var(--muted); }
+
+    .field-row {
+      display: flex;
+      flex-direction: column;
+      gap: .2rem;
+      margin-bottom: 1rem;
+    }
+    .field-row:last-of-type { margin-bottom: 0; }
+    .field-label {
+      font-size: .7rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .field-value-wrap {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .field-value {
+      flex: 1;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .55rem .85rem;
+      font-size: .92rem;
+      font-weight: 600;
+      color: var(--text);
+      font-family: 'Courier New', monospace;
+      letter-spacing: .03em;
+      word-break: break-all;
+    }
+    .copy-btn {
+      background: rgba(56,189,248,.1);
+      border: 1px solid rgba(56,189,248,.25);
+      border-radius: 8px;
+      padding: .55rem .75rem;
+      color: var(--accent1);
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      font-size: .8rem;
+      font-weight: 600;
+    }
+    .copy-btn:hover  { background: rgba(56,189,248,.18); }
+    .copy-btn:active { transform: scale(.95); }
+    .copy-btn.copied {
+      background: rgba(52,211,153,.15);
+      border-color: rgba(52,211,153,.35);
+      color: #34d399;
+    }
+
+    /* ── Raast panel ── */
+    .raast-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .raast-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      background: linear-gradient(135deg, rgba(56,189,248,.15), rgba(129,140,248,.15));
+      border: 1px solid rgba(129,140,248,.25);
+      border-radius: 999px;
+      padding: .28rem .8rem;
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--accent2);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 1rem;
+    }
+    .qr-wrapper {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px;
+      display: inline-block;
+      margin: .5rem auto 1.25rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,.4);
+    }
+    #qrcode canvas, #qrcode img { display: block; }
+    .raast-id-row {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      max-width: 320px;
+      margin: 0 auto;
+    }
+    .raast-id {
+      flex: 1;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .55rem .85rem;
+      font-size: .92rem;
+      font-weight: 700;
+      color: var(--text);
+      font-family: 'Courier New', monospace;
+      letter-spacing: .06em;
+      text-align: center;
+    }
+    .raast-hint {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-top: .75rem;
+    }
+
+    /* ── toast ── */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      background: linear-gradient(135deg, #0f2a1e, #0d2532);
+      border: 1px solid rgba(52,211,153,.35);
+      border-radius: 12px;
+      padding: .75rem 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      font-size: .88rem;
+      font-weight: 600;
+      color: #34d399;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5), 0 0 16px rgba(52,211,153,.15);
+      z-index: 9999;
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .35s;
+      opacity: 0;
+      white-space: nowrap;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    .toast-icon {
+      width: 22px; height: 22px;
+      background: rgba(52,211,153,.15);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem;
+    }
+
+    /* ── footer note ── */
+    .footer-note {
+      text-align: center;
+      margin-top: 2.5rem;
+      font-size: .78rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .footer-note a {
+      color: var(--accent1);
+      text-decoration: none;
+    }
+    .footer-note a:hover { text-decoration: underline; }
+
+    /* ── divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 2rem 0;
+    }
+
+    /* ── mobile ── */
+    @media (max-width: 480px) {
+      .amounts { grid-template-columns: repeat(3, 1fr); gap: .5rem; }
+      .amount-card { padding: .85rem .5rem; }
+      .amount-card .amount-val { font-size: 1.3rem; }
+      .cost-strip { flex-direction: row; }
+      .cost-item { flex: 1 1 100px; }
+      .tabs { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge"><span class="dot"></span> Open Source · No Ads · Community-Funded</div>
+    <h1>Keep MeritNama Running</h1>
+    <p>Your donation keeps the unofficial merit list data, simulations, and live tracking alive — free for every candidate.</p>
+  </div>
+
+  <!-- Why it costs -->
+  <div class="why-card">
+    <span class="why-icon">⚠️</span>
+    <h3>Why Does This Cost Money Now?</h3>
+    <p>
+      Until recently, PRP merit list data was openly accessible — no barriers, no restrictions.
+      That changed when <strong>PRPData Stat</strong> gained traction among candidates who used it to
+      <strong>hold committees accountable</strong> for seat manipulation and backroom allocations.
+    </p>
+    <p>
+      In what many see as a deliberate move to <strong>limit public oversight</strong>, the endpoints were
+      progressively rate-limited, CAPTCHAed, and geo-blocked — making direct access impossible without
+      infrastructure. Running this now requires <strong>rotating proxies and cloud VMs</strong> just to fetch
+      the same data that was completely free to read before.
+    </p>
+    <p>
+      This isn't a technical problem. It's a <strong>political one</strong>.
+    </p>
+  </div>
+
+  <!-- Cost breakdown -->
+  <p class="section-title">Cost per full data fetch</p>
+  <div class="cost-strip">
+    <div class="cost-item">
+      <span class="cost-val">$0.40</span>
+      <span class="cost-label">per hour (VM + proxy)</span>
+    </div>
+    <div class="cost-item">
+      <span class="cost-val">~6 hrs</span>
+      <span class="cost-label">avg. full fetch time</span>
+    </div>
+    <div class="cost-item">
+      <span class="cost-val">~$2.40</span>
+      <span class="cost-label">≈ PKR 670 per run</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Amount info -->
+  <p class="section-title">Every rupee helps</p>
+  <p style="font-size:.85rem; color:var(--muted); margin-bottom:1rem; line-height:1.7;">
+    There's no fixed amount — send whatever you can. Each run costs roughly <strong style="color:var(--text)">PKR 670</strong>.
+    Even a small contribution covers part of a fetch; larger ones fund multiple runs and keep the data fresh for everyone.
+  </p>
+  <div class="amounts">
+    <div class="amount-card">
+      <div class="pkr">PKR</div>
+      <div class="amount-val">500</div>
+      <div class="amount-note">~¾ of a run</div>
+    </div>
+    <div class="amount-card">
+      <div class="pkr">PKR</div>
+      <div class="amount-val">1,000</div>
+      <div class="amount-note">1.5 full runs</div>
+    </div>
+    <div class="amount-card">
+      <div class="pkr">PKR</div>
+      <div class="amount-val">5,000</div>
+      <div class="amount-note">7 full runs 🔥</div>
+    </div>
+  </div>
+
+  <!-- Payment tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('bank', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="5" width="20" height="14" rx="2"/>
+        <line x1="2" y1="10" x2="22" y2="10"/>
+      </svg>
+      Bank Transfer
+    </button>
+    <button class="tab-btn" onclick="switchTab('raast', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/>
+        <path d="M14 14h3v3M17 14h3M17 20h3M14 17v3"/>
+      </svg>
+      Raast / QR
+    </button>
+  </div>
+
+  <!-- Bank Transfer Panel -->
+  <div class="panel active" id="panel-bank">
+    <div class="bank-card">
+      <div class="bank-header">
+        <div class="bank-logo">MASH<br>REQ</div>
+        <div>
+          <div class="bank-name">Mashreq Pakistan</div>
+          <div class="bank-sub">Direct Bank Transfer</div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <span class="field-label">Account Title</span>
+        <div class="field-value">A** T****</div>
+      </div>
+
+      <div class="field-row">
+        <span class="field-label">Account / Raast Number</span>
+        <div class="field-value-wrap">
+          <div class="field-value" id="acc-num-display">0891-2007-4774</div>
+          <button class="copy-btn" id="copy-acc-btn" onclick="copyText('0891 2007 4774', 'copy-acc-btn', 'Account number')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copy
+          </button>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <span class="field-label">Bank</span>
+        <div class="field-value">Mashreq Pakistan</div>
+      </div>
+
+      <div class="field-row" style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border);">
+        <span class="field-label">Transfer Reference (optional)</span>
+        <div class="field-value" style="font-family:'Segoe UI',sans-serif; letter-spacing:0; font-weight:400;">MeritNama Support</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Raast / QR Panel -->
+  <div class="panel" id="panel-raast">
+    <div class="raast-card">
+      <div class="raast-badge">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+        Raast Instant Payment
+      </div>
+      <p style="font-size:.83rem; color:var(--muted); margin-bottom:.75rem;">
+        Scan with any Pakistani banking app — HBL, MCB, UBL, Meezan, JazzCash, Easypaisa, and more.
+      </p>
+      <div class="qr-wrapper">
+        <div id="qrcode"></div>
+      </div>
+      <p style="font-size:.75rem; color:var(--muted); margin-bottom:.75rem;">— or send directly to —</p>
+      <div class="raast-id-row">
+        <div class="raast-id" id="raast-id-display">0891-200-74774</div>
+        <button class="copy-btn" id="copy-raast-btn" onclick="copyText('089120074774', 'copy-raast-btn', 'Raast ID')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          Copy
+        </button>
+      </div>
+      <p class="raast-hint">Account holder: <strong style="color:var(--text)">A** T****</strong> · Mashreq Pakistan</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="divider"></div>
+  <div class="footer-note">
+    Every rupee goes directly toward <strong style="color:var(--text)">VM and proxy costs</strong> for fetching
+    PRP merit list data.<br>
+    No salaries, no overhead — just keeping the lights on for every candidate who deserves transparency.<br><br>
+    <a href="index.html">← Back to MeritNama</a>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-icon">✓</div>
+  <span id="toast-msg">Copied to clipboard!</span>
+</div>
+
+<script>
+  // ── QR code generation ──
+  try {
+    new QRCode(document.getElementById('qrcode'), {
+      text: '089120074774',
+      width: 180,
+      height: 180,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) {
+    document.getElementById('qrcode').innerHTML =
+      '<div style="width:180px;height:180px;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#555;text-align:center;">QR unavailable.<br>Use Raast ID below.</div>';
+  }
+
+  // ── tab switching ──
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+  }
+
+  // ── copy to clipboard with toast ──
+  let toastTimer = null;
+
+  function copyText(text, btnId, label) {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById(btnId);
+      btn.classList.add('copied');
+      btn.querySelector('svg').style.display = 'none';
+      btn.childNodes[btn.childNodes.length - 1].textContent = ' Copied!';
+
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.querySelector('svg').style.display = '';
+        btn.childNodes[btn.childNodes.length - 1].textContent = ' Copy';
+      }, 2200);
+
+      showToast(label + ' copied to clipboard!');
+    }).catch(() => {
+      // Fallback for older browsers
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast(label + ' copied!');
+    });
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    toast.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+  }
+</script>
+</body>
+</html>
