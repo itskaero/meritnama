@@ -1,0 +1,13 @@
+[
+  {
+    "id": "unofficial-data-v1",
+    "active": true,
+    "type": "warning",
+    "icon": "⚠️",
+    "title": "Unofficial Data",
+    "body": "Current candidate data has been unofficially sourced for comparison purposes only. Results may differ from official allocations. Await the official PMDC Induction 21 gazette for confirmed placements.",
+    "dismissable": false,
+    "link": null,
+    "linkText": null
+  }
+]

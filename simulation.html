@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Induction 21 &mdash; MeritNama</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ---------------------------------------------------------------
+       SIMULATION PAGE � harmonised with MeritNama design system
+       Uses all CSS variables from styles.css; slightly more colorful.
+    --------------------------------------------------------------- */
+
+    /* Utility — must mirror styles.css for standalone use */
+    .hidden { display: none !important; }
+
+    /* -- Loading overlay -- */
+    .sim-loading-overlay {
+      position: fixed; inset: 0; z-index: 9900;
+      background: var(--bg-deep, #0d1626);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sim-loading-box { text-align: center; }
+    .sim-loading-spin {
+      width: 52px; height: 52px;
+      border: 3px solid rgba(77,184,217,0.12);
+      border-top-color: var(--neon-cyan, #4db8d9);
+      border-right-color: var(--neon-purple, #7c65c4);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+      box-shadow: 0 0 20px rgba(77,184,217,0.2);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* -- Find Me bar -- */
+    .sim-findme-bar {
+      background: linear-gradient(135deg,
+        rgba(77,184,217,0.06) 0%, rgba(124,101,196,0.04) 100%);
+      border-bottom: 1px solid rgba(77,184,217,0.16);
+      padding: 9px 24px;
+      display: flex; align-items: center; flex-wrap: wrap; gap: 9px;
+    }
+    .sim-findme-label {
+      font-size: 0.74rem; color: var(--text-muted, #6b84a8);
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .sim-findme-input {
+      background: var(--bg-input, rgba(255,255,255,0.05));
+      border: 1px solid var(--border, rgba(77,184,217,0.12));
+      border-radius: var(--radius, 10px);
+      color: var(--text, #c8daf0);
+      padding: 6px 12px; font-size: 0.85rem; font-family: var(--font);
+      width: 150px; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .sim-findme-input:focus {
+      outline: none; border-color: var(--neon-cyan, #4db8d9);
+      box-shadow: 0 0 0 3px rgba(77,184,217,0.1), var(--glow-cyan);
+      background: rgba(77,184,217,0.03);
+    }
+    .sim-me-badge {
+      background: linear-gradient(135deg,
+        rgba(77,184,217,0.16) 0%, rgba(62,207,142,0.1) 100%);
+      border: 1px solid rgba(77,184,217,0.38);
+      color: var(--neon-cyan, #4db8d9);
+      border-radius: 100px; padding: 4px 13px;
+      font-size: 0.77rem; font-weight: 700;
+      box-shadow: 0 0 10px rgba(77,184,217,0.15);
+    }
+
+    /* -- Back link in tab nav -- */
+    a.tab-btn.back-btn { text-decoration: none; opacity: 0.6; font-size: 0.82rem; }
+    a.tab-btn.back-btn:hover { opacity: 1; color: var(--neon-cyan); }
+
+    /* -- "YOU" badge -- */
+    .me-tag {
+      display: inline-block;
+      background: linear-gradient(90deg, var(--neon-cyan, #4db8d9), var(--neon-green, #3ecf8e));
+      color: var(--bg-deep, #0d1626);
+      font-size: 0.58rem; font-weight: 900; padding: 1px 6px;
+      border-radius: 4px; vertical-align: middle; margin-left: 5px;
+      text-transform: uppercase; letter-spacing: 0.07em;
+    }
+    .custom-tag {
+      display: inline-block;
+      background: rgba(232,166,39,0.15); color: var(--neon-gold, #e8a627);
+      border: 1px solid rgba(232,166,39,0.32);
+      font-size: 0.58rem; padding: 1px 5px; border-radius: 4px;
+      vertical-align: middle; margin-left: 4px;
+    }
+
+    /* -- Programme tags � colorful pill style -- */
+    .prog-tag {
+      display: inline-block; font-size: 0.68rem; font-weight: 700;
+      padding: 2px 8px; border-radius: 100px; margin-right: 3px;
+    }
+    .prog-fcps {
+      background: rgba(62,207,142,0.14); color: var(--neon-green, #3ecf8e);
+      border: 1px solid rgba(62,207,142,0.32);
+    }
+    .prog-ms {
+      background: rgba(77,184,217,0.14); color: var(--neon-cyan, #4db8d9);
+      border: 1px solid rgba(77,184,217,0.32);
+    }
+    .prog-md {
+      background: rgba(124,101,196,0.14); color: var(--neon-purple, #7c65c4);
+      border: 1px solid rgba(124,101,196,0.32);
+    }
+
+    /* -- "ME" table row -- */
+    .row-me { background: rgba(77,184,217,0.07) !important; }
+    .row-me td:first-child { border-left: 3px solid var(--neon-cyan, #4db8d9); }
+    tr.row-me:hover { background: rgba(77,184,217,0.11) !important; }
+    .td-num { text-align: right; font-variant-numeric: tabular-nums; width: 72px; }
+
+    /* -- Pagination -- */
+    .pagination { display: flex; align-items: center; gap: 8px; margin-top: 14px; justify-content: center; }
+    .page-btn {
+      background: rgba(77,184,217,0.07); border: 1px solid rgba(77,184,217,0.2);
+      color: var(--neon-cyan, #4db8d9); padding: 5px 14px; border-radius: 100px;
+      cursor: pointer; font-size: 0.8rem; font-family: var(--font);
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .page-btn:hover { background: rgba(77,184,217,0.14); box-shadow: 0 0 8px rgba(77,184,217,0.2); }
+    .page-info { font-size: 0.78rem; color: var(--text-muted); }
+
+    /* -- No-data banner -- */
+    .no-data-banner {
+      margin: 20px 0; padding: 16px 20px;
+      background: rgba(224,84,112,0.06); border: 1px solid rgba(224,84,112,0.22);
+      border-left: 3px solid #e05470; border-radius: var(--radius-lg, 16px);
+      color: #e05470; font-size: 0.88rem;
+      animation: fadeInUp 0.3s ease both;
+    }
+
+    /* ---------------------------------------------------------------
+       CANDIDATE DETAIL MODAL
+    --------------------------------------------------------------- */
+    .cand-detail-hdr { margin-bottom: 18px; }
+    .cand-detail-hdr h3 {
+      margin: 0 0 4px; font-size: 1.1rem;
+      color: var(--neon-cyan, #4db8d9);
+      text-shadow: 0 0 16px rgba(77,184,217,0.28);
+    }
+    .cand-detail-meta { font-size: 0.82rem; color: var(--text-muted); }
+
+    .cand-scores-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+      gap: 8px; margin-bottom: 18px;
+    }
+    .cand-score-card {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: var(--radius, 10px); padding: 12px 8px;
+      text-align: center; opacity: 0.38; transition: opacity 0.2s, border-color 0.2s;
+    }
+    .cand-score-card.applied                { opacity: 1; }
+    .cand-score-card.applied[data-prog="FCPS"] {
+      border-color: rgba(62,207,142,0.38); background: rgba(62,207,142,0.05);
+      box-shadow: 0 0 12px rgba(62,207,142,0.07);
+    }
+    .cand-score-card.applied[data-prog="MS"] {
+      border-color: rgba(77,184,217,0.38); background: rgba(77,184,217,0.05);
+      box-shadow: 0 0 12px rgba(77,184,217,0.07);
+    }
+    .cand-score-card.applied[data-prog="MD"] {
+      border-color: rgba(124,101,196,0.38); background: rgba(124,101,196,0.05);
+      box-shadow: 0 0 12px rgba(124,101,196,0.07);
+    }
+    .cand-score-prog {
+      display: block; font-size: 0.66rem; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .cand-score-val {
+      display: block; font-size: 1.15rem; font-weight: 800;
+      color: var(--neon-cyan, #4db8d9); margin: 5px 0;
+      text-shadow: 0 0 12px rgba(77,184,217,0.25);
+    }
+    .cand-score-card.applied[data-prog="FCPS"] .cand-score-val {
+      color: var(--neon-green, #3ecf8e); text-shadow: 0 0 12px rgba(62,207,142,0.25);
+    }
+    .cand-score-card.applied[data-prog="MD"] .cand-score-val {
+      color: var(--neon-purple, #7c65c4); text-shadow: 0 0 12px rgba(124,101,196,0.25);
+    }
+    .cand-score-lbl { display: block; font-size: 0.62rem; color: var(--text-muted); }
+
+    .score-breakdown {
+      border: 1px solid var(--border); border-radius: var(--radius, 10px);
+      padding: 10px 14px; margin-bottom: 18px; font-size: 0.82rem;
+    }
+    .score-breakdown summary { cursor: pointer; color: var(--text-muted); user-select: none; }
+    .score-bk-grid {
+      display: grid; grid-template-columns: 1fr auto;
+      gap: 4px 16px; margin-top: 10px; font-size: 0.82rem;
+    }
+    .score-bk-val { text-align: right; font-variant-numeric: tabular-nums; color: var(--neon-cyan, #4db8d9); }
+
+    /* -- Preference list -- */
+    .pref-section { margin-bottom: 18px; }
+    .pref-section h4 { margin: 0 0 10px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+    .pref-list { display: flex; flex-direction: column; gap: 6px; }
+    .pref-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 9px 12px; border: 1px solid var(--border);
+      border-radius: var(--radius, 10px); background: rgba(255,255,255,0.02);
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .pref-item:hover { border-color: rgba(77,184,217,0.22); background: rgba(77,184,217,0.03); }
+    .pref-item.pref-parent { border-color: rgba(232,166,39,0.28); background: rgba(232,166,39,0.04); }
+    .pref-no {
+      min-width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(77,184,217,0.1); border: 1px solid rgba(77,184,217,0.24);
+      color: var(--neon-cyan, #4db8d9); font-size: 0.74rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .pref-details { flex: 1; }
+    .pref-spec { display: block; font-weight: 600; font-size: 0.85rem; color: var(--text); }
+    .pref-hosp { display: block; font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+    .pref-quota-tag {
+      display: inline-block; margin-top: 4px; font-size: 0.67rem; padding: 1px 7px;
+      border-radius: 100px; background: rgba(77,184,217,0.08); color: var(--neon-cyan, #4db8d9);
+      border: 1px solid rgba(77,184,217,0.18);
+    }
+
+    /* ---------------------------------------------------------------
+       SLOT BROWSER
+    --------------------------------------------------------------- */
+    .sb-placeholder { color: var(--text-muted); font-size: 0.88rem; padding: 52px; text-align: center; }
+
+    .sb-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      flex-wrap: wrap; gap: 14px; padding: 18px 22px;
+      background: linear-gradient(135deg, rgba(77,184,217,0.06) 0%, rgba(124,101,196,0.04) 100%);
+      border-bottom: 1px solid rgba(77,184,217,0.14);
+      border-top: 2px solid var(--neon-cyan, #4db8d9);
+    }
+    .sb-spec { display: block; font-size: 1.05rem; font-weight: 700; color: var(--text); }
+    .sb-hosp { display: block; font-size: 0.85rem; color: var(--text-muted); margin-top: 3px; }
+    .sb-meta { display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; opacity: 0.65; }
+
+    .sb-stats { display: flex; gap: 18px; flex-shrink: 0; flex-wrap: wrap; }
+    .sb-stat  { text-align: center; }
+    .sb-stat-v { display: block; font-size: 1.3rem; font-weight: 800; color: var(--text); line-height: 1.1; }
+    .sb-stat-l { display: block; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-top: 2px; }
+    .sb-stat-unknown .sb-stat-v { color: var(--text-muted); }
+    .sb-stat-me .sb-stat-v { color: var(--neon-cyan, #4db8d9); text-shadow: 0 0 12px rgba(77,184,217,0.4); }
+
+    .sb-no-seats {
+      font-size: 0.8rem; color: var(--neon-gold, #e8a627);
+      border-left: 3px solid var(--neon-gold, #e8a627);
+      background: rgba(232,166,39,0.06); padding: 9px 16px; margin: 12px 16px;
+      border-radius: 0 var(--radius, 10px) var(--radius, 10px) 0;
+    }
+
+    .sb-list { display: flex; flex-direction: column; gap: 2px; padding: 12px; }
+    .sb-row {
+      display: grid; grid-template-columns: 36px 58px 20px 1fr auto;
+      align-items: center; gap: 8px; padding: 7px 10px;
+      border-radius: var(--radius, 10px); font-size: 0.83rem;
+      background: rgba(255,255,255,0.02); transition: background 0.15s;
+    }
+    .sb-above { background: rgba(62,207,142,0.07); }
+    .sb-above:hover { background: rgba(62,207,142,0.11); }
+    .sb-below { opacity: 0.62; }
+    .sb-row-me { background: rgba(77,184,217,0.1) !important; outline: 1px solid rgba(77,184,217,0.35); opacity: 1 !important; }
+    .sb-rank    { color: var(--text-muted); font-size: 0.73rem; text-align: right; font-variant-numeric: tabular-nums; }
+    .sb-pref-no { color: var(--text-muted); font-size: 0.72rem; }
+    .sb-parent  { color: var(--neon-gold, #e8a627); }
+    .sb-name    { color: var(--text); }
+    .sb-marks   { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--neon-cyan, #4db8d9); }
+    .sb-above .sb-marks { color: var(--neon-green, #3ecf8e); }
+    .sb-cutoff {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin: 6px 0; padding: 5px 0; font-size: 0.72rem;
+      color: var(--neon-cyan, #4db8d9); opacity: 0.75; letter-spacing: 0.04em;
+      border-top: 1px dashed rgba(77,184,217,0.32);
+      border-bottom: 1px dashed rgba(77,184,217,0.32);
+    }
+    .sb-empty { color: var(--text-muted); font-size: 0.82rem; padding: 24px; text-align: center; }
+    .sb-row-elsewhere { opacity: 0.35; }
+    .sb-row-elsewhere .sb-marks { color: var(--text-muted) !important; }
+    .sb-row-selected { background: rgba(62,207,142,0.09) !important; outline: 1px solid rgba(62,207,142,0.28) !important; }
+    .sb-sim-tag { font-size: 0.67rem; padding: 1px 5px; border-radius: 4px; margin-left: 5px; font-weight: 600; vertical-align: middle; }
+    .sb-sim-elsewhere { background: rgba(120,120,140,0.2); color: var(--text-muted); }
+    .sb-sim-selected  { background: rgba(62,207,142,0.16); color: var(--neon-green, #3ecf8e); }
+    .sb-sim-note { font-size: 0.75rem; color: var(--text-muted); padding: 5px 16px 4px; border-left: 2px solid rgba(77,184,217,0.3); margin: 0 12px 6px; }
+    .sb-eff-count { font-size: 0.72em; opacity: 0.65; }
+    .sb-row-clicked { outline: 2px solid rgba(77,184,217,0.55) !important; background: rgba(77,184,217,0.09) !important; opacity: 1 !important; cursor: pointer; }
+    .sb-row[data-cand-id] { cursor: pointer; }
+    .sb-row[data-cand-id]:hover:not(.sb-row-elsewhere) { background: rgba(255,255,255,0.05) !important; }
+
+    /* -- Slot browser: section headers & merit hint note -- */
+    .sb-section-hdr {
+      padding: 8px 14px 3px; font-size: 0.67rem; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); opacity: 0.5;
+    }
+    .sb-section-sel { color: var(--neon-green, #3ecf8e) !important; opacity: 1 !important; }
+    .sb-merit-hint { font-style: italic; border-left-color: rgba(77,184,217,0.2) !important; }
+
+    /* -- Candidate detail modal (slot browser row click) -- */
+    .sbm-backdrop {
+      position: fixed; inset: 0; z-index: 400;
+      background: rgba(0,0,0,0.62); backdrop-filter: blur(3px);
+      display: flex; align-items: flex-end; justify-content: center;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .sbm-backdrop.hidden { display: none; }
+    @media (min-width: 560px) {
+      .sbm-backdrop { align-items: center; padding: 20px; }
+    }
+    .sbm-sheet {
+      background: var(--bg-card, #152032); width: 100%; max-width: 580px;
+      max-height: 82vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      border-radius: 18px 18px 0 0;
+      border: 1px solid rgba(255,255,255,0.07);
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.5);
+      animation: sbmSlideUp 0.24s cubic-bezier(.22,.68,0,1.15) both;
+    }
+    @media (min-width: 560px) {
+      .sbm-sheet { border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,0.6); }
+    }
+    @keyframes sbmSlideUp { from { transform: translateY(28px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+    /* -- Candidate Quick-View content (inside modal) -- */
+    .sbqv-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(135deg, rgba(77,184,217,0.06) 0%, rgba(124,101,196,0.03) 100%);
+      position: sticky; top: 0; z-index: 1;
+    }
+    .sbqv-header-main { flex: 1; min-width: 0; }
+    .sbqv-name { display: block; font-weight: 700; font-size: 0.92rem; color: var(--neon-cyan, #4db8d9); }
+    .sbqv-meta { display: block; font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+    .sbqv-close {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-muted); border-radius: 50%; width: 30px; height: 30px;
+      cursor: pointer; font-size: 0.78rem; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: background 0.15s; font-family: inherit;
+    }
+    .sbqv-close:hover { background: rgba(255,255,255,0.13); color: var(--text); }
+    .sbqv-status-placed  { color: var(--neon-green, #3ecf8e); font-weight: 700; }
+    .sbqv-status-unplaced { color: #e05470; font-weight: 600; }
+    .sbqv-prefs { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; }
+    .sbqv-pref-row {
+      display: grid; grid-template-columns: 28px 1fr auto;
+      align-items: center; gap: 8px; padding: 7px 10px;
+      border-radius: 8px; font-size: 0.8rem;
+      border: 1px solid transparent; background: rgba(255,255,255,0.02);
+    }
+    .sbqv-pref-current {
+      border-color: rgba(77,184,217,0.38) !important;
+      background: rgba(77,184,217,0.08) !important;
+    }
+    .sbqv-pref-no {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: rgba(77,184,217,0.1); border: 1px solid rgba(77,184,217,0.22);
+      color: var(--neon-cyan, #4db8d9); font-size: 0.68rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .sbqv-pref-info { flex: 1; overflow: hidden; }
+    .sbqv-pref-spec  { display: block; font-weight: 600; color: var(--text); font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sbqv-pref-hosp  { display: block; font-size: 0.73rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sbqv-pref-quota { display: block; font-size: 0.67rem; color: var(--text-muted); opacity: 0.7; margin-top: 1px; }
+    .sbqv-viewing-tag {
+      display: inline-block; font-size: 0.62rem; padding: 0 5px; border-radius: 4px;
+      background: rgba(77,184,217,0.18); color: var(--neon-cyan, #4db8d9);
+      font-weight: 700; margin-left: 4px; vertical-align: middle;
+    }
+    .sbqv-pref-status { flex-shrink: 0; }
+    .sbqv-tag { font-size: 0.66rem; padding: 2px 7px; border-radius: 5px; font-weight: 600; white-space: nowrap; }
+    .sbqv-tag-placed { background: rgba(62,207,142,0.16); color: var(--neon-green, #3ecf8e); }
+    .sbqv-tag-skip   { background: rgba(120,120,140,0.18); color: var(--text-muted); }
+    .sbqv-tag-miss   { background: rgba(224,84,112,0.1); color: #e05470; }
+
+    /* -- Notification Bar -- */
+    .notif-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 10px 22px; border-bottom: 1px solid rgba(0,0,0,0.1);
+      font-size: 0.84rem; animation: fadeInUp 0.2s ease both;
+    }
+    .notif-warning { background: rgba(232,166,39,0.09); border-left: 4px solid var(--neon-gold, #e8a627); }
+    .notif-info    { background: rgba(77,184,217,0.07);  border-left: 4px solid var(--neon-cyan, #4db8d9); }
+    .notif-danger  { background: rgba(224,84,112,0.08);  border-left: 4px solid #e05470; }
+    .notif-icon    { font-size: 1rem; flex-shrink: 0; padding-top: 2px; }
+    .notif-body    { flex: 1; line-height: 1.55; }
+    .notif-title   { font-weight: 700; margin-bottom: 2px; }
+    .notif-warning .notif-title { color: var(--neon-gold, #e8a627); }
+    .notif-info    .notif-title { color: var(--neon-cyan, #4db8d9); }
+    .notif-danger  .notif-title { color: #e05470; }
+    .notif-text    { color: var(--text-muted); font-size: 0.82rem; }
+    .notif-link    { color: var(--neon-cyan, #4db8d9); text-decoration: none; }
+    .notif-link:hover { text-decoration: underline; }
+    .notif-dismiss {
+      background: none; border: none; color: var(--text-muted);
+      cursor: pointer; font-size: 0.95rem; padding: 2px 5px; flex-shrink: 0;
+      opacity: 0.5; transition: opacity 0.15s; line-height: 1;
+    }
+    .notif-dismiss:hover { opacity: 1; }
+
+    /* ---------------------------------------------------------------
+       GUIDE TAB
+    --------------------------------------------------------------- */
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 18px;
+    }
+    .guide-card {
+      background: var(--bg-card, rgba(255,255,255,0.03));
+      border: 1px solid var(--border, rgba(77,184,217,0.1));
+      border-radius: var(--radius-lg, 16px);
+      padding: 22px 24px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .guide-card-highlight {
+      border-color: rgba(77,184,217,0.28);
+      background: linear-gradient(135deg, rgba(77,184,217,0.05) 0%, rgba(124,101,196,0.03) 100%);
+      box-shadow: 0 0 24px rgba(77,184,217,0.06);
+    }
+    .guide-card-icon { font-size: 1.6rem; line-height: 1; }
+    .guide-card h3 {
+      margin: 0; font-size: 1rem; color: var(--text);
+      font-weight: 700;
+    }
+    .guide-card p { margin: 0; font-size: 0.85rem; color: var(--text-light, #8ba4c0); line-height: 1.6; }
+    .guide-ol, .guide-ul {
+      margin: 0; padding-left: 18px; font-size: 0.84rem;
+      color: var(--text-light, #8ba4c0); line-height: 1.75;
+    }
+    .guide-ol li::marker { color: var(--neon-cyan, #4db8d9); font-weight: 700; }
+    .guide-ul li::marker { color: var(--neon-cyan, #4db8d9); }
+    .guide-note {
+      font-size: 0.78rem; color: var(--text-light, #8ba4c0);
+      background: rgba(77,184,217,0.06); border-left: 3px solid rgba(77,184,217,0.4);
+      border-radius: 0 8px 8px 0; padding: 8px 12px;
+    }
+    .guide-note strong { color: var(--neon-cyan, #4db8d9); }
+    .guide-row-legend { display: flex; flex-direction: column; gap: 8px; }
+    .guide-legend-item { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; color: var(--text-light, #8ba4c0); }
+    .guide-swatch { width: 32px; height: 22px; border-radius: 5px; flex-shrink: 0; background: rgba(255,255,255,0.04); }
+    .guide-glossary { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+    .guide-gloss-item {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: var(--radius, 10px); padding: 10px 14px;
+    }
+    .guide-gloss-item dt {
+      font-size: 0.78rem; font-weight: 800; color: var(--neon-cyan, #4db8d9);
+      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;
+    }
+    .guide-gloss-item dd { margin: 0; font-size: 0.8rem; color: var(--text-light, #8ba4c0); line-height: 1.55; }
+
+    /* ---------------------------------------------------------------
+       SIMULATION TAB
+    --------------------------------------------------------------- */
+    .sim-no-seats-warn {
+      padding: 10px 14px; margin-top: 14px;
+      background: rgba(232,166,39,0.06); border: 1px solid rgba(232,166,39,0.22);
+      border-left: 3px solid var(--neon-gold, #e8a627);
+      border-radius: 0 var(--radius, 10px) var(--radius, 10px) 0;
+      color: var(--neon-gold, #e8a627); font-size: 0.82rem;
+    }
+    .sim-bonus-label { display: flex; align-items: center; gap: 7px; font-size: 0.83rem; color: var(--text-light); cursor: pointer; }
+    .sim-bonus-label input { accent-color: var(--neon-cyan, #4db8d9); cursor: pointer; }
+
+    /* My result banner */
+    .sim-my { padding: 14px 18px; border-radius: var(--radius-lg, 16px); margin-bottom: 16px; font-size: 0.9rem; animation: fadeInUp 0.3s ease both; }
+    .sim-my.placed {
+      background: linear-gradient(135deg, rgba(62,207,142,0.1) 0%, rgba(77,184,217,0.06) 100%);
+      border: 1px solid rgba(62,207,142,0.32); color: var(--neon-green, #3ecf8e);
+      box-shadow: 0 0 20px rgba(62,207,142,0.07);
+    }
+    .sim-my.unplaced {
+      background: rgba(232,166,39,0.07); border: 1px solid rgba(232,166,39,0.28);
+      color: var(--neon-gold, #e8a627);
+    }
+
+    /* Simulation summary � each stat a different colour */
+    .sim-summary { margin-bottom: 18px; }
+    .sim-summary-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border-radius: var(--radius-lg, 16px); overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .sim-summary-grid > div {
+      padding: 18px 14px; text-align: center;
+      border-right: 1px solid var(--border);
+    }
+    .sim-summary-grid > div:last-child { border-right: none; }
+    .sim-summary-grid > div:nth-child(1) { background: rgba(77,184,217,0.05); }
+    .sim-summary-grid > div:nth-child(2) { background: rgba(224,84,112,0.04); }
+    .sim-summary-grid > div:nth-child(3) { background: rgba(62,207,142,0.04); }
+    .sim-summary-grid > div:nth-child(4) { background: rgba(124,101,196,0.04); }
+    .sim-sum-val { display: block; font-size: 1.5rem; font-weight: 800; line-height: 1; }
+    .sim-summary-grid > div:nth-child(1) .sim-sum-val { color: var(--neon-cyan, #4db8d9);   text-shadow: 0 0 14px rgba(77,184,217,0.3); }
+    .sim-summary-grid > div:nth-child(2) .sim-sum-val { color: #e05470; }
+    .sim-summary-grid > div:nth-child(3) .sim-sum-val { color: var(--neon-green, #3ecf8e);  text-shadow: 0 0 14px rgba(62,207,142,0.25); }
+    .sim-summary-grid > div:nth-child(4) .sim-sum-val { color: var(--neon-purple, #7c65c4); text-shadow: 0 0 14px rgba(124,101,196,0.25); }
+    .sim-sum-lbl { display: block; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-top: 5px; }
+
+    /* Sim card grid */
+    .sim-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 14px; }
+    .sim-card {
+      background: var(--bg-card, rgba(16,26,52,0.85));
+      border: 1px solid var(--border); border-radius: var(--radius-lg, 16px);
+      padding: 16px; position: relative; overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      animation: fadeInUp 0.35s ease both; backdrop-filter: blur(8px);
+    }
+    /* Gradient top-stripe � matches meritnama spec/hosp cards */
+    .sim-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--neon-cyan, #4db8d9), var(--neon-purple, #7c65c4));
+    }
+    .sim-card:hover { border-color: rgba(77,184,217,0.22); box-shadow: var(--shadow, 0 4px 24px rgba(0,0,0,0.65)), 0 0 18px rgba(77,184,217,0.06); }
+    .sim-card-me { border-color: rgba(77,184,217,0.38); background: rgba(77,184,217,0.04); }
+    .sim-card-me::before { background: linear-gradient(90deg, var(--neon-cyan, #4db8d9), var(--neon-green, #3ecf8e)); }
+    .sim-card-open::before { background: linear-gradient(90deg, var(--neon-green, #3ecf8e), var(--neon-cyan, #4db8d9)); }
+
+    .sim-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin: 6px 0 12px; }
+    .sim-card-spec { display: block; font-weight: 700; font-size: 0.88rem; color: var(--text); }
+    .sim-card-hosp { display: block; font-size: 0.76rem; color: var(--text-muted); margin-top: 2px; }
+    .sim-card-meta { display: block; font-size: 0.64rem; color: var(--text-muted); opacity: 0.65; margin-top: 3px; }
+    .sim-card-badges { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; flex-shrink: 0; }
+
+    .sim-badge { font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 100px; }
+    .badge-full   { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.08); }
+    .badge-open   { background: rgba(62,207,142,0.12);  color: var(--neon-green, #3ecf8e); border: 1px solid rgba(62,207,142,0.28); }
+    .badge-cutoff { background: rgba(77,184,217,0.1);   color: var(--neon-cyan, #4db8d9);  border: 1px solid rgba(77,184,217,0.22); }
+
+    .sim-placed { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+    .sim-row {
+      display: grid; grid-template-columns: 1fr auto auto;
+      gap: 6px; align-items: center; padding: 5px 8px; border-radius: 6px;
+      font-size: 0.8rem; background: rgba(255,255,255,0.02); transition: background 0.12s;
+    }
+    .sim-row:hover { background: rgba(77,184,217,0.05); }
+    .sim-row-me    { background: rgba(77,184,217,0.12) !important; }
+    .sim-row-name  { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sim-row-marks { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--neon-cyan, #4db8d9); }
+    .sim-row-pref  { font-size: 0.68rem; color: var(--text-muted); }
+    .sim-empty-slot { font-size: 0.74rem; color: var(--text-muted); padding: 4px 0; opacity: 0.5; }
+
+    .sim-next-line {
+      display: flex; align-items: center; gap: 6px; padding: 6px 9px;
+      border-radius: 6px; background: rgba(255,255,255,0.02);
+      border: 1px dashed rgba(255,255,255,0.07); font-size: 0.78rem; margin-top: 6px;
+    }
+    .sim-next-me { border-color: rgba(77,184,217,0.35); background: rgba(77,184,217,0.07); }
+    .sim-next-placed-elsewhere { opacity: 0.55; border-style: dotted; }
+    .sim-next-lbl   { color: var(--text-muted); font-size: 0.67rem; flex-shrink: 0; white-space: nowrap; }
+    .sim-next-name  { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+    .sim-next-marks { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--neon-cyan, #4db8d9); flex-shrink: 0; }
+
+    .sim-expand-btn { margin-top: 8px; font-size: 0.72rem; }
+    .sim-others { display: none; flex-direction: column; gap: 3px; margin-top: 8px; }
+    .sim-card.expanded .sim-others { display: flex; }
+    .sim-other-row {
+      display: grid; grid-template-columns: 1fr auto auto;
+      gap: 6px; align-items: center; padding: 4px 6px; border-radius: 4px; font-size: 0.75rem;
+    }
+    .sim-other-name   { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted); }
+    .sim-other-marks  { font-variant-numeric: tabular-nums; color: var(--text-light, #3a506e); }
+    .sim-other-status { font-size: 0.67rem; color: var(--text-muted); opacity: 0.65; }
+
+    /* ---------------------------------------------------------------
+       ADD MANUALLY MODAL
+    --------------------------------------------------------------- */
+    .custom-modal-box {
+      background: rgba(9, 14, 34, 0.98);
+      border: 1px solid rgba(77,184,217,0.18); border-radius: var(--radius-lg, 16px);
+      padding: 28px; width: min(580px, 92vw); max-height: 82vh; overflow-y: auto;
+      position: relative; z-index: 1;
+      box-shadow: var(--shadow-lg, 0 8px 48px rgba(0,0,0,0.8)), 0 0 50px rgba(77,184,217,0.05);
+      animation: scaleIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .custom-modal-box h3 { color: var(--neon-cyan, #4db8d9); font-size: 1.05rem; margin: 0 0 6px; text-shadow: 0 0 14px rgba(77,184,217,0.28); }
+    .custom-modal-box > p { font-size: 0.82rem; color: var(--text-muted); margin: 0 0 18px; }
+
+    /* ---------------------------------------------------------------
+       TOAST
+    --------------------------------------------------------------- */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: rgba(13, 20, 44, 0.97); border: 1px solid var(--border);
+      color: var(--text); padding: 10px 22px; border-radius: 100px;
+      font-size: 0.84rem; box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+      opacity: 0; pointer-events: none; transition: opacity 0.22s ease;
+      z-index: 9999; white-space: nowrap; backdrop-filter: blur(10px);
+    }
+    .toast.toast-visible { opacity: 1; pointer-events: auto; }
+    .toast.toast-success { border-color: rgba(62,207,142,0.45); color: var(--neon-green, #3ecf8e); }
+    .toast.toast-warning { border-color: rgba(232,166,39,0.45); color: var(--neon-gold, #e8a627); }
+    .toast.toast-error   { border-color: rgba(224,84,112,0.45); color: #e05470; }
+
+    /* ---------------------------------------------------------------
+       RESPONSIVE
+    --------------------------------------------------------------- */
+    @media (max-width: 720px) {
+      .sim-summary-grid { grid-template-columns: 1fr 1fr; }
+      .sim-summary-grid > div:nth-child(2) { border-right: none; }
+      .sim-summary-grid > div:nth-child(3) { border-top: 1px solid var(--border); }
+    }
+    @media (max-width: 600px) {
+      .sim-findme-bar { padding: 8px 12px; }
+      .sb-row { grid-template-columns: 28px 44px 16px 1fr auto; gap: 4px; font-size: 0.78rem; }
+      .sim-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ---------------------------------------------------------------
+       SLOT BROWSER — candidate search panel
+    --------------------------------------------------------------- */
+    .sb-search-row {
+      display: flex; gap: 8px; align-items: center;
+      margin-top: 12px; padding-top: 12px;
+      border-top: 1px solid var(--border, rgba(77,184,217,0.1));
+    }
+    .sb-search-row .mt-filter-input { flex: 1; }
+    .sb-cand-panel {
+      margin-top: 10px; padding: 12px 14px;
+      background: rgba(77,184,217,0.04);
+      border: 1px solid rgba(77,184,217,0.16);
+      border-radius: var(--radius, 10px);
+    }
+    .sb-cand-hdr { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+    .sb-cand-name { font-weight: 700; color: var(--neon-cyan, #4db8d9); font-size: 0.88rem; }
+    .sb-cand-meta { font-size: 0.76rem; color: var(--text-muted); }
+    .sb-cand-prefs-lbl { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 6px; }
+    .sb-cand-prefs { display: flex; flex-wrap: wrap; gap: 5px; }
+    .sb-jump-btn {
+      font-size: 0.74rem; padding: 4px 9px;
+      border: 1px solid rgba(77,184,217,0.2); background: rgba(77,184,217,0.06);
+      color: var(--text-light, #3a506e); border-radius: 6px; cursor: pointer;
+      font-family: var(--font); transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .sb-jump-btn:hover { background: rgba(77,184,217,0.14); border-color: rgba(77,184,217,0.4); color: var(--text); }
+    .sb-jump-btn .pno { opacity: 0.5; margin-right: 3px; font-size: 0.68em; }
+    .sb-row-search {
+      outline: 2px solid rgba(232,166,39,0.55) !important;
+      background: rgba(232,166,39,0.08) !important;
+      opacity: 1 !important;
+    }
+    .sb-pick-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .sb-pick-btn {
+      font-size: 0.76rem; padding: 4px 10px;
+      border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03);
+      color: var(--text-light, #3a506e); border-radius: 6px; cursor: pointer;
+      font-family: var(--font); transition: background 0.15s;
+    }
+    .sb-pick-btn:hover { background: rgba(77,184,217,0.1); color: var(--text); }
+
+    /* ---------------------------------------------------------------
+       SIMULATION — candidate detail history (inside candidateModal)
+    --------------------------------------------------------------- */
+    .sim-hist-list { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+    .sim-hist-row {
+      display: grid; grid-template-columns: 22px 38px 1fr auto;
+      gap: 5px 10px; align-items: start; padding: 7px 10px;
+      border-radius: 7px; font-size: 0.8rem;
+      border: 1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02);
+    }
+    .sim-hist-placed { background: rgba(62,207,142,0.08); border-color: rgba(62,207,142,0.22); }
+    .sim-hist-beaten { background: rgba(224,84,112,0.05); border-color: rgba(224,84,112,0.15); }
+    .sim-hist-skip   { opacity: 0.42; }
+    .sim-hist-nodata { opacity: 0.35; }
+    .sim-hist-icon   { font-size: 0.82rem; text-align: center; line-height: 1.4; }
+    .sim-hist-no     { color: var(--text-muted); font-size: 0.71rem; white-space: nowrap; padding-top: 1px; }
+    .sim-hist-slot   { display: flex; flex-direction: column; gap: 1px; }
+    .sim-hist-spec   { color: var(--text); font-weight: 600; font-size: 0.81rem; }
+    .sim-hist-hosp   { color: var(--text-muted); font-size: 0.73rem; }
+    .sim-hist-quota  { color: var(--text-muted); font-size: 0.67rem; opacity: 0.7; }
+    .sim-hist-detail { text-align: right; color: var(--text-muted); font-size: 0.74rem; white-space: nowrap; padding-top: 2px; }
+    .sim-hist-placed .sim-hist-detail { color: var(--neon-green, #3ecf8e); font-weight: 700; }
+    .sim-hist-beaten .sim-hist-detail { color: #e05470; }
+    .sim-hist-section-lbl {
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted); margin: 14px 0 6px;
+    }
+
+    /* Clickable candidate rows in simulation cards */
+    .sim-row[data-sim-cand]         { cursor: pointer; }
+    .sim-row[data-sim-cand]:hover   { background: rgba(77,184,217,0.09) !important; }
+    .sim-next-line[data-sim-cand]   { cursor: pointer; }
+    .sim-next-line[data-sim-cand]:hover { background: rgba(77,184,217,0.1) !important; opacity: 1 !important; }
+    .sim-other-row[data-sim-cand]         { cursor: pointer; }
+    .sim-other-row[data-sim-cand]:hover   { background: rgba(77,184,217,0.06) !important; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════ LOADING OVERLAY ═══════════ -->
+<div id="simLoadingOverlay" class="sim-loading-overlay">
+  <div class="sim-loading-box">
+    <div class="sim-loading-spin"></div>
+    <p style="font-size:0.9rem;color:var(--text-muted)">Loading candidate data&hellip;</p>
+  </div>
+</div>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <img src="logo.svg" class="logo-img" alt="MeritNama" />
+    </div>
+    <div class="header-meta" id="headerMeta">
+      <span class="badge badge-info" id="dataStatus">Loading&hellip;</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="tab-nav" id="mainNav">
+  <a href="index.html" class="tab-btn back-btn">&#8592; Historical Data</a>
+  <button class="tab-btn active" data-tab="candidates">&#128100; Candidates</button>
+  <button class="tab-btn" data-tab="slotbrowser">&#127919; Where Merit Falls</button>
+  <button class="tab-btn" data-tab="simulation">&#9889; Allocation</button>
+  <button class="tab-btn" data-tab="guide">&#10067; Guide</button>
+</nav>
+
+<!-- ═══════════ AUTHOR BAR ═══════════ -->
+<div class="author-bar">
+  Independent, community-built tool by
+  <a href="https://github.com/itskaero" target="_blank" rel="noopener">@itskaero</a>
+  &middot;
+  <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a>
+  &middot;
+  <span class="author-bar-note">Induction 21 live simulation &mdash; <a href="index.html">historical merit data &rarr;</a></span>
+</div>
+
+<!-- ═══════════ FIND ME BAR ═══════════ -->
+<div class="sim-findme-bar">
+  <span class="sim-findme-label">Find my position:</span>
+  <input type="number" id="findMeInput" class="sim-findme-input" placeholder="Applicant ID&hellip;" />
+  <button id="findMeBtn" class="btn btn-sm">Find</button>
+  <span id="myBadge" class="sim-me-badge hidden"></span>
+  <button id="clearMeBtn" class="btn btn-sm btn-danger-soft hidden">&#10005; Clear</button>
+  <button id="addManuallyBtn" class="btn btn-sm" style="margin-left:auto">+ Add me manually</button>
+</div>
+
+<!-- ═══════════ NOTIFICATION BAR ═══════════ -->
+<div id="notifBar"></div>
+
+<!-- ═══════════ NO-DATA BANNER ═══════════ -->
+<div id="noDataBanner" class="no-data-banner hidden">
+  &#9888;&#65039; Candidate data not found at <code>data/induction21_candidates.json</code>.
+  Run <code>python scripts/export_candidates.py</code> in the prp-rewrite project, then copy the output to <code>meritnama/data/</code>.
+</div>
+
+<main class="main-content">
+
+  <!-- ══════════════════════════════════════════
+       TAB 1 : CANDIDATES
+  ══════════════════════════════════════════ -->
+  <section class="tab-content active" id="tab-candidates">
+    <div class="section-header">
+      <h2>Induction 21 &mdash; Candidate Pool</h2>
+      <p>All applicants with marks and applied programmes. Click any row to view their full preference list.</p>
+    </div>
+
+    <div class="card filter-card">
+      <div class="input-grid">
+        <div class="form-group">
+          <label for="candSearch">Search by name</label>
+          <input type="text" id="candSearch" class="mt-filter-input" placeholder="Type a name&hellip;" />
+        </div>
+        <div class="form-group">
+          <label for="candProgram">Programme</label>
+          <select id="candProgram" class="mt-filter-sel">
+            <option value="">All Programmes</option>
+            <option value="FCPS">FCPS</option>
+            <option value="MS">MS</option>
+            <option value="MD">MD</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:8px">
+        <span id="candCount" class="mt-count"></span>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table" id="candTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th data-sort="marksTotal" style="cursor:pointer">Total &#8597;</th>
+            <th data-sort="FCPS" style="cursor:pointer">FCPS &#8597;</th>
+            <th data-sort="MS" style="cursor:pointer">MS &#8597;</th>
+            <th data-sort="MD" style="cursor:pointer">MD &#8597;</th>
+            <th>Applied</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="candBody">
+          <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">Loading&hellip;</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="candPager" class="pagination"></div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       TAB 2 : SLOT BROWSER — "Where Merit Falls"
+  ══════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-slotbrowser">
+    <div class="section-header">
+      <h2>Where Does Merit Fall?</h2>
+      <p>Select a programme, quota, specialty and hospital to see all applicants ranked by their programme-specific marks &mdash; and where the seat cutoff lands.</p>
+    </div>
+
+    <div class="card filter-card">
+      <div class="input-grid">
+        <div class="form-group">
+          <label for="sbProgram">Programme</label>
+          <select id="sbProgram" class="mt-filter-sel">
+            <option value="">&#8212; Programme &#8212;</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="sbQuota">Quota</label>
+          <select id="sbQuota" class="mt-filter-sel">
+            <option value="">&#8212; Quota &#8212;</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="sbSpec">Specialty</label>
+          <select id="sbSpec" class="mt-filter-sel">
+            <option value="">&#8212; Specialty &#8212;</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="sbHosp">Hospital</label>
+          <select id="sbHosp" class="mt-filter-sel">
+            <option value="">&#8212; Hospital &#8212;</option>
+          </select>
+        </div>
+      </div>
+      <div class="sb-search-row">
+        <input type="text" id="sbCandSearch" class="mt-filter-input"
+          placeholder="Find candidate by name or applicant ID&hellip;" />
+        <button id="sbCandFindBtn" class="btn btn-sm">Find</button>
+        <button id="sbCandClearBtn" class="btn btn-sm hidden">&#10005; Clear</button>
+      </div>
+      <div id="sbCandPanel" class="hidden"></div>
+    </div>
+
+    <div id="sbResult" class="card" style="padding:0;overflow:hidden">
+      <p class="sb-placeholder">Select all four filters above to see the ranked applicant list.</p>
+    </div>
+    <!-- Candidate detail modal -->
+    <div id="sbCandModal" class="sbm-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="sbm-sheet">
+        <div id="sbCandModalInner"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       TAB 4 : GUIDE
+  ══════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-guide">
+    <div class="section-header">
+      <h2>How to Use This Simulation</h2>
+      <p>A complete guide to understanding the placement algorithm and all features of this tool.</p>
+    </div>
+
+    <div class="guide-grid">
+
+      <!-- ── Overview ── -->
+      <div class="guide-card">
+        <div class="guide-card-icon">&#127919;</div>
+        <h3>What is this?</h3>
+        <p>This tool simulates the <strong>PMDC Induction 21</strong> seat allocation process. It lets you explore the candidate pool, browse competition at any hospital/specialty slot, and run a full predicted placement to see where candidates are likely to land.</p>
+        <p>All data is processed entirely in your browser &mdash; nothing is sent to any server.</p>
+      </div>
+
+      <!-- ── Algorithm ── -->
+      <div class="guide-card guide-card-highlight">
+        <div class="guide-card-icon">&#9881;</div>
+        <h3>The Placement Algorithm (PRP)</h3>
+        <p>The simulation uses a <strong>Deferred-Acceptance</strong> approach (also called the PRP algorithm), which works in multiple passes:</p>
+        <ol class="guide-ol">
+          <li>All unplaced candidates are sorted by marks (highest first).</li>
+          <li>Each candidate tries their <strong>highest-priority preference</strong> (Preference #1 first).</li>
+          <li>If a seat is free &rarr; the candidate is placed.</li>
+          <li>If the slot is full but the candidate scores higher than the <em>lowest-scoring placed candidate</em> &rarr; they displace that candidate, who becomes unplaced again.</li>
+          <li>This repeats until no more placements change.</li>
+        </ol>
+        <div class="guide-note">
+          <strong>Key rule:</strong> A candidate is always placed at their <em>best available preference</em>. If placed at Preference&nbsp;#1, they will never occupy a lower-preference slot.
+        </div>
+      </div>
+
+      <!-- ── Marks ── -->
+      <div class="guide-card">
+        <div class="guide-card-icon">&#128200;</div>
+        <h3>How Marks Work</h3>
+        <p>Each candidate has a <strong>Total Marks</strong> score plus programme-specific scores:</p>
+        <ul class="guide-ul">
+          <li><span class="prog-tag prog-fcps">FCPS</span> &mdash; used for FCPS slot competition</li>
+          <li><span class="prog-tag prog-ms">MS</span> &mdash; used for MS slot competition</li>
+          <li><span class="prog-tag prog-md">MD</span> &mdash; used for MD slot competition</li>
+        </ul>
+        <p>Programme marks incorporate degree type, house job, experience, research, position, hard-area bonus, and MDCAT scores &mdash; weighted differently per programme.</p>
+        <div class="guide-note">When browsing a slot, rankings are based on the <strong>programme-specific mark</strong>, not the total mark.</div>
+      </div>
+
+      <!-- ── Find Me ── -->
+      <div class="guide-card">
+        <div class="guide-card-icon">&#128100;</div>
+        <h3>Finding Yourself</h3>
+        <p>Use the <strong>Find my position</strong> bar at the top of the page:</p>
+        <ul class="guide-ul">
+          <li>Enter your <strong>Applicant ID</strong> and click Find.</li>
+          <li>Your rows will be highlighted in cyan across all tabs.</li>
+          <li>If your ID is not in the dataset, use <strong>+ Add me manually</strong> to enter your marks and preferences. This data stays in your browser only.</li>
+        </ul>
+      </div>
+
+      <!-- ── Candidates Tab ── -->
+      <div class="guide-card">
+        <div class="guide-card-icon">&#128203;</div>
+        <h3>Candidates Tab</h3>
+        <p>Browse the full applicant pool for Induction 21.</p>
+        <ul class="guide-ul">
+          <li><strong>Search by name</strong> to find a specific person.</li>
+          <li><strong>Filter by programme</strong> to show only candidates who applied to FCPS, MS, or MD.</li>
+          <li><strong>Click any row</strong> to open a detail panel showing their score breakdown and full preference list.</li>
+          <li>From the preference list, click <strong>Browse slot &rarr;</strong> to jump directly to that slot in the Slot Browser.</li>
+        </ul>
+      </div>
+
+      <!-- ── Slot Browser ── -->
+      <div class="guide-card">
+        <div class="guide-card-icon">&#127970;</div>
+        <h3>Slot Browser &mdash; &ldquo;Where Merit Falls&rdquo;</h3>
+        <p>Select a <strong>Programme &rarr; Quota &rarr; Specialty &rarr; Hospital</strong> to see everyone who applied to that slot, ranked by marks.</p>
+        <div class="guide-row-legend">
+          <div class="guide-legend-item">
+            <div class="guide-swatch" style="background:rgba(62,207,142,0.13);border:1px solid rgba(62,207,142,0.3)"></div>
+            <span><strong>Green row</strong> &mdash; above the estimated cutoff (within seat count)</span>
+          </div>
+          <div class="guide-legend-item">
+            <div class="guide-swatch" style="background:rgba(255,255,255,0.03);opacity:0.6"></div>
+            <span><strong>Dimmed row</strong> &mdash; below the cutoff</span>
+          </div>
+          <div class="guide-legend-item">
+            <div class="guide-swatch" style="background:rgba(232,166,39,0.1);border:2px solid rgba(232,166,39,0.55)"></div>
+            <span><strong>Gold outline</strong> &mdash; candidate you searched for</span>
+          </div>
+          <div class="guide-legend-item">
+            <div class="guide-swatch" style="opacity:0.35;background:rgba(255,255,255,0.04)"></div>
+            <span><strong>Faded row + <em>&#8593; higher pref</em> tag</strong> &mdash; simulation predicts this candidate will be placed at a higher-priority slot and won&rsquo;t compete here</span>
+          </div>
+          <div class="guide-legend-item">
+            <div class="guide-swatch" style="background:rgba(62,207,142,0.1);border:1px solid rgba(62,207,142,0.3)"></div>
+            <span><strong>Green tag <em>&#10003; selected</em></strong> &mdash; simulation predicts this candidate lands at this exact slot</span>
+          </div>
+        </div>
+        <div class="guide-note">The <strong>faded / higher-pref</strong> annotations only appear after you run the Simulation on the same programme. Without simulation data, all applicants are shown as-is.</div>
+        <p style="margin-top:10px">Use the <strong>Find candidate</strong> search box to locate any person across all their preferences and jump between slots.</p>
+      </div>
+
+      <!-- ── Simulation Tab ── -->
+      <div class="guide-card guide-card-highlight">
+        <div class="guide-card-icon">&#9889;</div>
+        <h3>Simulation Tab</h3>
+        <p>Runs the full PRP placement algorithm across all candidates and all slots for a chosen programme.</p>
+        <ol class="guide-ol">
+          <li>Select a <strong>Programme</strong> (FCPS / MS / MD).</li>
+          <li>Optionally enable <strong>Parent Institute Bonus</strong> (+5&nbsp;marks when competing within your parent hospital &mdash; matches PMDC rules).</li>
+          <li>Click <strong>&#9889; Run Simulation</strong>.</li>
+          <li>Results show every slot with its placed candidates and the next-in-line candidate.</li>
+          <li>If you have identified yourself, a <strong>personalised banner</strong> shows your predicted placement at the top.</li>
+        </ol>
+        <div class="guide-note">After running the simulation, go back to the <strong>Slot Browser</strong> &mdash; every slot will now show placement predictions (faded rows, &#10003; selected tags).</div>
+      </div>
+
+      <!-- ── Reading Simulation Cards ── -->
+      <div class="guide-card">
+        <div class="guide-card-icon">&#128196;</div>
+        <h3>Reading Simulation Result Cards</h3>
+        <p>Each card represents one slot (specialty + hospital + quota).</p>
+        <ul class="guide-ul">
+          <li><strong>X/Y badge</strong> &mdash; filled seats out of total seats.</li>
+          <li><strong>Cutoff mark</strong> &mdash; the lowest mark among placed candidates.</li>
+          <li><strong>Next in line</strong> &mdash; the highest-scoring unplaced applicant for this slot (first person to benefit if a placed candidate withdraws).</li>
+          <li><strong>Others</strong> &mdash; remaining applicants who listed this slot but were not placed (expandable).</li>
+          <li>Click any candidate row to see their full journey through the algorithm &mdash; which slots they tried, where they were beaten, and where they finally landed.</li>
+        </ul>
+      </div>
+
+      <!-- ── Glossary ── -->
+      <div class="guide-card" style="grid-column: 1 / -1">
+        <div class="guide-card-icon">&#128218;</div>
+        <h3>Glossary</h3>
+        <div class="guide-glossary">
+          <div class="guide-gloss-item"><dt>PRP</dt><dd>Pakistan Residency Programme &mdash; the postgraduate training framework administered by PMDC/CPSP.</dd></div>
+          <div class="guide-gloss-item"><dt>FCPS</dt><dd>Fellowship of the College of Physicians and Surgeons &mdash; a 5-year postgraduate clinical training programme.</dd></div>
+          <div class="guide-gloss-item"><dt>MS / MD</dt><dd>Master of Surgery / Doctor of Medicine &mdash; university-based postgraduate degrees (3&ndash;4 years).</dd></div>
+          <div class="guide-gloss-item"><dt>Quota</dt><dd>The eligibility category for a seat (e.g. Open Merit, Punjab, Federal, Armed Forces). Candidates compete only within their own quota.</dd></div>
+          <div class="guide-gloss-item"><dt>Preference No.</dt><dd>The priority order a candidate assigned to each slot when filling the application form. Preference #1 is their top choice.</dd></div>
+          <div class="guide-gloss-item"><dt>Parent Institute</dt><dd>The hospital where a candidate completed their house job. PMDC rules allow a +5&nbsp;mark bonus when competing for a seat at the parent institute.</dd></div>
+          <div class="guide-gloss-item"><dt>Deferred Acceptance</dt><dd>The allocation algorithm used here. It guarantees a stable, preference-respecting match &mdash; no candidate can be displaced from their final placement by someone they outrank.</dd></div>
+          <div class="guide-gloss-item"><dt>Cutoff</dt><dd>The lowest score among candidates placed in a given slot. Any applicant below this score would not obtain a seat at that slot under current competition.</dd></div>
+          <div class="guide-gloss-item"><dt>Effective Applicants</dt><dd>In the Slot Browser (post-simulation), the count of applicants <em>excluding</em> those predicted to be placed at a higher-preference slot &mdash; the realistic number of competitors.</dd></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       TAB 3 : SIMULATION
+  ══════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-simulation">
+    <div class="section-header">
+      <h2>Placement Simulation</h2>
+      <p>Runs the PRP Deferred-Acceptance algorithm on the current candidate pool.
+         Each candidate is placed into their highest available preference by marks.
+         Requires <code>data/induction21_seats.json</code> for realistic seat counts.</p>
+    </div>
+
+    <div class="card">
+      <div class="input-grid">
+        <div class="form-group">
+          <label for="simProgram">Programme</label>
+          <select id="simProgram" class="mt-filter-sel">
+            <option value="FCPS">FCPS</option>
+            <option value="MS">MS</option>
+            <option value="MD">MD</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="simFilter">Filter results</label>
+          <input type="text" id="simFilter" class="mt-filter-input" placeholder="Specialty or hospital&hellip;" />
+        </div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <button id="runSimBtn" class="btn btn-primary btn-large">&#9889; Run Simulation</button>
+        <label class="sim-bonus-label">
+          <input type="checkbox" id="simParentBonus" />
+          Parent Institute Bonus (+5&nbsp;marks within slot)
+        </label>
+      </div>
+
+      <div id="simNoSeatsWarn" class="sim-no-seats-warn hidden">
+        &#9888;&#65039; <strong>Seat data not loaded.</strong>
+        Simulation defaults to 1 seat per slot &mdash; results will be unrealistic.
+        Generate <code>data/induction21_seats.json</code> via <code>scripts/export_candidates.py</code>.
+      </div>
+    </div>
+
+    <div id="simResults" style="margin-top:16px"></div>
+  </section>
+
+</main>
+
+<!-- ══════════════════════════════════════════
+     CANDIDATE DETAIL MODAL
+══════════════════════════════════════════ -->
+<div class="modal hidden" id="candidateModal">
+  <div class="modal-overlay" id="candidateModalOverlay"></div>
+  <div class="modal-box" style="max-width:680px;max-height:85vh;overflow-y:auto">
+    <button class="modal-close" id="candidateModalClose" title="Close">&times;</button>
+    <div id="candidateModalBody"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ADD MANUALLY MODAL
+══════════════════════════════════════════ -->
+<div class="modal hidden" id="customModal">
+  <div class="modal-overlay" id="customModalOverlay"></div>
+  <div class="custom-modal-box">
+    <button class="modal-close" id="customModalClose" title="Close">&times;</button>
+    <h3>Add Yourself Manually</h3>
+    <p>If your data is not in the dataset, enter your marks and preferences here. Saved to your browser only &mdash; not sent anywhere.</p>
+
+    <div class="input-grid" style="margin-bottom:14px">
+      <div class="form-group">
+        <label for="customName">Your name (display)</label>
+        <input type="text" id="customName" class="mt-filter-input" placeholder="e.g. Dr. Ali" />
+      </div>
+      <div class="form-group">
+        <label for="customId">Applicant ID</label>
+        <input type="number" id="customId" class="mt-filter-input" placeholder="Your ID" />
+      </div>
+    </div>
+
+    <div class="input-grid" style="margin-bottom:14px">
+      <div class="form-group">
+        <label for="customMarksTotal">Total marks</label>
+        <input type="number" id="customMarksTotal" class="mt-filter-input" step="0.01" placeholder="e.g. 45.50" />
+      </div>
+      <div class="form-group">
+        <label for="customMarksFCPS">FCPS marks</label>
+        <input type="number" id="customMarksFCPS" class="mt-filter-input" step="0.01" placeholder="Leave blank = total" />
+      </div>
+      <div class="form-group">
+        <label for="customMarksMS">MS marks</label>
+        <input type="number" id="customMarksMS" class="mt-filter-input" step="0.01" placeholder="Leave blank = total" />
+      </div>
+      <div class="form-group">
+        <label for="customMarksMD">MD marks</label>
+        <input type="number" id="customMarksMD" class="mt-filter-input" step="0.01" placeholder="Leave blank = total" />
+      </div>
+    </div>
+
+    <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px">
+      Add your preferences below (one per row). Use the Slot Browser dropdowns as reference for exact names.
+    </p>
+    <div id="customPrefsContainer"></div>
+    <button class="btn btn-sm" id="addCustomPrefBtn" style="margin-bottom:16px">+ Add preference row</button>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" id="customCancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="customSaveBtn">Save &amp; Identify</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TOOLTIP
+══════════════════════════════════════════ -->
+<div class="tooltip-popup hidden" id="tooltipEl">
+  <div class="tooltip-title"></div>
+  <div class="tooltip-body"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TOAST
+══════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<footer class="site-footer">
+  <p>MeritNama &middot; Induction 21 &middot; <a href="index.html">Historical Data &rarr;</a></p>
+  <p style="margin-top:4px;font-size:0.72rem;opacity:0.5">
+    Preference data sourced from the PHF public API. PII removed. Simulation results are estimates only &mdash; not official.
+    Placements depend on seat counts and pool completeness.
+  </p>
+</footer>
+
+<script>
+  // Wire up Add Manually modal close + pref builder before simulation.js loads
+  document.getElementById('customModalOverlay')?.addEventListener('click', () =>
+    document.getElementById('customModal')?.classList.add('hidden'));
+  document.getElementById('customCancelBtn')?.addEventListener('click', () =>
+    document.getElementById('customModal')?.classList.add('hidden'));
+
+  let _prefCount = 0;
+  const PROGS_LIST = ['FCPS', 'MS', 'MD'];
+
+  document.getElementById('addCustomPrefBtn')?.addEventListener('click', () => {
+    _prefCount++;
+    const row = document.createElement('div');
+    row.className = 'custom-pref-row';
+    row.style.cssText = 'display:grid;grid-template-columns:60px 80px 1fr 1fr auto;gap:6px;margin-bottom:6px;align-items:center;font-size:0.8rem';
+    row.innerHTML = `
+      <input type="number" class="mt-filter-input cp-no" placeholder="#" value="${_prefCount}" min="1" />
+      <select class="mt-filter-sel cp-prog">
+        ${PROGS_LIST.map(p => `<option value="${p}">${p}</option>`).join('')}
+      </select>
+      <input type="text" class="mt-filter-input cp-quota" placeholder="Quota (e.g. Punjab)" />
+      <input type="text" class="mt-filter-input cp-spec" placeholder="Specialty" />
+      <input type="text" class="mt-filter-input cp-hosp" placeholder="Hospital" style="grid-column:span 1" />
+    `;
+    // Make it span full width for hospital
+    row.style.gridTemplateColumns = '50px 76px 1fr 1fr';
+    row.innerHTML = `
+      <input type="number" class="mt-filter-input cp-no" placeholder="#" value="${_prefCount}" min="1" style="width:100%" />
+      <select class="mt-filter-sel cp-prog" style="width:100%">
+        ${PROGS_LIST.map(p => `<option value="${p}">${p}</option>`).join('')}
+      </select>
+      <input type="text" class="mt-filter-input cp-quota" placeholder="Quota" style="width:100%" />
+      <input type="text" class="mt-filter-input cp-spec" placeholder="Specialty" style="width:100%" />
+      <div style="grid-column:1/-1;display:flex;gap:6px">
+        <input type="text" class="mt-filter-input cp-hosp" placeholder="Hospital" style="flex:1" />
+        <button class="btn btn-sm" onclick="this.closest('.custom-pref-row').remove()" title="Remove">&times;</button>
+      </div>
+    `;
+    document.getElementById('customPrefsContainer')?.appendChild(row);
+  });
+</script>
+
+<script src="simulation.js"></script>
+</body>
+</html>
