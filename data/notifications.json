@@ -9,5 +9,16 @@
     "dismissable": false,
     "link": null,
     "linkText": null
+  },
+  {
+    "id": "data-notes-v1",
+    "active": true,
+    "type": "info",
+    "icon": "ℹ️",
+    "title": "Data Notes",
+    "body": "Some applicants appear without preferences or programme marks — this is as-received from the backend, not a site error. Additionally, service experience marks are present in the source data but excluded from merit ranking; base scores shown reflect MBBS aggregate + house job + position + MDCAT only.",
+    "dismissable": true,
+    "link": null,
+    "linkText": null
   }
 ]

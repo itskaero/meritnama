@@ -195,7 +195,7 @@ function identifyUser(idStr) {
   SIM.myId = id;
   localStorage.setItem(MY_ID_KEY, id);
   updateMyBadge();
-  showToast(`Found: ${found.nameFull} — ${found.marksTotal.toFixed(2)} marks`, 'success');
+  showToast(`Found: ${found.nameFull} — ${baseMarks(found).toFixed(2)} marks`, 'success');
   if (SIM.activeTab === 'candidates') applyAndRenderCandidates();
 }
 
@@ -215,7 +215,7 @@ function updateMyBadge() {
 
   const me = SIM.myId ? (allCandidates().find(c => String(c.applicantId) === SIM.myId)) : null;
   if (me) {
-    badge.textContent = `${me.nameFull.split(' ')[0]} — ${me.marksTotal.toFixed(2)}`;
+    badge.textContent = `${me.nameFull.split(' ')[0]} — ${baseMarks(me).toFixed(2)}`;
     badge.classList.remove('hidden');
     clr?.classList.remove('hidden');
     if (input) input.value = SIM.myId;
@@ -396,7 +396,7 @@ function renderCandidateTable(slice, total) {
     return `<tr class="${isMe ? 'row-me' : ''}" data-id="${c.applicantId}" style="cursor:pointer">
       <td class="td-num">${rank}</td>
       <td>${esc(c.nameFull)} ${custom}${isMe ? '<span class="me-tag">YOU</span>' : ''}</td>
-      <td class="td-num">${fmtM(c.marksTotal)}</td>
+      <td class="td-num">${fmtM(baseMarks(c))}</td>
       <td class="td-num">${fmtM(effectiveMark(c, 'FCPS'))}</td>
       <td class="td-num">${fmtM(effectiveMark(c, 'MS'))}</td>
       <td class="td-num">${fmtM(effectiveMark(c, 'MD'))}</td>
@@ -433,7 +433,7 @@ function openCandidateDetail(idStr) {
   const progs  = Object.keys(c.programMarks || {}).filter(p => effectiveMark(c, p) != null);
 
   const scoreRows = [
-    ['Degree',     c.degree],
+    ['MBBS',       c.degree],
     ['House Job',  c.houseJob],
     ['Experience', c.experience],
     ['Research',   c.research],
@@ -447,17 +447,21 @@ function openCandidateDetail(idStr) {
       <div>
         <h3>${esc(c.nameFull)} ${isMe ? '<span class="me-tag">YOU</span>' : ''}
           ${c._custom ? '<span class="custom-tag">manual</span>' : ''}</h3>
-        <p class="cand-detail-meta">ID: ${c.applicantId} &nbsp;·&nbsp; Total: <strong>${fmtM(c.marksTotal)}</strong></p>
+        <p class="cand-detail-meta">ID: ${c.applicantId} &nbsp;·&nbsp; Base: <strong>${fmtM(baseMarks(c))}</strong></p>
       </div>
     </div>
 
     <div class="cand-scores-grid">
-      ${Object.entries(c.programMarks || {}).map(([p, m]) => `
-        <div class="cand-score-card ${c.applied_in?.[p] ? 'applied' : ''}" data-prog="${esc(p)}">
+      ${Object.entries(c.programMarks || {}).map(([p, m]) => {
+        const eff = effectiveMark(c, p);
+        const applied = c.applied_in?.[p];
+        return `
+        <div class="cand-score-card ${applied ? 'applied' : ''}" data-prog="${esc(p)}">
           <span class="cand-score-prog">${p}</span>
-          <span class="cand-score-val">${fmtM(m)}</span>
-          <span class="cand-score-lbl">${c.applied_in?.[p] ? '✓ Applied' : 'Not applied'}</span>
-        </div>`).join('')}
+          <span class="cand-score-val">${eff != null ? fmtM(eff) : '—'}</span>
+          <span class="cand-score-lbl">${applied ? `✓ Applied${m ? ` (+${fmtM(m)})` : ''}` : 'Not applied'}</span>
+        </div>`;
+      }).join('')}
     </div>
 
     ${scoreRows.length ? `
@@ -465,7 +469,7 @@ function openCandidateDetail(idStr) {
       <summary>Score breakdown</summary>
       <div class="score-bk-grid">
         ${scoreRows.map(([l, v]) => `<span>${l}</span><span class="score-bk-val">${fmtM(v)}</span>`).join('')}
-        <span><strong>Total</strong></span><span class="score-bk-val"><strong>${fmtM(c.marksTotal)}</strong></span>
+        <span><strong>Base Total</strong></span><span class="score-bk-val"><strong>${fmtM(baseMarks(c))}</strong></span>
       </div>
     </details>` : ''}
 
@@ -1049,7 +1053,7 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
   const prog = candidates.map(c => ({
     applicantId: c.applicantId,
     nameFull:    c.nameFull,
-    marksTotal:  effectiveMark(c, program) ?? c.marksTotal,
+    marksTotal:  effectiveMark(c, program) ?? baseMarks(c),
     _prefs:      (c.preference?.[program] || [])
                    .slice().sort((a, b) => a.preferenceNo - b.preferenceNo),
     placed: false, _q: null, _s: null, _h: null,
@@ -1484,15 +1488,23 @@ function openSimCandidateDetail(applicantId) {
 }
 
 /**
+ * Base marks for a candidate — raw marksTotal minus experience marks.
+ * Experience is excluded from merit ranking per current policy.
+ */
+function baseMarks(c) {
+  return (c.marksTotal ?? 0) - (c.experience ?? 0);
+}
+
+/**
  * Effective marks for a candidate in a specific program.
- * = marksTotal + programMarks[program]  (programMarks is a per-program bonus)
+ * = baseMarks(c) + programMarks[program]  (programMarks is a per-program bonus)
  * Returns null when applied_in[program] is false (candidate did not apply).
  * A candidate may have applied_in=true but programMarks=0 (0 bonus) — they
- * are still valid and ranked on marksTotal alone.
+ * are still valid and ranked on baseMarks alone.
  */
 function effectiveMark(c, program) {
   if (!c.applied_in?.[program]) return null;   // did not apply
-  return (c.marksTotal ?? 0) + (c.programMarks?.[program] ?? 0);
+  return baseMarks(c) + (c.programMarks?.[program] ?? 0);
 }
 
 function esc(s) {
