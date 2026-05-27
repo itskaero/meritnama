@@ -34,6 +34,23 @@ const firebaseConfig = {
 };
 ```
 
+### Optional: Generate config from GitHub Secrets
+
+This repository includes:
+- `firebase-config.template.js`
+- `.github/workflows/render-firebase-config.yml`
+
+To use the workflow, add these repository secrets:
+- `FIREBASE_API_KEY`
+- `FIREBASE_AUTH_DOMAIN`
+- `FIREBASE_PROJECT_ID`
+- `FIREBASE_STORAGE_BUCKET`
+- `FIREBASE_MESSAGING_SENDER_ID`
+- `FIREBASE_APP_ID`
+
+Then run **Actions → Render Firebase Config → Run workflow**.  
+The workflow renders `firebase-config.js` from the template and uploads it as an artifact.
+
 ---
 
 ## 3. Set Up Firestore Collections
