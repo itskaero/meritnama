@@ -3,6 +3,9 @@ name: Render Firebase Config
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   render-config:
     runs-on: ubuntu-latest
