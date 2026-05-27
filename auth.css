@@ -1,0 +1,121 @@
+/* ═══════════════════════════════════════════════════════
+   Auth Gate — Full-screen overlay (non-bypassable)
+   ═══════════════════════════════════════════════════════ */
+
+#authGate {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #0d1626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #c8daf0;
+}
+
+#authGate .auth-card {
+  background: rgba(16, 26, 52, 0.95);
+  border: 1px solid rgba(77, 184, 217, 0.18);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  width: 90%;
+  max-width: 380px;
+  box-shadow: 0 0 40px rgba(77, 184, 217, 0.08);
+  text-align: center;
+}
+
+#authGate .auth-logo {
+  width: 120px;
+  margin-bottom: 1rem;
+}
+
+#authGate h2 {
+  font-size: 1.3rem;
+  margin-bottom: 0.3rem;
+  color: #4db8d9;
+}
+
+#authGate .auth-subtitle {
+  font-size: 0.85rem;
+  color: #6b84a8;
+  margin-bottom: 1.5rem;
+}
+
+#authGate .auth-field {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+#authGate .auth-field label {
+  display: block;
+  font-size: 0.78rem;
+  color: #6b84a8;
+  margin-bottom: 0.3rem;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#authGate .auth-field input {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 1px solid rgba(77, 184, 217, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #c8daf0;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+#authGate .auth-field input:focus {
+  border-color: #4db8d9;
+  box-shadow: 0 0 8px rgba(77, 184, 217, 0.15);
+}
+
+#authGate .auth-btn {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #4db8d9, #7c65c4);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+#authGate .auth-btn:hover {
+  opacity: 0.9;
+}
+
+#authGate .auth-btn:active {
+  transform: scale(0.98);
+}
+
+#authGate .auth-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#authGate .auth-error {
+  color: #e05470;
+  font-size: 0.82rem;
+  margin-top: 0.75rem;
+  min-height: 1.2em;
+}
+
+#authGate .auth-footer {
+  margin-top: 1.5rem;
+  font-size: 0.72rem;
+  color: #3a506e;
+}
+
+/* Hide page content until authenticated */
+body.auth-locked > *:not(#authGate):not(script):not(link):not(style) {
+  display: none !important;
+}
