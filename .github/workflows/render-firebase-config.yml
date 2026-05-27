@@ -8,10 +8,6 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 jobs:
   render-config:
     runs-on: ubuntu-latest
@@ -58,10 +54,24 @@ jobs:
           name: firebase-config
           path: firebase-config.js
 
+      - name: Prepare GitHub Pages site artifact
+        run: |
+          mkdir -p /tmp/site
+          rsync -av \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude 'officialMeritList/' \
+            --exclude 'officialGazette/' \
+            --exclude 'scripts/' \
+            --exclude '*.md' \
+            --exclude 'firebase-config.template.js' \
+            --exclude 'firestore.rules' \
+            ./ /tmp/site/
+
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: /tmp/site
 
   deploy-pages:
     runs-on: ubuntu-latest
