@@ -49,7 +49,7 @@ To use the workflow, add these repository secrets:
 - `FIREBASE_APP_ID`
 
 Then run **Actions → Render Firebase Config → Run workflow**.  
-The workflow renders `firebase-config.js` from the template and uploads it as an artifact.
+The workflow renders `firebase-config.js` from the template, uploads it as an artifact, and deploys the site to GitHub Pages with the updated config.
 
 ---
 
