@@ -1,320 +1,621 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard — MeritNama</title>
+  <title>Admin Dashboard â€” MeritNama</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0d1626;
-      --surface: rgba(16, 26, 52, 0.85);
-      --border: rgba(77, 184, 217, 0.15);
-      --accent: #4db8d9;
-      --accent2: #7c65c4;
-      --text: #c8daf0;
-      --muted: #6b84a8;
-      --success: #3ecf8e;
-      --danger: #e05470;
-      --radius: 12px;
+      --bg:        #0d1626;
+      --surface:   rgba(16, 26, 52, 0.85);
+      --border:    rgba(77, 184, 217, 0.12);
+      --border-hv: rgba(77, 184, 217, 0.28);
+      --accent:    #4db8d9;
+      --accent2:   #7c65c4;
+      --text:      #c8daf0;
+      --muted:     #6b84a8;
+      --success:   #3ecf8e;
+      --danger:    #e05470;
+      --radius:    10px;
+      --radius-lg: 16px;
+      --font:      'Segoe UI', system-ui, -apple-system, sans-serif;
+      --mono:      'Consolas', 'Courier New', monospace;
+      --glow-c:    0 0 14px rgba(77,184,217,0.22), 0 0 32px rgba(77,184,217,0.08);
+      --glow-p:    0 0 14px rgba(124,101,196,0.28), 0 0 32px rgba(124,101,196,0.1);
     }
 
+    /* â”€â”€ Keyframes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-5px); }
+    }
+    @keyframes spin  { to { transform: rotate(360deg); } }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+    @keyframes shimmer {
+      from { background-position: -200% center; }
+      to   { background-position:  200% center; }
+    }
+
+    /* â”€â”€ Base â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-family: var(--font);
       background: var(--bg);
+      background-image:
+        radial-gradient(ellipse at 15% 40%, rgba(77,184,217,0.04) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 10%, rgba(124,101,196,0.04) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 90%, rgba(62,207,142,0.025) 0%, transparent 50%);
       color: var(--text);
       min-height: 100vh;
-      padding: 1rem;
+      line-height: 1.6;
     }
 
-    .admin-header {
-      text-align: center;
-      padding: 2rem 1rem 1rem;
-    }
-
-    .admin-header h1 {
-      font-size: 1.5rem;
-      color: var(--accent);
-      margin-bottom: 0.3rem;
-    }
-
-    .admin-header p {
-      color: var(--muted);
-      font-size: 0.85rem;
-    }
-
-    /* Admin Login */
-    #adminLogin {
-      max-width: 360px;
-      margin: 3rem auto;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 2rem;
-      text-align: center;
-    }
-
-    #adminLogin h2 {
-      color: var(--accent);
-      margin-bottom: 1rem;
-      font-size: 1.2rem;
-    }
-
-    #adminLogin input {
-      width: 100%;
-      padding: 0.7rem 1rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: rgba(255,255,255,0.04);
-      color: var(--text);
-      font-size: 1rem;
-      margin-bottom: 1rem;
-      outline: none;
-    }
-
-    #adminLogin input:focus {
-      border-color: var(--accent);
-    }
-
-    #adminLogin button {
-      width: 100%;
-      padding: 0.7rem;
-      border: none;
-      border-radius: 8px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 0.95rem;
-    }
-
-    #adminLogin .error {
-      color: var(--danger);
-      font-size: 0.82rem;
-      margin-top: 0.5rem;
-    }
-
-    /* Dashboard */
-    #dashboard { display: none; }
-    #dashboard.active { display: block; }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
-      max-width: 900px;
-      margin: 1.5rem auto;
-    }
-
-    .stat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.2rem;
-      text-align: center;
-    }
-
-    .stat-card .stat-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--accent);
-    }
-
-    .stat-card .stat-label {
-      font-size: 0.78rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-top: 0.3rem;
-    }
-
-    /* Controls */
-    .controls {
-      max-width: 900px;
-      margin: 1rem auto;
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .controls input, .controls select {
-      padding: 0.5rem 0.8rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: rgba(255,255,255,0.04);
-      color: var(--text);
-      font-size: 0.85rem;
-      outline: none;
-    }
-
-    .controls input:focus, .controls select:focus {
-      border-color: var(--accent);
-    }
-
-    .controls button {
-      padding: 0.5rem 1rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--surface);
-      color: var(--accent);
-      cursor: pointer;
-      font-size: 0.85rem;
-    }
-
-    .controls button:hover {
-      border-color: var(--accent);
-    }
-
-    /* Logs Table */
-    .logs-container {
-      max-width: 900px;
-      margin: 1.5rem auto;
-      overflow-x: auto;
-    }
-
-    .logs-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.82rem;
-    }
-
-    .logs-table th, .logs-table td {
-      padding: 0.6rem 0.8rem;
-      text-align: left;
+    /* â”€â”€ Top Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    .admin-topbar {
+      background: rgba(4, 8, 22, 0.92);
       border-bottom: 1px solid var(--border);
-    }
-
-    .logs-table th {
-      color: var(--muted);
-      text-transform: uppercase;
-      font-size: 0.7rem;
-      letter-spacing: 0.5px;
+      padding: 0 1.5rem;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       position: sticky;
       top: 0;
-      background: var(--bg);
+      z-index: 200;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 1px 0 var(--border), 0 4px 30px rgba(0,0,0,0.5);
     }
-
-    .logs-table tr:hover td {
-      background: rgba(77, 184, 217, 0.04);
+    .topbar-brand { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand img {
+      height: 42px; width: auto;
+      mix-blend-mode: screen;
+      animation: float 3.5s ease-in-out infinite;
     }
-
-    .badge-success {
-      display: inline-block;
-      padding: 0.15rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      background: rgba(62, 207, 142, 0.12);
-      color: var(--success);
-    }
-
-    .badge-fail {
-      display: inline-block;
-      padding: 0.15rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      background: rgba(224, 84, 112, 0.12);
-      color: var(--danger);
-    }
-
-    .ip-cell {
-      font-family: 'Courier New', monospace;
-      font-size: 0.78rem;
-    }
+    .topbar-title { font-size: 1rem; font-weight: 700; color: var(--accent); text-shadow: 0 0 20px rgba(77,184,217,0.4); }
+    .topbar-sub   { font-size: 0.7rem; color: var(--muted); }
 
     .logout-btn {
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      padding: 0.4rem 0.8rem;
-      border: 1px solid var(--danger);
-      border-radius: 6px;
-      background: transparent;
+      padding: 0.38rem 1rem;
+      border: 1px solid rgba(224,84,112,0.35);
+      border-radius: 8px;
+      background: rgba(224,84,112,0.06);
       color: var(--danger);
       cursor: pointer;
       font-size: 0.8rem;
+      font-family: var(--font);
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.1s;
+    }
+    .logout-btn:hover {
+      background: rgba(224,84,112,0.14);
+      border-color: var(--danger);
+      box-shadow: 0 0 14px rgba(224,84,112,0.22);
+      transform: translateY(-1px);
     }
 
-    .empty-state {
+    /* â”€â”€ Login Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    .login-wrap {
+      min-height: calc(100vh - 62px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    #adminLogin {
+      width: 100%; max-width: 400px;
+      background: rgba(16,26,52,0.9);
+      border: 1px solid var(--border);
+      border-top: 2px solid var(--accent);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem 2rem;
       text-align: center;
-      padding: 3rem;
-      color: var(--muted);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 8px 48px rgba(0,0,0,0.7), var(--glow-c);
+      animation: fadeInUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .login-logo {
+      height: 62px; width: auto; margin-bottom: 1.2rem;
+      mix-blend-mode: screen;
+      animation: float 3.5s ease-in-out infinite;
+    }
+    #adminLogin h2 {
+      color: var(--accent); font-size: 1.25rem;
+      text-shadow: 0 0 16px rgba(77,184,217,0.4);
+      margin-bottom: 0.2rem;
+    }
+    .login-subtitle { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.8rem; }
+    .login-field { text-align: left; margin-bottom: 1rem; }
+    .login-field label {
+      display: block; font-size: 0.7rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 0.3rem; font-weight: 600;
+    }
+    .login-field input {
+      width: 100%; padding: 0.72rem 1rem;
+      border: 1px solid var(--border); border-radius: 8px;
+      background: rgba(255,255,255,0.04); color: var(--text);
+      font-size: 0.95rem; font-family: var(--font); outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .login-field input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(77,184,217,0.12), var(--glow-c);
+      background: rgba(77,184,217,0.03);
+    }
+    .login-btn {
+      width: 100%; padding: 0.82rem; margin-top: 0.5rem;
+      border: none; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+      color: #fff; font-weight: 600; font-size: 0.95rem; font-family: var(--font);
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(77,184,217,0.28);
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .login-btn::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+      background-size: 200% 100%;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(77,184,217,0.4), 0 0 40px rgba(124,101,196,0.2); }
+    .login-btn:hover::before { opacity: 1; animation: shimmer 1.4s linear infinite; }
+    .login-btn:active { transform: translateY(0); }
+    .login-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+    .login-btn .btn-spinner {
+      display: none; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+    }
+    .login-btn.loading .btn-label  { display: none; }
+    .login-btn.loading .btn-spinner { display: block; }
+    .login-error {
+      color: var(--danger); font-size: 0.8rem; margin-top: 0.8rem; min-height: 1.1rem;
+      animation: fadeInUp 0.2s ease;
     }
 
+    /* â”€â”€ Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    #dashboard { display: none; }
+    #dashboard.active { display: block; animation: fadeInUp 0.35s ease both; }
+    .dash-body { max-width: 960px; margin: 0 auto; padding: 1.5rem 1.2rem 3rem; }
+
+    /* â”€â”€ Stat cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 1rem; margin-bottom: 0.25rem;
+    }
+    .stat-card {
+      background: rgba(16,26,52,0.85);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.3rem 1rem;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      animation: fadeInUp 0.4s ease both;
+    }
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.10s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+    .stat-card:nth-child(4) { animation-delay: 0.20s; }
+    .stat-card:nth-child(5) { animation-delay: 0.25s; }
+    .stat-card:hover { border-color: var(--border-hv); box-shadow: var(--glow-c); transform: translateY(-3px); }
+    .stat-card .stat-value {
+      font-size: 2.1rem; font-weight: 700; color: var(--accent); line-height: 1;
+      text-shadow: 0 0 18px rgba(77,184,217,0.3);
+    }
+    .stat-card .stat-value.online-count { color: var(--success); text-shadow: 0 0 18px rgba(62,207,142,0.3); }
+    .stat-card .stat-label {
+      font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 0.4rem;
+    }
+
+    /* â”€â”€ Section titles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    .section-title {
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.9px; color: var(--muted);
+      margin: 2rem 0 0.75rem;
+      display: flex; align-items: center; gap: 0.55rem;
+    }
+    .section-title::before {
+      content: ''; width: 3px; height: 12px; flex-shrink: 0;
+      background: linear-gradient(to bottom, var(--accent), var(--accent2));
+      border-radius: 2px;
+    }
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      background: rgba(62,207,142,0.1); color: var(--success);
+      border: 1px solid rgba(62,207,142,0.2);
+      border-radius: 99px; padding: 0.1rem 0.55rem;
+      font-size: 0.68rem; font-weight: 600;
+    }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+    .live-dot.green  { background: var(--success); box-shadow: 0 0 6px var(--success); animation: pulse 2s infinite; }
+    .live-dot.yellow { background: #f5c842; box-shadow: 0 0 6px #f5c842; }
+
+    /* â”€â”€ Controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    .controls {
+      display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; margin-bottom: 0.75rem;
+    }
+    .controls input, .controls select {
+      padding: 0.48rem 0.85rem;
+      border: 1px solid var(--border); border-radius: 8px;
+      background: rgba(255,255,255,0.04); color: var(--text);
+      font-size: 0.83rem; font-family: var(--font); outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .controls input:focus, .controls select:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 2px rgba(77,184,217,0.1);
+    }
+    .controls select option { background: #0d1626; }
+    .controls button {
+      padding: 0.48rem 1rem;
+      border: 1px solid var(--border); border-radius: 8px;
+      background: rgba(16,26,52,0.8); color: var(--accent);
+      cursor: pointer; font-size: 0.83rem; font-family: var(--font);
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.1s;
+    }
+    .controls button:hover {
+      border-color: var(--accent); background: rgba(77,184,217,0.08);
+      box-shadow: 0 0 12px rgba(77,184,217,0.18); transform: translateY(-1px);
+    }
+    .controls button:active { transform: translateY(0); }
+
+    /* â”€â”€ Tables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    .table-wrap {
+      background: rgba(16,26,52,0.7);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden; overflow-x: auto;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      margin-bottom: 1.5rem;
+    }
+    .logs-table, .presence-table { width: 100%; border-collapse: collapse; font-size: 0.81rem; }
+    .logs-table th, .presence-table th {
+      padding: 0.65rem 0.9rem; text-align: left;
+      background: rgba(4,8,22,0.8); color: var(--muted);
+      text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.6px;
+      border-bottom: 1px solid var(--border); font-weight: 600;
+    }
+    .logs-table td, .presence-table td {
+      padding: 0.6rem 0.9rem;
+      border-bottom: 1px solid rgba(77,184,217,0.05);
+      transition: background 0.15s; vertical-align: middle;
+    }
+    .logs-table tr:last-child td, .presence-table tr:last-child td { border-bottom: none; }
+    .logs-table tbody tr:hover td, .presence-table tbody tr:hover td { background: rgba(77,184,217,0.05); }
+    .badge-success {
+      display: inline-flex; align-items: center;
+      padding: 0.15rem 0.55rem; border-radius: 6px; font-size: 0.7rem; font-weight: 600;
+      background: rgba(62,207,142,0.1); color: var(--success); border: 1px solid rgba(62,207,142,0.2);
+    }
+    .badge-fail {
+      display: inline-flex; align-items: center;
+      padding: 0.15rem 0.55rem; border-radius: 6px; font-size: 0.7rem; font-weight: 600;
+      background: rgba(224,84,112,0.1); color: var(--danger); border: 1px solid rgba(224,84,112,0.2);
+    }
+    .ip-cell { font-family: var(--mono); font-size: 0.77rem; color: var(--muted); }
+    .presence-email { color: var(--accent); font-weight: 500; }
+    .empty-state { text-align: center; padding: 2.5rem; color: var(--muted); font-size: 0.85rem; }
+    .action-btn {
+      background: transparent; border: 1px solid rgba(77,184,217,0.3);
+      color: var(--accent); border-radius: 6px;
+      padding: 0.2rem 0.6rem; font-size: 0.7rem; cursor: pointer;
+      font-family: var(--font); white-space: nowrap;
+      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+    .action-btn:hover { background: rgba(77,184,217,0.1); border-color: var(--accent); box-shadow: 0 0 8px rgba(77,184,217,0.2); }
+
+    /* â”€â”€ Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.72);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000; backdrop-filter: blur(4px);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      background: rgba(13,22,40,0.96);
+      border: 1px solid var(--border); border-top: 2px solid var(--accent2);
+      border-radius: var(--radius-lg);
+      padding: 2rem; width: 100%; max-width: 440px;
+      max-height: 92vh; overflow-y: auto; margin: 1rem;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 16px 64px rgba(0,0,0,0.8), var(--glow-p);
+      animation: fadeInUp 0.3s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .modal-title    { color: var(--accent); font-size: 1.05rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .modal-subtitle { color: var(--muted); font-size: 0.78rem; margin-bottom: 1.5rem; }
+    .modal-field    { margin-bottom: 1rem; }
+    .modal-field label {
+      display: block; font-size: 0.68rem; color: var(--muted);
+      margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
+    }
+    .modal-field input, .modal-field select {
+      width: 100%; padding: 0.65rem 0.9rem;
+      border: 1px solid var(--border); border-radius: 8px;
+      background: rgba(255,255,255,0.04); color: var(--text);
+      font-size: 0.9rem; font-family: var(--font); outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .modal-field input:focus, .modal-field select:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(77,184,217,0.1), var(--glow-c);
+    }
+    .modal-field select option { background: #0d1626; color: var(--text); }
+    .toggle-row {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 0.83rem; color: var(--text); cursor: pointer; margin-top: 0.5rem;
+    }
+    .toggle-row input[type=checkbox] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--accent); }
+    .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+    .modal-btn-primary {
+      flex: 1; padding: 0.72rem; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-weight: 600; cursor: pointer;
+      font-size: 0.9rem; font-family: var(--font);
+      transition: transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 16px rgba(77,184,217,0.22);
+    }
+    .modal-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(77,184,217,0.38); }
+    .modal-btn-primary:active { transform: translateY(0); }
+    .modal-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .modal-btn-cancel {
+      padding: 0.72rem 1.2rem; border: 1px solid var(--border); border-radius: 8px;
+      background: transparent; color: var(--muted); cursor: pointer;
+      font-size: 0.9rem; font-family: var(--font);
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .modal-btn-cancel:hover { border-color: var(--muted); color: var(--text); }
+    .modal-status { font-size: 0.82rem; margin-top: 0.75rem; min-height: 1.2rem; }
+    .modal-status.success { color: var(--success); }
+    .modal-status.error   { color: var(--danger); }
+
+
+    /* ── Tab Navigation ──────────────────────────────── */
+    .tab-nav {
+      display: flex; gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin: 1.75rem 0 1.5rem;
+    }
+    .tab-btn {
+      padding: 0.6rem 1.3rem;
+      background: transparent; border: none;
+      color: var(--muted); font-size: 0.82rem; font-family: var(--font);
+      cursor: pointer; position: relative;
+      transition: color 0.2s; user-select: none;
+    }
+    .tab-btn::after {
+      content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px 2px 0 0;
+      transform: scaleX(0); transition: transform 0.2s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); font-weight: 600; }
+    .tab-btn.active::after { transform: scaleX(1); }
+
+    /* ── Users table extras ──────────────────────────── */
+    .user-badge {
+      display: inline-flex; align-items: center;
+      padding: 0.15rem 0.55rem; border-radius: 6px; font-size: 0.7rem; font-weight: 600;
+      background: rgba(77,184,217,0.1); color: var(--accent); border: 1px solid rgba(77,184,217,0.2);
+    }
+    .user-badge.admin-badge {
+      background: rgba(124,101,196,0.12); color: var(--accent2); border-color: rgba(124,101,196,0.25);
+    }
+    .remove-btn {
+      background: transparent; border: 1px solid rgba(224,84,112,0.35);
+      color: var(--danger); border-radius: 6px;
+      padding: 0.2rem 0.65rem; font-size: 0.7rem; cursor: pointer;
+      font-family: var(--font); white-space: nowrap;
+      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+    .remove-btn:hover {
+      background: rgba(224,84,112,0.1); border-color: var(--danger);
+      box-shadow: 0 0 8px rgba(224,84,112,0.18);
+    }
+
+    /* ── Responsive ──────────────────────────────────── */
     @media (max-width: 600px) {
       .stats-row { grid-template-columns: 1fr 1fr; }
-      .controls { flex-direction: column; }
+      .controls  { flex-direction: column; }
+      .topbar-sub { display: none; }
     }
   </style>
 </head>
 <body>
 
-<div class="admin-header">
-  <h1>🔐 MeritNama Admin</h1>
-  <p>Access Logs &amp; User Management</p>
-</div>
+<!-- ── Top Bar ──────────────────────────────────────── -->
+<header class="admin-topbar">
+  <div class="topbar-brand">
+    <img src="logo.svg" alt="MeritNama" />
+    <div>
+      <div class="topbar-title">MeritNama Admin</div>
+      <div class="topbar-sub">Access Management</div>
+    </div>
+  </div>
+  <button class="logout-btn" id="logoutBtn" style="display:none;">&#x23FB; Logout</button>
+</header>
 
-<!-- Admin Login -->
-<div id="adminLogin">
-  <h2>Admin Authentication</h2>
-  <input type="email" id="adminEmail" placeholder="Admin email" autocomplete="email" />
-  <input type="password" id="adminPass" placeholder="Admin PIN" autocomplete="current-password" />
-  <button id="adminSubmit">Login</button>
-  <p class="error" id="adminError"></p>
+<!-- ── Login ────────────────────────────────────────── -->
+<div class="login-wrap" id="loginWrap">
+  <div id="adminLogin">
+    <img src="logo.svg" alt="MeritNama" class="login-logo" />
+    <h2>Admin Access</h2>
+    <p class="login-subtitle">Sign in with your admin credentials to continue</p>
+    <div class="login-field">
+      <label for="adminEmail">Email Address</label>
+      <input type="email" id="adminEmail" placeholder="admin@example.com" autocomplete="email" />
+    </div>
+    <div class="login-field">
+      <label for="adminPass">Admin PIN</label>
+      <input type="password" id="adminPass" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password" />
+    </div>
+    <button class="login-btn" id="adminSubmit">
+      <span class="btn-label">Sign In</span>
+      <div class="btn-spinner"></div>
+    </button>
+    <p class="login-error" id="adminError"></p>
+  </div>
 </div>
 
 <!-- Dashboard (hidden until admin auth) -->
 <div id="dashboard">
-  <button class="logout-btn" id="logoutBtn">Logout</button>
+  <div class="dash-body">
 
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-value" id="statTotal">—</div>
-      <div class="stat-label">Total Accesses</div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value" id="statTotal">&mdash;</div>
+        <div class="stat-label">Total Accesses</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statSuccess">&mdash;</div>
+        <div class="stat-label">Successful</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statFailed">&mdash;</div>
+        <div class="stat-label">Failed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statUnique">&mdash;</div>
+        <div class="stat-label">Unique Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value online-count" id="statOnline">&mdash;</div>
+        <div class="stat-label">Online Now</div>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-value" id="statSuccess">—</div>
-      <div class="stat-label">Successful</div>
+
+    <!-- Live Users panel -->
+    <div class="section-title">
+      Live Users
+      <span class="live-badge"><span class="live-dot green"></span> Real-time</span>
     </div>
-    <div class="stat-card">
-      <div class="stat-value" id="statFailed">—</div>
-      <div class="stat-label">Failed</div>
+    <div class="table-wrap">
+      <table class="presence-table">
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Email</th>
+            <th>Current Page</th>
+            <th>Last Seen</th>
+          </tr>
+        </thead>
+        <tbody id="presenceBody">
+          <tr><td colspan="4" class="empty-state">Waiting for presence data&hellip;</td></tr>
+        </tbody>
+      </table>
     </div>
-    <div class="stat-card">
-      <div class="stat-value" id="statUnique">—</div>
-      <div class="stat-label">Unique Users</div>
+
+    <!-- Tab nav -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="logs">Access Logs</button>
+      <button class="tab-btn" data-tab="users">Authorized Users</button>
+    </nav>
+
+    <!-- ── Tab: Access Logs ────────────────────────── -->
+    <div id="tab-logs">
+      <div class="controls">
+        <input type="text" id="filterEmail" placeholder="Filter by email&hellip;" />
+        <select id="filterStatus">
+          <option value="all">All Status</option>
+          <option value="success">Success Only</option>
+          <option value="failed">Failed Only</option>
+        </select>
+        <button id="refreshBtn">&#x21BB; Refresh</button>
+        <button id="addUserBtn">+ Add User</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>IP Address</th>
+              <th>Page</th>
+              <th>User Agent</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="logsBody">
+            <tr><td colspan="7" class="empty-state">Loading logs&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+
+    <!-- ── Tab: Authorized Users ───────────────────── -->
+    <div id="tab-users" style="display:none;">
+      <div class="controls">
+        <button id="addUserBtn2">+ Add User</button>
+        <button id="refreshUsersBtn">&#x21BB; Refresh</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Access Level</th>
+              <th>Added</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="usersBody">
+            <tr><td colspan="5" class="empty-state">Loading users&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
+</div>
 
-  <div class="controls">
-    <input type="text" id="filterEmail" placeholder="Filter by email…" />
-    <select id="filterStatus">
-      <option value="all">All Status</option>
-      <option value="success">Success Only</option>
-      <option value="failed">Failed Only</option>
-    </select>
-    <button id="refreshBtn">↻ Refresh</button>
-  </div>
-
-  <div class="logs-container">
-    <table class="logs-table">
-      <thead>
-        <tr>
-          <th>Time</th>
-          <th>Email</th>
-          <th>Status</th>
-          <th>IP Address</th>
-          <th>Page</th>
-          <th>User Agent</th>
-        </tr>
-      </thead>
-      <tbody id="logsBody">
-        <tr><td colspan="6" class="empty-state">Loading logs…</td></tr>
-      </tbody>
-    </table>
+<!-- Grant Access Modal -->
+<div class="modal-overlay" id="addUserModal">
+  <div class="modal-card">
+    <div class="modal-title">Grant Portal Access</div>
+    <div class="modal-subtitle" id="modalSubtitle">Add a new authorized user</div>
+    <div class="modal-field">
+      <label>Full Name</label>
+      <input type="text" id="modalName" placeholder="Dr. Jane Smith" autocomplete="off" />
+    </div>
+    <div class="modal-field">
+      <label>Email Address</label>
+      <input type="email" id="modalEmail" placeholder="user@example.com" autocomplete="off" />
+    </div>
+    <div class="modal-field">
+      <label>Access PIN <span style="text-transform:none;font-size:0.7rem;">(min 4 chars)</span></label>
+      <input type="text" id="modalPin" placeholder="Enter a PIN for this user" maxlength="20" autocomplete="off" />
+    </div>
+    <div class="modal-field">
+      <label>Access Level</label>
+      <select id="modalLevel">
+        <option value="Standard User">Standard User</option>
+        <option value="Admin">Admin</option>
+      </select>
+    </div>
+    <label class="toggle-row">
+      <input type="checkbox" id="modalSendEmail" checked />
+      Send welcome email with credentials
+    </label>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalCancelBtn">Cancel</button>
+      <button class="modal-btn-primary" id="modalSubmitBtn">Grant Access</button>
+    </div>
+    <div class="modal-status" id="modalStatus"></div>
   </div>
 </div>
 
@@ -322,11 +623,98 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
+<!-- EmailJS â€” https://www.emailjs.com/ -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="emailjs-config.js"></script>
 <script>
 'use strict';
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+
+// â”€â”€ EmailJS Configuration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Setup:
+// 1. Sign up at https://www.emailjs.com/
+// 2. Add an Email Service (Gmail, Outlook, or custom SMTP)
+//    - For ProtonMail: use ProtonMail Bridge SMTP or a relay service
+// 3. Create a template â€” Subject: "MeritNama â€“ Your Portal Access"
+//    Body (HTML mode): {{{html_content}}}  (triple braces = raw HTML output)
+//    To Email field:   {{to_email}}
+// 4. Add EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID
+//    as GitHub repository secrets â€” the workflow injects them via emailjs-config.js
+const EMAILJS_PUBLIC_KEY  = (typeof emailjsConfig !== 'undefined') ? emailjsConfig.publicKey  : '';
+const EMAILJS_SERVICE_ID  = (typeof emailjsConfig !== 'undefined') ? emailjsConfig.serviceId  : '';
+const EMAILJS_TEMPLATE_ID = (typeof emailjsConfig !== 'undefined') ? emailjsConfig.templateId : '';
+
+const PORTAL_URL = 'https://itskaero.github.io/meritnama/';
+const LOGO_URL   = 'https://itskaero.github.io/meritnama/logo.svg';
+
+// Initialise EmailJS once at startup
+if (EMAILJS_PUBLIC_KEY) emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+function buildEmailHtml(name, email, pin, accessLevel) {
+  function h(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MeritNama Portal Access</title></head>
+<body style="margin:0;padding:0;background-color:#f4f7fb;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f7fb;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+      <tr>
+        <td align="center" style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:40px 30px;">
+          <img src="${LOGO_URL}" alt="MeritNama" style="max-width:170px;height:auto;margin-bottom:20px;" />
+          <h1 style="color:#ffffff;margin:0;font-size:28px;font-weight:700;letter-spacing:0.5px;">Access Granted</h1>
+          <p style="color:#cbd5e1;margin-top:10px;font-size:15px;line-height:24px;">Your MeritNama portal access has been successfully activated.</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:40px 35px;color:#334155;">
+          <p style="font-size:16px;line-height:28px;margin-top:0;">Dear <strong>${h(name)}</strong>,</p>
+          <p style="font-size:15px;line-height:28px;color:#475569;">We are pleased to inform you that your access to the <strong>MeritNama Portal</strong> has been approved.</p>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:30px 0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
+            <tr><td style="padding:24px;">
+              <p style="margin:0 0 14px;font-size:14px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;">Your Credentials</p>
+              <p style="margin:8px 0;font-size:15px;color:#0f172a;"><strong>Email:</strong> ${h(email)}</p>
+              <p style="margin:8px 0;font-size:15px;color:#0f172a;"><strong>Access PIN:</strong>
+                <code style="background:#f1f5f9;padding:2px 10px;border-radius:4px;font-family:monospace;font-size:15px;letter-spacing:2px;">${h(pin)}</code></p>
+              <p style="margin:8px 0;font-size:15px;color:#0f172a;"><strong>Access Level:</strong> ${h(accessLevel)}</p>
+              <p style="margin:8px 0;font-size:15px;color:#0f172a;"><strong>Portal URL:</strong>
+                <a href="${PORTAL_URL}" style="color:#2563eb;text-decoration:none;">${PORTAL_URL}</a></p>
+              <p style="margin:16px 0 0;font-size:13px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px;">
+                &#128274; Keep your PIN confidential. Do not share your credentials with anyone.</p>
+            </td></tr>
+          </table>
+          <div style="text-align:center;margin:35px 0;">
+            <a href="${PORTAL_URL}" style="background:#2563eb;color:#ffffff;text-decoration:none;padding:15px 34px;border-radius:10px;display:inline-block;font-size:15px;font-weight:600;letter-spacing:0.3px;">Access Portal</a>
+          </div>
+          <p style="font-size:15px;line-height:28px;color:#475569;">For security, please keep your login credentials confidential and do not share access with unauthorized individuals.</p>
+          <p style="font-size:15px;line-height:28px;color:#475569;margin-bottom:0;">If you encounter any issues accessing the portal, feel free to contact the admin.</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="background:#f8fafc;padding:28px 35px;border-top:1px solid #e2e8f0;text-align:center;">
+          <p style="margin:0;font-size:14px;color:#64748b;line-height:24px;">&copy; 2026 MeritNama. All rights reserved.</p>
+          <p style="margin:10px 0 0;font-size:13px;color:#94a3b8;line-height:22px;">This is an automated notification regarding your portal access.</p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+}
+
+async function sendWelcomeEmail(name, email, pin, accessLevel) {
+  if (!EMAILJS_PUBLIC_KEY || !EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID) {
+    throw new Error('EmailJS not configured — check publicKey, serviceId, templateId in emailjs-config.js.');
+  }
+  return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    to_email:     email,
+    to_name:      name || email,
+    html_content: buildEmailHtml(name || email, email, pin, accessLevel),
+  });
+}
 
 const ADMIN_SESSION_KEY = 'meritnama_admin_session';
 const SESSION_DURATION = 2 * 60 * 60 * 1000; // 2 hours
@@ -383,11 +771,11 @@ async function loadLogs() {
   allLogs = snapshot.docs.map(doc => {
     const d = doc.data();
     return {
-      email: d.email || '—',
+      email: d.email || 'â€”',
       success: d.success,
-      ip: d.ip || '—',
-      userAgent: d.userAgent || '—',
-      page: d.page || '—',
+      ip: d.ip || 'â€”',
+      userAgent: d.userAgent || 'â€”',
+      page: d.page || 'â€”',
       timestamp: d.timestamp ? d.timestamp.toDate() : null
     };
   });
@@ -427,11 +815,15 @@ function renderLogs() {
   tbody.innerHTML = filtered.map(l => {
     const time = l.timestamp
       ? l.timestamp.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' })
-      : '—';
+      : 'â€”';
     const badge = l.success
-      ? '<span class="badge-success">✓ Success</span>'
-      : '<span class="badge-fail">✗ Failed</span>';
-    const ua = l.userAgent.length > 60 ? l.userAgent.substring(0, 60) + '…' : l.userAgent;
+      ? '<span class="badge-success">âœ“ Success</span>'
+      : '<span class="badge-fail">âœ— Failed</span>';
+    const ua = l.userAgent.length > 60 ? l.userAgent.substring(0, 60) + 'â€¦' : l.userAgent;
+    const actionEmail = l.email !== 'â€”' ? escapeHtml(l.email) : '';
+    const actionBtn = actionEmail
+      ? `<button class="action-btn" onclick="openAddUserModal('${actionEmail}')">Grant Access</button>`
+      : 'â€”';
 
     return `<tr>
       <td>${time}</td>
@@ -440,6 +832,7 @@ function renderLogs() {
       <td class="ip-cell">${escapeHtml(l.ip)}</td>
       <td>${escapeHtml(l.page)}</td>
       <td title="${escapeHtml(l.userAgent)}">${escapeHtml(ua)}</td>
+      <td>${actionBtn}</td>
     </tr>`;
   }).join('');
 }
@@ -450,17 +843,234 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+// --- Grant Access Modal ---
+function openAddUserModal(prefillEmail) {
+  document.getElementById('modalEmail').value = prefillEmail || '';
+  document.getElementById('modalName').value  = '';
+  document.getElementById('modalPin').value   = '';
+  document.getElementById('modalLevel').value = 'Standard User';
+  document.getElementById('modalSendEmail').checked = true;
+  const statusEl = document.getElementById('modalStatus');
+  statusEl.textContent = '';
+  statusEl.className = 'modal-status';
+  document.getElementById('modalSubtitle').textContent = prefillEmail
+    ? 'Granting access to: ' + prefillEmail
+    : 'Add a new authorized user';
+  document.getElementById('addUserModal').classList.add('open');
+}
+
+function closeAddUserModal() {
+  document.getElementById('addUserModal').classList.remove('open');
+}
+
+async function submitAddUser() {
+  const name     = document.getElementById('modalName').value.trim();
+  const email    = document.getElementById('modalEmail').value.trim().toLowerCase();
+  const pin      = document.getElementById('modalPin').value.trim();
+  const level    = document.getElementById('modalLevel').value;
+  const doEmail  = document.getElementById('modalSendEmail').checked;
+  const statusEl = document.getElementById('modalStatus');
+  const btn      = document.getElementById('modalSubmitBtn');
+
+  if (!email) {
+    statusEl.textContent = 'Email address is required.';
+    statusEl.className = 'modal-status error';
+    return;
+  }
+  if (!pin || pin.length < 4) {
+    statusEl.textContent = 'PIN must be at least 4 characters.';
+    statusEl.className = 'modal-status error';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Saving\u2026';
+  statusEl.textContent = '';
+  statusEl.className = 'modal-status';
+
+  try {
+    const pinHash = await hashPin(pin);
+    await db.collection('authorized_users').doc(email).set({
+      pin:     pinHash,
+      isAdmin: level === 'Admin',
+      name:    name || email,
+      addedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    if (doEmail) {
+      try {
+        await sendWelcomeEmail(name || email, email, pin, level);
+        statusEl.textContent = '\u2713 User added and welcome email sent!';
+        statusEl.className = 'modal-status success';
+        setTimeout(closeAddUserModal, 3000);
+      } catch (emailErr) {
+        console.warn('Email send error:', emailErr);
+        const errMsg = emailErr?.text || emailErr?.message || (emailErr?.status ? `Status ${emailErr.status}` : String(emailErr));
+        statusEl.innerHTML =
+          `\u2713 User added. <strong>Email failed</strong> \u2014 ${escapeHtml(errMsg)}<br>` +
+          `<small style="opacity:0.85">Share credentials manually &mdash; PIN: <code style="background:rgba(77,184,217,0.1);padding:0.1rem 0.35rem;border-radius:4px;font-family:var(--mono)">${escapeHtml(pin)}</code></small>`;
+        statusEl.className = 'modal-status error';
+        // Do NOT auto-close — let admin copy the PIN
+      }
+    } else {
+      statusEl.textContent = '\u2713 User added successfully.';
+      statusEl.className = 'modal-status success';
+      setTimeout(closeAddUserModal, 3000);
+    }
+  } catch (err) {
+    console.error('Add user error:', err);
+    statusEl.textContent = 'Error: ' + err.message;
+    statusEl.className = 'modal-status error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Grant Access';
+  }
+}
+
+// --- Presence / Live Users ---
+let presenceUnsubscribe = null;
+const PRESENCE_STALE_MS = 10 * 60 * 1000; // hide after 10 min without heartbeat
+
+function timeAgoShort(date) {
+  if (!date) return 'â€”';
+  const s = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (s < 5)   return 'just now';
+  if (s < 60)  return s + 's ago';
+  if (s < 3600) return Math.floor(s / 60) + 'm ago';
+  return Math.floor(s / 3600) + 'h ago';
+}
+
+function subscribePresence() {
+  if (presenceUnsubscribe) presenceUnsubscribe();
+
+  presenceUnsubscribe = db.collection('presence')
+    .onSnapshot(snap => {
+      const now = Date.now();
+      const rows = [];
+
+      snap.forEach(doc => {
+        const d = doc.data();
+        const lastSeen = d.lastSeen ? d.lastSeen.toDate() : null;
+        if (!lastSeen) return;
+
+        const ageMs = now - lastSeen.getTime();
+        if (ageMs > PRESENCE_STALE_MS) return; // skip stale
+
+        const isGreen = ageMs < 2 * 60 * 1000; // green = seen within 2 min
+        rows.push({ email: d.email || doc.id, page: d.pageTitle || d.page || 'â€”', lastSeen, isGreen });
+      });
+
+      // Sort: most recent first
+      rows.sort((a, b) => b.lastSeen - a.lastSeen);
+
+      const tbody = document.getElementById('presenceBody');
+      if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No active users right now.</td></tr>';
+      } else {
+        tbody.innerHTML = rows.map(r => {
+          const dot    = r.isGreen
+            ? '<span class="live-dot green"></span>'
+            : '<span class="live-dot yellow"></span>';
+          const status = r.isGreen ? 'Active' : 'Recent';
+          return `<tr>
+            <td>${dot} ${status}</td>
+            <td class="presence-email">${escapeHtml(r.email)}</td>
+            <td>${escapeHtml(r.page)}</td>
+            <td>${timeAgoShort(r.lastSeen)}</td>
+          </tr>`;
+        }).join('');
+      }
+
+      document.getElementById('statOnline').textContent = rows.filter(r => r.isGreen).length;
+    }, err => {
+      console.warn('Presence snapshot error:', err);
+    });
+}
+
+// --- Users Tab ---
+let allUsers = [];
+
+async function loadUsers() {
+  const tbody = document.getElementById('usersBody');
+  tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Loading\u2026</td></tr>';
+  try {
+    const snapshot = await db.collection('authorized_users').get();
+    allUsers = snapshot.docs.map(doc => ({
+      email:   doc.id,
+      name:    doc.data().name || doc.id,
+      isAdmin: doc.data().isAdmin || false,
+      addedAt: doc.data().addedAt ? doc.data().addedAt.toDate() : null,
+    }));
+    renderUsers();
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Error: ${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function renderUsers() {
+  const tbody = document.getElementById('usersBody');
+  if (allUsers.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No authorized users found.</td></tr>';
+    return;
+  }
+  const sorted = [...allUsers].sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
+  tbody.innerHTML = sorted.map(u => {
+    const badge = u.isAdmin
+      ? '<span class="user-badge admin-badge">Admin</span>'
+      : '<span class="user-badge">Standard</span>';
+    const added = u.addedAt
+      ? u.addedAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+      : '\u2014';
+    return `<tr>
+      <td>${escapeHtml(u.name)}</td>
+      <td class="presence-email">${escapeHtml(u.email)}</td>
+      <td>${badge}</td>
+      <td>${added}</td>
+      <td><button class="remove-btn" onclick="confirmRemoveUser('${escapeHtml(u.email)}')">Remove</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function confirmRemoveUser(email) {
+  if (!confirm(`Remove access for ${email}?\n\nThis will immediately prevent them from logging in.`)) return;
+  try {
+    await db.collection('authorized_users').doc(email).delete();
+    allUsers = allUsers.filter(u => u.email !== email);
+    renderUsers();
+    // Update unique users stat if logs are loaded
+    updateStats();
+  } catch (err) {
+    alert('Failed to remove user: ' + err.message);
+  }
+}
+
+function switchTab(tab) {
+  document.getElementById('tab-logs').style.display  = tab === 'logs'  ? '' : 'none';
+  document.getElementById('tab-users').style.display = tab === 'users' ? '' : 'none';
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+  if (tab === 'users') loadUsers();
+}
+
 // --- UI Binding ---
 function showDashboard() {
-  document.getElementById('adminLogin').style.display = 'none';
+  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('logoutBtn').style.display = '';
   document.getElementById('dashboard').classList.add('active');
   loadLogs();
+  subscribePresence();
 }
 
 function showLogin() {
   clearAdminSession();
-  document.getElementById('adminLogin').style.display = 'block';
+  if (presenceUnsubscribe) { presenceUnsubscribe(); presenceUnsubscribe = null; }
+  document.getElementById('loginWrap').style.display = '';
+  document.getElementById('logoutBtn').style.display = 'none';
   document.getElementById('dashboard').classList.remove('active');
+  document.getElementById('adminEmail').value = '';
+  document.getElementById('adminPass').value = '';
+  document.getElementById('adminError').textContent = '';
 }
 
 document.getElementById('adminSubmit').addEventListener('click', async function () {
@@ -474,7 +1084,7 @@ document.getElementById('adminSubmit').addEventListener('click', async function 
   }
 
   this.disabled = true;
-  this.textContent = 'Verifying…';
+  this.classList.add('loading');
   errorEl.textContent = '';
 
   const valid = await verifyAdmin(email, pin);
@@ -486,13 +1096,25 @@ document.getElementById('adminSubmit').addEventListener('click', async function 
   }
 
   this.disabled = false;
-  this.textContent = 'Login';
+  this.classList.remove('loading');
 });
 
 document.getElementById('logoutBtn').addEventListener('click', showLogin);
 document.getElementById('refreshBtn').addEventListener('click', loadLogs);
 document.getElementById('filterEmail').addEventListener('input', renderLogs);
 document.getElementById('filterStatus').addEventListener('change', renderLogs);
+document.getElementById('addUserBtn').addEventListener('click', () => openAddUserModal(''));
+document.getElementById('addUserBtn2').addEventListener('click', () => openAddUserModal(''));
+document.getElementById('refreshUsersBtn').addEventListener('click', loadUsers);
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+document.getElementById('modalCancelBtn').addEventListener('click', closeAddUserModal);
+document.getElementById('modalSubmitBtn').addEventListener('click', submitAddUser);
+// Close modal when clicking outside the card
+document.getElementById('addUserModal').addEventListener('click', function (e) {
+  if (e.target === this) closeAddUserModal();
+});
 
 // Auto-login if session valid
 if (getAdminSession()) {

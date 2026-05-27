@@ -2,10 +2,11 @@
 // Firebase Configuration — Replace with your project values
 // ═══════════════════════════════════════════════════════
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAPo6RETEq61cFLPY6Gpuog2yI7Ijtfh0I",
+  authDomain: "mortality-review.firebaseapp.com",
+  projectId: "mortality-review",
+  storageBucket: "mortality-review.firebasestorage.app",
+  messagingSenderId: "947249523930",
+  appId: "1:947249523930:web:a7726922936f70c477c9e3",
+  measurementId: "G-DRMZ0ZKSLD"
 };

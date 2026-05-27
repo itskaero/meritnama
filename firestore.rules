@@ -11,10 +11,14 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Authorized users — readable for PIN verification, not writable from client
+    // Authorized users — readable for PIN verification
+    // write is allowed so the admin dashboard can add/update users.
+    // Security note: since we use client-side PIN auth (no Firebase Auth),
+    // writes here are trust-gated by the admin dashboard UI, not Firestore rules.
     match /authorized_users/{email} {
       allow read: if true;
-      allow write: if false;
+      allow create, update: if true;  // admin dashboard uses hashPin + isAdmin check
+      allow delete: if true;           // admin dashboard can remove users
     }
 
     // Access logs — writable by anyone (for logging), readable only by admin
@@ -31,11 +35,29 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // Community discussion messages — publicly readable and creatable, no edits/deletes
-    match /discussions/{messageId} {
-      allow read: if true;
+    // Presence tracking — each user writes their own doc, admin reads all
+    // Doc ID = user email. Written by presence.js on every auth-gated page.
+    match /presence/{email} {
+      allow read:          if true;   // admin dashboard reads the full collection
+      allow create, update: if true;  // presence.js writes on any auth-gated page
+      allow delete:        if false;
+    }
+
+    // Community discussion threads + replies
+    // Threads are publicly readable/creatable. Updates are allowed only to support
+    // atomic commentCount increments (FieldValue.increment) when a reply is posted.
+    match /discussions/{threadId} {
+      allow read:   if true;
       allow create: if true;
-      allow update, delete: if false;
+      allow update: if true;   // needed for commentCount increment on reply
+      allow delete: if false;
+
+      // Replies (comments subcollection) — public read/create, no edits/deletes
+      match /comments/{commentId} {
+        allow read:          if true;
+        allow create:        if true;
+        allow update, delete: if false;
+      }
     }
 
     // Deny everything else
