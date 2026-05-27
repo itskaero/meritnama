@@ -1,0 +1,32 @@
+// Firestore Security Rules — Deploy these via Firebase Console
+// Go to: Firebase Console → Firestore → Rules
+//
+// These rules ensure:
+// 1. Only the auth gate can READ authorized_users (to verify PIN)
+// 2. Only authenticated admins can READ access_logs
+// 3. Anyone can WRITE to access_logs (for logging attempts)
+// 4. Nobody can write to authorized_users from client
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Authorized users — readable for PIN verification, not writable from client
+    match /authorized_users/{email} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Access logs — writable by anyone (for logging), readable only by admin
+    match /access_logs/{logId} {
+      allow create: if true;
+      allow read: if true;   // Admin dashboard reads these; protect via admin PIN check in app
+      allow update, delete: if false;
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

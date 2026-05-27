@@ -5,8 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MeritNama &#8211; Residency Induction Analytics</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="auth.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>firebase.initializeApp(firebaseConfig);</script>
 </head>
 <body>
 
@@ -688,5 +694,6 @@
 
 <script src="charts.js"></script>
 <script src="app.js"></script>
+<script src="auth.js"></script>
 </body>
 </html>

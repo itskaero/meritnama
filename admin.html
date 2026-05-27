@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — MeritNama</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1626;
+      --surface: rgba(16, 26, 52, 0.85);
+      --border: rgba(77, 184, 217, 0.15);
+      --accent: #4db8d9;
+      --accent2: #7c65c4;
+      --text: #c8daf0;
+      --muted: #6b84a8;
+      --success: #3ecf8e;
+      --danger: #e05470;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 1rem;
+    }
+
+    .admin-header {
+      text-align: center;
+      padding: 2rem 1rem 1rem;
+    }
+
+    .admin-header h1 {
+      font-size: 1.5rem;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+    }
+
+    .admin-header p {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    /* Admin Login */
+    #adminLogin {
+      max-width: 360px;
+      margin: 3rem auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+    }
+
+    #adminLogin h2 {
+      color: var(--accent);
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+    }
+
+    #adminLogin input {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      outline: none;
+    }
+
+    #adminLogin input:focus {
+      border-color: var(--accent);
+    }
+
+    #adminLogin button {
+      width: 100%;
+      padding: 0.7rem;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    #adminLogin .error {
+      color: var(--danger);
+      font-size: 0.82rem;
+      margin-top: 0.5rem;
+    }
+
+    /* Dashboard */
+    #dashboard { display: none; }
+    #dashboard.active { display: block; }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      max-width: 900px;
+      margin: 1.5rem auto;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      text-align: center;
+    }
+
+    .stat-card .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-card .stat-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 0.3rem;
+    }
+
+    /* Controls */
+    .controls {
+      max-width: 900px;
+      margin: 1rem auto;
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .controls input, .controls select {
+      padding: 0.5rem 0.8rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .controls input:focus, .controls select:focus {
+      border-color: var(--accent);
+    }
+
+    .controls button {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .controls button:hover {
+      border-color: var(--accent);
+    }
+
+    /* Logs Table */
+    .logs-container {
+      max-width: 900px;
+      margin: 1.5rem auto;
+      overflow-x: auto;
+    }
+
+    .logs-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .logs-table th, .logs-table td {
+      padding: 0.6rem 0.8rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logs-table th {
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+    }
+
+    .logs-table tr:hover td {
+      background: rgba(77, 184, 217, 0.04);
+    }
+
+    .badge-success {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: rgba(62, 207, 142, 0.12);
+      color: var(--success);
+    }
+
+    .badge-fail {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: rgba(224, 84, 112, 0.12);
+      color: var(--danger);
+    }
+
+    .ip-cell {
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+    }
+
+    .logout-btn {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.4rem 0.8rem;
+      border: 1px solid var(--danger);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+    }
+
+    @media (max-width: 600px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .controls { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="admin-header">
+  <h1>🔐 MeritNama Admin</h1>
+  <p>Access Logs &amp; User Management</p>
+</div>
+
+<!-- Admin Login -->
+<div id="adminLogin">
+  <h2>Admin Authentication</h2>
+  <input type="email" id="adminEmail" placeholder="Admin email" autocomplete="email" />
+  <input type="password" id="adminPass" placeholder="Admin PIN" autocomplete="current-password" />
+  <button id="adminSubmit">Login</button>
+  <p class="error" id="adminError"></p>
+</div>
+
+<!-- Dashboard (hidden until admin auth) -->
+<div id="dashboard">
+  <button class="logout-btn" id="logoutBtn">Logout</button>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-value" id="statTotal">—</div>
+      <div class="stat-label">Total Accesses</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statSuccess">—</div>
+      <div class="stat-label">Successful</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statFailed">—</div>
+      <div class="stat-label">Failed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statUnique">—</div>
+      <div class="stat-label">Unique Users</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="filterEmail" placeholder="Filter by email…" />
+    <select id="filterStatus">
+      <option value="all">All Status</option>
+      <option value="success">Success Only</option>
+      <option value="failed">Failed Only</option>
+    </select>
+    <button id="refreshBtn">↻ Refresh</button>
+  </div>
+
+  <div class="logs-container">
+    <table class="logs-table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>IP Address</th>
+          <th>Page</th>
+          <th>User Agent</th>
+        </tr>
+      </thead>
+      <tbody id="logsBody">
+        <tr><td colspan="6" class="empty-state">Loading logs…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+'use strict';
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const ADMIN_SESSION_KEY = 'meritnama_admin_session';
+const SESSION_DURATION = 2 * 60 * 60 * 1000; // 2 hours
+
+let allLogs = [];
+
+// --- Session Management ---
+function getAdminSession() {
+  try {
+    const raw = localStorage.getItem(ADMIN_SESSION_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (s && typeof s.email === 'string' && typeof s.ts === 'number' && (Date.now() - s.ts) < SESSION_DURATION) return s;
+  } catch (e) { /* ignore */ }
+  return null;
+}
+
+function setAdminSession(email) {
+  localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ email, ts: Date.now() }));
+}
+
+function clearAdminSession() {
+  localStorage.removeItem(ADMIN_SESSION_KEY);
+}
+
+// --- Admin Auth ---
+async function hashPin(pin) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(pin);
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function verifyAdmin(email, pin) {
+  const doc = await db.collection('authorized_users').doc(email.toLowerCase().trim()).get();
+  if (!doc.exists) return false;
+  const data = doc.data();
+  if (!data.isAdmin) return false;
+
+  const pinHash = await hashPin(pin);
+  if (data.pin && data.pin.length === 64) {
+    return pinHash === data.pin;
+  }
+  return data.pin === pin;
+}
+
+// --- Load Logs ---
+async function loadLogs() {
+  const snapshot = await db.collection('access_logs')
+    .orderBy('timestamp', 'desc')
+    .limit(500)
+    .get();
+
+  allLogs = snapshot.docs.map(doc => {
+    const d = doc.data();
+    return {
+      email: d.email || '—',
+      success: d.success,
+      ip: d.ip || '—',
+      userAgent: d.userAgent || '—',
+      page: d.page || '—',
+      timestamp: d.timestamp ? d.timestamp.toDate() : null
+    };
+  });
+
+  updateStats();
+  renderLogs();
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent = allLogs.length;
+  document.getElementById('statSuccess').textContent = allLogs.filter(l => l.success).length;
+  document.getElementById('statFailed').textContent = allLogs.filter(l => !l.success).length;
+  const unique = new Set(allLogs.filter(l => l.success).map(l => l.email));
+  document.getElementById('statUnique').textContent = unique.size;
+}
+
+function renderLogs() {
+  const emailFilter = document.getElementById('filterEmail').value.toLowerCase().trim();
+  const statusFilter = document.getElementById('filterStatus').value;
+
+  let filtered = allLogs;
+  if (emailFilter) {
+    filtered = filtered.filter(l => l.email.includes(emailFilter));
+  }
+  if (statusFilter === 'success') {
+    filtered = filtered.filter(l => l.success);
+  } else if (statusFilter === 'failed') {
+    filtered = filtered.filter(l => !l.success);
+  }
+
+  const tbody = document.getElementById('logsBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No logs found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(l => {
+    const time = l.timestamp
+      ? l.timestamp.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' })
+      : '—';
+    const badge = l.success
+      ? '<span class="badge-success">✓ Success</span>'
+      : '<span class="badge-fail">✗ Failed</span>';
+    const ua = l.userAgent.length > 60 ? l.userAgent.substring(0, 60) + '…' : l.userAgent;
+
+    return `<tr>
+      <td>${time}</td>
+      <td>${escapeHtml(l.email)}</td>
+      <td>${badge}</td>
+      <td class="ip-cell">${escapeHtml(l.ip)}</td>
+      <td>${escapeHtml(l.page)}</td>
+      <td title="${escapeHtml(l.userAgent)}">${escapeHtml(ua)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// --- UI Binding ---
+function showDashboard() {
+  document.getElementById('adminLogin').style.display = 'none';
+  document.getElementById('dashboard').classList.add('active');
+  loadLogs();
+}
+
+function showLogin() {
+  clearAdminSession();
+  document.getElementById('adminLogin').style.display = 'block';
+  document.getElementById('dashboard').classList.remove('active');
+}
+
+document.getElementById('adminSubmit').addEventListener('click', async function () {
+  const email = document.getElementById('adminEmail').value;
+  const pin = document.getElementById('adminPass').value;
+  const errorEl = document.getElementById('adminError');
+
+  if (!email || !pin) {
+    errorEl.textContent = 'Enter email and PIN.';
+    return;
+  }
+
+  this.disabled = true;
+  this.textContent = 'Verifying…';
+  errorEl.textContent = '';
+
+  const valid = await verifyAdmin(email, pin);
+  if (valid) {
+    setAdminSession(email);
+    showDashboard();
+  } else {
+    errorEl.textContent = 'Invalid admin credentials.';
+  }
+
+  this.disabled = false;
+  this.textContent = 'Login';
+});
+
+document.getElementById('logoutBtn').addEventListener('click', showLogin);
+document.getElementById('refreshBtn').addEventListener('click', loadLogs);
+document.getElementById('filterEmail').addEventListener('input', renderLogs);
+document.getElementById('filterStatus').addEventListener('change', renderLogs);
+
+// Auto-login if session valid
+if (getAdminSession()) {
+  showDashboard();
+}
+</script>
+</body>
+</html>

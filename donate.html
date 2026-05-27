@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Support MeritNama — Keep the Data Flowing</title>
+  <link rel="stylesheet" href="auth.css" />
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>firebase.initializeApp(firebaseConfig);</script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -707,5 +713,6 @@
     toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
   }
 </script>
+<script src="auth.js"></script>
 </body>
 </html>
