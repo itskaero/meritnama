@@ -33,7 +33,16 @@ jobs:
           FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
           FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-        run: python3 scripts/render_firebase_config.py
+        run: |
+          : "${FIREBASE_API_KEY:?secret FIREBASE_API_KEY is not set}"
+          : "${FIREBASE_AUTH_DOMAIN:?secret FIREBASE_AUTH_DOMAIN is not set}"
+          : "${FIREBASE_PROJECT_ID:?secret FIREBASE_PROJECT_ID is not set}"
+          : "${FIREBASE_STORAGE_BUCKET:?secret FIREBASE_STORAGE_BUCKET is not set}"
+          : "${FIREBASE_MESSAGING_SENDER_ID:?secret FIREBASE_MESSAGING_SENDER_ID is not set}"
+          : "${FIREBASE_APP_ID:?secret FIREBASE_APP_ID is not set}"
+          envsubst '$FIREBASE_API_KEY $FIREBASE_AUTH_DOMAIN $FIREBASE_PROJECT_ID $FIREBASE_STORAGE_BUCKET $FIREBASE_MESSAGING_SENDER_ID $FIREBASE_APP_ID' \
+            < firebase-config.template.js > firebase-config.js
+          echo "firebase-config.js created successfully."
 
       - name: Prepare site directory
         run: |
