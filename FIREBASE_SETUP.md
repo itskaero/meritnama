@@ -48,8 +48,8 @@ To use the workflow, add these repository secrets:
 - `FIREBASE_MESSAGING_SENDER_ID`
 - `FIREBASE_APP_ID`
 
-Then run **Actions → Render Firebase Config → Run workflow**.  
-The workflow renders `firebase-config.js` from the template, uploads it as an artifact, and deploys the site to GitHub Pages with the updated config.
+After adding the secrets, every push to `main` deploys GitHub Pages with a rendered `firebase-config.js`.  
+You can also run it manually from **Actions → Render Firebase Config → Run workflow**.
 
 ---
 

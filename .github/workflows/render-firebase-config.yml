@@ -1,7 +1,14 @@
 name: Render Firebase Config
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -48,11 +55,8 @@ jobs:
           print("firebase-config.js rendered successfully.")
           PY
 
-      - name: Upload rendered config artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: firebase-config
-          path: firebase-config.js
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
 
       - name: Prepare GitHub Pages site artifact
         run: |
