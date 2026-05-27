@@ -23,6 +23,7 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
         run: |
           python - <<'PY'
+          import json
           import os
           import re
           import pathlib
@@ -38,7 +39,8 @@ jobs:
 
           rendered = template
           for key in keys:
-            rendered = rendered.replace(f"${{{key}}}", os.environ[key])
+            escaped_value = json.dumps(os.environ[key])[1:-1]
+            rendered = rendered.replace(f"${{{key}}}", escaped_value)
 
           pathlib.Path("firebase-config.js").write_text(rendered, encoding="utf-8")
           print("firebase-config.js rendered successfully.")
