@@ -24,6 +24,20 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Training reviews — publicly readable and creatable, no edits/deletes
+    match /training_reviews/{reviewId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
+    // Community discussion messages — publicly readable and creatable, no edits/deletes
+    match /discussions/{messageId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
     // Deny everything else
     match /{document=**} {
       allow read, write: if false;

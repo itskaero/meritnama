@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reviews &amp; Discussion — MeritNama</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="auth.css" />
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>firebase.initializeApp(firebaseConfig);</script>
+  <style>
+    /* ── Reviews page specific ── */
+
+    .reviews-hero {
+      text-align: center;
+      padding: 2.5rem 1rem 1.5rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .reviews-hero h2 {
+      font-size: 1.6rem;
+      color: var(--neon-cyan);
+      margin-bottom: 0.5rem;
+    }
+    .reviews-hero p { color: var(--text-muted); font-size: 0.95rem; }
+
+    /* ── Two-column layout ── */
+    .reviews-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem 4rem;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .reviews-layout { grid-template-columns: 1fr; }
+    }
+
+    /* ── Section panels ── */
+    .rv-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .rv-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(77,184,217,0.03);
+    }
+    .rv-panel-header h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--neon-cyan);
+      margin: 0;
+    }
+    .rv-panel-header .rv-panel-icon {
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+    .rv-panel-header .rv-panel-count {
+      margin-left: auto;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      background: rgba(77,184,217,0.07);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 2px 10px;
+    }
+    .rv-panel-body { padding: 1.5rem; }
+
+    /* ── Form fields ── */
+    .rv-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem;
+    }
+    .rv-form-grid .rv-field-full { grid-column: 1 / -1; }
+    @media (max-width: 500px) {
+      .rv-form-grid { grid-template-columns: 1fr; }
+    }
+
+    .rv-field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+    }
+    .rv-field input,
+    .rv-field select,
+    .rv-field textarea {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.6rem 0.85rem;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .rv-field input:focus,
+    .rv-field select:focus,
+    .rv-field textarea:focus {
+      border-color: var(--border-active);
+    }
+    .rv-field select option { background: #0d1626; }
+    .rv-field textarea { resize: vertical; min-height: 90px; }
+
+    /* ── Star rating ── */
+    .star-rating-wrap { display: flex; align-items: center; gap: 6px; }
+    .star-rating { display: flex; gap: 4px; }
+    .star-rating button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.6rem;
+      line-height: 1;
+      color: var(--text-light);
+      transition: color 0.15s, transform 0.12s;
+      padding: 0;
+    }
+    .star-rating button:hover,
+    .star-rating button.active {
+      color: var(--neon-gold);
+      transform: scale(1.2);
+    }
+    .star-rating-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      min-width: 60px;
+    }
+
+    /* ── Submit btn ── */
+    .rv-submit {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border: none;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+      color: #fff;
+      font-family: var(--font);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .rv-submit:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+    .rv-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Status message ── */
+    .rv-status {
+      margin-top: 0.75rem;
+      font-size: 0.83rem;
+      text-align: center;
+      min-height: 1.2em;
+    }
+    .rv-status.success { color: var(--neon-green); }
+    .rv-status.error   { color: var(--danger); }
+
+    /* ── Divider ── */
+    .rv-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 1.5rem 0;
+    }
+
+    /* ── Filter bar ── */
+    .rv-filters {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .rv-filters select,
+    .rv-filters input {
+      flex: 1;
+      min-width: 100px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.45rem 0.7rem;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.82rem;
+      outline: none;
+    }
+    .rv-filters select:focus,
+    .rv-filters input:focus { border-color: var(--border-active); }
+    .rv-filters select option { background: #0d1626; }
+
+    /* ── Review cards ── */
+    .rv-list { display: flex; flex-direction: column; gap: 0.85rem; }
+
+    .rv-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      transition: border-color 0.2s;
+    }
+    .rv-card:hover { border-color: var(--border-hover); }
+
+    .rv-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .rv-card-author {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .rv-card-time {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .rv-card-stars { color: var(--neon-gold); font-size: 0.95rem; letter-spacing: 1px; }
+    .rv-card-stars .empty { color: var(--text-light); }
+
+    .rv-card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin: 0.45rem 0;
+    }
+    .rv-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.71rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 100px;
+      border: 1px solid;
+    }
+    .rv-tag-year  { color: var(--neon-cyan);   border-color: rgba(77,184,217,0.3);   background: rgba(77,184,217,0.07); }
+    .rv-tag-spec  { color: var(--neon-purple);  border-color: rgba(124,101,196,0.3); background: rgba(124,101,196,0.07); }
+    .rv-tag-hosp  { color: var(--neon-green);   border-color: rgba(62,207,142,0.3);  background: rgba(62,207,142,0.07); }
+
+    .rv-card-text {
+      font-size: 0.87rem;
+      color: var(--text);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .rv-empty {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+    .rv-empty-icon { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; opacity: 0.4; }
+
+    .rv-loading {
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* ── Discussion / Comment cards ── */
+    .disc-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.9rem 1rem;
+      transition: border-color 0.2s;
+    }
+    .disc-card:hover { border-color: var(--border-hover); }
+    .disc-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.35rem;
+    }
+    .disc-author {
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: var(--neon-cyan);
+    }
+    .disc-time {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .disc-text {
+      font-size: 0.87rem;
+      color: var(--text);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .disc-list { display: flex; flex-direction: column; gap: 0.7rem; }
+
+    /* ── Load more ── */
+    .rv-load-more {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.6rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-muted);
+      font-family: var(--font);
+      font-size: 0.83rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .rv-load-more:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+  </style>
+</head>
+<body>
+
+<!-- ======= AUTH ======= -->
+<script src="auth.js"></script>
+
+<!-- ======= HEADER ======= -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <a href="index.html" style="display:flex;align-items:center;text-decoration:none;">
+        <img src="logo.svg" class="logo-img" alt="Meritnama" />
+      </a>
+    </div>
+    <div class="header-meta">
+      <span class="badge badge-info">Reviews &amp; Discussion</span>
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ======= NAV ======= -->
+<nav class="tab-nav" id="mainNav">
+  <a href="index.html" class="tab-btn">&#128202; Merit Table</a>
+  <a href="index.html#predictor" class="tab-btn">&#127919; My Prediction</a>
+  <a href="index.html#calculator" class="tab-btn">&#129518; Calculator</a>
+  <a href="index.html#current" class="tab-btn">&#128203; Current Merit</a>
+  <a href="index.html#policy" class="tab-btn">&#128196; Policy</a>
+  <a href="index.html#guide" class="tab-btn">&#10067; Guide</a>
+  <a href="simulation.html" class="tab-btn">&#127973; Induction 21</a>
+  <a href="reviews.html" class="tab-btn active">&#11088; Reviews</a>
+  <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
+</nav>
+
+<!-- ======= AUTHOR BAR ======= -->
+<div class="author-bar">
+  Independent, community-built tool by
+  <a href="https://github.com/itskaero" target="_blank" rel="noopener">@itskaero</a>
+  &middot;
+  <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a>
+</div>
+
+<!-- ======= MAIN ======= -->
+<main class="main-content" style="padding-top:1.5rem;">
+
+  <div class="reviews-hero">
+    <h2>&#11088; Training Reviews &amp; Community</h2>
+    <p>Share your residency experience — help future trainees choose wisely. All reviews are community-submitted and reflect personal opinions.</p>
+  </div>
+
+  <div class="reviews-layout">
+
+    <!-- ══════════════════════════════════════
+         LEFT COLUMN — TRAINING REVIEWS
+    ══════════════════════════════════════ -->
+    <div style="display:flex;flex-direction:column;gap:1.5rem;">
+
+      <!-- Submit review form -->
+      <div class="rv-panel">
+        <div class="rv-panel-header">
+          <span class="rv-panel-icon">&#128221;</span>
+          <h3>Write a Review</h3>
+        </div>
+        <div class="rv-panel-body">
+          <div class="rv-form-grid" id="reviewForm">
+
+            <div class="rv-field">
+              <label for="rvName">Your Name / Alias</label>
+              <input type="text" id="rvName" placeholder="Dr. Anonymous" maxlength="60" />
+            </div>
+
+            <div class="rv-field">
+              <label for="rvYear">Training Year</label>
+              <select id="rvYear">
+                <option value="">Select year&hellip;</option>
+                <option value="R1">R1 — Year 1</option>
+                <option value="R2">R2 — Year 2</option>
+                <option value="R3">R3 — Year 3</option>
+                <option value="R4">R4 — Year 4</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+
+            <div class="rv-field">
+              <label for="rvSpecialty">Specialty</label>
+              <input type="text" id="rvSpecialty" list="specialtyList" placeholder="e.g. Cardiology" maxlength="80" autocomplete="off" />
+              <datalist id="specialtyList"></datalist>
+            </div>
+
+            <div class="rv-field">
+              <label for="rvHospital">Hospital</label>
+              <input type="text" id="rvHospital" list="hospitalList" placeholder="e.g. Services Hospital" maxlength="120" autocomplete="off" />
+              <datalist id="hospitalList"></datalist>
+            </div>
+
+            <div class="rv-field rv-field-full">
+              <label>Overall Rating</label>
+              <div class="star-rating-wrap">
+                <div class="star-rating" id="starRating">
+                  <button type="button" data-star="1" title="1 star">&#9733;</button>
+                  <button type="button" data-star="2" title="2 stars">&#9733;</button>
+                  <button type="button" data-star="3" title="3 stars">&#9733;</button>
+                  <button type="button" data-star="4" title="4 stars">&#9733;</button>
+                  <button type="button" data-star="5" title="5 stars">&#9733;</button>
+                </div>
+                <span class="star-rating-label" id="starLabel">No rating</span>
+              </div>
+            </div>
+
+            <div class="rv-field rv-field-full">
+              <label for="rvText">Your Review</label>
+              <textarea id="rvText" placeholder="Share your experience — teaching quality, workload, senior support, facilities, overall training environment…" maxlength="2000"></textarea>
+              <div style="text-align:right;font-size:0.73rem;color:var(--text-muted);margin-top:3px;"><span id="rvCharCount">0</span>/2000</div>
+            </div>
+
+          </div>
+          <button class="rv-submit" id="rvSubmitBtn">Submit Review</button>
+          <div class="rv-status" id="rvStatus"></div>
+        </div>
+      </div>
+
+      <!-- Reviews list -->
+      <div class="rv-panel">
+        <div class="rv-panel-header">
+          <span class="rv-panel-icon">&#128198;</span>
+          <h3>Community Reviews</h3>
+          <span class="rv-panel-count" id="reviewCount">0 reviews</span>
+        </div>
+        <div class="rv-panel-body">
+          <div class="rv-filters">
+            <select id="filterYear">
+              <option value="">All Years</option>
+              <option value="R1">R1</option>
+              <option value="R2">R2</option>
+              <option value="R3">R3</option>
+              <option value="R4">R4</option>
+              <option value="Completed">Completed</option>
+            </select>
+            <input type="text" id="filterSpec" placeholder="Filter specialty&hellip;" />
+            <input type="text" id="filterHosp" placeholder="Filter hospital&hellip;" />
+          </div>
+          <div id="reviewsList" class="rv-list">
+            <div class="rv-loading">Loading reviews&hellip;</div>
+          </div>
+          <button class="rv-load-more" id="rvLoadMore" style="display:none;">Load more reviews</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════
+         RIGHT COLUMN — DISCUSSION
+    ══════════════════════════════════════ -->
+    <div style="display:flex;flex-direction:column;gap:1.5rem;">
+
+      <!-- Post comment form -->
+      <div class="rv-panel">
+        <div class="rv-panel-header">
+          <span class="rv-panel-icon">&#128172;</span>
+          <h3>Community Discussion</h3>
+        </div>
+        <div class="rv-panel-body">
+          <p style="margin-bottom:1rem;font-size:0.85rem;">Ask questions, share tips, or discuss anything about PRP training.</p>
+
+          <div class="rv-form-grid" style="grid-template-columns:1fr;">
+
+            <div class="rv-field">
+              <label for="discName">Your Name / Alias</label>
+              <input type="text" id="discName" placeholder="Dr. Anonymous" maxlength="60" />
+            </div>
+
+            <div class="rv-field">
+              <label for="discText">Message</label>
+              <textarea id="discText" placeholder="Ask a question or start a discussion…" maxlength="1500" style="min-height:100px;"></textarea>
+              <div style="text-align:right;font-size:0.73rem;color:var(--text-muted);margin-top:3px;"><span id="discCharCount">0</span>/1500</div>
+            </div>
+
+          </div>
+
+          <button class="rv-submit" id="discSubmitBtn">Post Message</button>
+          <div class="rv-status" id="discStatus"></div>
+        </div>
+      </div>
+
+      <!-- Discussion thread -->
+      <div class="rv-panel">
+        <div class="rv-panel-header">
+          <span class="rv-panel-icon">&#128483;</span>
+          <h3>Discussion Thread</h3>
+          <span class="rv-panel-count" id="discCount">0 messages</span>
+        </div>
+        <div class="rv-panel-body">
+          <div id="discList" class="disc-list">
+            <div class="rv-loading">Loading discussion&hellip;</div>
+          </div>
+          <button class="rv-load-more" id="discLoadMore" style="display:none;">Load more messages</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- /reviews-layout -->
+</main>
+
+<script src="reviews.js"></script>
+<script>
+  // Hamburger nav toggle (mirrors index.html)
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const mainNav = document.getElementById('mainNav');
+  if (hamburgerBtn && mainNav) {
+    hamburgerBtn.addEventListener('click', function () {
+      mainNav.classList.toggle('open');
+      hamburgerBtn.classList.toggle('open');
+    });
+  }
+</script>
+</body>
+</html>
