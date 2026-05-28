@@ -164,6 +164,19 @@
     "specialityName": "Anaesthesia",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 4918,
+    "hospitalName": "Gujranwala Medical College Teaching Hospital, Gujranwala ",
+    "seats": 2
+  },
+  {
+    "typeId": 1,
+    "typeName": "FCPS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 1,
+    "specialityName": "Anaesthesia",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 13,
     "hospitalName": "Gujranwala Teaching Hospital Gujranwala",
     "seats": 1
@@ -970,6 +983,19 @@
     "specialityName": "Diagnostic Radiology",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 1,
+    "typeName": "FCPS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 8,
+    "specialityName": "Diagnostic Radiology",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 1
@@ -1035,8 +1061,8 @@
     "specialityName": "Diagnostic Radiology",
     "instituteId": 0,
     "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
+    "hospitalId": 16,
+    "hospitalName": "DHQ Teaching Hospital, Sargodha",
     "seats": 1
   },
   {
@@ -1048,9 +1074,9 @@
     "specialityName": "Diagnostic Radiology",
     "instituteId": 0,
     "instituteName": "",
-    "hospitalId": 16,
-    "hospitalName": "DHQ Teaching Hospital, Sargodha",
-    "seats": 1
+    "hospitalId": 4918,
+    "hospitalName": "Gujranwala Medical College Teaching Hospital, Gujranwala ",
+    "seats": 2
   },
   {
     "typeId": 1,
@@ -1347,6 +1373,19 @@
     "specialityName": "General Surgery",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 2
+  },
+  {
+    "typeId": 1,
+    "typeName": "FCPS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 11,
+    "specialityName": "General Surgery",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 4
@@ -1362,19 +1401,6 @@
     "instituteName": "",
     "hospitalId": 5,
     "hospitalName": "Benazir Bhutto Hospital, Rawalpindi",
-    "seats": 2
-  },
-  {
-    "typeId": 1,
-    "typeName": "FCPS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 11,
-    "specialityName": "General Surgery",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
     "seats": 2
   },
   {
@@ -1438,9 +1464,22 @@
     "specialityName": "General Surgery",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 4918,
+    "hospitalName": "Gujranwala Medical College Teaching Hospital, Gujranwala ",
+    "seats": 2
+  },
+  {
+    "typeId": 1,
+    "typeName": "FCPS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 11,
+    "specialityName": "General Surgery",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 13,
     "hospitalName": "Gujranwala Teaching Hospital Gujranwala",
-    "seats": 3
+    "seats": 1
   },
   {
     "typeId": 1,
@@ -1919,6 +1958,19 @@
     "specialityName": "Medicine",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 2
+  },
+  {
+    "typeId": 1,
+    "typeName": "FCPS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 14,
+    "specialityName": "Medicine",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 3
@@ -1948,19 +2000,6 @@
     "hospitalId": 41,
     "hospitalName": "Civil Hospital Bahawalpur",
     "seats": 1
-  },
-  {
-    "typeId": 1,
-    "typeName": "FCPS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 14,
-    "specialityName": "Medicine",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
-    "seats": 2
   },
   {
     "typeId": 1,
@@ -2023,9 +2062,22 @@
     "specialityName": "Medicine",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 4918,
+    "hospitalName": "Gujranwala Medical College Teaching Hospital, Gujranwala ",
+    "seats": 2
+  },
+  {
+    "typeId": 1,
+    "typeName": "FCPS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 14,
+    "specialityName": "Medicine",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 13,
     "hospitalName": "Gujranwala Teaching Hospital Gujranwala",
-    "seats": 3
+    "seats": 1
   },
   {
     "typeId": 1,
@@ -2374,8 +2426,8 @@
     "specialityName": "Neuro Surgery",
     "instituteId": 0,
     "instituteName": "",
-    "hospitalId": 13,
-    "hospitalName": "Gujranwala Teaching Hospital Gujranwala",
+    "hospitalId": 4918,
+    "hospitalName": "Gujranwala Medical College Teaching Hospital, Gujranwala ",
     "seats": 1
   },
   {
@@ -2673,6 +2725,19 @@
     "specialityName": "Obstetrics & Gynecology",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 1,
+    "typeName": "FCPS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 19,
+    "specialityName": "Obstetrics & Gynecology",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 2
@@ -2701,19 +2766,6 @@
     "instituteName": "",
     "hospitalId": 41,
     "hospitalName": "Civil Hospital Bahawalpur",
-    "seats": 1
-  },
-  {
-    "typeId": 1,
-    "typeName": "FCPS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 19,
-    "specialityName": "Obstetrics & Gynecology",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
     "seats": 1
   },
   {
@@ -2959,6 +3011,19 @@
     "specialityName": "Ophthalmology",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 1,
+    "typeName": "FCPS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 20,
+    "specialityName": "Ophthalmology",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 1
@@ -2985,21 +3050,8 @@
     "specialityName": "Ophthalmology",
     "instituteId": 0,
     "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
-    "seats": 1
-  },
-  {
-    "typeId": 1,
-    "typeName": "FCPS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 20,
-    "specialityName": "Ophthalmology",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 13,
-    "hospitalName": "Gujranwala Teaching Hospital Gujranwala",
+    "hospitalId": 4918,
+    "hospitalName": "Gujranwala Medical College Teaching Hospital, Gujranwala ",
     "seats": 1
   },
   {
@@ -3180,6 +3232,19 @@
     "specialityName": "Orthopedic Surgery",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 1,
+    "typeName": "FCPS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 21,
+    "specialityName": "Orthopedic Surgery",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 2
@@ -3195,19 +3260,6 @@
     "instituteName": "",
     "hospitalId": 5,
     "hospitalName": "Benazir Bhutto Hospital, Rawalpindi",
-    "seats": 1
-  },
-  {
-    "typeId": 1,
-    "typeName": "FCPS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 21,
-    "specialityName": "Orthopedic Surgery",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
     "seats": 1
   },
   {
@@ -3245,8 +3297,8 @@
     "specialityName": "Orthopedic Surgery",
     "instituteId": 0,
     "instituteName": "",
-    "hospitalId": 13,
-    "hospitalName": "Gujranwala Teaching Hospital Gujranwala",
+    "hospitalId": 4918,
+    "hospitalName": "Gujranwala Medical College Teaching Hospital, Gujranwala ",
     "seats": 1
   },
   {
@@ -3427,6 +3479,19 @@
     "specialityName": "Otorhinolaryngology ENT",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 1,
+    "typeName": "FCPS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 22,
+    "specialityName": "Otorhinolaryngology ENT",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 1
@@ -3466,21 +3531,8 @@
     "specialityName": "Otorhinolaryngology ENT",
     "instituteId": 0,
     "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
-    "seats": 1
-  },
-  {
-    "typeId": 1,
-    "typeName": "FCPS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 22,
-    "specialityName": "Otorhinolaryngology ENT",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 13,
-    "hospitalName": "Gujranwala Teaching Hospital Gujranwala",
+    "hospitalId": 4918,
+    "hospitalName": "Gujranwala Medical College Teaching Hospital, Gujranwala ",
     "seats": 1
   },
   {
@@ -3830,6 +3882,19 @@
     "specialityName": "Pediatrics",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 1,
+    "typeName": "FCPS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 23,
+    "specialityName": "Pediatrics",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 2
@@ -3895,19 +3960,6 @@
     "specialityName": "Pediatrics",
     "instituteId": 0,
     "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
-    "seats": 1
-  },
-  {
-    "typeId": 1,
-    "typeName": "FCPS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 23,
-    "specialityName": "Pediatrics",
-    "instituteId": 0,
-    "instituteName": "",
     "hospitalId": 14,
     "hospitalName": "DHQ Rawalpindi",
     "seats": 1
@@ -3963,6 +4015,19 @@
     "hospitalId": 19,
     "hospitalName": "Govt.Teaching Hospital , Shahdra , Lahore",
     "seats": 1
+  },
+  {
+    "typeId": 1,
+    "typeName": "FCPS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 23,
+    "specialityName": "Pediatrics",
+    "instituteId": 0,
+    "instituteName": "",
+    "hospitalId": 4918,
+    "hospitalName": "Gujranwala Medical College Teaching Hospital, Gujranwala ",
+    "seats": 4
   },
   {
     "typeId": 1,
@@ -4220,6 +4285,19 @@
     "specialityName": "Plastic Surgery",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 1,
+    "typeName": "FCPS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 25,
+    "specialityName": "Plastic Surgery",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 1
@@ -4235,19 +4313,6 @@
     "instituteName": "",
     "hospitalId": 7,
     "hospitalName": "Children Hospital, Lahore",
-    "seats": 1
-  },
-  {
-    "typeId": 1,
-    "typeName": "FCPS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 25,
-    "specialityName": "Plastic Surgery",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
     "seats": 1
   },
   {
@@ -4363,6 +4428,19 @@
     "specialityName": "Psychiatry",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 1,
+    "typeName": "FCPS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 26,
+    "specialityName": "Psychiatry",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 1
@@ -4379,19 +4457,6 @@
     "hospitalId": 5,
     "hospitalName": "Benazir Bhutto Hospital, Rawalpindi",
     "seats": 2
-  },
-  {
-    "typeId": 1,
-    "typeName": "FCPS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 26,
-    "specialityName": "Psychiatry",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
-    "seats": 1
   },
   {
     "typeId": 1,
@@ -4532,9 +4597,9 @@
     "specialityName": "Pulmonology",
     "instituteId": 0,
     "instituteName": "",
-    "hospitalId": 4,
-    "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
-    "seats": 2
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
   },
   {
     "typeId": 1,
@@ -4545,9 +4610,9 @@
     "specialityName": "Pulmonology",
     "instituteId": 0,
     "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
-    "seats": 1
+    "hospitalId": 4,
+    "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
+    "seats": 2
   },
   {
     "typeId": 1,
@@ -4753,6 +4818,19 @@
     "specialityName": "Urology",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 1,
+    "typeName": "FCPS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 30,
+    "specialityName": "Urology",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 2
@@ -4779,19 +4857,6 @@
     "specialityName": "Urology",
     "instituteId": 0,
     "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
-    "seats": 1
-  },
-  {
-    "typeId": 1,
-    "typeName": "FCPS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 30,
-    "specialityName": "Urology",
-    "instituteId": 0,
-    "instituteName": "",
     "hospitalId": 16,
     "hospitalName": "DHQ Teaching Hospital, Sargodha",
     "seats": 1
@@ -4805,8 +4870,8 @@
     "specialityName": "Urology",
     "instituteId": 0,
     "instituteName": "",
-    "hospitalId": 13,
-    "hospitalName": "Gujranwala Teaching Hospital Gujranwala",
+    "hospitalId": 4918,
+    "hospitalName": "Gujranwala Medical College Teaching Hospital, Gujranwala ",
     "seats": 1
   },
   {
@@ -5364,6 +5429,19 @@
     "specialityName": "General Surgery",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 2
+  },
+  {
+    "typeId": 2,
+    "typeName": "MS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 11,
+    "specialityName": "General Surgery",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 4
@@ -5379,19 +5457,6 @@
     "instituteName": "",
     "hospitalId": 5,
     "hospitalName": "Benazir Bhutto Hospital, Rawalpindi",
-    "seats": 2
-  },
-  {
-    "typeId": 2,
-    "typeName": "MS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 11,
-    "specialityName": "General Surgery",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
     "seats": 2
   },
   {
@@ -5819,6 +5884,19 @@
     "specialityName": "Obstetrics & Gynecology",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 2,
+    "typeName": "MS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 19,
+    "specialityName": "Obstetrics & Gynecology",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 2
@@ -5847,19 +5925,6 @@
     "instituteName": "",
     "hospitalId": 41,
     "hospitalName": "Civil Hospital Bahawalpur",
-    "seats": 1
-  },
-  {
-    "typeId": 2,
-    "typeName": "MS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 19,
-    "specialityName": "Obstetrics & Gynecology",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
     "seats": 1
   },
   {
@@ -6105,6 +6170,19 @@
     "specialityName": "Ophthalmology",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 2,
+    "typeName": "MS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 20,
+    "specialityName": "Ophthalmology",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 1
@@ -6120,19 +6198,6 @@
     "instituteName": "",
     "hospitalId": 5,
     "hospitalName": "Benazir Bhutto Hospital, Rawalpindi",
-    "seats": 1
-  },
-  {
-    "typeId": 2,
-    "typeName": "MS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 20,
-    "specialityName": "Ophthalmology",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
     "seats": 1
   },
   {
@@ -6313,6 +6378,19 @@
     "specialityName": "Orthopedic Surgery",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 2,
+    "typeName": "MS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 21,
+    "specialityName": "Orthopedic Surgery",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 2
@@ -6328,19 +6406,6 @@
     "instituteName": "",
     "hospitalId": 5,
     "hospitalName": "Benazir Bhutto Hospital, Rawalpindi",
-    "seats": 1
-  },
-  {
-    "typeId": 2,
-    "typeName": "MS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 21,
-    "specialityName": "Orthopedic Surgery",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
     "seats": 1
   },
   {
@@ -6547,6 +6612,19 @@
     "specialityName": "Otorhinolaryngology ENT",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 2,
+    "typeName": "MS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 22,
+    "specialityName": "Otorhinolaryngology ENT",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 1
@@ -6575,19 +6653,6 @@
     "instituteName": "",
     "hospitalId": 7,
     "hospitalName": "Children Hospital, Lahore",
-    "seats": 1
-  },
-  {
-    "typeId": 2,
-    "typeName": "MS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 22,
-    "specialityName": "Otorhinolaryngology ENT",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
     "seats": 1
   },
   {
@@ -6950,6 +7015,19 @@
     "specialityName": "Plastic Surgery",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 2,
+    "typeName": "MS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 25,
+    "specialityName": "Plastic Surgery",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 1
@@ -6965,19 +7043,6 @@
     "instituteName": "",
     "hospitalId": 7,
     "hospitalName": "Children Hospital, Lahore",
-    "seats": 1
-  },
-  {
-    "typeId": 2,
-    "typeName": "MS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 25,
-    "specialityName": "Plastic Surgery",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
     "seats": 1
   },
   {
@@ -7145,6 +7210,19 @@
     "specialityName": "Urology",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 2,
+    "typeName": "MS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 30,
+    "specialityName": "Urology",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 2
@@ -7160,19 +7238,6 @@
     "instituteName": "",
     "hospitalId": 5,
     "hospitalName": "Benazir Bhutto Hospital, Rawalpindi",
-    "seats": 1
-  },
-  {
-    "typeId": 2,
-    "typeName": "MS",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 30,
-    "specialityName": "Urology",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
     "seats": 1
   },
   {
@@ -7496,6 +7561,19 @@
     "specialityName": "Dermatology",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 3,
+    "typeName": "MD",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 7,
+    "specialityName": "Dermatology",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 1
@@ -7511,19 +7589,6 @@
     "instituteName": "",
     "hospitalId": 5,
     "hospitalName": "Benazir Bhutto Hospital, Rawalpindi",
-    "seats": 1
-  },
-  {
-    "typeId": 3,
-    "typeName": "MD",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 7,
-    "specialityName": "Dermatology",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
     "seats": 1
   },
   {
@@ -7639,6 +7704,19 @@
     "specialityName": "Diagnostic Radiology",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 3,
+    "typeName": "MD",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 8,
+    "specialityName": "Diagnostic Radiology",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 1
@@ -7693,19 +7771,6 @@
     "instituteName": "",
     "hospitalId": 10,
     "hospitalName": "Choudhary Prevez Ilahi Institute of Cardiology , Multan",
-    "seats": 1
-  },
-  {
-    "typeId": 3,
-    "typeName": "MD",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 8,
-    "specialityName": "Diagnostic Radiology",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
     "seats": 1
   },
   {
@@ -8029,6 +8094,19 @@
     "specialityName": "Medicine",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 2
+  },
+  {
+    "typeId": 3,
+    "typeName": "MD",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 14,
+    "specialityName": "Medicine",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 3
@@ -8058,19 +8136,6 @@
     "hospitalId": 41,
     "hospitalName": "Civil Hospital Bahawalpur",
     "seats": 1
-  },
-  {
-    "typeId": 3,
-    "typeName": "MD",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 14,
-    "specialityName": "Medicine",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
-    "seats": 2
   },
   {
     "typeId": 3,
@@ -8562,6 +8627,19 @@
     "specialityName": "Pediatrics",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
+  },
+  {
+    "typeId": 3,
+    "typeName": "MD",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 23,
+    "specialityName": "Pediatrics",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4,
     "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
     "seats": 2
@@ -8617,19 +8695,6 @@
     "hospitalId": 41,
     "hospitalName": "Civil Hospital Bahawalpur",
     "seats": 2
-  },
-  {
-    "typeId": 3,
-    "typeName": "MD",
-    "quotaId": 1,
-    "quotaName": "Punjab",
-    "specialityId": 23,
-    "specialityName": "Pediatrics",
-    "instituteId": 0,
-    "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
-    "seats": 1
   },
   {
     "typeId": 3,
@@ -8848,9 +8913,9 @@
     "specialityName": "Psychiatry",
     "instituteId": 0,
     "instituteName": "",
-    "hospitalId": 5,
-    "hospitalName": "Benazir Bhutto Hospital, Rawalpindi",
-    "seats": 2
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
   },
   {
     "typeId": 3,
@@ -8861,9 +8926,9 @@
     "specialityName": "Psychiatry",
     "instituteId": 0,
     "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
-    "seats": 1
+    "hospitalId": 5,
+    "hospitalName": "Benazir Bhutto Hospital, Rawalpindi",
+    "seats": 2
   },
   {
     "typeId": 3,
@@ -9004,9 +9069,9 @@
     "specialityName": "Pulmonology",
     "instituteId": 0,
     "instituteName": "",
-    "hospitalId": 4,
-    "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
-    "seats": 2
+    "hospitalId": 12,
+    "hospitalName": "Allied II Hospital, Faisalabad",
+    "seats": 1
   },
   {
     "typeId": 3,
@@ -9017,9 +9082,9 @@
     "specialityName": "Pulmonology",
     "instituteId": 0,
     "instituteName": "",
-    "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
-    "seats": 1
+    "hospitalId": 4,
+    "hospitalName": "Bahawal Victoria Hospital, Bahawalpur",
+    "seats": 2
   },
   {
     "typeId": 3,
@@ -10266,7 +10331,7 @@
     "instituteId": 0,
     "instituteName": "",
     "hospitalId": 12,
-    "hospitalName": "DHQ Hospital, Faisalabad",
+    "hospitalName": "Allied II Hospital, Faisalabad",
     "seats": 1
   },
   {

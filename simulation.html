@@ -39,6 +39,103 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* -- Candidate pool stats bar -- */
+    .cand-stats-bar {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px;
+      padding: 9px 0 2px;
+      border-top: 1px solid var(--border, rgba(77,184,217,0.12));
+      margin-top: 10px;
+      font-size: 0.74rem;
+    }
+    .cstats-item { display: flex; align-items: center; gap: 5px; }
+    .cstats-label {
+      color: var(--text-muted, #6b84a8); font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.66rem;
+    }
+    .cstats-val {
+      background: rgba(77,184,217,0.08); color: var(--neon-cyan, #4db8d9);
+      border: 1px solid rgba(77,184,217,0.18); border-radius: 100px;
+      padding: 1px 8px; font-weight: 700; font-variant-numeric: tabular-nums;
+    }
+    .cstats-val.cstats-fcps { background: rgba(124,101,196,0.1); color: var(--neon-purple, #7c65c4); border-color: rgba(124,101,196,0.25); }
+    .cstats-val.cstats-ms   { background: rgba(77,184,217,0.08); color: var(--neon-cyan, #4db8d9);   border-color: rgba(77,184,217,0.2);    }
+    .cstats-val.cstats-md   { background: rgba(62,207,142,0.08); color: var(--neon-green, #3ecf8e);  border-color: rgba(62,207,142,0.2);    }
+    .cstats-sep { color: var(--text-light, #3a506e); }
+    .cstats-item.cstats-warn .cstats-val {
+      background: rgba(232,166,39,0.08); color: var(--neon-gold, #e8a627);
+      border-color: rgba(232,166,39,0.2);
+    }
+    .cstats-item.cstats-warn.cstats-ok .cstats-val {
+      background: rgba(62,207,142,0.07); color: var(--neon-green, #3ecf8e);
+      border-color: rgba(62,207,142,0.2);
+    }
+
+    /* -- Data Update Ticker -- */
+    .update-ticker {
+      background: linear-gradient(135deg, rgba(62,207,142,0.05) 0%, rgba(77,184,217,0.03) 100%);
+      border-bottom: 1px solid rgba(62,207,142,0.16);
+      padding: 7px 24px;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      font-size: 0.78rem; font-family: var(--font);
+    }
+    .ticker-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #3ecf8e; box-shadow: 0 0 8px rgba(62,207,142,0.6);
+      animation: ticker-pulse 2s ease-in-out infinite; flex-shrink: 0;
+    }
+    @keyframes ticker-pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.45; transform: scale(0.7); }
+    }
+    .ticker-label { color: var(--text-muted,#6b84a8); font-weight: 700;
+                    text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.7rem; }
+    .ticker-value { color: #3ecf8e; font-weight: 700; }
+    .ticker-sep   { color: var(--text-light,#3a506e); }
+    .ticker-info  { color: var(--text-muted,#6b84a8); }
+    .ticker-info a { color: #3ecf8e; text-decoration: none; }
+    .ticker-info a:hover { text-decoration: underline; }
+
+    /* -- Motivational Quote Strip -- */
+    .quote-strip {
+      display: flex; align-items: center; gap: 14px;
+      padding: 9px 24px;
+      background: linear-gradient(135deg, rgba(124,101,196,0.04) 0%, rgba(77,184,217,0.02) 100%);
+      border-bottom: 1px solid rgba(124,101,196,0.12);
+      min-height: 50px;
+      position: relative; overflow: hidden;
+    }
+    .quote-strip::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: linear-gradient(180deg, #7c65c4 0%, #4db8d9 100%);
+      border-radius: 0 2px 2px 0;
+    }
+    .quote-glyph {
+      font-size: 2rem; line-height: 1; font-family: Georgia, 'Times New Roman', serif;
+      color: rgba(124,101,196,0.3); flex-shrink: 0; margin-top: -6px;
+      user-select: none;
+    }
+    .quote-body {
+      flex: 1; display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 10px;
+      min-width: 0; transition: opacity 0.55s ease;
+    }
+    .quote-body.fading { opacity: 0; }
+    .quote-text {
+      font-style: italic; font-size: 0.8rem;
+      color: var(--text, #c8daf0); line-height: 1.45; flex-shrink: 1;
+    }
+    .quote-author {
+      font-size: 0.71rem; color: var(--neon-purple, #7c65c4);
+      font-weight: 600; white-space: nowrap; flex-shrink: 0;
+    }
+    .quote-dots {
+      display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+    }
+    .quote-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: rgba(124,101,196,0.2); transition: background 0.4s;
+    }
+    .quote-dot.active { background: #7c65c4; }
+
     /* -- Find Me bar -- */
     .sim-findme-bar {
       background: linear-gradient(135deg,
@@ -730,6 +827,7 @@
   <button class="tab-btn" data-tab="slotbrowser">&#127919; Where Merit Falls</button>
   <button class="tab-btn" data-tab="simulation">&#9889; Allocation</button>
   <button class="tab-btn" data-tab="guide">&#10067; Guide</button>
+  <a href="candidatesChanges.html" class="tab-btn" style="text-decoration:none">&#128202; Changes</a>
   <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
 </nav>
 
@@ -741,6 +839,25 @@
   <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a>
   &middot;
   <span class="author-bar-note">Induction 21 live simulation &mdash; <a href="index.html">historical merit data &rarr;</a></span>
+</div>
+
+<!-- ═══════════ DATA UPDATE TICKER ═══════════ -->
+<div class="update-ticker">
+  <span class="ticker-dot"></span>
+  <span class="ticker-label">Candidate Data</span>
+  <span class="ticker-value">Updated 2026-05-28&#160;21:12</span>
+  <span class="ticker-sep">&middot;</span>
+  <span class="ticker-info">3,361 candidates &middot; <a href="candidatesChanges.html" style="color:inherit">view changes &#8594;</a></span>
+</div>
+
+<!-- ═══════════ MOTIVATIONAL QUOTE STRIP ═══════════ -->
+<div class="quote-strip">
+  <span class="quote-glyph" aria-hidden="true">&#8220;</span>
+  <div class="quote-body" id="quoteBody">
+    <span class="quote-text" id="quoteText"></span>
+    <span class="quote-author" id="quoteAuthor"></span>
+  </div>
+  <div class="quote-dots" id="quoteDots" aria-hidden="true"></div>
 </div>
 
 <!-- ═══════════ FIND ME BAR ═══════════ -->
@@ -789,8 +906,39 @@
           </select>
         </div>
       </div>
-      <div style="margin-top:8px">
+      <div style="margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <span id="candCount" class="mt-count"></span>
+      </div>
+      <div id="candStats" class="cand-stats-bar hidden">
+        <span class="cstats-item" title="Applied to FCPS">
+          <span class="cstats-label">FCPS</span>
+          <span class="cstats-val cstats-fcps" id="cstat-fcps">—</span>
+        </span>
+        <span class="cstats-sep">&middot;</span>
+        <span class="cstats-item" title="Applied to MS">
+          <span class="cstats-label">MS</span>
+          <span class="cstats-val cstats-ms" id="cstat-ms">—</span>
+        </span>
+        <span class="cstats-sep">&middot;</span>
+        <span class="cstats-item" title="Applied to MD">
+          <span class="cstats-label">MD</span>
+          <span class="cstats-val cstats-md" id="cstat-md">—</span>
+        </span>
+        <span class="cstats-sep">&middot;</span>
+        <span class="cstats-item" title="Applied to 2 or more programmes">
+          <span class="cstats-label">Multi-prog</span>
+          <span class="cstats-val" id="cstat-multi">—</span>
+        </span>
+        <span class="cstats-sep">&middot;</span>
+        <span class="cstats-item cstats-warn" id="cstats-noprefs-item" title="No preferences filed in any programme">
+          <span class="cstats-label">No prefs</span>
+          <span class="cstats-val" id="cstat-noprefs">—</span>
+        </span>
+        <span class="cstats-sep">&middot;</span>
+        <span class="cstats-item cstats-warn" id="cstats-lowmarks-item" title="Base marks below 5 — data likely needs re-updating">
+          <span class="cstats-label">Marks &lt;5 &#9888;</span>
+          <span class="cstats-val" id="cstat-lowmarks">—</span>
+        </span>
       </div>
     </div>
 
@@ -1160,6 +1308,82 @@
 </footer>
 
 <script>
+  // ── Motivational quote strip ──────────────────────────────────
+  const _QUOTES = [
+    // ── Islamic & Quranic ────────────────────────────────────────
+    { text: "For every disease Allah has created a cure.", author: "— Prophet Muhammad \u0635\u0644\u0649 \u0627\u0644\u0644\u0647 \u0639\u0644\u064a\u0647 \u0648\u0633\u0644\u0645 (Sahih Bukhari)" },
+    { text: "Seek knowledge, even unto China.", author: "— Prophet Muhammad \u0635\u0644\u0649 \u0627\u0644\u0644\u0647 \u0639\u0644\u064a\u0647 \u0648\u0633\u0644\u0645 (attributed)" },
+    { text: "The best of people are those most beneficial to people.", author: "— Prophet Muhammad \u0635\u0644\u0649 \u0627\u0644\u0644\u0647 \u0639\u0644\u064a\u0647 \u0648\u0633\u0644\u0645" },
+    { text: "Whoever saves a life, it is as though he has saved all mankind.", author: "— Quran 5:32" },
+    { text: "And We send down of the Quran that which is healing and mercy for the believers.", author: "— Quran 17:82" },
+    { text: "Verily, with every hardship comes ease.", author: "— Quran 94:6" },
+    { text: "The wound is the place where the Light enters you.", author: "— Rumi" },
+    { text: "Yesterday I was clever, so I wanted to change the world. Today I am wise, so I am changing myself.", author: "— Rumi" },
+    // ── Muslim physicians ────────────────────────────────────────
+    { text: "Medicine is the noblest of the arts.", author: "— Ibn Sina (Avicenna, 980\u20131037)" },
+    { text: "The body is nourished by what it digests, and the mind by what it contemplates.", author: "— Ibn Sina (Avicenna)" },
+    { text: "The physician who knows only medicine, knows not even medicine.", author: "— Ibn Sina (attributed)" },
+    { text: "Truth in medicine is an unachievable goal, and the art as described in books is far beneath the knowledge of an experienced and thoughtful physician.", author: "— Al-Razi (Rhazes, 854\u2013925)" },
+    // ── Hippocrates ──────────────────────────────────────────────
+    { text: "Wherever the art of medicine is loved, there is also a love of humanity.", author: "— Hippocrates" },
+    { text: "First, do no harm.", author: "— Hippocrates" },
+    { text: "Life is short, and art long; the crisis fleeting; experience perilous, and decision difficult.", author: "— Hippocrates" },
+    { text: "Make a habit of two things: to help, or at least to do no harm.", author: "— Hippocrates" },
+    // ── William Osler ────────────────────────────────────────────
+    { text: "The good physician treats the disease; the great physician treats the patient who has the disease.", author: "— William Osler" },
+    { text: "Medicine is a science of uncertainty and an art of probability.", author: "— William Osler" },
+    { text: "The practice of medicine is an art, not a trade; a calling, not a business; a calling in which your heart will be exercised equally with your head.", author: "— William Osler" },
+    { text: "The young physician starts life with 20 drugs for each disease, and the old physician ends life with one drug for 20 diseases.", author: "— William Osler" },
+    { text: "To study the phenomena of disease without books is to sail an uncharted sea, while to study books without patients is not to go to sea at all.", author: "— William Osler" },
+    { text: "In science the credit goes to the man who convinces the world, not to the man to whom the idea first occurs.", author: "— William Osler" },
+    // ── Other great physicians ───────────────────────────────────
+    { text: "The secret of the care of the patient is in caring for the patient.", author: "— Francis W. Peabody" },
+    { text: "Medicine is not only a science; it is also an art. It deals with the very processes of life, which must be understood before they may be guided.", author: "— Paracelsus" },
+    { text: "Every patient you see is a lesson in what mankind is and what it may become.", author: "— Edward D. Churchill" },
+    { text: "It is infinitely better to transplant a heart than to bury it to be devoured by worms.", author: "— Christiaan Barnard" },
+    { text: "Medicine is a social science, and politics is nothing else but medicine on a large scale.", author: "— Rudolf Virchow" },
+    { text: "The purpose of human life is to serve, and to show compassion and the will to help others.", author: "— Albert Schweitzer" },
+    { text: "The idea that some lives matter less is the root of all that is wrong with the world.", author: "— Paul Farmer" },
+    { text: "I was taught that the way of progress is neither swift nor easy.", author: "— Marie Curie" },
+    { text: "The art of medicine consists in amusing the patient while nature cures the disease.", author: "— Voltaire" },
+  ];
+  let _qIdx = Math.floor(Math.random() * _QUOTES.length);
+
+  function _initQuoteStrip() {
+    const textEl   = document.getElementById('quoteText');
+    const authorEl = document.getElementById('quoteAuthor');
+    const body     = document.getElementById('quoteBody');
+    const dotsEl   = document.getElementById('quoteDots');
+    if (!textEl || !authorEl) return;
+
+    // Build dots
+    _QUOTES.forEach((_, i) => {
+      const d = document.createElement('span');
+      d.className = 'quote-dot' + (i === _qIdx ? ' active' : '');
+      dotsEl.appendChild(d);
+    });
+
+    const _setQuote = idx => {
+      textEl.textContent   = _QUOTES[idx].text;
+      authorEl.textContent = _QUOTES[idx].author;
+      dotsEl.querySelectorAll('.quote-dot').forEach((d, i) =>
+        d.classList.toggle('active', i === idx));
+    };
+
+    _setQuote(_qIdx);
+
+    setInterval(() => {
+      body.classList.add('fading');
+      setTimeout(() => {
+        _qIdx = (_qIdx + 1) % _QUOTES.length;
+        _setQuote(_qIdx);
+        body.classList.remove('fading');
+      }, 560);
+    }, 9000);
+  }
+
+  document.addEventListener('DOMContentLoaded', _initQuoteStrip);
+
   // Wire up Add Manually modal close + pref builder before simulation.js loads
   document.getElementById('customModalOverlay')?.addEventListener('click', () =>
     document.getElementById('customModal')?.classList.add('hidden'));

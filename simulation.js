@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupFindMe();
   setupCandidateFilters();
   applyAndRenderCandidates();
+  renderCandStats();
   setupSlotBrowser();
   setupSimulationTab();
   updateMyBadge();
@@ -321,6 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateMyBadge();
     closeCustomModal();
     applyAndRenderCandidates();
+    renderCandStats();
     showToast(`Saved as "${name}" (ID ${id}).`, 'success');
   });
 });
@@ -345,6 +347,40 @@ function gatherCustomPrefs() {
 // ═══════════════════════════════════════════════════════════════════
 // CANDIDATES TAB
 // ═══════════════════════════════════════════════════════════════════
+function renderCandStats() {
+  const all = allCandidates();
+  if (!all.length) return;
+
+  let fcps = 0, ms = 0, md = 0, multi = 0, noPrefs = 0, lowMarks = 0;
+  for (const c of all) {
+    const ai    = c.applied_in || {};
+    const progs = (ai.FCPS ? 1 : 0) + (ai.MS ? 1 : 0) + (ai.MD ? 1 : 0);
+    if (ai.FCPS) fcps++;
+    if (ai.MS)   ms++;
+    if (ai.MD)   md++;
+    if (progs >= 2) multi++;
+    if (progs === 0) noPrefs++;
+    if ((c.marksTotal || 0) < 5) lowMarks++;
+  }
+
+  const bar = document.getElementById('candStats');
+  if (!bar) return;
+  bar.classList.remove('hidden');
+
+  document.getElementById('cstat-fcps').textContent    = fcps.toLocaleString();
+  document.getElementById('cstat-ms').textContent      = ms.toLocaleString();
+  document.getElementById('cstat-md').textContent      = md.toLocaleString();
+  document.getElementById('cstat-multi').textContent   = multi.toLocaleString();
+
+  document.getElementById('cstat-noprefs').textContent = noPrefs.toLocaleString();
+  document.getElementById('cstats-noprefs-item')
+    ?.classList.toggle('cstats-ok', noPrefs === 0);
+
+  document.getElementById('cstat-lowmarks').textContent = lowMarks.toLocaleString();
+  document.getElementById('cstats-lowmarks-item')
+    ?.classList.toggle('cstats-ok', lowMarks === 0);
+}
+
 function setupCandidateFilters() {
   const search  = document.getElementById('candSearch');
   const progSel = document.getElementById('candProgram');
