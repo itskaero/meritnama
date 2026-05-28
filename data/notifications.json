@@ -20,5 +20,16 @@
     "dismissable": true,
     "link": null,
     "linkText": null
+  },
+ {
+    "id": "data-notes-v2",
+    "active": true,
+    "type": "info",
+    "icon": "ℹ️",
+    "title": "Data Notes",
+    "body": "Data update is in progress... Stay tuned. ",
+dismissable: false
+    "link": null,
+    "linkText": null
   }
 ]
