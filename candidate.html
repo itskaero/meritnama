@@ -267,6 +267,27 @@ function getInitials(name) {
   return name.trim().slice(0, 2).toUpperCase();
 }
 
+function isSafeUrl(url) {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch (e) { return false; }
+}
+
+function setAvatarImage(el, url, fallbackName) {
+  if (isSafeUrl(url)) {
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = 'Profile';
+    img.onerror = function() { el.textContent = getInitials(fallbackName); };
+    el.textContent = '';
+    el.appendChild(img);
+  } else {
+    el.textContent = getInitials(fallbackName);
+  }
+}
+
 // Load specialties/hospitals for datalists
 async function loadDataLists() {
   try {
@@ -320,8 +341,7 @@ async function loadProfile() {
       }
       if (p.profilePic) {
         document.getElementById('pfPicUrl').value = p.profilePic;
-        document.getElementById('profileAvatar').innerHTML =
-          `<img src="${p.profilePic}" alt="Profile" onerror="this.parentElement.textContent='${getInitials(p.name || '')}'" />`;
+        setAvatarImage(document.getElementById('profileAvatar'), p.profilePic, p.name || '');
       }
       if (p.name) {
         document.getElementById('profileDisplayName').textContent = p.name;
@@ -410,8 +430,7 @@ async function saveProfile() {
     // Update display
     document.getElementById('profileDisplayName').textContent = name || email;
     if (profilePic) {
-      document.getElementById('profileAvatar').innerHTML =
-        `<img src="${profilePic}" alt="Profile" onerror="this.parentElement.textContent='${getInitials(name)}'" />`;
+      setAvatarImage(document.getElementById('profileAvatar'), profilePic, name);
     } else {
       document.getElementById('profileAvatar').textContent = getInitials(name || email);
     }

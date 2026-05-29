@@ -1286,7 +1286,7 @@ async function submitContribution() {
   btn.disabled = true;
   btn.textContent = 'Saving\u2026';
 
-  // Auto-convert: if only PKR given, compute USD
+  // Auto-convert: use provided values, only calculate missing ones
   const amountUSD = usdInput || (pkr / rate);
   const amountPKR = pkr || (usdInput * rate);
 

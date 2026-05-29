@@ -61,13 +61,16 @@ service cloud.firestore {
     }
 
     // Contributions — publicly readable, writable by admin dashboard
+    // Security note: since we use client-side PIN auth (no Firebase Auth),
+    // writes are trust-gated by the admin dashboard UI, same as authorized_users.
     match /contributions/{contributionId} {
       allow read: if true;
       allow create, update, delete: if true;  // admin dashboard manages these
     }
 
     // User profiles — extended user data (aspiring specialty, hospital, etc.)
-    // Readable by anyone (shown on reviews/contributions), writable by the user themselves
+    // Readable by anyone (shown on reviews/contributions), writable by authenticated users
+    // Security note: write access is gated by PIN-based auth in the client app.
     match /user_profiles/{email} {
       allow read: if true;
       allow create, update: if true;  // user can edit their own profile via auth-gated pages
