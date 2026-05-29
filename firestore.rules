@@ -60,6 +60,20 @@ service cloud.firestore {
       }
     }
 
+    // Contributions — publicly readable, writable by admin dashboard
+    match /contributions/{contributionId} {
+      allow read: if true;
+      allow create, update, delete: if true;  // admin dashboard manages these
+    }
+
+    // User profiles — extended user data (aspiring specialty, hospital, etc.)
+    // Readable by anyone (shown on reviews/contributions), writable by the user themselves
+    match /user_profiles/{email} {
+      allow read: if true;
+      allow create, update: if true;  // user can edit their own profile via auth-gated pages
+      allow delete: if false;
+    }
+
     // Deny everything else
     match /{document=**} {
       allow read, write: if false;

@@ -172,6 +172,21 @@
     } catch (e) { return null; }
   }
 
+  // ── User profile cache ──────────────────────────────
+  const profileCache = {};
+
+  async function getUserProfile(email) {
+    if (!email) return null;
+    if (profileCache[email] !== undefined) return profileCache[email];
+    try {
+      const doc = await db.collection('user_profiles').doc(email).get();
+      profileCache[email] = doc.exists ? doc.data() : null;
+    } catch (e) {
+      profileCache[email] = null;
+    }
+    return profileCache[email];
+  }
+
   // ═══════════════════════════════════════════════════
   // REVIEWS
   // ═══════════════════════════════════════════════════
@@ -197,6 +212,7 @@
     setStatus('rvStatus', '', '');
 
     try {
+      const email = getSessionEmail() || '';
       await db.collection('training_reviews').add({
         name:      name,
         year:      year,
@@ -204,7 +220,7 @@
         hospital:  hospital,
         rating:    rating,
         text:      text,
-        email:     getSessionEmail() || '',
+        email:     email,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       });
 
@@ -239,6 +255,20 @@
     const specTag  = data.specialty ? `<span class="rv-tag rv-tag-spec">&#128488; ${esc(data.specialty)}</span>` : '';
     const hospTag  = data.hospital  ? `<span class="rv-tag rv-tag-hosp">&#127968; ${esc(data.hospital)}</span>` : '';
 
+    // Profile info if available
+    let profileHtml = '';
+    if (data._profile) {
+      const p = data._profile;
+      const aspiringInfo = [];
+      if (p.specialty && p.specialty !== data.specialty) aspiringInfo.push(`Aspiring: ${esc(p.specialty)}`);
+      if (p.hospital && p.hospital !== data.hospital) aspiringInfo.push(`at ${esc(p.hospital)}`);
+      if (p.inducted && p.inductionYear) aspiringInfo.push(`Inducted ${esc(p.inductionYear)}`);
+      else if (!p.inducted && p.specialty) aspiringInfo.push('Not yet inducted');
+      if (aspiringInfo.length) {
+        profileHtml = `<div class="rv-card-profile">${aspiringInfo.join(' · ')}</div>`;
+      }
+    }
+
     return `
       <div class="rv-card">
         <div class="rv-card-top">
@@ -248,6 +278,7 @@
           </div>
           <div class="rv-card-time">${dateStr}</div>
         </div>
+        ${profileHtml}
         <div class="rv-card-tags">${yearTag}${specTag}${hospTag}</div>
         <div class="rv-card-text">${esc(data.text)}</div>
       </div>`;
@@ -289,7 +320,21 @@
       if (reviewCursor) query = query.startAfter(reviewCursor);
 
       const snap = await query.get();
-      snap.forEach(doc => allReviews.push(doc.data()));
+      const newReviews = [];
+      snap.forEach(doc => newReviews.push(doc.data()));
+
+      // Fetch profiles for reviews that have email
+      const emails = [...new Set(newReviews.filter(r => r.email).map(r => r.email))];
+      await Promise.all(emails.map(e => getUserProfile(e)));
+
+      // Attach profile data to reviews
+      newReviews.forEach(r => {
+        if (r.email && profileCache[r.email]) {
+          r._profile = profileCache[r.email];
+        }
+      });
+
+      allReviews.push(...newReviews);
 
       if (!snap.empty) reviewCursor = snap.docs[snap.docs.length - 1];
 
@@ -610,6 +655,17 @@
     initCharCounters();
     initReviewFilters();
     initCategoryChips();
+
+    // Auto-fill reviewer name from profile
+    const sessionEmail = getSessionEmail();
+    if (sessionEmail) {
+      getUserProfile(sessionEmail).then(profile => {
+        if (profile && profile.name) {
+          const nameField = document.getElementById('rvName');
+          if (nameField && !nameField.value) nameField.value = profile.name;
+        }
+      });
+    }
 
     // Reviews
     loadReviews(true);
