@@ -174,7 +174,7 @@
       letter-spacing: .06em;
     }
 
-    /* ── amount cards ── */
+    /* ── amount cards (display only) ── */
     .section-title {
       font-size: .72rem;
       font-weight: 700;
@@ -197,6 +197,89 @@
       text-align: center;
       position: relative;
       overflow: hidden;
+      cursor: default;
+      user-select: none;
+    }
+
+    /* ── contributors wall ── */
+    .contributors-section {
+      margin-top: 2.5rem;
+    }
+    .contributors-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: .85rem;
+    }
+    .contributor-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: .85rem;
+      transition: border-color .2s, transform .15s;
+    }
+    .contributor-card:hover {
+      border-color: rgba(56,189,248,.3);
+      transform: translateY(-2px);
+    }
+    .contributor-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(56,189,248,.15), rgba(129,140,248,.15));
+      border: 1px solid rgba(56,189,248,.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--accent1);
+      flex-shrink: 0;
+    }
+    .contributor-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .contributor-name {
+      font-size: .88rem;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .contributor-amount {
+      font-size: .75rem;
+      color: var(--accent1);
+      font-weight: 600;
+    }
+    .contributor-date {
+      font-size: .68rem;
+      color: var(--muted);
+    }
+    .contributors-empty {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+    .contributors-total {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: linear-gradient(135deg, rgba(56,189,248,.06), rgba(129,140,248,.06));
+      border: 1px solid rgba(56,189,248,.15);
+      border-radius: var(--radius);
+    }
+    .contributors-total .total-val {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--accent1);
+    }
+    .contributors-total .total-label {
+      font-size: .72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
     }
     .amount-card::after {
       content: '';
@@ -521,27 +604,27 @@
 
   <div class="divider"></div>
 
-  <!-- Amount info -->
-  <p class="section-title">Every rupee helps</p>
+  <!-- What a run costs -->
+  <p class="section-title">What it costs to keep data flowing</p>
   <p style="font-size:.85rem; color:var(--muted); margin-bottom:1rem; line-height:1.7;">
-    There's no fixed amount — send whatever you can. Each run costs roughly <strong style="color:var(--text)">PKR 670</strong>.
+    There's no fixed donation amount — send whatever you can. Each data fetch run costs roughly <strong style="color:var(--text)">PKR 670 (~$2.40 USD)</strong>.
     Even a small contribution covers part of a fetch; larger ones fund multiple runs and keep the data fresh for everyone.
   </p>
   <div class="amounts">
     <div class="amount-card">
-      <div class="pkr">PKR</div>
-      <div class="amount-val">500</div>
-      <div class="amount-note">~¾ of a run</div>
+      <div class="pkr">1 RUN</div>
+      <div class="amount-val">≈ $2.40</div>
+      <div class="amount-note">PKR 670</div>
     </div>
     <div class="amount-card">
-      <div class="pkr">PKR</div>
-      <div class="amount-val">1,000</div>
-      <div class="amount-note">1.5 full runs</div>
+      <div class="pkr">WEEKLY</div>
+      <div class="amount-val">≈ $7</div>
+      <div class="amount-note">3 full runs</div>
     </div>
     <div class="amount-card">
-      <div class="pkr">PKR</div>
-      <div class="amount-val">5,000</div>
-      <div class="amount-note">7 full runs 🔥</div>
+      <div class="pkr">MONTHLY</div>
+      <div class="amount-val">≈ $29</div>
+      <div class="amount-note">12 runs 🔥</div>
     </div>
   </div>
 
@@ -636,6 +719,20 @@
 
   <!-- Footer -->
   <div class="divider"></div>
+
+  <!-- Contributors Wall -->
+  <div class="contributors-section">
+    <p class="section-title">🙏 Our Contributors</p>
+    <div class="contributors-total" id="contributorsTotal" style="display:none;">
+      <div class="total-label">Total Contributed</div>
+      <div class="total-val" id="totalContributed">—</div>
+    </div>
+    <div class="contributors-grid" id="contributorsGrid">
+      <div class="contributors-empty">Loading contributors…</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
   <div class="footer-note">
     Every rupee goes directly toward <strong style="color:var(--text)">VM and proxy costs</strong> for fetching
     PRP merit list data.<br>
@@ -712,6 +809,82 @@
     if (toastTimer) clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
   }
+
+  // ── Load contributors from Firestore ──
+  const db = firebase.firestore();
+  const PKR_TO_USD = 0.0036; // approximate conversion rate
+
+  function getInitials(name) {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.trim().slice(0, 2).toUpperCase();
+  }
+
+  function formatCurrency(amountPKR, amountUSD) {
+    if (amountUSD) {
+      return `$${Number(amountUSD).toFixed(2)} USD`;
+    }
+    if (amountPKR) {
+      const usd = (Number(amountPKR) * PKR_TO_USD).toFixed(2);
+      return `PKR ${Number(amountPKR).toLocaleString()} (~$${usd})`;
+    }
+    return '—';
+  }
+
+  async function loadContributors() {
+    const grid = document.getElementById('contributorsGrid');
+    const totalEl = document.getElementById('contributorsTotal');
+    try {
+      const snapshot = await db.collection('contributions')
+        .orderBy('date', 'desc')
+        .get();
+
+      if (snapshot.empty) {
+        grid.innerHTML = '<div class="contributors-empty">No contributions yet — be the first to support!</div>';
+        return;
+      }
+
+      let totalUSD = 0;
+      const cards = [];
+
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        const name = d.name || 'Anonymous';
+        const amountPKR = d.amountPKR || 0;
+        const amountUSD = d.amountUSD || (amountPKR * PKR_TO_USD);
+        const date = d.date ? d.date.toDate() : null;
+
+        totalUSD += amountUSD;
+
+        const dateStr = date
+          ? date.toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })
+          : '';
+
+        cards.push(`
+          <div class="contributor-card">
+            <div class="contributor-avatar">${getInitials(name)}</div>
+            <div class="contributor-info">
+              <div class="contributor-name">${name.replace(/</g,'&lt;')}</div>
+              <div class="contributor-amount">${formatCurrency(amountPKR, d.amountUSD)}</div>
+              ${dateStr ? `<div class="contributor-date">${dateStr}</div>` : ''}
+            </div>
+          </div>
+        `);
+      });
+
+      grid.innerHTML = cards.join('');
+      totalEl.style.display = '';
+      document.getElementById('totalContributed').textContent =
+        `$${totalUSD.toFixed(2)} USD (≈ PKR ${Math.round(totalUSD / PKR_TO_USD).toLocaleString()})`;
+
+    } catch (err) {
+      console.warn('Failed to load contributors:', err);
+      grid.innerHTML = '<div class="contributors-empty">Could not load contributors.</div>';
+    }
+  }
+
+  loadContributors();
 </script>
 <script src="auth.js"></script>
 </body>

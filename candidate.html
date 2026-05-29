@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile — MeritNama</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="auth.css" />
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>firebase.initializeApp(firebaseConfig);</script>
+  <style>
+    .profile-page {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+
+    .profile-hero {
+      text-align: center;
+      padding: 2.5rem 0 2rem;
+    }
+    .profile-hero h1 {
+      font-size: 1.6rem;
+      color: var(--neon-cyan);
+      margin-bottom: 0.3rem;
+    }
+    .profile-hero p { color: var(--text-muted); font-size: 0.9rem; }
+
+    .profile-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .profile-avatar {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(77,184,217,0.15), rgba(124,101,196,0.15));
+      border: 2px solid rgba(77,184,217,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--neon-cyan);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .profile-avatar img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+    .profile-header-info h2 {
+      font-size: 1.15rem;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+    .profile-header-info .profile-email {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .profile-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 500px) {
+      .profile-form { grid-template-columns: 1fr; }
+    }
+
+    .pf-field { display: flex; flex-direction: column; gap: 0.3rem; }
+    .pf-field.full { grid-column: 1 / -1; }
+    .pf-field label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .pf-field input,
+    .pf-field select {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-input);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .pf-field input:focus,
+    .pf-field select:focus {
+      border-color: var(--border-active);
+    }
+    .pf-field select option { background: #0d1626; }
+
+    .profile-save-btn {
+      grid-column: 1 / -1;
+      margin-top: 0.5rem;
+      padding: 0.8rem;
+      border: none;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+      color: #fff;
+      font-family: var(--font);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .profile-save-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+    .profile-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .profile-status {
+      grid-column: 1 / -1;
+      text-align: center;
+      font-size: 0.83rem;
+      min-height: 1.2em;
+    }
+    .profile-status.success { color: var(--neon-green); }
+    .profile-status.error { color: var(--danger); }
+
+    /* Contributions on profile */
+    .profile-contributions {
+      margin-top: 0.5rem;
+    }
+    .profile-contributions h3 {
+      font-size: 0.95rem;
+      color: var(--neon-cyan);
+      margin-bottom: 1rem;
+    }
+    .contrib-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .contrib-item {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .contrib-item-amount {
+      font-weight: 700;
+      color: var(--neon-cyan);
+    }
+    .contrib-item-date {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .contrib-empty {
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="profile-page">
+  <div class="profile-hero">
+    <h1>Candidate Profile</h1>
+    <p>Manage your profile information visible on reviews and the community</p>
+  </div>
+
+  <div class="profile-card">
+    <div class="profile-header">
+      <div class="profile-avatar" id="profileAvatar">?</div>
+      <div class="profile-header-info">
+        <h2 id="profileDisplayName">Loading…</h2>
+        <div class="profile-email" id="profileEmail">—</div>
+      </div>
+    </div>
+
+    <div class="profile-form" id="profileForm">
+      <div class="pf-field">
+        <label>Full Name</label>
+        <input type="text" id="pfName" placeholder="Your name" />
+      </div>
+      <div class="pf-field">
+        <label>Aspiring Specialty</label>
+        <input type="text" id="pfSpecialty" placeholder="e.g. Cardiology" list="specialtyList" />
+        <datalist id="specialtyList"></datalist>
+      </div>
+      <div class="pf-field">
+        <label>Aspiring Hospital</label>
+        <input type="text" id="pfHospital" placeholder="e.g. AKUH" list="hospitalList" />
+        <datalist id="hospitalList"></datalist>
+      </div>
+      <div class="pf-field">
+        <label>Induction Status</label>
+        <select id="pfInducted">
+          <option value="">Not yet inducted</option>
+          <option value="inducted">Already inducted</option>
+        </select>
+      </div>
+      <div class="pf-field" id="inductionYearField" style="display:none;">
+        <label>Induction Year</label>
+        <select id="pfInductionYear">
+          <option value="">Select year</option>
+          <option value="2020">2020</option>
+          <option value="2021">2021</option>
+          <option value="2022">2022</option>
+          <option value="2023">2023</option>
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+        </select>
+      </div>
+      <div class="pf-field full">
+        <label>Profile Picture URL (optional)</label>
+        <input type="url" id="pfPicUrl" placeholder="https://..." />
+      </div>
+      <button class="profile-save-btn" id="profileSaveBtn">Save Profile</button>
+      <div class="profile-status" id="profileStatus"></div>
+    </div>
+  </div>
+
+  <!-- Contributions linked to this user -->
+  <div class="profile-card profile-contributions">
+    <h3>💰 My Contributions</h3>
+    <div class="contrib-list" id="myContribList">
+      <div class="contrib-empty">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<script src="presence.js"></script>
+<script>
+'use strict';
+
+const db = firebase.firestore();
+const SESSION_KEY = 'meritnama_auth_session';
+
+function getSessionEmail() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    return (s && typeof s.email === 'string') ? s.email : null;
+  } catch (e) { return null; }
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.trim().slice(0, 2).toUpperCase();
+}
+
+function isSafeUrl(url) {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch (e) { return false; }
+}
+
+function setAvatarImage(el, url, fallbackName) {
+  if (isSafeUrl(url)) {
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = 'Profile';
+    img.onerror = function() { el.textContent = getInitials(fallbackName); };
+    el.textContent = '';
+    el.appendChild(img);
+  } else {
+    el.textContent = getInitials(fallbackName);
+  }
+}
+
+// Load specialties/hospitals for datalists
+async function loadDataLists() {
+  try {
+    const res = await fetch('data/flat_lookup.json');
+    const data = await res.json();
+    const specialties = [...new Set(data.map(d => d.specialty))].filter(Boolean).sort();
+    const hospitals   = [...new Set(data.map(d => d.hospital))].filter(Boolean).sort();
+
+    const specList = document.getElementById('specialtyList');
+    const hospList = document.getElementById('hospitalList');
+    specialties.forEach(s => { const o = document.createElement('option'); o.value = s; specList.appendChild(o); });
+    hospitals.forEach(h => { const o = document.createElement('option'); o.value = h; hospList.appendChild(o); });
+  } catch (e) { console.warn('Could not load lookup data:', e); }
+}
+
+// Show/hide induction year based on selection
+document.getElementById('pfInducted').addEventListener('change', function() {
+  document.getElementById('inductionYearField').style.display =
+    this.value === 'inducted' ? '' : 'none';
+});
+
+async function loadProfile() {
+  const email = getSessionEmail();
+  if (!email) return;
+
+  document.getElementById('profileEmail').textContent = email;
+
+  // Load basic info from authorized_users
+  try {
+    const userDoc = await db.collection('authorized_users').doc(email).get();
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      document.getElementById('profileDisplayName').textContent = userData.name || email;
+      document.getElementById('profileAvatar').textContent = getInitials(userData.name || email);
+      document.getElementById('pfName').value = userData.name || '';
+    }
+  } catch (e) { console.warn('Error loading user:', e); }
+
+  // Load extended profile from user_profiles
+  try {
+    const profileDoc = await db.collection('user_profiles').doc(email).get();
+    if (profileDoc.exists) {
+      const p = profileDoc.data();
+      if (p.name) document.getElementById('pfName').value = p.name;
+      if (p.specialty) document.getElementById('pfSpecialty').value = p.specialty;
+      if (p.hospital) document.getElementById('pfHospital').value = p.hospital;
+      if (p.inducted) {
+        document.getElementById('pfInducted').value = 'inducted';
+        document.getElementById('inductionYearField').style.display = '';
+        if (p.inductionYear) document.getElementById('pfInductionYear').value = p.inductionYear;
+      }
+      if (p.profilePic) {
+        document.getElementById('pfPicUrl').value = p.profilePic;
+        setAvatarImage(document.getElementById('profileAvatar'), p.profilePic, p.name || '');
+      }
+      if (p.name) {
+        document.getElementById('profileDisplayName').textContent = p.name;
+        document.getElementById('profileAvatar').textContent = getInitials(p.name);
+      }
+    }
+  } catch (e) { console.warn('Error loading profile:', e); }
+}
+
+async function loadMyContributions() {
+  const email = getSessionEmail();
+  if (!email) return;
+
+  const list = document.getElementById('myContribList');
+  try {
+    const snapshot = await db.collection('contributions')
+      .where('email', '==', email)
+      .orderBy('date', 'desc')
+      .get();
+
+    if (snapshot.empty) {
+      list.innerHTML = '<div class="contrib-empty">No contributions linked to your account yet.</div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const date = d.date ? d.date.toDate() : null;
+      const dateStr = date ? date.toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+      const amount = d.amountPKR
+        ? `PKR ${Number(d.amountPKR).toLocaleString()} (~$${Number(d.amountUSD || 0).toFixed(2)})`
+        : `$${Number(d.amountUSD || 0).toFixed(2)}`;
+
+      list.innerHTML += `
+        <div class="contrib-item">
+          <span class="contrib-item-amount">${amount}</span>
+          <span class="contrib-item-date">${dateStr}</span>
+        </div>`;
+    });
+  } catch (e) {
+    console.warn('Error loading contributions:', e);
+    list.innerHTML = '<div class="contrib-empty">Could not load contributions.</div>';
+  }
+}
+
+async function saveProfile() {
+  const email = getSessionEmail();
+  if (!email) return;
+
+  const btn = document.getElementById('profileSaveBtn');
+  const statusEl = document.getElementById('profileStatus');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  statusEl.textContent = '';
+
+  const name       = document.getElementById('pfName').value.trim();
+  const specialty  = document.getElementById('pfSpecialty').value.trim();
+  const hospital   = document.getElementById('pfHospital').value.trim();
+  const inducted   = document.getElementById('pfInducted').value === 'inducted';
+  const year       = document.getElementById('pfInductionYear').value;
+  const profilePic = document.getElementById('pfPicUrl').value.trim();
+
+  const profileData = {
+    name: name || email,
+    specialty: specialty,
+    hospital: hospital,
+    inducted: inducted,
+    inductionYear: inducted ? year : '',
+    profilePic: profilePic,
+    email: email,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+
+  try {
+    await db.collection('user_profiles').doc(email).set(profileData, { merge: true });
+
+    // Also update name in authorized_users for consistency
+    if (name) {
+      await db.collection('authorized_users').doc(email).update({ name: name });
+    }
+
+    statusEl.textContent = '✓ Profile saved!';
+    statusEl.className = 'profile-status success';
+
+    // Update display
+    document.getElementById('profileDisplayName').textContent = name || email;
+    if (profilePic) {
+      setAvatarImage(document.getElementById('profileAvatar'), profilePic, name);
+    } else {
+      document.getElementById('profileAvatar').textContent = getInitials(name || email);
+    }
+  } catch (err) {
+    statusEl.textContent = 'Error: ' + err.message;
+    statusEl.className = 'profile-status error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Profile';
+  }
+}
+
+document.getElementById('profileSaveBtn').addEventListener('click', saveProfile);
+
+// Init
+loadDataLists();
+loadProfile();
+loadMyContributions();
+</script>
+<script src="auth.js"></script>
+</body>
+</html>

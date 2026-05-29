@@ -520,6 +520,7 @@
     <nav class="tab-nav">
       <button class="tab-btn active" data-tab="logs">Access Logs</button>
       <button class="tab-btn" data-tab="users">Authorized Users</button>
+      <button class="tab-btn" data-tab="contributions">Contributions</button>
     </nav>
 
     <!-- ── Tab: Access Logs ────────────────────────── -->
@@ -580,6 +581,31 @@
       </div>
     </div>
 
+    <!-- ── Tab: Contributions ──────────────────────── -->
+    <div id="tab-contributions" style="display:none;">
+      <div class="controls">
+        <button id="addContribBtn">+ Add Contribution</button>
+        <button id="refreshContribBtn">&#x21BB; Refresh</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Amount (PKR)</th>
+              <th>Amount (USD)</th>
+              <th>Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="contribBody">
+            <tr><td colspan="5" class="empty-state">Loading contributions&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -616,6 +642,44 @@
       <button class="modal-btn-primary" id="modalSubmitBtn">Grant Access</button>
     </div>
     <div class="modal-status" id="modalStatus"></div>
+  </div>
+</div>
+
+<!-- Contribution Modal -->
+<div class="modal-overlay" id="addContribModal">
+  <div class="modal-card">
+    <div class="modal-title" id="contribModalTitle">Add Contribution</div>
+    <div class="modal-subtitle">Record a financial contribution</div>
+    <input type="hidden" id="contribEditId" value="" />
+    <div class="modal-field">
+      <label>Contributor Name</label>
+      <input type="text" id="contribName" placeholder="Name or Anonymous" autocomplete="off" />
+    </div>
+    <div class="modal-field">
+      <label>Amount in PKR</label>
+      <input type="number" id="contribPKR" placeholder="e.g. 1000" min="0" step="1" />
+    </div>
+    <div class="modal-field">
+      <label>Amount in USD (auto-calculated if left empty)</label>
+      <input type="number" id="contribUSD" placeholder="Auto-converted from PKR" min="0" step="0.01" />
+    </div>
+    <div class="modal-field">
+      <label>Conversion Rate (PKR per USD)</label>
+      <input type="number" id="contribRate" placeholder="e.g. 278" min="0" step="0.01" value="278" />
+    </div>
+    <div class="modal-field">
+      <label>Date</label>
+      <input type="date" id="contribDate" />
+    </div>
+    <div class="modal-field">
+      <label>Contributor Email (optional — links to profile)</label>
+      <input type="email" id="contribEmail" placeholder="user@email.com" autocomplete="off" />
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="contribCancelBtn">Cancel</button>
+      <button class="modal-btn-primary" id="contribSubmitBtn">Save Contribution</button>
+    </div>
+    <div class="modal-status" id="contribStatus"></div>
   </div>
 </div>
 
@@ -1047,10 +1111,12 @@ async function confirmRemoveUser(email) {
 function switchTab(tab) {
   document.getElementById('tab-logs').style.display  = tab === 'logs'  ? '' : 'none';
   document.getElementById('tab-users').style.display = tab === 'users' ? '' : 'none';
+  document.getElementById('tab-contributions').style.display = tab === 'contributions' ? '' : 'none';
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tab);
   });
   if (tab === 'users') loadUsers();
+  if (tab === 'contributions') loadContributions();
 }
 
 // --- UI Binding ---
@@ -1114,6 +1180,159 @@ document.getElementById('modalSubmitBtn').addEventListener('click', submitAddUse
 // Close modal when clicking outside the card
 document.getElementById('addUserModal').addEventListener('click', function (e) {
   if (e.target === this) closeAddUserModal();
+});
+
+// --- Contributions Management ---
+let allContributions = [];
+
+async function loadContributions() {
+  const tbody = document.getElementById('contribBody');
+  tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Loading\u2026</td></tr>';
+  try {
+    const snapshot = await db.collection('contributions').orderBy('date', 'desc').get();
+    allContributions = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      date: doc.data().date ? doc.data().date.toDate() : null,
+    }));
+    renderContributions();
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Error: ${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function renderContributions() {
+  const tbody = document.getElementById('contribBody');
+  if (allContributions.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No contributions recorded yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = allContributions.map(c => {
+    const dateStr = c.date
+      ? c.date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+      : '\u2014';
+    const pkr = c.amountPKR ? `PKR ${Number(c.amountPKR).toLocaleString()}` : '\u2014';
+    const usd = c.amountUSD ? `$${Number(c.amountUSD).toFixed(2)}` : '\u2014';
+    return `<tr>
+      <td>${escapeHtml(c.name || 'Anonymous')}</td>
+      <td>${pkr}</td>
+      <td>${usd}</td>
+      <td>${dateStr}</td>
+      <td>
+        <button class="action-btn" onclick="editContribution('${escapeHtml(c.id)}')">Edit</button>
+        <button class="remove-btn" onclick="deleteContribution('${escapeHtml(c.id)}')">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openContribModal(editData) {
+  document.getElementById('contribEditId').value = editData ? editData.id : '';
+  document.getElementById('contribName').value   = editData ? (editData.name || '') : '';
+  document.getElementById('contribPKR').value    = editData ? (editData.amountPKR || '') : '';
+  document.getElementById('contribUSD').value    = editData ? (editData.amountUSD || '') : '';
+  document.getElementById('contribRate').value   = editData ? (editData.conversionRate || 278) : 278;
+  document.getElementById('contribEmail').value  = editData ? (editData.email || '') : '';
+  document.getElementById('contribDate').value   = editData && editData.date
+    ? editData.date.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+  document.getElementById('contribModalTitle').textContent = editData ? 'Edit Contribution' : 'Add Contribution';
+  document.getElementById('contribStatus').textContent = '';
+  document.getElementById('contribStatus').className = 'modal-status';
+  document.getElementById('addContribModal').classList.add('open');
+}
+
+function closeContribModal() {
+  document.getElementById('addContribModal').classList.remove('open');
+}
+
+function editContribution(id) {
+  const c = allContributions.find(x => x.id === id);
+  if (c) openContribModal(c);
+}
+
+async function deleteContribution(id) {
+  if (!confirm('Delete this contribution record?')) return;
+  try {
+    await db.collection('contributions').doc(id).delete();
+    allContributions = allContributions.filter(c => c.id !== id);
+    renderContributions();
+  } catch (err) {
+    alert('Failed to delete: ' + err.message);
+  }
+}
+
+async function submitContribution() {
+  const name     = document.getElementById('contribName').value.trim();
+  const pkr      = parseFloat(document.getElementById('contribPKR').value) || 0;
+  const usdInput = parseFloat(document.getElementById('contribUSD').value) || 0;
+  const rate     = parseFloat(document.getElementById('contribRate').value) || 278;
+  const dateVal  = document.getElementById('contribDate').value;
+  const email    = document.getElementById('contribEmail').value.trim().toLowerCase();
+  const editId   = document.getElementById('contribEditId').value;
+  const statusEl = document.getElementById('contribStatus');
+  const btn      = document.getElementById('contribSubmitBtn');
+
+  if (!name && !email) {
+    statusEl.textContent = 'Name or email is required.';
+    statusEl.className = 'modal-status error';
+    return;
+  }
+  if (!pkr && !usdInput) {
+    statusEl.textContent = 'Enter an amount in PKR or USD.';
+    statusEl.className = 'modal-status error';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Saving\u2026';
+
+  // Auto-convert: use provided values, only calculate missing ones
+  const amountUSD = usdInput || (pkr / rate);
+  const amountPKR = pkr || (usdInput * rate);
+
+  const data = {
+    name: name || 'Anonymous',
+    amountPKR: Math.round(amountPKR),
+    amountUSD: parseFloat(amountUSD.toFixed(2)),
+    conversionRate: rate,
+    email: email || '',
+    date: dateVal ? firebase.firestore.Timestamp.fromDate(new Date(dateVal)) : firebase.firestore.FieldValue.serverTimestamp(),
+  };
+
+  try {
+    if (editId) {
+      await db.collection('contributions').doc(editId).update(data);
+    } else {
+      await db.collection('contributions').add(data);
+    }
+    statusEl.textContent = '\u2713 Saved!';
+    statusEl.className = 'modal-status success';
+    setTimeout(closeContribModal, 1500);
+    loadContributions();
+  } catch (err) {
+    statusEl.textContent = 'Error: ' + err.message;
+    statusEl.className = 'modal-status error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Contribution';
+  }
+}
+
+document.getElementById('addContribBtn').addEventListener('click', () => openContribModal(null));
+document.getElementById('refreshContribBtn').addEventListener('click', loadContributions);
+document.getElementById('contribCancelBtn').addEventListener('click', closeContribModal);
+document.getElementById('contribSubmitBtn').addEventListener('click', submitContribution);
+document.getElementById('addContribModal').addEventListener('click', function (e) {
+  if (e.target === this) closeContribModal();
+});
+
+// Auto-calculate USD when PKR changes
+document.getElementById('contribPKR').addEventListener('input', function() {
+  const pkr = parseFloat(this.value) || 0;
+  const rate = parseFloat(document.getElementById('contribRate').value) || 278;
+  if (pkr && !document.getElementById('contribUSD').value) {
+    document.getElementById('contribUSD').placeholder = `≈ $${(pkr / rate).toFixed(2)}`;
+  }
 });
 
 // Auto-login if session valid
