@@ -77,13 +77,136 @@ body {
   font-family: var(--font);
   font-size: 14px;
   color: var(--text);
-  background: var(--bg-deep);
+  background-color: var(--bg-deep);
   background-image:
     radial-gradient(ellipse at 15% 40%, rgba(77,184,217,0.04) 0%, transparent 55%),
     radial-gradient(ellipse at 85% 10%, rgba(124,101,196,0.04) 0%, transparent 55%),
     radial-gradient(ellipse at 50% 90%, rgba(62,207,142,0.025) 0%, transparent 50%);
   min-height: 100vh;
   line-height: 1.6;
+  transition: background-color 0.45s ease;
+}
+
+/* ─── BACKGROUND THEMES ─────────────────────────────── */
+/* bg-default: same as base, registered for picker tracking */
+body.bg-default {
+  background-color: var(--bg-deep);
+  background-image:
+    radial-gradient(ellipse at 15% 40%, rgba(77,184,217,0.04) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 10%, rgba(124,101,196,0.04) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 90%, rgba(62,207,142,0.025) 0%, transparent 50%);
+}
+
+/* bg-grid: fine blueprint grid */
+body.bg-grid {
+  background-color: var(--bg-deep);
+  background-image:
+    linear-gradient(rgba(77,184,217,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(77,184,217,0.045) 1px, transparent 1px),
+    radial-gradient(ellipse at 15% 40%, rgba(77,184,217,0.055) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 60%, rgba(124,101,196,0.055) 0%, transparent 55%);
+  background-size: 44px 44px, 44px 44px, 100% 100%, 100% 100%;
+}
+
+/* bg-aurora: vivid northern-lights orbs that fill the sides */
+body.bg-aurora {
+  background-color: #080d1a;
+  background-image:
+    radial-gradient(ellipse 65% 55% at 12% 20%, rgba(77,184,217,0.13) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 65% at 88% 22%, rgba(124,101,196,0.15) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 40% at 45% 82%, rgba(62,207,142,0.09) 0%, transparent 55%),
+    radial-gradient(ellipse 45% 50% at 74% 90%, rgba(232,166,39,0.05) 0%, transparent 50%);
+}
+
+/* bg-dots: regular dot grid */
+body.bg-dots {
+  background-color: var(--bg-deep);
+  background-image:
+    radial-gradient(circle, rgba(77,184,217,0.11) 1px, transparent 1px),
+    radial-gradient(ellipse at 18% 38%, rgba(77,184,217,0.045) 0%, transparent 55%),
+    radial-gradient(ellipse at 82% 62%, rgba(124,101,196,0.045) 0%, transparent 55%);
+  background-size: 28px 28px, 100% 100%, 100% 100%;
+}
+
+/* bg-lines: diagonal 45° stripes */
+body.bg-lines {
+  background-color: var(--bg-deep);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 34px,
+      rgba(77,184,217,0.038) 34px,
+      rgba(77,184,217,0.038) 35px
+    ),
+    radial-gradient(ellipse at 50% 50%, rgba(124,101,196,0.06) 0%, transparent 65%);
+}
+
+/* bg-void: minimal clean dark */
+body.bg-void {
+  background-color: #070b14;
+  background-image: none;
+}
+
+/* bg-rose: pink/magenta sides, amber undertone */
+body.bg-rose {
+  background-color: #0e0a1a;
+  background-image:
+    radial-gradient(ellipse 65% 55% at 4% 22%, rgba(212,79,126,0.14) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 60% at 96% 14%, rgba(180,60,220,0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 40% at 48% 88%, rgba(232,100,39,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 45% at 76% 90%, rgba(212,79,126,0.06) 0%, transparent 50%);
+}
+
+/* bg-northern: green-dominant real northern lights */
+body.bg-northern {
+  background-color: #061410;
+  background-image:
+    radial-gradient(ellipse 60% 55% at 8% 28%, rgba(62,207,142,0.15) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 50% at 92% 18%, rgba(77,184,217,0.11) 0%, transparent 60%),
+    radial-gradient(ellipse 65% 40% at 44% 80%, rgba(62,207,142,0.08) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 45% at 22% 92%, rgba(124,101,196,0.07) 0%, transparent 50%);
+}
+
+/* bg-nebula: deep-space purple/pink scatter */
+body.bg-nebula {
+  background-color: #09061a;
+  background-image:
+    radial-gradient(ellipse 55% 50% at 6% 16%, rgba(124,101,196,0.17) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 55% at 94% 28%, rgba(212,79,126,0.13) 0%, transparent 60%),
+    radial-gradient(ellipse 65% 40% at 50% 78%, rgba(77,184,217,0.08) 0%, transparent 55%),
+    radial-gradient(ellipse 35% 45% at 66% 94%, rgba(160,60,220,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 25% 30% at 18% 82%, rgba(212,79,126,0.06) 0%, transparent 45%);
+}
+
+/* bg-solar: warm amber/gold aurora */
+body.bg-solar {
+  background-color: #0f0c07;
+  background-image:
+    radial-gradient(ellipse 62% 52% at 6% 20%, rgba(232,166,39,0.13) 0%, transparent 62%),
+    radial-gradient(ellipse 55% 60% at 94% 16%, rgba(210,110,30,0.12) 0%, transparent 62%),
+    radial-gradient(ellipse 65% 40% at 48% 82%, rgba(200,60,40,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 45% at 74% 94%, rgba(232,166,39,0.06) 0%, transparent 50%);
+}
+
+/* bg-dusk: indigo dusk, warm rose horizon */
+body.bg-dusk {
+  background-color: #0c0818;
+  background-image:
+    radial-gradient(ellipse 70% 32% at 50% 102%, rgba(212,79,126,0.13) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 50% at 4% 28%, rgba(124,101,196,0.15) 0%, transparent 62%),
+    radial-gradient(ellipse 50% 55% at 96% 22%, rgba(77,184,217,0.09) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 28% at 50% 4%, rgba(232,166,39,0.05) 0%, transparent 45%);
+}
+
+/* bg-midnight: cool deep navy, ice-blue rim lighting */
+body.bg-midnight {
+  background-color: #050e1f;
+  background-image:
+    radial-gradient(ellipse 60% 50% at 0% 48%, rgba(77,184,217,0.13) 0%, transparent 62%),
+    radial-gradient(ellipse 55% 46% at 100% 42%, rgba(130,190,255,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 65% 35% at 50% 92%, rgba(77,184,217,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 30% 38% at 28% 8%, rgba(200,225,255,0.05) 0%, transparent 45%);
 }
 
 /* ─── Typography ─── */

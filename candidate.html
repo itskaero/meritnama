@@ -13,64 +13,350 @@
   <script>firebase.initializeApp(firebaseConfig);</script>
   <style>
     .profile-page {
-      max-width: 700px;
+      max-width: 860px;
       margin: 0 auto;
       padding: 2rem 1.25rem 4rem;
     }
 
-    .profile-hero {
+    /* ── Hide site-wide bg picker on this page ── */
+    #bgPickerWrap { display: none !important; }
+
+    /* ══════════════════════════════════════════════════
+       PROFILE PAGE ANIMATED BACKGROUND LAYER
+       Fixed div #profileAnimLayer sits behind everything.
+       CSS variable --ph (0-360) is the profile-pic hue.
+    ══════════════════════════════════════════════════ */
+    #profileAnimLayer {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      --ph: 205;
+    }
+    #profileAnimLayer::before,
+    #profileAnimLayer::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    /* 1 — none (transparent, let body theme show) */
+    /* no rules needed for anim-none */
+
+    /* 2 — Pulse: two orbs breathing */
+    #profileAnimLayer.anim-pulse::before {
+      width: 65vw; height: 65vw;
+      top: -12vw; left: -10vw;
+      background: hsla(var(--ph), 70%, 55%, 0.18);
+      filter: blur(70px);
+      animation: pfPulse 5.5s ease-in-out infinite alternate;
+    }
+    #profileAnimLayer.anim-pulse::after {
+      width: 55vw; height: 55vw;
+      bottom: -10vw; right: -10vw;
+      background: hsla(calc(var(--ph) + 60), 65%, 50%, 0.15);
+      filter: blur(65px);
+      animation: pfPulse 7.5s ease-in-out infinite alternate-reverse;
+    }
+    @keyframes pfPulse {
+      0%   { transform: scale(0.82); opacity: 0.45; }
+      100% { transform: scale(1.18); opacity: 1; }
+    }
+
+    /* 3 — Drift: blobs wander slowly */
+    #profileAnimLayer.anim-drift::before {
+      width: 72vw; height: 72vw;
+      top: 5%; left: 0;
+      background: hsla(var(--ph), 72%, 55%, 0.17);
+      filter: blur(80px);
+      animation: pfDriftA 20s ease-in-out infinite alternate;
+    }
+    #profileAnimLayer.anim-drift::after {
+      width: 58vw; height: 58vw;
+      bottom: 5%; right: 0;
+      background: hsla(calc(var(--ph) + 90), 65%, 50%, 0.14);
+      filter: blur(70px);
+      animation: pfDriftB 26s ease-in-out infinite alternate-reverse;
+    }
+    @keyframes pfDriftA {
+      0%   { transform: translate(-15vw, -5vh); }
+      33%  { transform: translate(45vw, 12vh); }
+      66%  { transform: translate(62vw, -18vh); }
+      100% { transform: translate(12vw, 22vh); }
+    }
+    @keyframes pfDriftB {
+      0%   { transform: translate(15vw, 5vh); }
+      33%  { transform: translate(-35vw, -12vh); }
+      66%  { transform: translate(-55vw, 18vh); }
+      100% { transform: translate(-8vw, -22vh); }
+    }
+
+    /* 4 — Aurora: hue-rotate across edge orbs */
+    #profileAnimLayer.anim-aurora {
+      background:
+        radial-gradient(ellipse 68% 60% at 4% 48%, hsla(var(--ph), 80%, 55%, 0.2) 0%, transparent 65%),
+        radial-gradient(ellipse 60% 68% at 96% 38%, hsla(calc(var(--ph) + 60), 75%, 50%, 0.17) 0%, transparent 65%),
+        radial-gradient(ellipse 80% 44% at 50% 98%, hsla(calc(var(--ph) + 130), 70%, 55%, 0.13) 0%, transparent 55%);
+      animation: pfAurora 14s ease-in-out infinite alternate;
+    }
+    @keyframes pfAurora {
+      0%   { filter: hue-rotate(0deg) brightness(0.75); }
+      50%  { filter: hue-rotate(35deg) brightness(1.15); }
+      100% { filter: hue-rotate(-25deg) brightness(0.85); }
+    }
+
+    /* 5 — Particles: dot grid floating upward */
+    #profileAnimLayer.anim-particles {
+      background-image:
+        radial-gradient(circle, hsla(var(--ph), 75%, 68%, 0.55) 1.5px, transparent 1.5px),
+        radial-gradient(circle, hsla(calc(var(--ph) + 70), 65%, 60%, 0.35) 1px, transparent 1px);
+      background-size: 34px 34px, 52px 52px;
+      background-position: 0 0, 10px 10px;
+      animation: pfParticles 9s linear infinite;
+    }
+    @keyframes pfParticles {
+      0%   { background-position: 0 0, 10px 10px; }
+      100% { background-position: 0 -34px, 10px -52px; }
+    }
+
+    /* 6 — Vortex: spinning conic gradient */
+    #profileAnimLayer.anim-vortex {
+      background: conic-gradient(
+        from 0deg at 50% 50%,
+        hsla(var(--ph), 72%, 55%, 0.13),
+        hsla(calc(var(--ph) + 90), 65%, 50%, 0.08),
+        hsla(calc(var(--ph) + 180), 62%, 55%, 0.11),
+        hsla(calc(var(--ph) + 270), 65%, 50%, 0.08),
+        hsla(var(--ph), 72%, 55%, 0.13)
+      );
+      transform-origin: center;
+      animation: pfVortex 28s linear infinite;
+    }
+    @keyframes pfVortex {
+      0%   { transform: rotate(0deg) scale(1.8); }
+      100% { transform: rotate(360deg) scale(1.8); }
+    }
+
+    /* 7 — Shimmer: diagonal light sweep */
+    #profileAnimLayer.anim-shimmer {
+      background: linear-gradient(
+        108deg,
+        transparent 25%,
+        hsla(var(--ph), 75%, 68%, 0.11) 44%,
+        hsla(var(--ph), 80%, 78%, 0.22) 50%,
+        hsla(var(--ph), 75%, 68%, 0.11) 56%,
+        transparent 75%
+      );
+      background-size: 220% 100%;
+      animation: pfShimmer 4.5s ease-in-out infinite;
+    }
+    @keyframes pfShimmer {
+      0%   { background-position: 220% 0; }
+      100% { background-position: -220% 0; }
+    }
+
+    /* 8 — Cascade: diagonal stripe bands scrolling */
+    #profileAnimLayer.anim-cascade {
+      background: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 62px,
+        hsla(var(--ph), 70%, 58%, 0.065) 62px,
+        hsla(var(--ph), 70%, 58%, 0.065) 64px
+      );
+      background-size: 200px 200px;
+      animation: pfCascade 7s linear infinite;
+    }
+    @keyframes pfCascade {
+      0%   { background-position: 0 0; }
+      100% { background-position: 200px 200px; }
+    }
+
+    /* 9 — Breathe: centred glow inhaling/exhaling */
+    #profileAnimLayer.anim-breathe {
+      background: radial-gradient(
+        ellipse 75% 65% at 50% 50%,
+        hsla(var(--ph), 65%, 48%, 0.25) 0%, transparent 72%
+      );
+      animation: pfBreathe 4.2s ease-in-out infinite alternate;
+    }
+    @keyframes pfBreathe {
+      0%   { opacity: 0.28; transform: scale(0.95); }
+      100% { opacity: 1;    transform: scale(1.06); }
+    }
+
+    /* 10 — Prism: rainbow bands scrolling vertically */
+    #profileAnimLayer.anim-prism {
+      background: linear-gradient(
+        180deg,
+        hsla(var(--ph), 80%, 55%, 0.15),
+        hsla(calc(var(--ph) + 60), 75%, 50%, 0.11),
+        hsla(calc(var(--ph) + 120), 72%, 55%, 0.11),
+        hsla(calc(var(--ph) + 180), 75%, 50%, 0.11),
+        hsla(calc(var(--ph) + 240), 80%, 55%, 0.15),
+        hsla(calc(var(--ph) + 300), 75%, 50%, 0.11),
+        hsla(var(--ph), 80%, 55%, 0.15)
+      );
+      background-size: 100% 500%;
+      animation: pfPrism 11s linear infinite;
+    }
+    @keyframes pfPrism {
+      0%   { background-position: 0 0; }
+      100% { background-position: 0 500%; }
+    }
+
+    /* 11 — Wave: horizontal bands rising/falling */
+    #profileAnimLayer.anim-wave {
+      background:
+        radial-gradient(ellipse 130% 22% at 50% 18%, hsla(var(--ph), 72%, 55%, 0.16) 0%, transparent 70%),
+        radial-gradient(ellipse 130% 22% at 50% 50%, hsla(calc(var(--ph) + 45), 65%, 50%, 0.11) 0%, transparent 70%),
+        radial-gradient(ellipse 130% 22% at 50% 82%, hsla(calc(var(--ph) + 90), 72%, 55%, 0.14) 0%, transparent 70%);
+      animation: pfWave 7s ease-in-out infinite alternate;
+    }
+    @keyframes pfWave {
+      0%   { transform: translateY(0px); filter: brightness(0.82); }
+      100% { transform: translateY(-22px); filter: brightness(1.18); }
+    }
+
+    /* 12 — Nebula: three drifting blobs + hue-shift */
+    #profileAnimLayer.anim-nebula {
+      background:
+        radial-gradient(ellipse 50% 55% at 8% 18%, hsla(var(--ph), 78%, 55%, 0.19) 0%, transparent 62%),
+        radial-gradient(ellipse 45% 50% at 92% 28%, hsla(calc(var(--ph) + 100), 72%, 50%, 0.16) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 40% at 50% 88%, hsla(calc(var(--ph) + 200), 68%, 55%, 0.13) 0%, transparent 58%);
+      animation: pfNebula 16s ease-in-out infinite alternate;
+    }
+    @keyframes pfNebula {
+      0%   { filter: hue-rotate(0deg) blur(0px);   transform: scale(1); }
+      50%  { filter: hue-rotate(20deg) blur(1px);  transform: scale(1.03); }
+      100% { filter: hue-rotate(-15deg) blur(0px); transform: scale(0.97); }
+    }
+
+    /* ── Animation Picker ── */
+    .pf-anim-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 8px;
+      margin-top: 0.5rem;
+    }
+    .pf-anim-swatch {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: rgba(255,255,255,0.02);
+    }
+    .pf-anim-swatch:hover { border-color: rgba(77,184,217,0.4); }
+    .pf-anim-swatch.selected {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 0 2px rgba(77,184,217,0.25);
+    }
+    .pf-anim-swatch-preview {
+      height: 54px;
+      width: 100%;
+    }
+    .pf-anim-swatch-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--text-muted);
       text-align: center;
-      padding: 2.5rem 0 2rem;
+      padding: 5px 4px 6px;
     }
-    .profile-hero h1 {
-      font-size: 1.6rem;
+    .pf-anim-swatch.selected .pf-anim-swatch-label { color: var(--neon-cyan); }
+
+    .profile-back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-muted);
+      font-family: var(--font);
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 0.35rem 0.9rem;
+      cursor: pointer;
+      margin-bottom: 1.25rem;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .profile-back-btn:hover {
       color: var(--neon-cyan);
-      margin-bottom: 0.3rem;
+      border-color: rgba(77,184,217,0.4);
+      background: rgba(77,184,217,0.05);
     }
-    .profile-hero p { color: var(--text-muted); font-size: 0.9rem; }
 
     .profile-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .profile-header {
-      display: flex;
-      align-items: center;
-      gap: 1.2rem;
       margin-bottom: 1.5rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border);
-    }
-    .profile-avatar {
-      width: 72px; height: 72px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, rgba(77,184,217,0.15), rgba(124,101,196,0.15));
-      border: 2px solid rgba(77,184,217,0.3);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: var(--neon-cyan);
-      flex-shrink: 0;
+      position: relative;
       overflow: hidden;
     }
-    .profile-avatar img {
-      width: 100%; height: 100%;
-      object-fit: cover;
+    .profile-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+      opacity: 0.55;
+    }
+
+    /* ── Integrated hero strip ── */
+    .profile-card-hero {
+      background: linear-gradient(135deg, rgba(77,184,217,0.07) 0%, rgba(124,101,196,0.04) 100%);
+      border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
+      margin: -2rem -2rem 2rem;
+      padding: 2rem 2rem 1.75rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 1.5rem;
+    }
+    .profile-avatar {
+      width: 88px; height: 88px;
       border-radius: 50%;
+      background: linear-gradient(135deg, rgba(77,184,217,0.18), rgba(124,101,196,0.18));
+      border: 3px solid rgba(77,184,217,0.35);
+      box-shadow: 0 0 0 6px rgba(77,184,217,0.06);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.9rem; font-weight: 700; color: var(--neon-cyan);
+      flex-shrink: 0; overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.25s, box-shadow 0.25s;
     }
-    .profile-header-info h2 {
-      font-size: 1.15rem;
-      color: var(--text);
-      margin-bottom: 0.2rem;
+    .profile-avatar:hover { border-color: rgba(77,184,217,0.6); box-shadow: 0 0 0 8px rgba(77,184,217,0.1); }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .profile-hero-info { min-width: 0; flex: 1; }
+    .profile-hero-info h2 {
+      font-size: 1.3rem; font-weight: 700; color: var(--text);
+      margin-bottom: 0.2rem; line-height: 1.25;
     }
-    .profile-header-info .profile-email {
-      font-size: 0.8rem;
-      color: var(--text-muted);
+    .profile-email { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .profile-hero-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.35rem; }
+    .profile-hero-chip {
+      display: inline-flex; align-items: center; gap: 0.25rem;
+      font-size: 0.72rem; color: var(--neon-cyan);
+      background: rgba(77,184,217,0.08); border: 1px solid rgba(77,184,217,0.18);
+      border-radius: 999px; padding: 0.15rem 0.6rem;
     }
+    .profile-hero-chip.inducted {
+      color: var(--neon-green); background: rgba(62,207,142,0.08); border-color: rgba(62,207,142,0.2);
+    }
+    .profile-avatar-hint {
+      font-size: 0.68rem; color: var(--text-muted); margin-top: 0.5rem; text-align: center;
+    }
+
+    /* ── Form section dividers ── */
+    .pf-section-head {
+      grid-column: 1 / -1;
+      display: flex; align-items: center; gap: 0.6rem;
+      margin: 1.25rem 0 0.25rem;
+      font-size: 0.72rem; font-weight: 700;
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px;
+    }
+    .pf-section-head:first-child { margin-top: 0; }
+    .pf-section-line { flex: 1; height: 1px; background: var(--border); }
 
     .profile-form {
       display: grid;
@@ -172,26 +458,246 @@
       color: var(--text-muted);
       font-size: 0.85rem;
     }
+
+    /* Photo upload */
+    .photo-upload-wrap {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .photo-preview {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(77,184,217,0.15), rgba(124,101,196,0.15));
+      border: 2px solid rgba(77,184,217,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; font-weight: 700; color: var(--neon-cyan);
+      overflow: hidden; flex-shrink: 0;
+    }
+    .photo-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .photo-upload-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.55rem 1rem;
+      border: 1px solid var(--border-hover);
+      border-radius: var(--radius);
+      background: rgba(77,184,217,0.07);
+      color: var(--neon-cyan);
+      font-size: 0.85rem; font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .photo-upload-btn:hover { background: rgba(77,184,217,0.15); border-color: var(--border-active); }
+    .photo-upload-hint { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* Linked applicant card */
+    .linked-applicant-card {
+      grid-column: 1 / -1;
+      background: rgba(77,184,217,0.05);
+      border: 1px solid rgba(77,184,217,0.2);
+      border-radius: var(--radius);
+      padding: 1rem 1.2rem;
+      margin-top: 0.25rem;
+    }
+    .linked-applicant-card h4 {
+      font-size: 0.78rem; font-weight: 700; color: var(--neon-cyan);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;
+    }
+    .linked-field { font-size: 0.85rem; color: var(--text); margin-bottom: 0.3rem; }
+    .linked-field span { color: var(--text-muted); font-size: 0.78rem; }
+    .linked-progs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+    .linked-prog-tag {
+      padding: 0.2rem 0.65rem; border-radius: 999px;
+      background: rgba(77,184,217,0.1); border: 1px solid rgba(77,184,217,0.2);
+      font-size: 0.75rem; color: var(--neon-cyan);
+    }
+    .linked-verify-icon { color: #4db8d9; font-size: 0.85rem; margin-left: 0.3rem; }
+
+    /* ── Preference merit analysis card ───────────────────────────── */
+    .pma-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem;
+    }
+    .pma-header h3 { font-size: 0.95rem; color: var(--neon-cyan); margin: 0; }
+    .pma-sim-link {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.78rem; font-weight: 600; color: var(--neon-cyan);
+      text-decoration: none; padding: 0.3rem 0.75rem;
+      border: 1px solid rgba(77,184,217,0.3);
+      border-radius: 999px;
+      background: rgba(77,184,217,0.07);
+      cursor: pointer; transition: background 0.2s;
+    }
+    .pma-sim-link:hover { background: rgba(77,184,217,0.15); }
+    .pma-marks-summary {
+      font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.25rem;
+      padding: 0.6rem 0.9rem;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem;
+    }
+    .pma-marks-summary b { color: var(--text); }
+    .pma-prefs { display: flex; flex-direction: column; gap: 0.65rem; }
+    .pma-pref-row {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.8rem 1rem;
+      background: rgba(255,255,255,0.015);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 0.5rem 1rem;
+      align-items: start;
+    }
+    .pma-pref-row:hover { border-color: var(--border-hover); }
+    .pma-pref-num {
+      font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
+      background: rgba(255,255,255,0.04); border-radius: 4px;
+      padding: 0.15rem 0.5rem; white-space: nowrap; align-self: center;
+    }
+    .pma-pref-main { min-width: 0; }
+    .pma-pref-slot {
+      font-size: 0.88rem; font-weight: 600; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .pma-pref-sub {
+      font-size: 0.77rem; color: var(--text-muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-top: 0.15rem;
+    }
+    .pma-pref-meta {
+      font-size: 0.72rem; color: var(--text-muted);
+      display: flex; flex-wrap: wrap; gap: 0.3rem 0.75rem; margin-top: 0.45rem;
+    }
+    .pma-pref-meta span b { color: var(--text); }
+    .pma-pref-right {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem;
+      flex-shrink: 0;
+    }
+    .pma-status {
+      font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.65rem;
+      border-radius: 999px; white-space: nowrap;
+    }
+    .pma-status.safe     { background: rgba(39,201,139,0.15); color: #27c98b; border: 1px solid rgba(39,201,139,0.3); }
+    .pma-status.target   { background: rgba(232,166,39,0.15); color: #e8a627; border: 1px solid rgba(232,166,39,0.3); }
+    .pma-status.reach    { background: rgba(232,100,39,0.15); color: #e86427; border: 1px solid rgba(232,100,39,0.3); }
+    .pma-status.unlikely { background: rgba(220,60,60,0.15);  color: #dc3c3c; border: 1px solid rgba(220,60,60,0.3); }
+    .pma-status.nodata   { background: rgba(255,255,255,0.04); color: var(--text-muted); border: 1px solid var(--border); }
+    .pma-gap { font-size: 0.78rem; font-weight: 700; }
+    .pma-gap.pos { color: #27c98b; }
+    .pma-gap.neg { color: #dc3c3c; }
+    .pma-trend-tag { font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 4px; white-space: nowrap; }
+    .pma-trend-tag.falling { background: rgba(39,201,139,0.12); color: #27c98b; }
+    .pma-trend-tag.rising  { background: rgba(220,60,60,0.12);  color: #dc3c3c; }
+    .pma-trend-tag.stable  { background: rgba(77,184,217,0.12); color: #4db8d9; }
+    .pma-prog-tag {
+      font-size: 0.68rem; font-weight: 700; padding: 0.1rem 0.45rem;
+      border-radius: 3px; background: rgba(77,184,217,0.12); color: var(--neon-cyan);
+    }
+    @media (max-width: 520px) {
+      .pma-pref-row { grid-template-columns: auto 1fr; }
+      .pma-pref-right { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }
+    }
+
+    /* ── How-to guide ─────────────────────────────────────────── */
+    .pma-guide {
+      margin-bottom: 1.25rem;
+      border: 1px solid rgba(77,184,217,0.18);
+      border-radius: var(--radius);
+      background: rgba(77,184,217,0.04);
+    }
+    .pma-guide summary {
+      padding: 0.7rem 1rem;
+      font-size: 0.8rem; font-weight: 600; color: var(--neon-cyan);
+      cursor: pointer; list-style: none;
+      display: flex; align-items: center; gap: 0.5rem;
+      user-select: none;
+    }
+    .pma-guide summary::-webkit-details-marker { display: none; }
+    .pma-guide summary::before { content: '▶'; font-size: 0.65rem; transition: transform 0.2s; }
+    .pma-guide[open] summary::before { transform: rotate(90deg); }
+    .pma-guide-body {
+      padding: 0 1rem 1rem;
+      font-size: 0.8rem; color: var(--text-muted); line-height: 1.65;
+    }
+    .pma-guide-body p { margin: 0 0 0.6rem; }
+    .pma-guide-body p:last-child { margin-bottom: 0; }
+    .pma-guide-body b { color: var(--text); }
+    .pma-guide-legend {
+      display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin-bottom: 0.6rem;
+    }
+    .pma-guide-legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+
+    /* ── Percentile bar ─────────────────────────────────────────── */
+    .pma-pctile-row {
+      margin-top: 0.5rem; margin-bottom: 0.25rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .pma-pctile-bar-wrap {
+      flex: 1; height: 6px; background: rgba(255,255,255,0.06);
+      border-radius: 999px; overflow: visible; position: relative;
+    }
+    .pma-pctile-bar-fill {
+      height: 100%; border-radius: 999px;
+      background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+      transition: width 0.5s ease;
+    }
+    .pma-pctile-marker {
+      position: absolute; top: -4px;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: #e8a627; border: 2px solid #0d1626;
+      transform: translateX(-50%);
+    }
+    .pma-pctile-label { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; }
+    .pma-pctile-label b { color: var(--text); }
+
+    /* ── My scores summary chips ────────────────────────────────── */
+    .pma-score-chips {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem;
+    }
+    .pma-score-chip {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 0.6rem 1rem;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      min-width: 90px;
+    }
+    .pma-score-chip-prog { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .pma-score-chip-pctile { font-size: 1.15rem; font-weight: 700; color: var(--neon-cyan); }
+    .pma-score-chip-sub { font-size: 0.68rem; color: var(--text-muted); }
   </style>
 </head>
 <body>
 
+<div id="profileAnimLayer"></div>
+
 <div class="profile-page">
-  <div class="profile-hero">
-    <h1>Candidate Profile</h1>
-    <p>Manage your profile information visible on reviews and the community</p>
-  </div>
+
+  <button class="profile-back-btn" onclick="history.length > 1 ? history.back() : (window.location.href='index.html')" title="Go back">
+    &#8592; Back
+  </button>
 
   <div class="profile-card">
-    <div class="profile-header">
-      <div class="profile-avatar" id="profileAvatar">?</div>
-      <div class="profile-header-info">
+    <div class="profile-card-hero">
+      <div>
+        <div class="profile-avatar" id="profileAvatar" title="Click photo area below to change">?</div>
+        <div class="profile-avatar-hint">tap to change</div>
+      </div>
+      <div class="profile-hero-info">
         <h2 id="profileDisplayName">Loading…</h2>
         <div class="profile-email" id="profileEmail">—</div>
+        <div class="profile-hero-chips" id="profileHeroChips"></div>
       </div>
     </div>
 
     <div class="profile-form" id="profileForm">
+
+      <div class="pf-section-head">
+        <span>&#128100; Identity</span>
+        <div class="pf-section-line"></div>
+      </div>
+
       <div class="pf-field">
         <label>Full Name</label>
         <input type="text" id="pfName" placeholder="Your name" />
@@ -226,14 +732,52 @@
           <option value="2026">2026</option>
         </select>
       </div>
-      <div class="pf-field full">
-        <label>Profile Picture URL (optional)</label>
-        <input type="url" id="pfPicUrl" placeholder="https://..." />
+
+      <div class="pf-section-head">
+        <span>&#128279; Induction 21 Record</span>
+        <div class="pf-section-line"></div>
       </div>
+
+      <div class="pf-field full">
+        <label>Applicant ID <small style="text-transform:none;font-weight:400;color:var(--text-muted)">(links your gazette data &amp; preference analysis)</small></label>
+        <input type="number" id="pfApplicantId" placeholder="e.g. 35183" min="1" />
+      </div>
+      <div class="linked-applicant-card" id="linkedApplicantCard" style="display:none;">
+        <!-- filled by JS -->
+      </div>
+
+      <div class="pf-section-head">
+        <span>&#128247; Profile Photo</span>
+        <div class="pf-section-line"></div>
+      </div>
+
+      <div class="pf-field full">
+        <div class="photo-upload-wrap">
+          <div class="photo-preview" id="photoUploadPreview"><span id="photoUploadInitial">?</span></div>
+          <div>
+            <label class="photo-upload-btn" for="pfPicFile">
+              &#128247; Choose Photo
+              <input type="file" id="pfPicFile" accept="image/*" hidden />
+            </label>
+            <div class="photo-upload-hint" style="margin-top:0.4rem;">Compressed &amp; saved to your profile — no external hosting needed</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pf-section-head">
+        <span>&#10024; Page Animation</span>
+        <div class="pf-section-line"></div>
+      </div>
+      <div class="pf-anim-grid" id="animPicker"><!-- built by JS --></div>
+      <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem;">Animation uses your profile pic's colour. Saved to your profile.</p>
+
       <button class="profile-save-btn" id="profileSaveBtn">Save Profile</button>
       <div class="profile-status" id="profileStatus"></div>
     </div>
   </div>
+
+  <!-- Preference merit analysis — shown when applicant ID is linked -->
+  <div class="profile-card" id="prefMetricsCard" style="display:none"></div>
 
   <!-- Contributions linked to this user -->
   <div class="profile-card profile-contributions">
@@ -267,20 +811,11 @@ function getInitials(name) {
   return name.trim().slice(0, 2).toUpperCase();
 }
 
-function isSafeUrl(url) {
-  if (!url) return false;
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-  } catch (e) { return false; }
-}
-
-function setAvatarImage(el, url, fallbackName) {
-  if (isSafeUrl(url)) {
+function setAvatarFromBase64(el, b64, fallbackName) {
+  if (b64 && b64.startsWith('data:image/')) {
     const img = document.createElement('img');
-    img.src = url;
+    img.src = b64;
     img.alt = 'Profile';
-    img.onerror = function() { el.textContent = getInitials(fallbackName); };
     el.textContent = '';
     el.appendChild(img);
   } else {
@@ -288,7 +823,374 @@ function setAvatarImage(el, url, fallbackName) {
   }
 }
 
-// Load specialties/hospitals for datalists
+// ── Image compress ──────────────────────────────────────
+function compressImage(file, maxPx = 220, quality = 0.78) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = evt => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxPx || h > maxPx) {
+          if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
+          else        { w = Math.round(w * maxPx / h); h = maxPx; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const b64 = canvas.toDataURL('image/jpeg', quality);
+        // Extract dominant hue from centre region
+        const hue = extractHueFromCtx(ctx, w, h);
+        resolve({ b64, hue });
+      };
+      img.src = evt.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function extractHueFromCtx(ctx, w, h) {
+  try {
+    const x0 = Math.floor(w * 0.2), y0 = Math.floor(h * 0.2);
+    const sw = Math.max(1, Math.floor(w * 0.6)), sh = Math.max(1, Math.floor(h * 0.6));
+    const data = ctx.getImageData(x0, y0, sw, sh).data;
+    let rSum = 0, gSum = 0, bSum = 0, count = 0;
+    for (let i = 0; i < data.length; i += 20) { // sample every 5th pixel
+      rSum += data[i]; gSum += data[i + 1]; bSum += data[i + 2]; count++;
+    }
+    if (!count) return 205;
+    const r = rSum / count / 255, g = gSum / count / 255, b = bSum / count / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    if (max === min) return 205; // achromatic
+    let h;
+    if      (max === r) h = ((g - b) / (max - min) + (g < b ? 6 : 0)) / 6;
+    else if (max === g) h = ((b - r) / (max - min) + 2) / 6;
+    else                h = ((r - g) / (max - min) + 4) / 6;
+    return Math.round(h * 360);
+  } catch (_) { return 205; }
+}
+
+// ── Animation definitions ──────────────────────────────
+const ANIM_DEFS = [
+  { id: 'anim-none',     name: 'None',
+    preview: 'background:#0d1626' },
+  { id: 'anim-pulse',    name: 'Pulse',
+    preview: 'background:radial-gradient(circle at 30% 40%,rgba(77,184,217,.65) 0%,transparent 55%),radial-gradient(circle at 75% 70%,rgba(124,101,196,.55) 0%,transparent 55%),#080d1a' },
+  { id: 'anim-drift',    name: 'Drift',
+    preview: 'background:radial-gradient(ellipse 70% 60% at 15% 55%,rgba(77,184,217,.7) 0%,transparent 55%),#080d1a' },
+  { id: 'anim-aurora',   name: 'Aurora',
+    preview: 'background:radial-gradient(ellipse at 5% 50%,rgba(77,184,217,.7) 0%,transparent 52%),radial-gradient(ellipse at 95% 40%,rgba(124,101,196,.65) 0%,transparent 52%),radial-gradient(ellipse at 50% 100%,rgba(62,207,142,.5) 0%,transparent 48%),#080d1a' },
+  { id: 'anim-particles',name: 'Particles',
+    preview: 'background-color:#0d1626;background-image:radial-gradient(circle,rgba(77,184,217,.7) 1.5px,transparent 1.5px);background-size:8px 8px' },
+  { id: 'anim-vortex',   name: 'Vortex',
+    preview: 'background:conic-gradient(from 0deg at 50% 50%,rgba(77,184,217,.5),rgba(124,101,196,.4),rgba(62,207,142,.4),rgba(232,166,39,.35),rgba(77,184,217,.5)),#080d1a' },
+  { id: 'anim-shimmer',  name: 'Shimmer',
+    preview: 'background:linear-gradient(108deg,transparent 20%,rgba(77,184,217,.6) 45%,rgba(200,240,255,.8) 50%,rgba(77,184,217,.6) 55%,transparent 80%),#0d1626' },
+  { id: 'anim-cascade',  name: 'Cascade',
+    preview: 'background-color:#0d1626;background-image:repeating-linear-gradient(-45deg,transparent,transparent 6px,rgba(77,184,217,.35) 6px,rgba(77,184,217,.35) 7px)' },
+  { id: 'anim-breathe',  name: 'Breathe',
+    preview: 'background:radial-gradient(ellipse 80% 70% at 50% 50%,rgba(77,184,217,.65) 0%,transparent 70%),#080d1a' },
+  { id: 'anim-prism',    name: 'Prism',
+    preview: 'background:linear-gradient(180deg,rgba(77,184,217,.55),rgba(124,101,196,.45),rgba(62,207,142,.45),rgba(232,166,39,.45),rgba(212,79,126,.5)),#080d1a' },
+  { id: 'anim-wave',     name: 'Wave',
+    preview: 'background:radial-gradient(ellipse 130% 28% at 50% 20%,rgba(77,184,217,.6) 0%,transparent 70%),radial-gradient(ellipse 130% 28% at 50% 55%,rgba(124,101,196,.5) 0%,transparent 70%),radial-gradient(ellipse 130% 28% at 50% 88%,rgba(62,207,142,.55) 0%,transparent 70%),#080d1a' },
+  { id: 'anim-nebula',   name: 'Nebula',
+    preview: 'background:radial-gradient(ellipse at 8% 18%,rgba(124,101,196,.7) 0%,transparent 52%),radial-gradient(ellipse at 92% 28%,rgba(212,79,126,.65) 0%,transparent 52%),radial-gradient(ellipse at 50% 88%,rgba(77,184,217,.55) 0%,transparent 48%),#09061a' },
+];
+
+let _profileHue = 205;
+let _profileAnim = 'anim-none';
+
+function setAnimLayer(animId, hue) {
+  const layer = document.getElementById('profileAnimLayer');
+  if (!layer) return;
+  // Remove all anim classes
+  ANIM_DEFS.forEach(d => layer.classList.remove(d.id));
+  layer.classList.add(animId || 'anim-none');
+  layer.style.setProperty('--ph', hue ?? 205);
+  _profileAnim = animId || 'anim-none';
+  _profileHue  = hue ?? 205;
+  // Update picker selection highlight
+  document.querySelectorAll('.pf-anim-swatch').forEach(sw => {
+    sw.classList.toggle('selected', sw.dataset.anim === _profileAnim);
+  });
+}
+
+function buildAnimPicker() {
+  const grid = document.getElementById('animPicker');
+  if (!grid) return;
+  grid.innerHTML = ANIM_DEFS.map(d => `
+    <div class="pf-anim-swatch${d.id === _profileAnim ? ' selected' : ''}" data-anim="${d.id}" title="${d.name}">
+      <div class="pf-anim-swatch-preview" style="${d.preview}"></div>
+      <div class="pf-anim-swatch-label">${d.name}</div>
+    </div>`).join('');
+  grid.querySelectorAll('.pf-anim-swatch').forEach(sw => {
+    sw.addEventListener('click', () => setAnimLayer(sw.dataset.anim, _profileHue));
+  });
+}
+let _flatLookupIndex = null;
+async function fetchFlatLookupIndex() {
+  if (_flatLookupIndex) return _flatLookupIndex;
+  const res = await fetch('data/flat_lookup.json');
+  const arr = await res.json();
+  const map = {};
+  for (const entry of arr) {
+    const key = [entry.program, entry.quota, entry.specialty, entry.hospital]
+      .map(s => (s || '').toLowerCase().trim()).join('|');
+    map[key] = entry;
+  }
+  _flatLookupIndex = map;
+  return map;
+}
+
+// ── Percentile helpers ──────────────────────────────────
+function ordinal(n) {
+  const s = ['th','st','nd','rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+/**
+ * Compute candidate's percentile among ALL I21 candidates
+ * who applied in the same programme. Pure rank-based — policy-agnostic.
+ */
+function computeMyPercentile(cand, prog, candidatesMap) {
+  if (!cand.applied_in?.[prog]) return null;
+  const myEff = (cand.marksTotal - (cand.experience || 0)) + (cand.programMarks?.[prog] ?? 0);
+  const pool  = Object.values(candidatesMap).filter(c => c.applied_in?.[prog]);
+  if (!pool.length) return null;
+  const below = pool.filter(c => {
+    const m = (c.marksTotal - (c.experience || 0)) + (c.programMarks?.[c._prog] ?? c.programMarks?.[prog] ?? 0);
+    return m < myEff;
+  }).length;
+  return Math.round((below / pool.length) * 100);
+}
+
+// ── Preference metrics card ─────────────────────────────
+async function loadPrefMetrics(cand) {
+  const card = document.getElementById('prefMetricsCard');
+  if (!card) return;
+  card.style.display = '';
+  card.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0">Loading merit data…</p>';
+
+  let lookup, candidatesMap;
+  try {
+    [lookup, candidatesMap] = await Promise.all([fetchFlatLookupIndex(), fetchCandidates()]);
+  } catch (e) {
+    card.innerHTML = '<p style="color:var(--text-muted)">Could not load historical merit data.</p>';
+    return;
+  }
+
+  const applied = cand.applied_in ?? {};
+
+  // Pre-compute candidate's percentile per programme (policy-agnostic)
+  const myPctiles = {};
+  for (const [prog, isApplied] of Object.entries(applied)) {
+    if (isApplied) myPctiles[prog] = computeMyPercentile(cand, prog, candidatesMap);
+  }
+
+  // Collect all prefs, sorted by prog then preferenceNo
+  const allPrefs = [];
+  for (const [prog, prefs] of Object.entries(cand.preference || {})) {
+    if (!Array.isArray(prefs)) continue;
+    for (const pref of prefs) allPrefs.push({ prog, pref });
+  }
+  allPrefs.sort((a, b) => {
+    if (a.prog !== b.prog) return a.prog.localeCompare(b.prog);
+    return (a.pref.preferenceNo || 0) - (b.pref.preferenceNo || 0);
+  });
+
+  if (!allPrefs.length) {
+    card.innerHTML = '<p style="color:var(--text-muted)">No preferences found.</p>';
+    return;
+  }
+
+  // ── Build preference rows ────────────────────────────
+  const rowsHtml = allPrefs.map(({ prog, pref }) => {
+    const key  = [prog, pref.quotaName, pref.specialityName, pref.hospitalName]
+      .map(s => (s || '').toLowerCase().trim()).join('|');
+    const slot = lookup[key];
+
+    const myPctile     = myPctiles[prog] ?? null;
+    const cutoffPctile = slot?.yearly_percentile?.[String(slot.latest_year)] ?? null;
+
+    let rightHtml = '';
+    let metaHtml  = '';
+
+    if (slot && cutoffPctile != null && myPctile != null) {
+      const gap = myPctile - cutoffPctile;
+      const gapStr = (gap >= 0 ? '+' : '') + gap + ' pctile pts';
+
+      let statusLabel, statusCls;
+      if      (gap >= 10) { statusLabel = '✓ Safe';     statusCls = 'safe'; }
+      else if (gap >= 0)  { statusLabel = '~ Target';   statusCls = 'target'; }
+      else if (gap >= -15){ statusLabel = '↯ Reach';    statusCls = 'reach'; }
+      else                { statusLabel = '✗ Below';    statusCls = 'unlikely'; }
+
+      const trendLabel = slot.trend === 'falling' ? '↓ Easing' :
+                         slot.trend === 'rising'  ? '↑ Rising' : '→ Stable';
+      const trendCls   = slot.trend === 'falling' ? 'falling' :
+                         slot.trend === 'rising'  ? 'rising'  : 'stable';
+
+      // Percentile bar: fill = myPctile, marker = cutoffPctile
+      const fillW    = Math.min(myPctile, 100);
+      const markerL  = Math.min(cutoffPctile, 100);
+      const markerColor = gap >= 0 ? '#27c98b' : '#dc3c3c';
+
+      rightHtml = `
+        <span class="pma-status ${statusCls}">${statusLabel}</span>
+        <span class="pma-gap ${gap >= 0 ? 'pos' : 'neg'}">${gapStr}</span>
+        <span class="pma-trend-tag ${trendCls}">${trendLabel}</span>`;
+
+      metaHtml = `
+        <span>You <b>${ordinal(myPctile)}</b></span>
+        <span>Cutoff <b>${ordinal(Math.round(cutoffPctile))}</b> pctile</span>
+        <span>Seats <b>${slot.yearly_seats?.[String(slot.latest_year)] ?? '?'}</b> (${slot.latest_year ?? '?'})</span>
+        <span>Volatility <b>${slot.volatility ?? '—'}</b></span>
+        <span>${slot.data_points ?? '?'} yrs data</span>
+        <div class="pma-pctile-row" style="width:100%;margin-top:0.55rem;">
+          <div class="pma-pctile-bar-wrap">
+            <div class="pma-pctile-bar-fill" style="width:${fillW}%"></div>
+            <div class="pma-pctile-marker" style="left:${markerL}%;background:${markerColor}"></div>
+          </div>
+          <span class="pma-pctile-label" style="margin-left:0.5rem"><b>${ordinal(myPctile)}</b></span>
+        </div>`;
+    } else if (slot) {
+      // Has slot data but no percentile for this year — show raw info only
+      const latestMerit = slot.latest_merit;
+      const trendLabel  = slot.trend === 'falling' ? '↓ Easing' : slot.trend === 'rising' ? '↑ Rising' : '→ Stable';
+      const trendCls    = slot.trend === 'falling' ? 'falling' : slot.trend === 'rising' ? 'rising' : 'stable';
+      rightHtml = `<span class="pma-status nodata">No pctile</span><span class="pma-trend-tag ${trendCls}">${trendLabel}</span>`;
+      metaHtml  = `<span>Latest cutoff <b>${latestMerit?.toFixed(2) ?? '—'}</b></span><span>${slot.data_points ?? '?'} yrs data</span>`;
+    } else {
+      rightHtml = `<span class="pma-status nodata">No data</span>`;
+      metaHtml  = `<span class="pma-no-slot">No historical data for this slot</span>`;
+    }
+
+    return `
+      <div class="pma-pref-row">
+        <span class="pma-pref-num">#${pref.preferenceNo} <span class="pma-prog-tag">${esc(prog)}</span></span>
+        <div class="pma-pref-main">
+          <div class="pma-pref-slot">${esc(pref.specialityName)}</div>
+          <div class="pma-pref-sub">${esc(pref.hospitalName)} · ${esc(pref.quotaName)}</div>
+          <div class="pma-pref-meta">${metaHtml}</div>
+        </div>
+        <div class="pma-pref-right">${rightHtml}</div>
+      </div>`;
+  }).join('');
+
+  // ── Score chips (one per applied programme) ──────────
+  const scoreChips = Object.entries(myPctiles)
+    .filter(([, v]) => v != null)
+    .map(([prog, pct]) => `
+      <div class="pma-score-chip">
+        <span class="pma-score-chip-prog">${esc(prog)}</span>
+        <span class="pma-score-chip-pctile">${ordinal(pct)}</span>
+        <span class="pma-score-chip-sub">pctile</span>
+      </div>`)
+    .join('');
+
+  // ── How-to guide ─────────────────────────────────────
+  const guideHtml = `
+    <details class="pma-guide">
+      <summary>&#128218; How to read this</summary>
+      <div class="pma-guide-body">
+        <p><b>Why percentile, not raw marks?</b>
+          Policy changes shifted the total score (30 marks now vs 35 before).
+          Raw cutoffs are not directly comparable across years.
+          Instead, each slot's historical cutoff is expressed as the <b>percentile rank</b>
+          it represented among that year's applicant pool — fully policy-agnostic.</p>
+        <p><b>Your percentile</b> is computed by ranking you among all Induction 21 applicants
+          who applied in the same programme. If you are at the <b>70th percentile</b>,
+          70 % of applicants in that programme scored below you.</p>
+        <p>
+          <b>Status badges — gap between your percentile and the slot's historical cutoff:</b>
+        </p>
+        <div class="pma-guide-legend">
+          <span><span class="pma-status safe" style="font-size:0.68rem">✓ Safe</span> &nbsp;+10 or more</span>
+          <span><span class="pma-status target" style="font-size:0.68rem">~ Target</span> &nbsp;0 to +9</span>
+          <span><span class="pma-status reach" style="font-size:0.68rem">↯ Reach</span> &nbsp;−1 to −15</span>
+          <span><span class="pma-status unlikely" style="font-size:0.68rem">✗ Below</span> &nbsp;below −15</span>
+        </div>
+        <p><b>Trend</b> shows whether the cutoff percentile has been <span class="pma-trend-tag falling" style="font-size:0.7rem">↓ Easing</span> (good — more room) or
+          <span class="pma-trend-tag rising" style="font-size:0.7rem">↑ Rising</span> (tighter competition).</p>
+        <p>The <b>bar</b> shows you (filled) vs the cutoff marker (dot).
+          A green dot means you're above the cutoff; red means below.</p>
+        <p><b>Open in Simulation</b> loads you as "YOU" in the full Deferred Acceptance simulation so you can see exactly which seat you'd likely be allocated.</p>
+      </div>
+    </details>`;
+
+  const simBtn = `<button class="pma-sim-link" id="openSimBtn">&#127914; Run My Simulation</button>`;
+
+  card.innerHTML = `
+    <div class="pma-header">
+      <h3>&#128202; Preference Merit Analysis</h3>
+      ${simBtn}
+    </div>
+    ${guideHtml}
+    <div class="pma-score-chips">${scoreChips}</div>
+    <div class="pma-prefs">${rowsHtml}</div>`;
+
+  document.getElementById('openSimBtn')?.addEventListener('click', () => {
+    localStorage.setItem('mn_sim_my_id', String(cand.applicantId));
+    localStorage.setItem('mn_sim_open_candidates', '1');
+    window.location.href = 'simulation.html';
+  });
+}
+
+function esc(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ── Applicant ID lookup ─────────────────────────────────
+let _candidateCache = null;
+async function fetchCandidates() {
+  if (_candidateCache) return _candidateCache;
+  const res = await fetch('data/induction21_candidates.json');
+  _candidateCache = await res.json();
+  return _candidateCache;
+}
+
+async function loadLinkedApplicant(id) {
+  const card = document.getElementById('linkedApplicantCard');
+  const metricsCard = document.getElementById('prefMetricsCard');
+  if (!id) {
+    card.style.display = 'none';
+    if (metricsCard) metricsCard.style.display = 'none';
+    return;
+  }
+  try {
+    const data = await fetchCandidates();
+    const cand = data[String(id)];
+    if (!cand) {
+      card.style.display = 'none';
+      if (metricsCard) metricsCard.style.display = 'none';
+      return;
+    }
+    const progs = Object.keys(cand.preference || {});
+    card.style.display = '';
+    card.innerHTML = `
+      <h4>&#10003; Linked Induction 21 Record</h4>
+      <div class="linked-field"><span>Name </span> ${cand.nameFull || '—'}</div>
+      <div class="linked-field"><span>PMDC No. </span> ${cand.pmdcNo || '—'}</div>
+      <div class="linked-field"><span>Programmes applied </span></div>
+      <div class="linked-progs">${progs.map(p => `<span class="linked-prog-tag">${p}</span>`).join('')}</div>`;
+
+    loadPrefMetrics(cand);
+  } catch (e) {
+    card.style.display = 'none';
+    if (metricsCard) metricsCard.style.display = 'none';
+    console.warn('Could not load applicant data:', e);
+  }
+}
+
+// ── Data lists ──────────────────────────────────────────
 async function loadDataLists() {
   try {
     const res = await fetch('data/flat_lookup.json');
@@ -309,13 +1211,36 @@ document.getElementById('pfInducted').addEventListener('change', function() {
     this.value === 'inducted' ? '' : 'none';
 });
 
+// ── Photo file input ────────────────────────────────────
+document.getElementById('pfPicFile').addEventListener('change', async function() {
+  const file = this.files[0];
+  if (!file) return;
+  try {
+    const { b64, hue } = await compressImage(file);
+    const prev = document.getElementById('photoUploadPreview');
+    setAvatarFromBase64(prev, b64, document.getElementById('pfName').value);
+    prev._pendingB64  = b64;
+    prev._pendingHue  = hue;
+    // Update animation layer hue immediately
+    setAnimLayer(_profileAnim, hue);
+  } catch (e) {
+    console.warn('Image compress failed:', e);
+    alert('Could not process image. Try a smaller file.');
+  }
+});
+
+// ── Applicant ID live lookup ────────────────────────────
+document.getElementById('pfApplicantId').addEventListener('change', function() {
+  loadLinkedApplicant(this.value.trim());
+});
+
+// ── Load profile ────────────────────────────────────────
 async function loadProfile() {
   const email = getSessionEmail();
   if (!email) return;
 
   document.getElementById('profileEmail').textContent = email;
 
-  // Load basic info from authorized_users
   try {
     const userDoc = await db.collection('authorized_users').doc(email).get();
     if (userDoc.exists) {
@@ -326,7 +1251,6 @@ async function loadProfile() {
     }
   } catch (e) { console.warn('Error loading user:', e); }
 
-  // Load extended profile from user_profiles
   try {
     const profileDoc = await db.collection('user_profiles').doc(email).get();
     if (profileDoc.exists) {
@@ -339,16 +1263,56 @@ async function loadProfile() {
         document.getElementById('inductionYearField').style.display = '';
         if (p.inductionYear) document.getElementById('pfInductionYear').value = p.inductionYear;
       }
-      if (p.profilePic) {
-        document.getElementById('pfPicUrl').value = p.profilePic;
-        setAvatarImage(document.getElementById('profileAvatar'), p.profilePic, p.name || '');
+      if (p.applicantId) {
+        document.getElementById('pfApplicantId').value = p.applicantId;
+        loadLinkedApplicant(p.applicantId);
       }
+
+      // Avatar: prefer base64, fall back to old URL field
+      const b64 = p.profilePicBase64 || null;
+      const avatarEl = document.getElementById('profileAvatar');
+      const previewEl = document.getElementById('photoUploadPreview');
+      const nameVal = p.name || email;
+      if (b64) {
+        setAvatarFromBase64(avatarEl, b64, nameVal);
+        setAvatarFromBase64(previewEl, b64, nameVal);
+        // Cache so navbar can use it on other pages
+        try { localStorage.setItem('mn_profile_pic', b64); } catch (_) {}
+        // Update live navbar avatar if it was already injected with an initial
+        const navAvatar = document.querySelector('#profileNavBtn .profile-nav-avatar');
+        if (navAvatar && !navAvatar.querySelector('img')) {
+          navAvatar.innerHTML = '<img src="' + b64 + '" class="profile-nav-avatar-img" alt="" />';
+        }
+      } else {
+        avatarEl.textContent = getInitials(nameVal);
+        document.getElementById('photoUploadInitial').textContent = getInitials(nameVal);
+        localStorage.removeItem('mn_profile_pic');
+      }
+
+      // Animated background
+      const loadedHue  = (p.profileHue  != null) ? Number(p.profileHue)  : 205;
+      const loadedAnim = p.profileAnim  || 'anim-none';
+      buildAnimPicker();
+      setAnimLayer(loadedAnim, loadedHue);
+
       if (p.name) {
         document.getElementById('profileDisplayName').textContent = p.name;
-        document.getElementById('profileAvatar').textContent = getInitials(p.name);
+      }
+
+      // Hero chips
+      const chips = document.getElementById('profileHeroChips');
+      if (chips) {
+        chips.innerHTML = '';
+        if (p.specialty) chips.innerHTML += `<span class="profile-hero-chip">&#127973; ${esc(p.specialty)}</span>`;
+        if (p.hospital)  chips.innerHTML += `<span class="profile-hero-chip">${esc(p.hospital)}</span>`;
+        if (p.inducted && p.inductionYear) chips.innerHTML += `<span class="profile-hero-chip inducted">&#10003; Ind. ${esc(p.inductionYear)}</span>`;
+        else if (p.inducted)               chips.innerHTML += `<span class="profile-hero-chip inducted">&#10003; Inducted</span>`;
       }
     }
   } catch (e) { console.warn('Error loading profile:', e); }
+
+  // Build picker even if no profile saved yet
+  buildAnimPicker();
 }
 
 async function loadMyContributions() {
@@ -398,41 +1362,86 @@ async function saveProfile() {
   btn.textContent = 'Saving…';
   statusEl.textContent = '';
 
-  const name       = document.getElementById('pfName').value.trim();
-  const specialty  = document.getElementById('pfSpecialty').value.trim();
-  const hospital   = document.getElementById('pfHospital').value.trim();
-  const inducted   = document.getElementById('pfInducted').value === 'inducted';
-  const year       = document.getElementById('pfInductionYear').value;
-  const profilePic = document.getElementById('pfPicUrl').value.trim();
+  const name         = document.getElementById('pfName').value.trim();
+  const specialty    = document.getElementById('pfSpecialty').value.trim();
+  const hospital     = document.getElementById('pfHospital').value.trim();
+  const inducted     = document.getElementById('pfInducted').value === 'inducted';
+  const year         = document.getElementById('pfInductionYear').value;
+  const applicantId  = document.getElementById('pfApplicantId').value.trim();
+  const previewEl    = document.getElementById('photoUploadPreview');
+  const newB64       = previewEl._pendingB64 || null;
+  const newHue       = previewEl._pendingHue != null ? Number(previewEl._pendingHue) : null;
+
+  // Load existing base64 if no new photo was selected.
+  // Use localStorage cache first (fast, avoids extra Firestore round-trip).
+  let profilePicBase64 = newB64;
+  let profileHue = newHue != null ? newHue : _profileHue;
+  if (!profilePicBase64) {
+    profilePicBase64 = localStorage.getItem('mn_profile_pic') || null;
+  }
 
   const profileData = {
     name: name || email,
-    specialty: specialty,
-    hospital: hospital,
-    inducted: inducted,
+    specialty,
+    hospital,
+    inducted,
     inductionYear: inducted ? year : '',
-    profilePic: profilePic,
-    email: email,
+    applicantId: applicantId || '',
+    email,
+    profileAnim: _profileAnim,
+    profileHue,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
   };
+  if (profilePicBase64) profileData.profilePicBase64 = profilePicBase64;
 
   try {
     await db.collection('user_profiles').doc(email).set(profileData, { merge: true });
 
-    // Also update name in authorized_users for consistency
     if (name) {
-      await db.collection('authorized_users').doc(email).update({ name: name });
+      await db.collection('authorized_users').doc(email).update({ name });
     }
 
     statusEl.textContent = '✓ Profile saved!';
     statusEl.className = 'profile-status success';
 
-    // Update display
-    document.getElementById('profileDisplayName').textContent = name || email;
-    if (profilePic) {
-      setAvatarImage(document.getElementById('profileAvatar'), profilePic, name);
+    const displayName = name || email;
+    document.getElementById('profileDisplayName').textContent = displayName;
+    const avatarEl = document.getElementById('profileAvatar');
+    if (profilePicBase64) {
+      setAvatarFromBase64(avatarEl, profilePicBase64, displayName);
     } else {
-      document.getElementById('profileAvatar').textContent = getInitials(name || email);
+      avatarEl.textContent = getInitials(displayName);
+    }
+
+    // Refresh hero chips
+    const chips = document.getElementById('profileHeroChips');
+    if (chips) {
+      chips.innerHTML = '';
+      if (specialty) chips.innerHTML += `<span class="profile-hero-chip">&#127973; ${esc(specialty)}</span>`;
+      if (hospital)  chips.innerHTML += `<span class="profile-hero-chip">${esc(hospital)}</span>`;
+      if (inducted && year) chips.innerHTML += `<span class="profile-hero-chip inducted">&#10003; Ind. ${esc(year)}</span>`;
+      else if (inducted)    chips.innerHTML += `<span class="profile-hero-chip inducted">&#10003; Inducted</span>`;
+    }
+
+    // Cache pic in localStorage so navbar can show it instantly
+    if (profilePicBase64) {
+      try { localStorage.setItem('mn_profile_pic', profilePicBase64); } catch (_) {}
+    } else {
+      localStorage.removeItem('mn_profile_pic');
+    }
+    // Update the live navbar avatar if present
+    var navAvatar = document.querySelector('#profileNavBtn .profile-nav-avatar');
+    if (navAvatar) {
+      if (profilePicBase64) {
+        navAvatar.innerHTML = '<img src="' + profilePicBase64 + '" class="profile-nav-avatar-img" alt="" />';
+      } else {
+        navAvatar.innerHTML = (name || email).charAt(0).toUpperCase();
+      }
+    }
+
+    if (newB64) {
+      previewEl._pendingB64 = null;
+      previewEl._pendingHue = null;
     }
   } catch (err) {
     statusEl.textContent = 'Error: ' + err.message;

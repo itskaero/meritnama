@@ -61,6 +61,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupSimulationTab();
   updateMyBadge();
 
+  // If navigated from profile "Run My Simulation" — scroll to the YOU row
+  if (localStorage.getItem('mn_sim_open_candidates') === '1') {
+    localStorage.removeItem('mn_sim_open_candidates');
+    if (SIM.myId) {
+      setTimeout(() => {
+        const row = document.querySelector('tr.row-me');
+        if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 350);
+    }
+  }
+
   document.getElementById('candidateModalOverlay')
     ?.addEventListener('click', closeModal);
   document.getElementById('candidateModalClose')

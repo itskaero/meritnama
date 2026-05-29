@@ -1,4 +1,69 @@
 /* ═══════════════════════════════════════════════════════
+   Profile Nav Button — injected by auth.js after unlock
+   ═══════════════════════════════════════════════════════ */
+
+#profileNavBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  text-decoration: none;
+  color: #4db8d9;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem 0.25rem 0.35rem;
+  border-radius: 999px;
+  border: 1px solid rgba(77, 184, 217, 0.25);
+  background: rgba(77, 184, 217, 0.08);
+  transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+#profileNavBtn:hover {
+  background: rgba(77, 184, 217, 0.18);
+  border-color: rgba(77, 184, 217, 0.5);
+  color: #7dd4ec;
+}
+
+.profile-nav-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #4db8d9;
+  color: #0d1626;
+  font-weight: 700;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+  line-height: 1;
+  overflow: hidden;
+  padding: 0;
+}
+
+.profile-nav-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.profile-nav-label {
+  display: inline;
+}
+
+/* Floating variant — for pages that don't have #headerMeta */
+#profileNavBtn.profile-nav-floating {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9000;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* ═══════════════════════════════════════════════════════
    Auth Gate — Full-screen overlay (non-bypassable)
    ═══════════════════════════════════════════════════════ */
 
@@ -151,3 +216,120 @@ body.auth-locked > *:not(#authGate):not(#authVerifying):not(script):not(link):no
 }
 
 @keyframes auth-spin { to { transform: rotate(360deg); } }
+
+/* ═══════════════════════════════════════════════════════
+   Background Theme Picker — floating bottom-right button
+   ═══════════════════════════════════════════════════════ */
+
+#bgPickerWrap {
+  position: fixed;
+  bottom: 22px;
+  right: 22px;
+  z-index: 8900;
+}
+
+#bgPickerToggle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(77, 184, 217, 0.22);
+  background: rgba(13, 22, 38, 0.88);
+  color: #6b84a8;
+  font-size: 1.05rem;
+  cursor: pointer;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  line-height: 1;
+  padding: 0;
+}
+#bgPickerToggle:hover {
+  border-color: rgba(77, 184, 217, 0.55);
+  color: #4db8d9;
+  box-shadow: 0 0 0 1px rgba(77, 184, 217, 0.3), 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+#bgPickerPanel {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  background: rgba(13, 22, 44, 0.95);
+  border: 1px solid rgba(77, 184, 217, 0.15);
+  border-radius: 14px;
+  padding: 14px 13px;
+  min-width: 210px;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7);
+  transform-origin: bottom right;
+  transform: scale(0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease;
+}
+#bgPickerPanel.open {
+  transform: scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.bp-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #6b84a8;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin-bottom: 10px;
+}
+
+.bp-swatches {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 7px;
+}
+
+.bp-swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 5px 6px;
+  border: 1px solid rgba(77, 184, 217, 0.1);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: rgba(255, 255, 255, 0.02);
+  user-select: none;
+}
+.bp-swatch:hover {
+  border-color: rgba(77, 184, 217, 0.4);
+  background: rgba(77, 184, 217, 0.06);
+}
+.bp-swatch.active {
+  border-color: rgba(77, 184, 217, 0.65);
+  background: rgba(77, 184, 217, 0.09);
+}
+
+.bp-swatch-preview {
+  width: 100%;
+  height: 30px;
+  border-radius: 5px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.bp-swatch-name {
+  font-size: 0.67rem;
+  color: #6b84a8;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+}
+.bp-swatch.active .bp-swatch-name {
+  color: #4db8d9;
+}
