@@ -42,6 +42,10 @@
   <button class="tab-btn" data-tab="calculator">&#129518; Calculator</button>
   <button class="tab-btn" data-tab="current">&#128203; Current Merit</button>
   <button class="tab-btn" data-tab="policy">&#128196; Policy</button>
+  <button class="tab-btn" data-tab="reverse">&#128269; What Do I Need?</button>
+  <button class="tab-btn" data-tab="competition">&#128200; Competition</button>
+  <button class="tab-btn" data-tab="seatmatrix">&#128203; Seat Matrix</button>
+  <button class="tab-btn" data-tab="compare">&#9878; Compare</button>
   <button class="tab-btn" data-tab="guide">&#10067; Guide</button>
   <a href="simulation.html" class="tab-btn">&#127973; Induction 21</a>
   <a href="reviews.html" class="tab-btn">&#11088; Reviews</a>
@@ -383,6 +387,150 @@
     </div>
 
     <div id="policyTimeline" class="policy-timeline"></div>
+  </section>
+
+  <!-- ============================================================
+       TAB: REVERSE SCORE CALCULATOR ("What Do I Need?")
+  ============================================================ -->
+  <section class="tab-content" id="tab-reverse">
+    <div class="section-header">
+      <h2>&#128269; What Score Do I Need?</h2>
+      <p>Select a target specialty and hospital to find out what minimum merit score is historically required. Shows the average closing merit, latest cutoff, and projected range for the next induction.</p>
+    </div>
+
+    <div class="card input-card">
+      <div class="input-grid">
+        <div class="form-group">
+          <label for="revProgram">Program</label>
+          <select id="revProgram"><option value="">Select Program</option></select>
+        </div>
+        <div class="form-group">
+          <label for="revQuota">Quota</label>
+          <select id="revQuota"><option value="">Select Quota</option></select>
+        </div>
+        <div class="form-group">
+          <label for="revSpecialty">Specialty</label>
+          <select id="revSpecialty"><option value="">Select Specialty</option></select>
+        </div>
+        <div class="form-group">
+          <label for="revHospital">Hospital (optional)</label>
+          <select id="revHospital"><option value="">All Hospitals</option></select>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-large" id="revBtn">Show Requirements</button>
+    </div>
+
+    <div id="revResults" class="hidden">
+      <div id="revResultsContent"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       TAB: COMPETITION RATIO / DEMAND INDEX
+  ============================================================ -->
+  <section class="tab-content" id="tab-competition">
+    <div class="section-header">
+      <h2>&#128200; Competition &amp; Demand Index</h2>
+      <p>See how many candidates applied per seat for each specialty in the current induction. Higher ratios mean tougher competition.</p>
+    </div>
+
+    <div class="card filter-card">
+      <div class="input-grid">
+        <div class="form-group">
+          <label for="compProgram">Program</label>
+          <select id="compProgram"><option value="">All Programs</option></select>
+        </div>
+        <div class="form-group">
+          <label for="compQuota">Quota</label>
+          <select id="compQuota"><option value="">All Quotas</option></select>
+        </div>
+        <div class="form-group">
+          <label for="compSearch">Search</label>
+          <input type="text" id="compSearch" placeholder="Specialty or hospital&hellip;" />
+        </div>
+        <div class="form-group">
+          <label for="compSort">Sort By</label>
+          <select id="compSort">
+            <option value="ratio-desc">Highest Competition</option>
+            <option value="ratio-asc">Lowest Competition</option>
+            <option value="specialty">Specialty A-Z</option>
+            <option value="applicants-desc">Most Applicants</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div id="compResults">
+      <p style="text-align:center;color:var(--text-muted);padding:40px;">Loading competition data&hellip;</p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       TAB: SEAT MATRIX DASHBOARD
+  ============================================================ -->
+  <section class="tab-content" id="tab-seatmatrix">
+    <div class="section-header">
+      <h2>&#128203; Seat Matrix</h2>
+      <p>Visual overview of all available seats across programs, quotas, and specialties for the current induction.</p>
+    </div>
+
+    <div class="card filter-card">
+      <div class="input-grid">
+        <div class="form-group">
+          <label for="smProgram">Program</label>
+          <select id="smProgram"><option value="">All Programs</option></select>
+        </div>
+        <div class="form-group">
+          <label for="smQuota">Quota</label>
+          <select id="smQuota"><option value="">All Quotas</option></select>
+        </div>
+        <div class="form-group">
+          <label for="smSearch">Search</label>
+          <input type="text" id="smSearch" placeholder="Specialty or hospital&hellip;" />
+        </div>
+      </div>
+    </div>
+
+    <div id="smSummary" class="pred-hero hidden" style="margin-bottom:1.5rem"></div>
+    <div id="smResults">
+      <p style="text-align:center;color:var(--text-muted);padding:40px;">Loading seat matrix&hellip;</p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       TAB: SPECIALTY COMPARISON TOOL
+  ============================================================ -->
+  <section class="tab-content" id="tab-compare">
+    <div class="section-header">
+      <h2>&#9878; Compare Specialties</h2>
+      <p>Select up to 3 specialty&#8211;hospital combinations to compare side-by-side on key metrics: average merit, trend, volatility, seats, and competition.</p>
+    </div>
+
+    <div class="card">
+      <div id="compareSlots" class="compare-slots">
+        <div class="compare-slot" id="compareSlot1">
+          <label class="compare-slot-label">Slot 1</label>
+          <select class="compare-sel" id="cmpSpec1"><option value="">Select specialty &ndash; hospital</option></select>
+        </div>
+        <div class="compare-slot" id="compareSlot2">
+          <label class="compare-slot-label">Slot 2</label>
+          <select class="compare-sel" id="cmpSpec2"><option value="">Select specialty &ndash; hospital</option></select>
+        </div>
+        <div class="compare-slot" id="compareSlot3">
+          <label class="compare-slot-label">Slot 3</label>
+          <select class="compare-sel" id="cmpSpec3"><option value="">Select specialty &ndash; hospital</option></select>
+        </div>
+      </div>
+      <div style="margin-top:1rem">
+        <label for="cmpProgram" style="font-size:0.8rem;color:var(--text-muted);margin-right:0.5rem;">Program:</label>
+        <select id="cmpProgram" style="font-size:0.85rem;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);">
+          <option value="FCPS">FCPS</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="cmpBtn" style="margin-top:1rem">Compare</button>
+    </div>
+
+    <div id="cmpResults" class="hidden"></div>
   </section>
 
   <!-- ============================================================

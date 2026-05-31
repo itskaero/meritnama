@@ -3090,3 +3090,62 @@ tr.clickable-row.active { background: rgba(77,184,217,0.12); outline: 1px solid 
   .guide-step-num { width: 30px; height: 30px; font-size: 0.85rem; }
   .guide-bucket-demo { flex-direction: column; gap: 4px; }
 }
+
+/* ═══════════════════════════════════════════════════════
+   REVERSE CALC & COMPARISON STYLES
+═══════════════════════════════════════════════════════ */
+.rev-metric {
+  background: var(--bg-card, #1a2332);
+  border: 1px solid var(--border, rgba(77,184,217,0.12));
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  text-align: center;
+}
+.rev-metric-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.rev-metric-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--neon-cyan, #4db8d9);
+  font-variant-numeric: tabular-nums;
+}
+.rev-metric-sub {
+  font-size: 0.72rem;
+  color: var(--text-light, #3a506e);
+  margin-top: 2px;
+}
+
+/* Compare tab */
+.compare-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+.compare-slot-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: block;
+}
+.compare-sel {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 0.82rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-deep, #0d1626);
+  color: var(--text);
+  appearance: none;
+}
+.compare-sel:focus {
+  border-color: var(--neon-cyan);
+  outline: none;
+}
