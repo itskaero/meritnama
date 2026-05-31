@@ -265,6 +265,30 @@
     }
     .pf-anim-swatch.selected .pf-anim-swatch-label { color: var(--neon-cyan); }
 
+    /* ── Computerized data notice ── */
+    .pf-auto-notice {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      background: rgba(77,184,217,0.06);
+      border: 1px solid rgba(77,184,217,0.2);
+      border-radius: var(--radius);
+      padding: 0.7rem 1rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.79rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .pf-auto-notice strong { color: var(--text); }
+    .pf-auto-icon { flex-shrink: 0; font-size: 0.95rem; margin-top: 1px; }
+    .pf-auto-dismiss {
+      flex-shrink: 0; margin-left: auto; background: none; border: none;
+      color: var(--text-muted); font-size: 0.85rem; cursor: pointer;
+      padding: 0 0.2rem; line-height: 1; opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+    .pf-auto-dismiss:hover { opacity: 1; }
+
     .profile-back-btn {
       display: inline-flex;
       align-items: center;
@@ -411,6 +435,21 @@
     }
     .profile-save-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
     .profile-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Public/Private toggle */
+    .pf-toggle { position: relative; display: inline-flex; align-items: center; }
+    .pf-toggle-track {
+      display: inline-block; width: 44px; height: 24px; border-radius: 100px;
+      background: rgba(255,255,255,0.08); border: 1px solid var(--border);
+      position: relative; transition: background 0.2s, border-color 0.2s;
+    }
+    .pf-toggle-thumb {
+      position: absolute; top: 3px; left: 3px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--text-muted); transition: transform 0.2s, background 0.2s;
+    }
+    #pfPublic:checked + .pf-toggle-track { background: rgba(62,207,142,0.25); border-color: rgba(62,207,142,0.5); }
+    #pfPublic:checked + .pf-toggle-track .pf-toggle-thumb { transform: translateX(20px); background: var(--neon-green); }
 
     .profile-status {
       grid-column: 1 / -1;
@@ -949,6 +988,13 @@
     &#8592; Back
   </button>
 
+  <div class="pf-auto-notice" role="note">
+    <span class="pf-auto-icon">⚙️</span>
+    <span>Merit analysis is <strong>computed automatically</strong> from official gazette data.
+      Figures are indicative — always verify via official <abbr title="College of Physicians and Surgeons Pakistan">CPSP</abbr> / university sources before making decisions.</span>
+    <button class="pf-auto-dismiss" aria-label="Dismiss" onclick="this.parentElement.style.display='none'">✕</button>
+  </div>
+
   <div class="profile-card">
     <div class="profile-card-hero">
       <div>
@@ -1041,6 +1087,20 @@
       </div>
       <div class="pf-anim-grid" id="animPicker"><!-- built by JS --></div>
       <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem;">Animation uses your profile pic's colour. Saved to your profile.</p>
+
+      <div class="pf-section-head">
+        <span>&#128274; Profile Visibility</span>
+        <div class="pf-section-line"></div>
+      </div>
+      <div class="pf-field full" style="flex-direction:row;align-items:center;gap:1rem;">
+        <label class="pf-toggle-wrap" for="pfPublic" style="display:flex;align-items:center;gap:0.75rem;cursor:pointer;user-select:none;">
+          <div class="pf-toggle" id="pfPublicToggle">
+            <input type="checkbox" id="pfPublic" style="position:absolute;opacity:0;width:0;height:0;" />
+            <span class="pf-toggle-track"><span class="pf-toggle-thumb"></span></span>
+          </div>
+          <span id="pfPublicLabel" style="font-size:0.9rem;color:var(--text);">Private — only you can see this profile</span>
+        </label>
+      </div>
 
       <button class="profile-save-btn" id="profileSaveBtn">Save Profile</button>
       <div class="profile-status" id="profileStatus"></div>
@@ -1724,6 +1784,16 @@ async function loadProfile() {
         else if (p.inducted)               chips.innerHTML += `<span class="profile-hero-chip inducted">&#10003; Inducted</span>`;
         addVerifiedBadge();
       }
+
+      // Visibility toggle
+      const pfPublicEl = document.getElementById('pfPublic');
+      const pfPublicLabel = document.getElementById('pfPublicLabel');
+      if (pfPublicEl) {
+        pfPublicEl.checked = !!(p.isPublic);
+        if (pfPublicLabel) pfPublicLabel.textContent = p.isPublic
+          ? 'Public — visible in community profiles'
+          : 'Private — only you can see this profile';
+      }
     }
   } catch (e) { console.warn('Error loading profile:', e); }
 
@@ -1739,7 +1809,6 @@ async function loadMyContributions() {
   try {
     const snapshot = await db.collection('contributions')
       .where('email', '==', email)
-      .orderBy('date', 'desc')
       .get();
 
     if (snapshot.empty) {
@@ -1747,8 +1816,15 @@ async function loadMyContributions() {
       return;
     }
 
+    // Sort client-side by date descending (avoids requiring a composite Firestore index)
+    const docs = snapshot.docs.slice().sort((a, b) => {
+      const da = a.data().date ? a.data().date.toMillis() : 0;
+      const db_ = b.data().date ? b.data().date.toMillis() : 0;
+      return db_ - da;
+    });
+
     list.innerHTML = '';
-    snapshot.forEach(doc => {
+    docs.forEach(doc => {
       const d = doc.data();
       const date = d.date ? d.date.toDate() : null;
       const dateStr = date ? date.toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
@@ -1806,6 +1882,7 @@ async function saveProfile() {
     email,
     profileAnim: _profileAnim,
     profileHue,
+    isPublic: !!(document.getElementById('pfPublic')?.checked),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
   };
   if (profilePicBase64) profileData.profilePicBase64 = profilePicBase64;
@@ -1870,6 +1947,14 @@ async function saveProfile() {
 }
 
 document.getElementById('profileSaveBtn').addEventListener('click', saveProfile);
+
+// Toggle label update
+document.getElementById('pfPublic')?.addEventListener('change', function() {
+  const label = document.getElementById('pfPublicLabel');
+  if (label) label.textContent = this.checked
+    ? 'Public — visible in community profiles'
+    : 'Private — only you can see this profile';
+});
 
 // ══ Probability Scoring ═══════════════════════════════════
 /**

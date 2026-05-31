@@ -682,15 +682,13 @@
     try {
       let query = db.collection('hospital_reviews')
         .where('hospitalId', '==', hospitalId)
-        .orderBy('createdAt', 'desc')
-        .limit(30);
+        .limit(60);
 
       if (filterSpec) {
         query = db.collection('hospital_reviews')
           .where('hospitalId', '==', hospitalId)
           .where('specialty', '==', filterSpec)
-          .orderBy('createdAt', 'desc')
-          .limit(30);
+          .limit(60);
       }
 
       const snap = await query.get();
@@ -702,7 +700,21 @@
         return;
       }
 
-      list.innerHTML = snap.docs.map(doc => {
+      // sort client-side to avoid composite index requirement
+      const docs = snap.docs.slice().sort((a, b) => {
+        const ta = a.data().createdAt?.toMillis() ?? 0;
+        const tb = b.data().createdAt?.toMillis() ?? 0;
+        return tb - ta;
+      });
+
+      if (snap.empty) {
+        list.innerHTML = filterSpec
+          ? `<div class="hp-review-empty">No reviews yet for <strong>${esc(filterSpec)}</strong>. Be the first!</div>`
+          : '<div class="hp-review-empty">No reviews yet. Be the first to share your experience!</div>';
+        return;
+      }
+
+      list.innerHTML = docs.map(doc => {
         const d = doc.data();
         const date = d.createdAt ? d.createdAt.toDate() : new Date();
         const specTag = d.specialty ? `<div><span class="hp-review-spec">📌 ${esc(d.specialty)}</span></div>` : '';

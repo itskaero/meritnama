@@ -523,6 +523,7 @@
       <button class="tab-btn" data-tab="contributions">Contributions</button>
       <button class="tab-btn" data-tab="mentorship">&#127891; Mentorship</button>
       <button class="tab-btn" data-tab="broadcast">&#128276; Broadcast</button>
+      <button class="tab-btn" data-tab="profiles">&#128100; Profiles</button>
     </nav>
 
     <!-- ── Tab: Access Logs ────────────────────────── -->
@@ -642,6 +643,32 @@
           </thead>
           <tbody id="mreqBody">
             <tr><td colspan="6" class="empty-state">Loading&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Tab: User Profiles ─────────────────────────── -->
+    <div id="tab-profiles" style="display:none;">
+      <div class="controls" style="align-items:center;flex-wrap:wrap;gap:0.5rem;">
+        <button id="refreshProfilesBtn">&#x21BB; Refresh</button>
+        <span id="profilesCount" style="font-size:0.78rem;color:var(--text-muted);">Loading…</span>
+      </div>
+      <div class="table-wrap">
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Specialty</th>
+              <th>Hospital</th>
+              <th>Status</th>
+              <th>App ID</th>
+              <th>Updated</th>
+            </tr>
+          </thead>
+          <tbody id="profilesBody">
+            <tr><td colspan="7" class="empty-state">Loading profiles…</td></tr>
           </tbody>
         </table>
       </div>
@@ -1209,6 +1236,7 @@ function switchTab(tab) {
   document.getElementById('tab-contributions').style.display = tab === 'contributions' ? '' : 'none';
   document.getElementById('tab-mentorship').style.display    = tab === 'mentorship'    ? '' : 'none';
   document.getElementById('tab-broadcast').style.display     = tab === 'broadcast'     ? '' : 'none';
+  document.getElementById('tab-profiles').style.display      = tab === 'profiles'      ? '' : 'none';
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tab);
   });
@@ -1216,6 +1244,7 @@ function switchTab(tab) {
   if (tab === 'contributions') loadContributions();
   if (tab === 'mentorship')    loadMentorship();
   if (tab === 'broadcast')     loadBroadcast();
+  if (tab === 'profiles')      loadProfiles();
 }
 
 // ── BROADCAST NOTIFICATIONS ──────────────────────────────────────────────────
@@ -1497,6 +1526,49 @@ document.getElementById('contribPKR').addEventListener('input', function() {
 
 document.getElementById('refreshMentorsBtn')?.addEventListener('click', loadMentors);
 document.getElementById('refreshMReqBtn')?.addEventListener('click', loadMentorRequests);
+document.getElementById('refreshProfilesBtn')?.addEventListener('click', loadProfiles);
+
+// --- User Profiles ---
+async function loadProfiles() {
+  const tbody = document.getElementById('profilesBody');
+  const countEl = document.getElementById('profilesCount');
+  tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Loading…</td></tr>';
+  countEl.textContent = 'Loading…';
+  try {
+    const snap = await db.collection('user_profiles').orderBy('updatedAt', 'desc').get();
+    countEl.textContent = snap.size + ' profile' + (snap.size === 1 ? '' : 's') + ' set up';
+    if (snap.empty) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No profiles set up yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = snap.docs.map(doc => {
+      const d = doc.data();
+      const email = doc.id;
+      const name = d.name || '<span style="color:var(--muted)">—</span>';
+      const specialty = d.specialty ? escapeHtml(d.specialty) : '<span style="color:var(--muted)">—</span>';
+      const hospital = d.hospital ? escapeHtml(d.hospital) : '<span style="color:var(--muted)">—</span>';
+      const status = d.inducted
+        ? `<span style="color:var(--success);font-weight:600;">Inducted ${d.inductionYear ? escapeHtml(String(d.inductionYear)) : ''}</span>`
+        : '<span style="color:var(--text-muted);">Applicant</span>';
+      const appId = d.applicantId ? `<code style="font-size:0.78rem;">${escapeHtml(String(d.applicantId))}</code>` : '<span style="color:var(--muted)">—</span>';
+      const updated = d.updatedAt
+        ? d.updatedAt.toDate().toLocaleDateString('en-PK', { day:'2-digit', month:'short', year:'numeric' })
+        : '—';
+      return `<tr>
+        <td>${escapeHtml(d.name || '—')}</td>
+        <td style="font-size:0.78rem;">${escapeHtml(email)}</td>
+        <td>${specialty}</td>
+        <td>${hospital}</td>
+        <td>${status}</td>
+        <td>${appId}</td>
+        <td style="font-size:0.78rem;">${updated}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Error: ${escapeHtml(err.message)}</td></tr>`;
+    countEl.textContent = '';
+  }
+}
 
 // --- Mentorship ---
 async function loadMentorship() {

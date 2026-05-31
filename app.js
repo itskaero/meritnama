@@ -331,6 +331,7 @@ function onTabActivated(tab) {
 function setupMeritTable() {
   const mtProgram = document.getElementById('mtProgram');
   const mtQuota   = document.getElementById('mtQuota');
+  if (!mtProgram || !mtQuota) return;
 
   mtProgram.addEventListener('change', () => {
     populateSelect(mtQuota, getQuotas(mtProgram.value));
@@ -581,6 +582,7 @@ function renderPredRecentScores() {
 }
 
 function setupPredictorTab() {
+  if (!document.getElementById('predBtn')) return;
   document.getElementById('predBtn').addEventListener('click', runPredictor);
   document.getElementById('predMerit').addEventListener('keydown', e => { if (e.key === 'Enter') runPredictor(); });
 
@@ -1379,6 +1381,7 @@ function setupReverseCalcTab() {
   const revQuota = document.getElementById('revQuota');
   const revSpec = document.getElementById('revSpecialty');
   const revHosp = document.getElementById('revHospital');
+  if (!revProg || !revQuota || !revSpec || !revHosp) return;
 
   populateSelect(revProg, getPrograms(), 'Select Program');
   populateSelect(revQuota, getQuotas(), 'Select Quota');
@@ -1434,25 +1437,38 @@ function runReverseCalc() {
   const cards = rows.map(row => {
     const years = Object.keys(row.yearly_merit || {}).sort();
     const latestMerit = row.yearly_merit[years[years.length - 1]];
-    const avgPct = row.avg_pct_of_max;
+    const avgPct   = row.avg_pct_of_max;
     const latestPct = row.latest_pct_of_max;
 
-    // Projected range based on trend
-    let projectedMin = avgPct, projectedMax = avgPct;
-    const stddev = row.stddev || 0;
-    const maxMark = activeMax || 30;
-    const stddevPct = maxMark ? (stddev / maxMark * 100) : 5;
-    if (row.trend === 'rising') {
-      projectedMin = latestPct;
-      projectedMax = latestPct + stddevPct * 0.5;
-    } else if (row.trend === 'falling') {
-      projectedMin = latestPct - stddevPct * 0.5;
-      projectedMax = latestPct;
-    } else {
-      projectedMin = avgPct - stddevPct * 0.3;
-      projectedMax = avgPct + stddevPct * 0.3;
-    }
+    // Use yearly_pct_of_max for all projection maths — these are already normalised across
+    // years that had different total-mark scales (e.g. 95 → 60 → 35 → 30), so computing
+    // stddev or max from them is meaningful. Using raw yearly_merit / activeMax is wrong
+    // because past years had different maxima.
+    const pcts = Object.values(row.yearly_pct_of_max || {}).filter(v => v != null && v > 0);
+    const maxObservedPct = pcts.length ? Math.max(...pcts) : Math.max(avgPct || 0, latestPct || 0);
+    const meanPct = pcts.length ? pcts.reduce((a, b) => a + b, 0) / pcts.length : (avgPct || 0);
+    const stddevPct = pcts.length > 1
+      ? Math.sqrt(pcts.reduce((s, v) => s + (v - meanPct) ** 2, 0) / pcts.length)
+      : 5; // fallback if only one data point
 
+    // Projected range based on trend
+    const base = latestPct || meanPct;
+    let projectedMin = base, projectedMax = base;
+    if (row.trend === 'rising') {
+      projectedMin = base;
+      projectedMax = base + stddevPct * 0.5;
+    } else if (row.trend === 'falling') {
+      projectedMin = base - stddevPct * 0.5;
+      projectedMax = base;
+    } else {
+      projectedMin = meanPct - stddevPct * 0.3;
+      projectedMax = meanPct + stddevPct * 0.3;
+    }
+    // Cap: never below 0, never above the highest cutoff ever recorded for this slot
+    projectedMin = Math.max(0, projectedMin);
+    projectedMax = Math.min(projectedMax, maxObservedPct);
+
+    // "You need (safe)" = projected upper bound converted to current-policy raw marks
     const neededRaw = activeMax ? (projectedMax / 100 * activeMax) : latestMerit;
     const seatsLatest = row.yearly_seats ? row.yearly_seats[years[years.length - 1]] : '—';
 
@@ -1516,13 +1532,14 @@ let _compData = null;
 function setupCompetitionTab() {
   const compProg = document.getElementById('compProgram');
   const compQuota = document.getElementById('compQuota');
+  if (!compProg || !compQuota) return;   // element not present on this page
   populateSelect(compProg, getPrograms());
   populateSelect(compQuota, getQuotas());
 
   compProg.addEventListener('change', renderCompetitionTab);
   compQuota.addEventListener('change', renderCompetitionTab);
-  document.getElementById('compSearch').addEventListener('input', renderCompetitionTab);
-  document.getElementById('compSort').addEventListener('change', renderCompetitionTab);
+  document.getElementById('compSearch')?.addEventListener('input', renderCompetitionTab);
+  document.getElementById('compSort')?.addEventListener('change', renderCompetitionTab);
 }
 
 async function loadCompetitionData() {
@@ -1664,12 +1681,13 @@ let _seatData = null;
 function setupSeatMatrixTab() {
   const smProg = document.getElementById('smProgram');
   const smQuota = document.getElementById('smQuota');
+  if (!smProg || !smQuota) return;   // element not present on this page
   populateSelect(smProg, getPrograms());
   populateSelect(smQuota, getQuotas());
 
   smProg.addEventListener('change', renderSeatMatrixTab);
   smQuota.addEventListener('change', renderSeatMatrixTab);
-  document.getElementById('smSearch').addEventListener('input', renderSeatMatrixTab);
+  document.getElementById('smSearch')?.addEventListener('input', renderSeatMatrixTab);
 }
 
 async function loadSeatData() {
@@ -1753,6 +1771,7 @@ async function renderSeatMatrixTab() {
 
 function setupCompareTab() {
   const cmpProg = document.getElementById('cmpProgram');
+  if (!cmpProg) return;
   populateSelect(cmpProg, getPrograms(), 'FCPS');
   cmpProg.value = 'FCPS';
 

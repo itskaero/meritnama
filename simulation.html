@@ -829,6 +829,7 @@
   <button class="tab-btn" data-tab="seatmatrix">&#127979; Training Seats</button>
   <button class="tab-btn" data-tab="competition">&#128200; Competition</button>
   <button class="tab-btn" data-tab="hospitals">&#127968; Hospitals</button>
+  <button class="tab-btn" data-tab="profiles">&#128100; Profiles</button>
   <button class="tab-btn" data-tab="guide">&#10067; Guide</button>
   <a href="candidatesChanges.html" class="tab-btn" style="text-decoration:none">&#128202; Data Changes</a>
   <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
@@ -1294,6 +1295,45 @@
   <!-- ══════════════════════════════════════════
        TAB: HOSPITALS
   ══════════════════════════════════════════ -->
+  <!-- ════════════════════════════════════════════
+       TAB: COMMUNITY PROFILES
+  ════════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-profiles">
+    <div class="section-header">
+      <h2>&#128100; Community Profiles</h2>
+      <p>Browse registered members who have shared their profile. Data is self-reported and shown publicly by the user.</p>
+    </div>
+
+    <div class="card filter-card">
+      <div class="input-grid">
+        <div class="form-group">
+          <label for="profilesSearch">Search by name or specialty</label>
+          <input type="text" id="profilesSearch" class="mt-filter-input" placeholder="Name, specialty, hospital&hellip;" />
+        </div>
+        <div class="form-group">
+          <label for="profilesStatusFilter">Status</label>
+          <select id="profilesStatusFilter" class="mt-filter-input">
+            <option value="">All</option>
+            <option value="inducted">Inducted</option>
+            <option value="applicant">Applicant</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Private profile ticker -->
+    <div id="profilesTicker" style="display:none;max-width:1200px;margin:0 auto 1rem;padding:0 1rem;">
+      <div style="display:flex;align-items:center;gap:0.65rem;padding:0.65rem 1rem;border-radius:8px;background:rgba(77,184,217,0.06);border:1px solid rgba(77,184,217,0.15);font-size:0.82rem;color:var(--text-muted);">
+        <span style="font-size:1rem;">&#128274;</span>
+        <span id="profilesTickerText"></span>
+      </div>
+    </div>
+
+    <div id="profilesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;max-width:1200px;margin:0 auto;padding:0 1rem 4rem;">
+      <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-muted);">Loading profiles&hellip;</div>
+    </div>
+  </section>
+
   <section class="tab-content" id="tab-hospitals">
     <div class="section-header">
       <h2>&#127968; Hospital Directory</h2>
@@ -1319,6 +1359,15 @@
   <div class="modal-box" style="max-width:680px;max-height:85vh;overflow-y:auto">
     <button class="modal-close" id="candidateModalClose" title="Close">&times;</button>
     <div id="candidateModalBody"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     COMMUNITY PROFILE MODAL
+══════════════════════════════════════════ -->
+<div id="profileViewModal" class="sbm-backdrop hidden" role="dialog" aria-modal="true">
+  <div class="sbm-sheet" style="max-width:420px;" id="profileViewSheet">
+    <!-- filled by JS -->
   </div>
 </div>
 
