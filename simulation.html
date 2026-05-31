@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Induction 21 &mdash; MeritNama</title>
+  <title>Induction Portal &mdash; MeritNama</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="auth.css" />
   <!-- Firebase SDKs -->
@@ -823,11 +823,14 @@
 <!-- ═══════════ NAV ═══════════ -->
 <nav class="tab-nav" id="mainNav">
   <a href="index.html" class="tab-btn back-btn">&#8592; Historical Data</a>
-  <button class="tab-btn active" data-tab="candidates">&#128100; Candidates</button>
+  <button class="tab-btn active" data-tab="candidates">&#128100; Candidate Pool</button>
   <button class="tab-btn" data-tab="slotbrowser">&#127919; Where Merit Falls</button>
-  <button class="tab-btn" data-tab="simulation">&#9889; Allocation</button>
+  <button class="tab-btn" data-tab="simulation">&#9889; Seat Allocation</button>
+  <button class="tab-btn" data-tab="seatmatrix">&#127979; Training Seats</button>
+  <button class="tab-btn" data-tab="competition">&#128200; Competition</button>
+  <button class="tab-btn" data-tab="hospitals">&#127968; Hospitals</button>
   <button class="tab-btn" data-tab="guide">&#10067; Guide</button>
-  <a href="candidatesChanges.html" class="tab-btn" style="text-decoration:none">&#128202; Changes</a>
+  <a href="candidatesChanges.html" class="tab-btn" style="text-decoration:none">&#128202; Data Changes</a>
   <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
 </nav>
 
@@ -838,16 +841,16 @@
   &middot;
   <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a>
   &middot;
-  <span class="author-bar-note">Induction 21 live simulation &mdash; <a href="index.html">historical merit data &rarr;</a></span>
+  <span class="author-bar-note">Induction Portal live simulation &mdash; <a href="index.html">historical merit data &rarr;</a></span>
 </div>
 
 <!-- ═══════════ DATA UPDATE TICKER ═══════════ -->
 <div class="update-ticker">
   <span class="ticker-dot"></span>
   <span class="ticker-label">Candidate Data</span>
-  <span class="ticker-value">Updated 2026-05-28&#160;21:12</span>
+  <span class="ticker-value">Updated ${CANDIDATE_UPDATED}</span>
   <span class="ticker-sep">&middot;</span>
-  <span class="ticker-info">3,361 candidates &middot; <a href="candidatesChanges.html" style="color:inherit">view changes &#8594;</a></span>
+  <span class="ticker-info">${CANDIDATE_COUNT} candidates &middot; <a href="candidatesChanges.html" style="color:inherit">view changes &#8594;</a></span>
 </div>
 
 <!-- ═══════════ MOTIVATIONAL QUOTE STRIP ═══════════ -->
@@ -886,7 +889,7 @@
   ══════════════════════════════════════════ -->
   <section class="tab-content active" id="tab-candidates">
     <div class="section-header">
-      <h2>Induction 21 &mdash; Candidate Pool</h2>
+      <h2>Induction Portal &mdash; Candidate Pool</h2>
       <p>All applicants with marks and applied programmes. Click any row to view their full preference list.</p>
     </div>
 
@@ -1035,7 +1038,7 @@
       <div class="guide-card">
         <div class="guide-card-icon">&#127919;</div>
         <h3>What is this?</h3>
-        <p>This tool simulates the <strong>PMDC Induction 21</strong> seat allocation process. It lets you explore the candidate pool, browse competition at any hospital/specialty slot, and run a full predicted placement to see where candidates are likely to land.</p>
+        <p>This tool simulates the <strong>PMDC Induction Portal</strong> seat allocation process. It lets you explore the candidate pool, browse competition at any hospital/specialty slot, and run a full predicted placement to see where candidates are likely to land.</p>
         <p>All data is processed entirely in your browser &mdash; nothing is sent to any server.</p>
       </div>
 
@@ -1086,7 +1089,7 @@
       <div class="guide-card">
         <div class="guide-card-icon">&#128203;</div>
         <h3>Candidates Tab</h3>
-        <p>Browse the full applicant pool for Induction 21.</p>
+        <p>Browse the full applicant pool for Induction Portal.</p>
         <ul class="guide-ul">
           <li><strong>Search by name</strong> to find a specific person.</li>
           <li><strong>Filter by programme</strong> to show only candidates who applied to FCPS, MS, or MD.</li>
@@ -1218,6 +1221,92 @@
     </div>
 
     <div id="simResults" style="margin-top:16px"></div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       TAB: TRAINING SEATS
+  ══════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-seatmatrix">
+    <div class="section-header">
+      <h2>&#127979; Training Seats</h2>
+      <p>Visual overview of all available seats across programs, quotas, and specialties for the current induction.</p>
+    </div>
+    <div class="card filter-card">
+      <div class="input-grid">
+        <div class="form-group">
+          <label for="smProgram">Program</label>
+          <select id="smProgram"><option value="">All Programs</option></select>
+        </div>
+        <div class="form-group">
+          <label for="smQuota">Quota</label>
+          <select id="smQuota"><option value="">All Quotas</option></select>
+        </div>
+        <div class="form-group">
+          <label for="smSearch">Search</label>
+          <input type="text" id="smSearch" placeholder="Specialty or hospital&hellip;" />
+        </div>
+      </div>
+    </div>
+    <div id="smSummary" style="display:none;margin-bottom:1.5rem;"></div>
+    <div id="smResults">
+      <p style="text-align:center;color:var(--text-muted);padding:40px;">Loading seat data&hellip;</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       TAB: COMPETITION
+  ══════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-competition">
+    <div class="section-header">
+      <h2>&#128200; Competition &amp; Demand Index</h2>
+      <p>See how many candidates applied per seat for each specialty. Higher ratios mean tougher competition.</p>
+    </div>
+    <div class="card filter-card">
+      <div class="input-grid">
+        <div class="form-group">
+          <label for="compProgram">Program</label>
+          <select id="compProgram"><option value="">All Programs</option></select>
+        </div>
+        <div class="form-group">
+          <label for="compQuota">Quota</label>
+          <select id="compQuota"><option value="">All Quotas</option></select>
+        </div>
+        <div class="form-group">
+          <label for="compSearch">Search</label>
+          <input type="text" id="compSearch" placeholder="Specialty or hospital&hellip;" />
+        </div>
+        <div class="form-group">
+          <label for="compSort">Sort By</label>
+          <select id="compSort">
+            <option value="ratio-desc">Highest Competition</option>
+            <option value="ratio-asc">Lowest Competition</option>
+            <option value="specialty">Specialty A-Z</option>
+            <option value="applicants-desc">Most Applicants</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div id="compResults">
+      <p style="text-align:center;color:var(--text-muted);padding:40px;">Loading competition data&hellip;</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       TAB: HOSPITALS
+  ══════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-hospitals">
+    <div class="section-header">
+      <h2>&#127968; Hospital Directory</h2>
+      <p>Browse all training hospitals from the Induction Portal seat data. Click a hospital to view its full profile, seat breakdown, and reviews.</p>
+    </div>
+    <div style="max-width:600px;margin:0 auto 1.5rem;padding:0 1rem;">
+      <input type="text" id="hospTabSearch" placeholder="Search hospitals by name&hellip;"
+        style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);padding:0.7rem 1rem;color:var(--text);font-family:var(--font);font-size:0.92rem;outline:none;transition:border-color 0.2s;"
+        onfocus="this.style.borderColor='var(--border-active)'" onblur="this.style.borderColor='var(--border)'" />
+    </div>
+    <div id="hospTabGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;max-width:1200px;margin:0 auto;padding:0 1rem 4rem;">
+      <div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:var(--text-muted);">Loading hospitals&hellip;</div>
+    </div>
   </section>
 
 </main>

@@ -873,9 +873,70 @@
       color: #3ecf8e;
       font-size: 0.82rem; font-weight: 600;
       cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .mentorship-btn:hover:not(:disabled) { background: rgba(62,207,142,0.15); }
+    .mentorship-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* ── Mentorship modal & tabbed card ──────────────────── */
+    .ms-tab-bar {
+      display: flex; gap: 0; margin: 0.65rem 0 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .ms-tab-btn {
+      background: none; border: none; border-bottom: 2px solid transparent;
+      color: var(--text-muted); font-family: var(--font); font-size: 0.78rem;
+      font-weight: 600; padding: 0.3rem 0.7rem 0.45rem; cursor: pointer;
+      transition: color 0.2s, border-color 0.2s; margin-bottom: -1px;
+    }
+    .ms-tab-btn.active { color: var(--neon-cyan); border-color: var(--neon-cyan); }
+    .ms-tab-btn:hover:not(.active) { color: var(--text); }
+
+    .mentor-reg-form { display: flex; flex-direction: column; gap: 0.6rem; }
+    .mr-field { display: flex; flex-direction: column; gap: 0.22rem; }
+    .mr-field label { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    .mr-field input, .mr-field select, .mr-field textarea {
+      width: 100%; padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      background: var(--bg-input); color: var(--text);
+      font-family: var(--font); font-size: 0.85rem; outline: none;
+      transition: border-color 0.2s;
+    }
+    .mr-field input:focus, .mr-field select:focus, .mr-field textarea:focus { border-color: var(--border-active); }
+    .mr-field textarea { resize: vertical; min-height: 58px; }
+    .mr-field select option { background: #0d1626; }
+    .mr-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    @media (max-width: 480px) { .mr-row2 { grid-template-columns: 1fr; } }
+
+    .mentor-modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 900;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      align-items: center; justify-content: center; padding: 1rem;
+    }
+    .mentor-modal-overlay.open { display: flex; }
+    .mentor-modal-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); width: 100%; max-width: 540px;
+      max-height: 84vh; overflow-y: auto; padding: 1.5rem;
+    }
+    .mentor-result-card {
+      background: rgba(255,255,255,0.025); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 0.85rem 1rem; margin-bottom: 0.55rem;
+      display: flex; flex-direction: column; gap: 0.4rem;
+    }
+    .mentor-result-card:last-child { margin-bottom: 0; }
+    .mentor-result-name { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+    .mentor-result-meta { font-size: 0.77rem; color: var(--text-muted); line-height: 1.5; }
+    .mentor-wa-btn {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      padding: 0.3rem 0.7rem; border: 1px solid rgba(37,211,102,0.35);
+      border-radius: var(--radius); background: rgba(37,211,102,0.08);
+      color: #25d366; font-size: 0.77rem; font-weight: 600;
+      text-decoration: none; margin-top: 0.2rem;
       transition: background 0.2s;
     }
-    .mentorship-btn:hover { background: rgba(62,207,142,0.15); }
+    .mentor-wa-btn:hover { background: rgba(37,211,102,0.16); }
   </style>
 </head>
 <body>
@@ -944,7 +1005,7 @@
       </div>
 
       <div class="pf-section-head">
-        <span>&#128279; Induction 21 Record</span>
+        <span>&#128279; Induction Portal Record</span>
         <div class="pf-section-line"></div>
       </div>
 
@@ -1042,18 +1103,84 @@
         <h5><span class="cc-icon">💬</span> Specialty Sub-Forums</h5>
         <p>Join focused discussions for competitive specialties — Surgery, Radiology, Cardiology & more.</p>
       </div>
-      <div class="community-card" id="mentorshipCard">
+      <div class="community-card" id="mentorshipCard" style="grid-column:1/-1;">
         <h5><span class="cc-icon">🎓</span> Direct Mentorship</h5>
-        <p>Request a chat with a verified trainee at your preferred hospital for insider guidance.</p>
-        <button class="mentorship-btn" id="requestMentorBtn">💬 Request a Chat</button>
+        <div class="ms-tab-bar">
+          <button class="ms-tab-btn active" data-mstab="request">💬 Request a Chat</button>
+          <button class="ms-tab-btn" data-mstab="register">🩺 Become a Mentor</button>
+        </div>
+
+        <!-- ── Request panel ── -->
+        <div id="msPanel-request">
+          <p>Request a chat with a verified trainee at your preferred hospital or specialty for insider guidance.</p>
+          <p id="mentorAvailMsg" style="font-size:0.78rem;margin-top:0.45rem;min-height:1.1em;"></p>
+          <button class="mentorship-btn" id="requestMentorBtn" style="margin-top:0.5rem;">💬 Find a Mentor</button>
+        </div>
+
+        <!-- ── Register panel ── -->
+        <div id="msPanel-register" style="display:none;">
+          <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.9rem;">
+            Already a trainee? Register to help junior applicants navigate the induction process.
+          </p>
+          <form class="mentor-reg-form" id="mentorRegForm" onsubmit="return false;">
+            <div class="mr-row2">
+              <div class="mr-field">
+                <label>Your Name *</label>
+                <input type="text" id="mrName" placeholder="Dr. ..." maxlength="80" />
+              </div>
+              <div class="mr-field">
+                <label>Training Hospital *</label>
+                <input type="text" id="mrHospital" placeholder="e.g. AKUH" maxlength="100" list="hospitalList" />
+              </div>
+            </div>
+            <div class="mr-row2">
+              <div class="mr-field">
+                <label>Specialty *</label>
+                <input type="text" id="mrSpecialty" placeholder="e.g. Cardiology" maxlength="80" list="specialtyList" />
+              </div>
+              <div class="mr-field">
+                <label>Programme *</label>
+                <select id="mrProgramme">
+                  <option value="">Select…</option>
+                  <option>FCPS</option><option>MS</option><option>MD</option>
+                  <option>MDS</option><option>FCPS-D</option>
+                </select>
+              </div>
+            </div>
+            <div class="mr-row2">
+              <div class="mr-field">
+                <label>Year of Training *</label>
+                <select id="mrYear">
+                  <option value="">Select…</option>
+                  <option>1</option><option>2</option><option>3</option>
+                  <option>4</option><option>5</option>
+                </select>
+              </div>
+              <div class="mr-field">
+                <label>WhatsApp (optional)</label>
+                <input type="tel" id="mrWhatsapp" placeholder="+92 3xx xxxxxxx" maxlength="20" />
+              </div>
+            </div>
+            <div class="mr-field">
+              <label>Short Bio (optional, max 200 chars)</label>
+              <textarea id="mrBio" placeholder="Tell juniors a bit about your experience…" maxlength="200" rows="2"></textarea>
+            </div>
+            <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-muted);cursor:pointer;user-select:none;">
+              <input type="checkbox" id="mrAvailable" checked style="width:auto;" />
+              Mark me as available for mentorship requests
+            </label>
+            <button class="mentorship-btn" id="mentorRegBtn">🩺 Register as Mentor</button>
+            <div id="mentorRegStatus" style="font-size:0.8rem;min-height:1.2em;"></div>
+          </form>
+        </div>
       </div>
       <div class="community-card" onclick="window.location.href='reviews.html#anonymous'">
         <h5><span class="cc-icon">🔒</span> Anonymous Q&A</h5>
         <p>Ask sensitive questions about hospital work culture, stipends, or environment anonymously.</p>
       </div>
-      <div class="community-card" onclick="window.location.href='reviews.html'">
+      <div class="community-card" onclick="window.location.href='simulation.html?tab=hospitals'">
         <h5><span class="cc-icon">⭐</span> Hospital Reviews</h5>
-        <p>Read and write verified reviews for hospitals on your preference list.</p>
+        <p>Browse and write reviews for training hospitals. Read experiences from verified trainees.</p>
       </div>
     </div>
   </div>
@@ -1390,7 +1517,7 @@ async function loadPrefMetrics(cand) {
           Raw cutoffs are not directly comparable across years.
           Instead, each slot's historical cutoff is expressed as the <b>percentile rank</b>
           it represented among that year's applicant pool — fully policy-agnostic.</p>
-        <p><b>Your percentile</b> is computed by ranking you among all Induction 21 applicants
+        <p><b>Your percentile</b> is computed by ranking you among all Induction Portal applicants
           who applied in the same programme. If you are at the <b>70th percentile</b>,
           70 % of applicants in that programme scored below you.</p>
         <p>
@@ -1463,7 +1590,7 @@ async function loadLinkedApplicant(id) {
     const progs = Object.keys(cand.preference || {});
     card.style.display = '';
     card.innerHTML = `
-      <h4>&#10003; Linked Induction 21 Record</h4>
+      <h4>&#10003; Linked Induction Portal Record</h4>
       <div class="linked-field"><span>Name </span> ${cand.nameFull || '—'}</div>
       <div class="linked-field"><span>PMDC No. </span> ${cand.pmdcNo || '—'}</div>
       <div class="linked-field"><span>Programmes applied </span></div>
@@ -1970,29 +2097,186 @@ function addVerifiedBadge() {
   }
 }
 
-// ══ Mentorship Request ════════════════════════════════════
-document.getElementById('requestMentorBtn')?.addEventListener('click', async () => {
-  const email = getSessionEmail();
-  if (!email) { alert('Please log in first.'); return; }
+// ══ Mentorship ══════════════════════════════════════════════════════
+
+// Tab toggle inside the mentorship card
+document.querySelectorAll('.ms-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.ms-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.mstab;
+    document.getElementById('msPanel-request').style.display  = tab === 'request'  ? '' : 'none';
+    document.getElementById('msPanel-register').style.display = tab === 'register' ? '' : 'none';
+    if (tab === 'register') prefillMentorForm();
+  });
+});
+
+function prefillMentorForm() {
+  const name     = document.getElementById('pfName')?.value?.trim();
   const hospital = document.getElementById('pfHospital')?.value?.trim();
   const specialty = document.getElementById('pfSpecialty')?.value?.trim();
+  if (name     && !document.getElementById('mrName').value)     document.getElementById('mrName').value = name;
+  if (hospital && !document.getElementById('mrHospital').value) document.getElementById('mrHospital').value = hospital;
+  if (specialty && !document.getElementById('mrSpecialty').value) document.getElementById('mrSpecialty').value = specialty;
+  // Load existing mentor doc if any
+  const email = getSessionEmail();
+  if (!email) return;
+  db.collection('mentors').doc(email).get().then(doc => {
+    if (!doc.exists) return;
+    const d = doc.data();
+    if (d.name)          document.getElementById('mrName').value      = d.name;
+    if (d.hospital)      document.getElementById('mrHospital').value  = d.hospital;
+    if (d.specialty)     document.getElementById('mrSpecialty').value = d.specialty;
+    if (d.programme)     document.getElementById('mrProgramme').value = d.programme;
+    if (d.yearOfTraining) document.getElementById('mrYear').value     = String(d.yearOfTraining);
+    if (d.whatsapp)      document.getElementById('mrWhatsapp').value  = d.whatsapp;
+    if (d.bio)           document.getElementById('mrBio').value       = d.bio;
+    document.getElementById('mrAvailable').checked = d.available !== false;
+    const st = document.getElementById('mentorRegStatus');
+    st.textContent = '(loaded your existing mentor profile)';
+    st.style.color = 'var(--neon-cyan)';
+  }).catch(() => {});
+}
 
-  if (!hospital && !specialty) {
-    alert('Please set your aspiring hospital or specialty in your profile first.');
+document.getElementById('mentorRegBtn')?.addEventListener('click', async () => {
+  const email = getSessionEmail();
+  if (!email) { alert('Please log in first.'); return; }
+  const name      = document.getElementById('mrName').value.trim();
+  const hospital  = document.getElementById('mrHospital').value.trim();
+  const specialty = document.getElementById('mrSpecialty').value.trim();
+  const programme = document.getElementById('mrProgramme').value;
+  const year      = document.getElementById('mrYear').value;
+  const whatsapp  = document.getElementById('mrWhatsapp').value.trim();
+  const bio       = document.getElementById('mrBio').value.trim();
+  const available = document.getElementById('mrAvailable').checked;
+  const statusEl  = document.getElementById('mentorRegStatus');
+  statusEl.textContent = '';
+
+  if (!name || !hospital || !specialty || !programme || !year) {
+    statusEl.textContent = '✗ Please fill all required fields (name, hospital, specialty, programme, year).';
+    statusEl.style.color = 'var(--danger, #e05470)';
     return;
   }
 
+  const btn = document.getElementById('mentorRegBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
   try {
-    await db.collection('mentorship_requests').add({
-      requesterEmail: email,
-      hospital: hospital || '',
-      specialty: specialty || '',
-      status: 'pending',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    alert('✓ Mentorship request submitted! You will be notified when a verified trainee responds.');
+    await db.collection('mentors').doc(email).set({
+      email, name, hospital, specialty, programme,
+      yearOfTraining: parseInt(year, 10),
+      whatsapp: whatsapp || '',
+      bio: bio || '',
+      available,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    // Set createdAt only on first write
+    const doc = await db.collection('mentors').doc(email).get();
+    if (!doc.data()?.createdAt) {
+      await db.collection('mentors').doc(email).update({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    }
+    statusEl.textContent = available
+      ? '✓ Registered! Applicants can now find and contact you.'
+      : '✓ Profile saved. Check "available" when you\'re ready to take requests.';
+    statusEl.style.color = 'var(--neon-green, #3ecf8e)';
   } catch (e) {
-    alert('Error submitting request: ' + e.message);
+    statusEl.textContent = '✗ ' + e.message;
+    statusEl.style.color = 'var(--danger, #e05470)';
+  } finally {
+    btn.disabled = false; btn.textContent = '🩺 Register as Mentor';
+  }
+});
+
+// ── Find a Mentor ───────────────────────────────────────────────────
+function closeMentorModal() {
+  document.getElementById('mentorMatchModal').classList.remove('open');
+}
+window.closeMentorModal = closeMentorModal;
+
+document.getElementById('mentorMatchModal')?.addEventListener('click', function (e) {
+  if (e.target === this) closeMentorModal();
+});
+
+document.getElementById('requestMentorBtn')?.addEventListener('click', async () => {
+  const email    = getSessionEmail();
+  if (!email) { alert('Please log in first.'); return; }
+  const hospital  = document.getElementById('pfHospital')?.value?.trim() || '';
+  const specialty = document.getElementById('pfSpecialty')?.value?.trim() || '';
+  if (!hospital && !specialty) {
+    alert('Please set your aspiring hospital or specialty in your profile first — so we can find matching mentors.');
+    return;
+  }
+
+  const btn = document.getElementById('requestMentorBtn');
+  btn.disabled = true; btn.textContent = '🔍 Searching…';
+  try {
+    // Two queries — Firestore doesn't support OR across fields
+    const [byHosp, bySpec] = await Promise.all([
+      hospital  ? db.collection('mentors').where('available', '==', true).where('hospital',  '==', hospital ).get()
+                : Promise.resolve({ docs: [] }),
+      specialty ? db.collection('mentors').where('available', '==', true).where('specialty', '==', specialty).get()
+                : Promise.resolve({ docs: [] }),
+    ]);
+    // Deduplicate
+    const seen = new Set(), mentors = [];
+    for (const doc of [...byHosp.docs, ...bySpec.docs]) {
+      if (!seen.has(doc.id)) { seen.add(doc.id); mentors.push(doc.data()); }
+    }
+
+    // Populate modal
+    const subtitleEl = document.getElementById('mentorModalSubtitle');
+    const listEl     = document.getElementById('mentorMatchList');
+    const submitBtn  = document.getElementById('mentorSubmitBtn');
+    const statusEl   = document.getElementById('mentorSubmitStatus');
+    statusEl.textContent = ''; submitBtn.disabled = false; submitBtn.textContent = '✓ Submit Request';
+
+    if (mentors.length) {
+      subtitleEl.textContent = `${mentors.length} mentor${mentors.length > 1 ? 's' : ''} found matching your hospital / specialty:`;
+      listEl.innerHTML = mentors.map(m => {
+        const tags = [m.programme, m.yearOfTraining ? `Year ${m.yearOfTraining}` : ''].filter(Boolean).join(' · ');
+        const waLink = m.whatsapp
+          ? `<a href="https://wa.me/${m.whatsapp.replace(/[^0-9]/g,'')}" target="_blank" rel="noopener" class="mentor-wa-btn">&#128241; WhatsApp</a>`
+          : '';
+        return `<div class="mentor-result-card">
+          <div class="mentor-result-name">${esc(m.name)}</div>
+          <div class="mentor-result-meta">${esc(m.hospital)} &middot; ${esc(m.specialty)}${tags ? '<br>' + esc(tags) : ''}</div>
+          ${m.bio ? `<div style="font-size:0.77rem;color:var(--text-muted);font-style:italic;">"${esc(m.bio)}"</div>` : ''}
+          ${waLink}
+        </div>`;
+      }).join('');
+    } else {
+      subtitleEl.textContent = 'No mentors are currently available for your hospital / specialty.';
+      listEl.innerHTML = `<div style="text-align:center;padding:1.5rem 1rem;color:var(--text-muted);font-size:0.83rem;">
+        Submit a request below — you'll be notified when a matching mentor registers.
+      </div>`;
+    }
+
+    document.getElementById('mentorMatchModal').classList.add('open');
+
+    // Wire submit button (fresh each time to capture latest data)
+    submitBtn.onclick = async () => {
+      submitBtn.disabled = true; submitBtn.textContent = 'Submitting…';
+      try {
+        await db.collection('mentorship_requests').add({
+          requesterEmail: email,
+          hospital:  hospital  || '',
+          specialty: specialty || '',
+          matchedMentors: mentors.map(m => m.email),
+          status: 'pending',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        statusEl.textContent = '✓ Request submitted! Mentors will be notified.';
+        statusEl.style.color = 'var(--neon-green, #3ecf8e)';
+        submitBtn.textContent = '✓ Submitted';
+      } catch (e) {
+        statusEl.textContent = '✗ ' + e.message;
+        statusEl.style.color = 'var(--danger, #e05470)';
+        submitBtn.disabled = false; submitBtn.textContent = '✓ Submit Request';
+      }
+    };
+  } catch (e) {
+    alert('Error searching mentors: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '💬 Find a Mentor';
   }
 });
 
@@ -2002,5 +2286,22 @@ loadProfile();
 loadMyContributions();
 </script>
 <script src="auth.js"></script>
+
+<!-- ══ Mentor Match Modal ══════════════════════════════════════════ -->
+<div class="mentor-modal-overlay" id="mentorMatchModal">
+  <div class="mentor-modal-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
+      <h3 style="font-size:1rem;color:var(--neon-cyan);margin:0;">🎓 Available Mentors</h3>
+      <button onclick="closeMentorModal()" style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;line-height:1;" aria-label="Close">✕</button>
+    </div>
+    <p id="mentorModalSubtitle" style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;"></p>
+    <div id="mentorMatchList"></div>
+    <div style="margin-top:1rem;border-top:1px solid var(--border);padding-top:1rem;">
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.75rem;">Submit a request to also notify mentors by email/WhatsApp when you're matched.</p>
+      <button id="mentorSubmitBtn" class="mentorship-btn" style="width:100%;">✓ Submit Request</button>
+      <div id="mentorSubmitStatus" style="font-size:0.8rem;text-align:center;margin-top:0.5rem;min-height:1.2em;"></div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

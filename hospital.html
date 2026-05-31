@@ -277,6 +277,75 @@
     .hp-form-status.success { color: var(--neon-green); }
     .hp-form-status.error   { color: var(--danger); }
 
+    /* ── Clickable specialty rows ── */
+    .hp-spec-row { cursor: pointer; }
+    .hp-spec-row:hover td { background: var(--bg-hover); }
+    .hp-spec-row.selected td { background: rgba(77,184,217,0.08); }
+    .hp-spec-row.selected td:first-child { color: var(--neon-cyan); font-weight: 700; }
+    .hp-spec-link {
+      background: none;
+      border: none;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      padding: 0;
+      text-align: left;
+      width: 100%;
+    }
+    .hp-spec-link:hover { color: var(--neon-cyan); text-decoration: underline; }
+
+    /* ── Selected specialty badge in review form ── */
+    .hp-spec-selected {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(77,184,217,0.12);
+      border: 1px solid rgba(77,184,217,0.3);
+      border-radius: var(--radius);
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      color: var(--neon-cyan);
+      margin-bottom: 0.7rem;
+    }
+    .hp-spec-selected button {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 0;
+      line-height: 1;
+    }
+    .hp-spec-selected button:hover { color: var(--danger); }
+
+    /* ── Specialty tag on review cards ── */
+    .hp-review-spec {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--neon-cyan);
+      background: rgba(77,184,217,0.1);
+      border: 1px solid rgba(77,184,217,0.2);
+      border-radius: 100px;
+      padding: 2px 8px;
+      margin-top: 4px;
+    }
+
+    /* ── Reviews filter hint ── */
+    .hp-reviews-filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .hp-reviews-filter-bar a {
+      color: var(--neon-cyan);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
     /* ── Back link ── */
     .hp-back {
       display: inline-flex;
@@ -308,12 +377,12 @@
       <a href="index.html"><img src="logo.svg" class="logo-img" alt="Meritnama" /></a>
     </div>
     <div class="header-meta">
-      <a href="hospitals.html" class="badge badge-info">← All Hospitals</a>
+      <a href="simulation.html?tab=hospitals" class="badge badge-info">← All Hospitals</a>
     </div>
   </div>
 </header>
 
-<a href="hospitals.html" class="hp-back">← Back to Hospital Directory</a>
+<a href="simulation.html?tab=hospitals" class="hp-back">← Back to Hospital Directory</a>
 
 <div class="hp-container" id="hpContent">
   <div class="hp-not-found">
@@ -331,6 +400,7 @@
   let hospitalId = null;
   let hospitalName = '';
   let selectedStars = 0;
+  let selectedSpecialty = null;
 
   function esc(str) {
     if (!str) return '';
@@ -390,7 +460,7 @@
     const typeList = Array.from(types).sort();
 
     renderProfile(hospitalName, totalSeats, sortedSpecs, typeList);
-    loadReviews();
+    loadReviews(null);
   }
 
   function showNotFound() {
@@ -410,7 +480,7 @@
       <!-- Hero -->
       <section class="hp-hero">
         <h2>🏥 ${esc(name)}</h2>
-        <p class="hp-subtitle">Training hospital profile from Induction 21 seat matrix</p>
+        <p class="hp-subtitle">Training hospital profile from Induction Portal seat data</p>
       </section>
 
       <!-- Summary -->
@@ -455,8 +525,8 @@
               </thead>
               <tbody>
                 ${specs.map(([spec, d]) => `
-                  <tr>
-                    <td>${esc(spec)}</td>
+                  <tr class="hp-spec-row" data-spec="${esc(spec)}">
+                    <td><button class="hp-spec-link" data-spec="${esc(spec)}">${esc(spec)}</button></td>
                     <td>${d.fcps || '—'}</td>
                     <td>${d.ms || '—'}</td>
                     <td>${d.md || '—'}</td>
@@ -469,17 +539,28 @@
       </div>
 
       <!-- Reviews -->
-      <div class="hp-section">
+      <div class="hp-section" id="reviewsSection">
         <div class="hp-section-header">
           <span>⭐</span>
-          <h3>Training Reviews</h3>
+          <h3 id="reviewsHeading">Training Reviews</h3>
         </div>
         <div class="hp-section-body">
+          <div class="hp-reviews-filter-bar" id="reviewsFilterBar" style="display:none">
+            <span id="reviewsFilterLabel"></span>
+            <a id="reviewsShowAll">Show all reviews</a>
+          </div>
           <div class="hp-reviews-list" id="reviewsList">
             <div class="hp-review-empty">Loading reviews…</div>
           </div>
           <div class="hp-review-form" id="reviewForm">
             <h4>Share your training experience at this hospital</h4>
+            <div id="revSpecBadge" class="hp-spec-selected" style="display:none">
+              <span>📌 Reviewing specialty: <strong id="revSpecLabel"></strong></span>
+              <button onclick="clearSpecialty()" title="Clear specialty selection">✕</button>
+            </div>
+            <div id="revSpecHint" style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.7rem;">
+              💡 Click a specialty row above to write a specialty-specific review.
+            </div>
             <div class="hp-star-picker" id="starPicker">
               <button data-val="1">★</button>
               <button data-val="2">★</button>
@@ -517,6 +598,13 @@
       });
     });
 
+    // Wire up clickable specialty rows
+    document.querySelectorAll('.hp-spec-row').forEach(row => {
+      row.addEventListener('click', function() {
+        selectSpecialty(this.dataset.spec);
+      });
+    });
+
     // Wire up star picker
     document.querySelectorAll('#starPicker button').forEach(btn => {
       btn.addEventListener('click', function() {
@@ -531,6 +619,46 @@
     // Submit review
     document.getElementById('revSubmit').addEventListener('click', submitReview);
   }
+
+  // ── Specialty selection ──
+  function selectSpecialty(spec) {
+    selectedSpecialty = spec;
+
+    // Highlight selected row
+    document.querySelectorAll('.hp-spec-row').forEach(r => {
+      r.classList.toggle('selected', r.dataset.spec === spec);
+    });
+
+    // Update review form badge
+    document.getElementById('revSpecBadge').style.display = '';
+    document.getElementById('revSpecLabel').textContent = spec;
+    document.getElementById('revSpecHint').style.display = 'none';
+
+    // Update reviews heading and filter bar
+    document.getElementById('reviewsHeading').textContent = '⭐ Reviews — ' + spec;
+    document.getElementById('reviewsFilterBar').style.display = '';
+    document.getElementById('reviewsFilterLabel').textContent = 'Showing reviews for ' + spec;
+
+    // Scroll to reviews
+    document.getElementById('reviewsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Reload reviews for this specialty
+    loadReviews(spec);
+  }
+
+  function clearSpecialty() {
+    selectedSpecialty = null;
+
+    document.querySelectorAll('.hp-spec-row').forEach(r => r.classList.remove('selected'));
+    document.getElementById('revSpecBadge').style.display = 'none';
+    document.getElementById('revSpecHint').style.display = '';
+    document.getElementById('reviewsHeading').textContent = 'Training Reviews';
+    document.getElementById('reviewsFilterBar').style.display = 'none';
+
+    loadReviews(null);
+  }
+  // Expose to global scope so inline onclick handlers can call it
+  window.clearSpecialty = clearSpecialty;
 
   function filterTable(type) {
     const table = document.getElementById('seatTable');
@@ -548,23 +676,36 @@
   }
 
   // ── Reviews (Firestore) ──
-  async function loadReviews() {
+  async function loadReviews(filterSpec) {
     const list = document.getElementById('reviewsList');
+    list.innerHTML = '<div class="hp-review-empty">Loading reviews…</div>';
     try {
-      const snap = await db.collection('hospital_reviews')
+      let query = db.collection('hospital_reviews')
         .where('hospitalId', '==', hospitalId)
         .orderBy('createdAt', 'desc')
-        .limit(30)
-        .get();
+        .limit(30);
+
+      if (filterSpec) {
+        query = db.collection('hospital_reviews')
+          .where('hospitalId', '==', hospitalId)
+          .where('specialty', '==', filterSpec)
+          .orderBy('createdAt', 'desc')
+          .limit(30);
+      }
+
+      const snap = await query.get();
 
       if (snap.empty) {
-        list.innerHTML = '<div class="hp-review-empty">No reviews yet. Be the first to share your experience!</div>';
+        list.innerHTML = filterSpec
+          ? `<div class="hp-review-empty">No reviews yet for <strong>${esc(filterSpec)}</strong>. Be the first!</div>`
+          : '<div class="hp-review-empty">No reviews yet. Be the first to share your experience!</div>';
         return;
       }
 
       list.innerHTML = snap.docs.map(doc => {
         const d = doc.data();
         const date = d.createdAt ? d.createdAt.toDate() : new Date();
+        const specTag = d.specialty ? `<div><span class="hp-review-spec">📌 ${esc(d.specialty)}</span></div>` : '';
         return `
           <div class="hp-review-card">
             <div class="hp-review-top">
@@ -572,11 +713,18 @@
               <span class="hp-review-time">${d.year ? d.year + ' · ' : ''}${relTime(date)}</span>
             </div>
             <div class="hp-review-stars">${starsHtml(d.rating || 0)}</div>
+            ${specTag}
             <div class="hp-review-text">${esc(d.text)}</div>
           </div>`;
       }).join('');
+
+      // Wire "Show all reviews" link
+      const showAll = document.getElementById('reviewsShowAll');
+      if (showAll) showAll.onclick = () => clearSpecialty();
+
     } catch (e) {
       list.innerHTML = '<div class="hp-review-empty">Unable to load reviews.</div>';
+      console.error('loadReviews error:', e);
     }
   }
 
@@ -595,6 +743,7 @@
       await db.collection('hospital_reviews').add({
         hospitalId: hospitalId,
         hospitalName: hospitalName,
+        specialty: selectedSpecialty || null,
         author: document.getElementById('revName').value.trim() || 'Anonymous',
         year: document.getElementById('revYear').value || null,
         rating: selectedStars,
@@ -612,7 +761,7 @@
       document.getElementById('starLabel').textContent = 'Select rating';
 
       // Reload reviews
-      setTimeout(loadReviews, 1000);
+      setTimeout(() => loadReviews(selectedSpecialty), 1000);
     } catch (e) {
       status.className = 'hp-form-status error';
       status.textContent = 'Error submitting review. Please try again.';

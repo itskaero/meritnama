@@ -73,6 +73,15 @@
 /* ─── Reset ─── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
+
+/* ─── Global scrollbar (Webkit + Firefox) ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+::-webkit-scrollbar-corner { background: transparent; }
+* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+
 body {
   font-family: var(--font);
   font-size: 14px;
@@ -256,6 +265,85 @@ p  { color: var(--text-muted); }
 }
 .header-sub { color: rgba(180,210,240,0.5); font-size: 0.75rem; margin: 0; }
 .header-meta { display: flex; align-items: center; gap: 8px; }
+
+/* ─── NOTIFICATION BELL ─── */
+.notif-bell-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  background: rgba(77,184,217,0.06);
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.notif-bell-btn:hover {
+  border-color: rgba(77,184,217,0.4);
+  background: rgba(77,184,217,0.12);
+  color: var(--neon-cyan);
+}
+.notif-bell-btn.subscribed {
+  border-color: rgba(62,207,142,0.35);
+  background: rgba(62,207,142,0.08);
+  color: var(--neon-green);
+}
+.notif-bell-btn.loading { opacity: 0.6; pointer-events: none; }
+
+.bell-icon { flex-shrink: 0; transition: transform 0.3s; }
+.notif-bell-btn:hover .bell-icon { transform: rotate(-12deg); }
+
+.bell-dot {
+  position: absolute;
+  top: 4px; right: 5px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--neon-gold);
+  border: 1.5px solid var(--bg-deep);
+  animation: bellDotPulse 2s ease-in-out infinite;
+}
+@keyframes bellDotPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232,166,39,0.6); }
+  50%       { box-shadow: 0 0 0 4px rgba(232,166,39,0); }
+}
+
+/* ─── LIVE UPDATE BANNER ─── */
+.live-update-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.4;
+  border-bottom: 1px solid transparent;
+  animation: bannerSlideIn 0.3s ease;
+  flex-wrap: wrap;
+}
+@keyframes bannerSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.live-update-banner.lub-info    { background: rgba(77,184,217,0.1);  border-color: rgba(77,184,217,0.22);  color: #b8daea; }
+.live-update-banner.lub-warning { background: rgba(232,166,39,0.1);  border-color: rgba(232,166,39,0.22);  color: #e8d0a0; }
+.live-update-banner.lub-success { background: rgba(62,207,142,0.1);  border-color: rgba(62,207,142,0.22);  color: #a0e8c8; }
+.live-update-banner.lub-danger  { background: rgba(224,84,112,0.1);  border-color: rgba(224,84,112,0.22);  color: #e8a8b8; }
+.lub-icon   { font-size: 1rem; flex-shrink: 0; }
+.lub-text   { flex: 1; min-width: 0; }
+.lub-link   {
+  color: var(--neon-cyan); text-decoration: underline;
+  font-weight: 600; font-size: 0.8rem; white-space: nowrap;
+}
+.lub-close  {
+  background: none; border: none; color: inherit; opacity: 0.6;
+  font-size: 1.1rem; line-height: 1; cursor: pointer; padding: 0 2px;
+  flex-shrink: 0; transition: opacity 0.15s;
+}
+.lub-close:hover { opacity: 1; }
 
 /* ─── BADGES ─── */
 .badge {

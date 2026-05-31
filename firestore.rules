@@ -36,10 +36,33 @@ service cloud.firestore {
     }
 
     // Hospital-specific reviews — publicly readable and creatable, no edits/deletes
+    // Document fields: hospitalId, hospitalName, specialty (nullable), author, year,
+    //                  rating, text, createdAt
+    // Note: Queries filtered by (hospitalId + specialty) require a composite index.
+    //       Create it in Firebase Console → Firestore → Indexes:
+    //         Collection: hospital_reviews  Fields: hospitalId ASC, specialty ASC, createdAt DESC
     match /hospital_reviews/{reviewId} {
       allow read: if true;
       allow create: if true;
       allow update, delete: if false;
+    }
+
+    // Mentorship requests — created by authenticated users, read by admin
+    match /mentorship_requests/{requestId} {
+      allow create: if true;   // gated by PIN-based auth in client app
+      allow read:   if true;   // admin dashboard reads these
+      allow update, delete: if false;
+    }
+
+    // Mentors — verified trainees who register to mentor applicants
+    // Doc ID = mentor email. Read by all (for matching), written by the mentor themselves.
+    // Queries: mentors.where('available','==',true).where('hospital','==',x)
+    //          mentors.where('available','==',true).where('specialty','==',x)
+    // Composite indexes needed: (available ASC, hospital ASC) and (available ASC, specialty ASC)
+    match /mentors/{mentorEmail} {
+      allow read:          if true;   // applicants can query for matching mentors
+      allow create, update: if true;  // mentor registers themselves; gated by PIN-based auth
+      allow delete:        if false;
     }
 
     // Presence tracking — each user writes their own doc, admin reads all
@@ -87,6 +110,21 @@ service cloud.firestore {
     // Deny everything else
     match /{document=**} {
       allow read, write: if false;
+    }
+
+    // Live update notifications — admin writes, everyone reads
+    // Doc ID: 'latest'  Fields: active, type, icon, title, body, link, linkText, id, updatedAt
+    match /notifications/{docId} {
+      allow read: if true;
+      allow create, update, delete: if false;  // written via admin dashboard or Firebase Console
+    }
+
+    // Web push tokens — users write their own token, admin reads all
+    // Doc ID = FCM token  Fields: token, subscribedAt, userAgent
+    match /push_subscriptions/{token} {
+      allow create, update: if true;   // user subscribes from client
+      allow delete:         if true;   // user unsubscribes from client
+      allow read:           if false;  // tokens are private; admin reads via Firebase Console
     }
   }
 }

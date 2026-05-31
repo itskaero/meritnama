@@ -7,3 +7,7 @@ const firebaseConfig = {
   messagingSenderId: "${FIREBASE_MESSAGING_SENDER_ID}",
   appId: "${FIREBASE_APP_ID}"
 };
+
+// Web Push VAPID key — from Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
+// Add FIREBASE_VAPID_KEY to GitHub repository secrets.
+const FIREBASE_VAPID_KEY = "${FIREBASE_VAPID_KEY}";

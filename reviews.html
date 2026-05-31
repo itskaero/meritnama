@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reviews &amp; Discussion — MeritNama</title>
+  <title>Discussion — MeritNama</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="auth.css" />
   <!-- Firebase SDKs -->
@@ -614,7 +614,7 @@
       </a>
     </div>
     <div class="header-meta">
-      <span class="badge badge-info">Reviews &amp; Discussion</span>
+      <span class="badge badge-info">Discussion</span>
       <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation">
         <span></span><span></span><span></span>
       </button>
@@ -631,8 +631,8 @@
   <a href="index.html#policy" class="tab-btn">&#128196; Policy</a>
   <a href="index.html#guide" class="tab-btn">&#10067; Guide</a>
   <a href="simulation.html" class="tab-btn">&#127973; Induction 21</a>
-  <a href="hospitals.html" class="tab-btn">&#127973; Hospitals</a>
-  <a href="reviews.html" class="tab-btn active">&#11088; Reviews</a>
+  <a href="simulation.html?tab=hospitals" class="tab-btn">&#127968; Hospitals</a>
+  <a href="reviews.html" class="tab-btn active">&#128172; Discussion</a>
   <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
 </nav>
 
@@ -648,114 +648,11 @@
 <main class="main-content" style="padding-top:1.5rem;">
 
   <div class="reviews-hero">
-    <h2>&#11088; Training Reviews &amp; Community</h2>
-    <p>Share your residency experience — help future trainees choose wisely. All reviews are community-submitted and reflect personal opinions.</p>
+    <h2>&#128172; Community Discussion</h2>
+    <p>Ask questions, share experiences, and connect with fellow trainees. Hospital reviews are now on each hospital&rsquo;s profile page.</p>
   </div>
 
-  <div class="reviews-layout">
-
-    <!-- ══════════════════════════════════════
-         LEFT COLUMN — TRAINING REVIEWS
-    ══════════════════════════════════════ -->
-    <div style="display:flex;flex-direction:column;gap:1.5rem;">
-
-      <!-- Submit review form -->
-      <div class="rv-panel">
-        <div class="rv-panel-header">
-          <span class="rv-panel-icon">&#128221;</span>
-          <h3>Write a Review</h3>
-        </div>
-        <div class="rv-panel-body">
-          <div class="rv-form-grid" id="reviewForm">
-
-            <div class="rv-field">
-              <label for="rvName">Your Name / Alias</label>
-              <input type="text" id="rvName" placeholder="Dr. Anonymous" maxlength="60" />
-            </div>
-
-            <div class="rv-field">
-              <label for="rvYear">Training Year</label>
-              <select id="rvYear">
-                <option value="">Select year&hellip;</option>
-                <option value="R1">R1 — Year 1</option>
-                <option value="R2">R2 — Year 2</option>
-                <option value="R3">R3 — Year 3</option>
-                <option value="R4">R4 — Year 4</option>
-                <option value="Completed">Completed</option>
-              </select>
-            </div>
-
-            <div class="rv-field">
-              <label for="rvSpecialty">Specialty</label>
-              <input type="text" id="rvSpecialty" list="specialtyList" placeholder="e.g. Cardiology" maxlength="80" autocomplete="off" />
-              <datalist id="specialtyList"></datalist>
-            </div>
-
-            <div class="rv-field">
-              <label for="rvHospital">Hospital</label>
-              <input type="text" id="rvHospital" list="hospitalList" placeholder="e.g. Services Hospital" maxlength="120" autocomplete="off" />
-              <datalist id="hospitalList"></datalist>
-            </div>
-
-            <div class="rv-field rv-field-full">
-              <label>Overall Rating</label>
-              <div class="star-rating-wrap">
-                <div class="star-rating" id="starRating">
-                  <button type="button" data-star="1" title="1 star">&#9733;</button>
-                  <button type="button" data-star="2" title="2 stars">&#9733;</button>
-                  <button type="button" data-star="3" title="3 stars">&#9733;</button>
-                  <button type="button" data-star="4" title="4 stars">&#9733;</button>
-                  <button type="button" data-star="5" title="5 stars">&#9733;</button>
-                </div>
-                <span class="star-rating-label" id="starLabel">No rating</span>
-              </div>
-            </div>
-
-            <div class="rv-field rv-field-full">
-              <label for="rvText">Your Review</label>
-              <textarea id="rvText" placeholder="Share your experience — teaching quality, workload, senior support, facilities, overall training environment…" maxlength="2000"></textarea>
-              <div style="text-align:right;font-size:0.73rem;color:var(--text-muted);margin-top:3px;"><span id="rvCharCount">0</span>/2000</div>
-            </div>
-
-          </div>
-          <button class="rv-submit" id="rvSubmitBtn">Submit Review</button>
-          <div class="rv-status" id="rvStatus"></div>
-        </div>
-      </div>
-
-      <!-- Reviews list -->
-      <div class="rv-panel">
-        <div class="rv-panel-header">
-          <span class="rv-panel-icon">&#128198;</span>
-          <h3>Community Reviews</h3>
-          <span class="rv-panel-count" id="reviewCount">0 reviews</span>
-        </div>
-        <div class="rv-panel-body">
-          <div class="rv-filters">
-            <select id="filterYear">
-              <option value="">All Years</option>
-              <option value="R1">R1</option>
-              <option value="R2">R2</option>
-              <option value="R3">R3</option>
-              <option value="R4">R4</option>
-              <option value="Completed">Completed</option>
-            </select>
-            <input type="text" id="filterSpec" placeholder="Filter specialty&hellip;" />
-            <input type="text" id="filterHosp" placeholder="Filter hospital&hellip;" />
-          </div>
-          <div id="reviewsList" class="rv-list">
-            <div class="rv-loading">Loading reviews&hellip;</div>
-          </div>
-          <button class="rv-load-more" id="rvLoadMore" style="display:none;">Load more reviews</button>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ══════════════════════════════════════
-         RIGHT COLUMN — THREADED FORUM
-    ══════════════════════════════════════ -->
-    <div style="display:flex;flex-direction:column;gap:1.5rem;">
+  <div style="max-width:800px;margin:0 auto;padding:0 1rem 4rem;display:flex;flex-direction:column;gap:1.5rem;">
 
       <div class="rv-panel" id="forumPanel">
 
@@ -899,9 +796,7 @@
         </div><!-- /forumBody -->
       </div><!-- /forumPanel -->
 
-    </div>
-
-  </div><!-- /reviews-layout -->
+  </div>
 </main>
 
 <script src="reviews.js"></script>

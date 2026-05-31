@@ -33,6 +33,7 @@ jobs:
           FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
           FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_VAPID_KEY: ${{ secrets.FIREBASE_VAPID_KEY }}
         run: |
           : "${FIREBASE_API_KEY:?secret FIREBASE_API_KEY is not set}"
           : "${FIREBASE_AUTH_DOMAIN:?secret FIREBASE_AUTH_DOMAIN is not set}"
@@ -40,9 +41,13 @@ jobs:
           : "${FIREBASE_STORAGE_BUCKET:?secret FIREBASE_STORAGE_BUCKET is not set}"
           : "${FIREBASE_MESSAGING_SENDER_ID:?secret FIREBASE_MESSAGING_SENDER_ID is not set}"
           : "${FIREBASE_APP_ID:?secret FIREBASE_APP_ID is not set}"
-          envsubst '$FIREBASE_API_KEY $FIREBASE_AUTH_DOMAIN $FIREBASE_PROJECT_ID $FIREBASE_STORAGE_BUCKET $FIREBASE_MESSAGING_SENDER_ID $FIREBASE_APP_ID' \
+          : "${FIREBASE_VAPID_KEY:?secret FIREBASE_VAPID_KEY is not set}"
+          envsubst '$FIREBASE_API_KEY $FIREBASE_AUTH_DOMAIN $FIREBASE_PROJECT_ID $FIREBASE_STORAGE_BUCKET $FIREBASE_MESSAGING_SENDER_ID $FIREBASE_APP_ID $FIREBASE_VAPID_KEY' \
             < firebase-config.template.js > firebase-config.js
           echo "firebase-config.js created successfully."
+          envsubst '$FIREBASE_API_KEY $FIREBASE_AUTH_DOMAIN $FIREBASE_PROJECT_ID $FIREBASE_STORAGE_BUCKET $FIREBASE_MESSAGING_SENDER_ID $FIREBASE_APP_ID' \
+            < firebase-messaging-sw.template.js > firebase-messaging-sw.js
+          echo "firebase-messaging-sw.js created successfully."
 
       - name: Create emailjs-config.js from secrets
         env:
@@ -57,6 +62,27 @@ jobs:
             < emailjs-config.template.js > emailjs-config.js
           echo "emailjs-config.js created successfully."
 
+      - name: Stamp candidate data info into simulation.html
+        run: |
+          JSON_FILE="data/induction21_candidates.json"
+          if [ -f "$JSON_FILE" ]; then
+            # Count top-level array entries
+            CANDIDATE_COUNT=$(python3 -c "import json,sys; d=json.load(open('$JSON_FILE')); print(f'{len(d):,}')")
+            # Use the file's last-modified time in Git (commit date), formatted as YYYY-MM-DD HH:MM
+            CANDIDATE_UPDATED=$(git log -1 --format="%ci" -- "$JSON_FILE" | cut -c1-16 | tr 'T' ' ')
+            # Fallback: use current UTC time if file has no git history yet
+            if [ -z "$CANDIDATE_UPDATED" ]; then
+              CANDIDATE_UPDATED=$(date -u '+%Y-%m-%d %H:%M')
+            fi
+          else
+            CANDIDATE_COUNT="0"
+            CANDIDATE_UPDATED=$(date -u '+%Y-%m-%d %H:%M')
+          fi
+          export CANDIDATE_COUNT CANDIDATE_UPDATED
+          echo "Candidate count: $CANDIDATE_COUNT  Updated: $CANDIDATE_UPDATED"
+          envsubst '$CANDIDATE_COUNT $CANDIDATE_UPDATED' < simulation.html > simulation.html.tmp
+          mv simulation.html.tmp simulation.html
+
       - name: Prepare site directory
         run: |
           mkdir _site
@@ -70,6 +96,7 @@ jobs:
             --exclude='*.md' \
             --exclude='firebase-config.template.js' \
             --exclude='emailjs-config.template.js' \
+            --exclude='firebase-messaging-sw.template.js' \
             --exclude='firestore.rules' \
             . _site/
 

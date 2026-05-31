@@ -521,6 +521,8 @@
       <button class="tab-btn active" data-tab="logs">Access Logs</button>
       <button class="tab-btn" data-tab="users">Authorized Users</button>
       <button class="tab-btn" data-tab="contributions">Contributions</button>
+      <button class="tab-btn" data-tab="mentorship">&#127891; Mentorship</button>
+      <button class="tab-btn" data-tab="broadcast">&#128276; Broadcast</button>
     </nav>
 
     <!-- ── Tab: Access Logs ────────────────────────── -->
@@ -604,6 +606,99 @@
           </tbody>
         </table>
       </div>
+    </div>
+
+    <!-- ── Tab: Mentorship ─────────────────────────── -->
+    <div id="tab-mentorship" style="display:none;">
+      <h3 style="font-size:0.9rem;color:var(--accent);margin:0 0 1rem;">Registered Mentors</h3>
+      <div class="controls">
+        <button id="refreshMentorsBtn">&#x21BB; Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th>Name</th><th>Email</th><th>Hospital</th><th>Specialty</th>
+              <th>Programme</th><th>Year</th><th>WhatsApp</th><th>Available</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="mentorsBody">
+            <tr><td colspan="9" class="empty-state">Loading&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="font-size:0.9rem;color:var(--accent);margin:1.5rem 0 1rem;">Mentorship Requests</h3>
+      <div class="controls">
+        <button id="refreshMReqBtn">&#x21BB; Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th>Requester</th><th>Hospital</th><th>Specialty</th>
+              <th>Matched Mentors</th><th>Status</th><th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="mreqBody">
+            <tr><td colspan="6" class="empty-state">Loading&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ BROADCAST NOTIFICATIONS TAB ══ -->
+    <div id="tab-broadcast" style="display:none;">
+      <h3 style="font-size:0.9rem;color:var(--accent);margin:0 0 0.5rem;">&#128226; Live In-App Banner</h3>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;">
+        Writes to <code>notifications/latest</code>. All users on the site see the banner immediately via Firestore onSnapshot.
+      </p>
+
+      <div class="modal-field" style="max-width:520px;">
+        <label>Title <span style="text-transform:none;font-weight:400;">(short, e.g. "Data Updated")</span></label>
+        <input type="text" id="bcTitle" placeholder="e.g. Induction 21 results updated" />
+      </div>
+      <div class="modal-field" style="max-width:520px;">
+        <label>Body <span style="text-transform:none;font-weight:400;">(message text)</span></label>
+        <textarea id="bcBody" rows="2" style="width:100%;resize:vertical;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;" placeholder="New merit data is now available. Refresh to see the latest merit lists."></textarea>
+      </div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;max-width:520px;">
+        <div class="modal-field" style="flex:1;min-width:140px;">
+          <label>Type</label>
+          <select id="bcType" style="width:100%;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;">
+            <option value="info">&#8505; Info</option>
+            <option value="success">&#9989; Success</option>
+            <option value="warning">&#9888; Warning</option>
+            <option value="danger">&#128680; Danger</option>
+          </select>
+        </div>
+        <div class="modal-field" style="flex:1;min-width:80px;">
+          <label>Icon <span style="font-weight:400;">(emoji)</span></label>
+          <input type="text" id="bcIcon" placeholder="&#128276;" style="width:100%;" />
+        </div>
+      </div>
+      <div class="modal-field" style="max-width:520px;">
+        <label>Link URL <span style="text-transform:none;font-weight:400;">(optional)</span></label>
+        <input type="url" id="bcLink" placeholder="https://..." />
+      </div>
+      <div class="modal-field" style="max-width:520px;">
+        <label>Link Text <span style="text-transform:none;font-weight:400;">(optional)</span></label>
+        <input type="text" id="bcLinkText" placeholder="View details" />
+      </div>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.5rem;">
+        <button id="bcSendBtn" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">&#128276; Send Live Banner</button>
+        <button id="bcClearBtn" style="padding:8px 16px;background:rgba(224,84,112,0.15);color:var(--neon-pink);border:1px solid rgba(224,84,112,0.3);border-radius:8px;cursor:pointer;font-weight:600;">&#10005; Clear Banner</button>
+      </div>
+      <div id="bcStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+
+      <h3 style="font-size:0.9rem;color:var(--accent);margin:0 0 0.5rem;">&#128241; Web Push Subscribers</h3>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;">
+        Users who clicked "Alerts" → allowed browser notifications. Their FCM tokens are stored in <code>push_subscriptions</code>.
+        To send a push to closed browsers, use <a href="https://console.firebase.google.com" target="_blank" rel="noopener" style="color:var(--neon-cyan);">Firebase Console → Cloud Messaging</a>.
+      </p>
+      <div style="font-size:0.9rem;">Subscriber count: <strong id="bcSubCount" style="color:var(--neon-cyan);">loading…</strong></div>
     </div>
 
   </div>
@@ -1109,14 +1204,79 @@ async function confirmRemoveUser(email) {
 }
 
 function switchTab(tab) {
-  document.getElementById('tab-logs').style.display  = tab === 'logs'  ? '' : 'none';
-  document.getElementById('tab-users').style.display = tab === 'users' ? '' : 'none';
+  document.getElementById('tab-logs').style.display          = tab === 'logs'          ? '' : 'none';
+  document.getElementById('tab-users').style.display         = tab === 'users'         ? '' : 'none';
   document.getElementById('tab-contributions').style.display = tab === 'contributions' ? '' : 'none';
+  document.getElementById('tab-mentorship').style.display    = tab === 'mentorship'    ? '' : 'none';
+  document.getElementById('tab-broadcast').style.display     = tab === 'broadcast'     ? '' : 'none';
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tab);
   });
-  if (tab === 'users') loadUsers();
+  if (tab === 'users')         loadUsers();
   if (tab === 'contributions') loadContributions();
+  if (tab === 'mentorship')    loadMentorship();
+  if (tab === 'broadcast')     loadBroadcast();
+}
+
+// ── BROADCAST NOTIFICATIONS ──────────────────────────────────────────────────
+function loadBroadcast() {
+  loadSubCount();
+  document.getElementById('bcSendBtn').onclick = sendLiveUpdate;
+  document.getElementById('bcClearBtn').onclick = clearLiveBanner;
+}
+
+async function loadSubCount() {
+  const el = document.getElementById('bcSubCount');
+  if (!el) return;
+  try {
+    const snap = await db.collection('push_subscriptions').get();
+    el.textContent = snap.size + (snap.size === 1 ? ' user' : ' users');
+  } catch (e) {
+    el.textContent = 'n/a';
+  }
+}
+
+async function sendLiveUpdate() {
+  const status = document.getElementById('bcStatus');
+  const title  = document.getElementById('bcTitle').value.trim();
+  const body   = document.getElementById('bcBody').value.trim();
+  const type   = document.getElementById('bcType').value;
+  const icon   = document.getElementById('bcIcon').value.trim() || '🔔';
+  const link   = document.getElementById('bcLink').value.trim();
+  const ltext  = document.getElementById('bcLinkText').value.trim();
+  if (!body) { status.textContent = 'Body is required.'; status.style.color = 'var(--neon-pink)'; return; }
+  status.textContent = 'Sending…'; status.style.color = 'var(--text-muted)';
+  try {
+    const payload = {
+      active: true,
+      type, icon,
+      id: Date.now().toString(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+    if (title)  payload.title    = title;
+    if (body)   payload.body     = body;
+    if (link)   payload.link     = link;
+    if (ltext)  payload.linkText = ltext;
+    await db.collection('notifications').doc('latest').set(payload);
+    status.textContent = '✓ Banner sent! Users will see it instantly.';
+    status.style.color = 'var(--neon-green)';
+  } catch (e) {
+    status.textContent = 'Error: ' + e.message;
+    status.style.color = 'var(--neon-pink)';
+  }
+}
+
+async function clearLiveBanner() {
+  const status = document.getElementById('bcStatus');
+  status.textContent = 'Clearing…'; status.style.color = 'var(--text-muted)';
+  try {
+    await db.collection('notifications').doc('latest').set({ active: false });
+    status.textContent = '✓ Banner cleared.';
+    status.style.color = 'var(--neon-green)';
+  } catch (e) {
+    status.textContent = 'Error: ' + e.message;
+    status.style.color = 'var(--neon-pink)';
+  }
 }
 
 // --- UI Binding ---
@@ -1334,6 +1494,105 @@ document.getElementById('contribPKR').addEventListener('input', function() {
     document.getElementById('contribUSD').placeholder = `≈ $${(pkr / rate).toFixed(2)}`;
   }
 });
+
+document.getElementById('refreshMentorsBtn')?.addEventListener('click', loadMentors);
+document.getElementById('refreshMReqBtn')?.addEventListener('click', loadMentorRequests);
+
+// --- Mentorship ---
+async function loadMentorship() {
+  await Promise.all([loadMentors(), loadMentorRequests()]);
+}
+
+let allMentors = [];
+async function loadMentors() {
+  const tbody = document.getElementById('mentorsBody');
+  tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Loading\u2026</td></tr>';
+  try {
+    const snap = await db.collection('mentors').orderBy('name').get();
+    allMentors = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderMentors();
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Error: ${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function renderMentors() {
+  const tbody = document.getElementById('mentorsBody');
+  if (!allMentors.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No mentors registered yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = allMentors.map(m => {
+    const wa = m.whatsapp
+      ? `<a href="https://wa.me/${m.whatsapp.replace(/[^0-9]/g,'')}" target="_blank" rel="noopener" style="color:var(--success);">${escapeHtml(m.whatsapp)}</a>`
+      : '<span style="color:var(--muted);">—</span>';
+    const avail = m.available
+      ? '<span style="color:var(--success);font-weight:700;">Yes</span>'
+      : '<span style="color:var(--muted);">No</span>';
+    return `<tr>
+      <td>${escapeHtml(m.name || '—')}</td>
+      <td>${escapeHtml(m.email || m.id || '—')}</td>
+      <td>${escapeHtml(m.hospital || '—')}</td>
+      <td>${escapeHtml(m.specialty || '—')}</td>
+      <td>${escapeHtml(m.programme || '—')}</td>
+      <td>${m.yearOfTraining || '—'}</td>
+      <td>${wa}</td>
+      <td>${avail}</td>
+      <td><button onclick="toggleMentorAvailability('${escapeHtml(m.id)}')" style="font-size:0.75rem;padding:0.25rem 0.6rem;border:1px solid var(--border-hv);border-radius:6px;background:none;color:var(--accent);cursor:pointer;">${m.available ? 'Deactivate' : 'Activate'}</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function toggleMentorAvailability(id) {
+  const mentor = allMentors.find(m => m.id === id);
+  if (!mentor) return;
+  try {
+    await db.collection('mentors').doc(id).update({ available: !mentor.available });
+    mentor.available = !mentor.available;
+    renderMentors();
+  } catch (err) {
+    alert('Failed to update: ' + err.message);
+  }
+}
+
+let allMentorReqs = [];
+async function loadMentorRequests() {
+  const tbody = document.getElementById('mreqBody');
+  tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading\u2026</td></tr>';
+  try {
+    const snap = await db.collection('mentorship_requests').orderBy('createdAt', 'desc').limit(100).get();
+    allMentorReqs = snap.docs.map(d => ({
+      id: d.id, ...d.data(),
+      createdAt: d.data().createdAt ? d.data().createdAt.toDate() : null,
+    }));
+    renderMentorRequests();
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Error: ${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function renderMentorRequests() {
+  const tbody = document.getElementById('mreqBody');
+  if (!allMentorReqs.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No requests yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = allMentorReqs.map(r => {
+    const matched = Array.isArray(r.matchedMentors) && r.matchedMentors.length
+      ? r.matchedMentors.map(e => escapeHtml(e)).join(', ')
+      : '<span style="color:var(--muted);">none</span>';
+    const statusColor = r.status === 'pending' ? 'var(--accent)' : 'var(--success)';
+    const dateStr = r.createdAt ? r.createdAt.toLocaleDateString('en-PK', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+    return `<tr>
+      <td>${escapeHtml(r.requesterEmail || '—')}</td>
+      <td>${escapeHtml(r.hospital || '—')}</td>
+      <td>${escapeHtml(r.specialty || '—')}</td>
+      <td style="font-size:0.78rem;">${matched}</td>
+      <td><span style="color:${statusColor};font-weight:600;">${escapeHtml(r.status || 'pending')}</span></td>
+      <td style="font-size:0.8rem;">${dateStr}</td>
+    </tr>`;
+  }).join('');
+}
 
 // Auto-login if session valid
 if (getAdminSession()) {

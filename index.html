@@ -11,6 +11,7 @@
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script>firebase.initializeApp(firebaseConfig);</script>
 </head>
@@ -28,6 +29,14 @@
     </div>
     <div class="header-meta" id="headerMeta">
       <span class="badge badge-info" id="dataStatus">Loading data&hellip;</span>
+      <button class="notif-bell-btn" id="notifBellBtn" title="Subscribe to data updates" aria-label="Subscribe to data updates">
+        <svg class="bell-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="17" height="17">
+          <path d="M18 8A6 6 0 1 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="bell-label" id="bellLabel">Alerts</span>
+        <span class="bell-dot" id="bellDot" style="display:none;"></span>
+      </button>
       <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation">
         <span></span><span></span><span></span>
       </button>
@@ -43,17 +52,20 @@
   <button class="tab-btn" data-tab="current">&#128203; Current Merit</button>
   <button class="tab-btn" data-tab="policy">&#128196; Policy</button>
   <button class="tab-btn" data-tab="reverse">&#128269; What Do I Need?</button>
-  <button class="tab-btn" data-tab="competition">&#128200; Competition</button>
-  <button class="tab-btn" data-tab="seatmatrix">&#128203; Seat Matrix</button>
   <button class="tab-btn" data-tab="compare">&#9878; Compare</button>
   <button class="tab-btn" data-tab="guide">&#10067; Guide</button>
-  <a href="simulation.html" class="tab-btn">&#127973; Induction 21</a>
-  <a href="hospitals.html" class="tab-btn">&#127973; Hospitals</a>
-  <a href="reviews.html" class="tab-btn">&#11088; Reviews</a>
+  <a href="simulation.html" class="tab-btn">&#127973; Induction Portal</a>
+  <a href="reviews.html" class="tab-btn">&#128172; Discussion</a>
   <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
 </nav>
 
-<!-- ======= AUTHOR BAR ======= -->
+<!-- ======= LIVE UPDATE BANNER ======= -->
+<div id="liveUpdateBanner" class="live-update-banner" style="display:none;" role="alert" aria-live="polite">
+  <span class="lub-icon" id="lubIcon">&#128276;</span>
+  <span class="lub-text" id="lubText"></span>
+  <a class="lub-link" id="lubLink" href="#" style="display:none;"></a>
+  <button class="lub-close" id="lubClose" aria-label="Dismiss">&times;</button>
+</div>
 <div class="author-bar">
   Independent, community-built tool by
   <a href="https://github.com/itskaero" target="_blank" rel="noopener">@itskaero</a>
@@ -823,6 +835,26 @@
     </div>
 
   </section><!-- /tab-guide -->
+
+  <!-- ============================================================
+       TAB : HOSPITALS
+  ============================================================ -->
+  <section class="tab-content" id="tab-hospitals">
+    <div class="section-header">
+      <h2>&#127968; Hospital Directory</h2>
+      <p>Browse all training hospitals from the Induction Portal seat data. Click a hospital to view its full profile, seat breakdown, and reviews.</p>
+    </div>
+
+    <div style="max-width:600px;margin:0 auto 1.5rem;padding:0 1rem;">
+      <input type="text" id="hospTabSearch" placeholder="Search hospitals by name&hellip;"
+        style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);padding:0.7rem 1rem;color:var(--text);font-family:var(--font);font-size:0.92rem;outline:none;transition:border-color 0.2s;"
+        onfocus="this.style.borderColor='var(--border-active)'" onblur="this.style.borderColor='var(--border)'" />
+    </div>
+
+    <div id="hospTabGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;max-width:1200px;margin:0 auto;padding:0 1rem 4rem;">
+      <div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:var(--text-muted);">Loading hospitals&hellip;</div>
+    </div>
+  </section><!-- /tab-hospitals -->
 
 </main>
 

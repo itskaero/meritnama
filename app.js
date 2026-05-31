@@ -321,6 +321,7 @@ function onTabActivated(tab) {
   if (tab === 'policy')      renderPolicyTab();
   if (tab === 'competition') renderCompetitionTab();
   if (tab === 'seatmatrix')  renderSeatMatrixTab();
+  if (tab === 'hospitals')   renderHospitalsTab();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1884,6 +1885,75 @@ function populateAllFilters() {
   populateSelect(document.getElementById('predQuota'),   quotas);
 }
 
+// ═══════════════════════════════════════════════════════
+// HOSPITALS TAB
+// ═══════════════════════════════════════════════════════
+
+let _hospTabData = null;
+let _hospTabSearchWired = false;
+
+async function renderHospitalsTab() {
+  const grid = document.getElementById('hospTabGrid');
+  if (!grid) return;
+
+  // Lazy-load (reuse _seatData if already fetched by seat matrix tab)
+  if (!_hospTabData) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:var(--text-muted);">Loading hospitals&hellip;</div>';
+    const seats = await loadSeatData();
+    if (!seats) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:var(--text-muted);">Hospital data unavailable.</div>';
+      return;
+    }
+    const map = {};
+    for (const entry of seats) {
+      const id = entry.hospitalId || entry.hospital_id || entry.hospitalName;
+      if (!map[id]) {
+        map[id] = { id, name: entry.hospitalName, specialties: new Set(), types: new Set(), totalSeats: 0 };
+      }
+      map[id].specialties.add(entry.specialityName || entry.specialty);
+      map[id].types.add(entry.typeName || entry.type);
+      map[id].totalSeats += (entry.seats || 0);
+    }
+    _hospTabData = Object.values(map).sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  // Wire search once
+  if (!_hospTabSearchWired) {
+    const inp = document.getElementById('hospTabSearch');
+    if (inp) {
+      inp.addEventListener('input', function () {
+        const q = this.value.trim().toLowerCase();
+        renderHospTabGrid(q ? _hospTabData.filter(h => h.name.toLowerCase().includes(q)) : _hospTabData);
+      });
+    }
+    _hospTabSearchWired = true;
+  }
+
+  renderHospTabGrid(_hospTabData);
+}
+
+function renderHospTabGrid(hospitals) {
+  const grid = document.getElementById('hospTabGrid');
+  if (!grid) return;
+  if (!hospitals.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:var(--text-muted);">No hospitals found.</div>';
+    return;
+  }
+  grid.innerHTML = hospitals.map(h => {
+    const specs = Array.from(h.specialties).sort().join(', ');
+    const types = Array.from(h.types).sort().join(', ');
+    return `<a href="hospital.html?id=${encodeURIComponent(h.id)}" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.2rem 1.4rem;text-decoration:none;color:var(--text);display:flex;flex-direction:column;gap:0.6rem;transition:border-color 0.2s,transform 0.15s,box-shadow 0.2s;" onmouseover="this.style.borderColor='var(--border-hover)';this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border)';this.style.transform='';">
+      <div style="font-size:1rem;font-weight:700;color:var(--neon-cyan);line-height:1.3;">${esc(h.name)}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:0.5rem;font-size:0.78rem;">
+        <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:100px;border:1px solid rgba(62,207,142,0.3);background:rgba(62,207,142,0.07);color:var(--neon-green);">&#129681; ${h.totalSeats} seats</span>
+        <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:100px;border:1px solid rgba(124,101,196,0.3);background:rgba(124,101,196,0.07);color:var(--neon-purple);">&#129657; ${h.specialties.size} specialties</span>
+        <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:100px;border:1px solid rgba(232,166,39,0.3);background:rgba(232,166,39,0.07);color:var(--neon-gold);">&#128220; ${esc(types)}</span>
+      </div>
+      <div style="font-size:0.77rem;color:var(--text-muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${esc(specs)}</div>
+    </a>`;
+  }).join('');
+}
+
 function onDataReady() {
   computeMeritPercentOfMax();
   computeYearlyPercentiles();
@@ -1904,6 +1974,153 @@ function onDataReady() {
   updateFooterStats();
   handleURLParams();
   renderMeritTable();
+  initNotifications();
+}
+
+// ═══════════════════════════════════════════════════════
+// NOTIFICATIONS — live banner (Option A) + web push (Option B)
+// ═══════════════════════════════════════════════════════
+
+const NOTIF_KEY = 'mn_push_subscribed';
+
+function initNotifications() {
+  // ── Option A: live in-app banner via Firestore onSnapshot ──
+  try {
+    const db = firebase.firestore();
+    db.collection('notifications').doc('latest').onSnapshot(snap => {
+      if (!snap.exists) { hideLiveBanner(); return; }
+      const n = snap.data();
+      if (!n || !n.active) { hideLiveBanner(); return; }
+      showLiveBanner(n);
+    });
+  } catch (e) { /* Firestore not available */ }
+
+  // ── Option B: web push subscription button ──
+  const btn = document.getElementById('notifBellBtn');
+  if (!btn) return;
+
+  const supported = ('serviceWorker' in navigator) && ('Notification' in window) && !!window.FIREBASE_VAPID_KEY;
+  if (!supported) {
+    btn.style.display = 'none';
+    return;
+  }
+
+  updateBellUI();
+
+  btn.addEventListener('click', async () => {
+    if (btn.classList.contains('subscribed')) {
+      await unsubscribePush();
+    } else {
+      await subscribePush();
+    }
+  });
+}
+
+function updateBellUI() {
+  const btn   = document.getElementById('notifBellBtn');
+  const label = document.getElementById('bellLabel');
+  const dot   = document.getElementById('bellDot');
+  if (!btn) return;
+  const subbed = localStorage.getItem(NOTIF_KEY) === '1';
+  btn.classList.toggle('subscribed', subbed);
+  if (label) label.textContent = subbed ? 'Subscribed' : 'Alerts';
+  if (dot)   dot.style.display = subbed ? 'none' : '';
+  btn.title = subbed ? 'Unsubscribe from data update alerts' : 'Subscribe to data update alerts';
+}
+
+async function subscribePush() {
+  const btn = document.getElementById('notifBellBtn');
+  btn.classList.add('loading');
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      alert('Please allow notifications in your browser to subscribe to data updates.');
+      return;
+    }
+
+    const swReg = await navigator.serviceWorker.register('./firebase-messaging-sw.js', { scope: './' });
+    const messaging = firebase.messaging();
+    const token = await messaging.getToken({ vapidKey: window.FIREBASE_VAPID_KEY, serviceWorkerRegistration: swReg });
+
+    if (token) {
+      const db = firebase.firestore();
+      await db.collection('push_subscriptions').doc(token).set({
+        token,
+        subscribedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        userAgent: navigator.userAgent.substring(0, 200),
+      }, { merge: true });
+
+      localStorage.setItem(NOTIF_KEY, '1');
+      updateBellUI();
+    }
+  } catch (e) {
+    console.error('Push subscribe error:', e);
+    alert('Could not enable notifications: ' + e.message);
+  } finally {
+    btn.classList.remove('loading');
+  }
+}
+
+async function unsubscribePush() {
+  const btn = document.getElementById('notifBellBtn');
+  btn.classList.add('loading');
+  try {
+    const messaging = firebase.messaging();
+    const token = await messaging.getToken({ vapidKey: window.FIREBASE_VAPID_KEY }).catch(() => null);
+    if (token) {
+      await messaging.deleteToken();
+      const db = firebase.firestore();
+      await db.collection('push_subscriptions').doc(token).delete().catch(() => {});
+    }
+    localStorage.removeItem(NOTIF_KEY);
+    updateBellUI();
+  } catch (e) {
+    localStorage.removeItem(NOTIF_KEY);
+    updateBellUI();
+  } finally {
+    btn.classList.remove('loading');
+  }
+}
+
+// ── Live banner display ──────────────────────────────────
+function showLiveBanner(n) {
+  const banner = document.getElementById('liveUpdateBanner');
+  const text   = document.getElementById('lubText');
+  const icon   = document.getElementById('lubIcon');
+  const link   = document.getElementById('lubLink');
+  const close  = document.getElementById('lubClose');
+  if (!banner) return;
+
+  // Dismiss key — don't re-show if already dismissed this version
+  const dismissKey = 'mn_notif_dismissed_' + (n.id || n.updatedAt?.seconds || '0');
+  if (sessionStorage.getItem(dismissKey)) return;
+
+  const typeMap = { warning: 'lub-warning', info: 'lub-info', success: 'lub-success', danger: 'lub-danger' };
+  banner.className = 'live-update-banner ' + (typeMap[n.type] || 'lub-info');
+  if (icon) icon.textContent = n.icon || '🔔';
+  if (text) text.textContent = (n.title ? n.title + ' — ' : '') + (n.body || '');
+
+  if (link && n.link) {
+    link.href = n.link;
+    link.textContent = n.linkText || 'View';
+    link.style.display = '';
+  } else if (link) {
+    link.style.display = 'none';
+  }
+
+  banner.style.display = 'flex';
+
+  if (close) {
+    close.onclick = () => {
+      banner.style.display = 'none';
+      sessionStorage.setItem(dismissKey, '1');
+    };
+  }
+}
+
+function hideLiveBanner() {
+  const banner = document.getElementById('liveUpdateBanner');
+  if (banner) banner.style.display = 'none';
 }
 
 document.addEventListener('DOMContentLoaded', loadAllData);

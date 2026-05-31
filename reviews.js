@@ -285,9 +285,10 @@
   }
 
   function renderReviews() {
-    const yearFilter = document.getElementById('filterYear').value;
-    const specFilter = document.getElementById('filterSpec').value.toLowerCase().trim();
-    const hospFilter = document.getElementById('filterHosp').value.toLowerCase().trim();
+    if (!document.getElementById('reviewsList')) return;
+    const yearFilter = (document.getElementById('filterYear') || {}).value || '';
+    const specFilter = ((document.getElementById('filterSpec') || {}).value || '').toLowerCase().trim();
+    const hospFilter = ((document.getElementById('filterHosp') || {}).value || '').toLowerCase().trim();
 
     let filtered = allReviews;
     if (yearFilter) filtered = filtered.filter(r => r.year === yearFilter);
@@ -306,6 +307,7 @@
   }
 
   async function loadReviews(reset) {
+    if (!document.getElementById('reviewsList')) return;
     if (reset) {
       allReviews   = [];
       reviewCursor = null;
