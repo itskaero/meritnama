@@ -1611,11 +1611,13 @@ async function renderCompetitionTab() {
   const totalApplicants = filtered.reduce((s, r) => s + r.applicants, 0);
   const totalSeats = filtered.reduce((s, r) => s + r.totalSeats, 0);
   const avgRatio = totalSeats > 0 ? (totalApplicants / totalSeats).toFixed(1) : '—';
-  const maxRatio = Math.max(...filtered.filter(r => r.ratio !== Infinity).map(r => r.ratio));
+  const finiteRatios = filtered.filter(r => r.ratio !== Infinity && isFinite(r.ratio)).map(r => r.ratio);
+  const maxRatio = finiteRatios.length > 0 ? Math.max(...finiteRatios) : 1;
 
   const rows = filtered.slice(0, 100).map(r => {
     const ratioStr = r.ratio === Infinity ? '∞' : r.ratio.toFixed(1);
-    const barWidth = maxRatio > 0 ? Math.min(100, (r.ratio / maxRatio) * 100) : 0;
+    const displayRatio = r.ratio === Infinity ? maxRatio : r.ratio;
+    const barWidth = maxRatio > 0 ? Math.min(100, (displayRatio / maxRatio) * 100) : 0;
     const heatColor = r.ratio > 10 ? 'var(--neon-red, #dc3c3c)' : r.ratio > 5 ? 'var(--neon-gold, #e8a627)' : 'var(--neon-green, #3ecf8e)';
     return `<tr>
       <td>${esc(r.specialty)}</td>
