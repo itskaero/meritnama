@@ -438,77 +438,6 @@
     </div>
   </section>
 
-  <!-- ============================================================
-       TAB: COMPETITION RATIO / DEMAND INDEX
-  ============================================================ -->
-  <section class="tab-content" id="tab-competition">
-    <div class="section-header">
-      <h2>&#128200; Competition &amp; Demand Index</h2>
-      <p>See how many candidates applied per seat for each specialty in the current induction. Higher ratios mean tougher competition.</p>
-    </div>
-
-    <div class="card filter-card">
-      <div class="input-grid">
-        <div class="form-group">
-          <label for="compProgram">Program</label>
-          <select id="compProgram"><option value="">All Programs</option></select>
-        </div>
-        <div class="form-group">
-          <label for="compQuota">Quota</label>
-          <select id="compQuota"><option value="">All Quotas</option></select>
-        </div>
-        <div class="form-group">
-          <label for="compSearch">Search</label>
-          <input type="text" id="compSearch" placeholder="Specialty or hospital&hellip;" />
-        </div>
-        <div class="form-group">
-          <label for="compSort">Sort By</label>
-          <select id="compSort">
-            <option value="ratio-desc">Highest Competition</option>
-            <option value="ratio-asc">Lowest Competition</option>
-            <option value="specialty">Specialty A-Z</option>
-            <option value="applicants-desc">Most Applicants</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <div id="compResults">
-      <p style="text-align:center;color:var(--text-muted);padding:40px;">Loading competition data&hellip;</p>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       TAB: SEAT MATRIX DASHBOARD
-  ============================================================ -->
-  <section class="tab-content" id="tab-seatmatrix">
-    <div class="section-header">
-      <h2>&#128203; Seat Matrix</h2>
-      <p>Visual overview of all available seats across programs, quotas, and specialties for the current induction.</p>
-    </div>
-
-    <div class="card filter-card">
-      <div class="input-grid">
-        <div class="form-group">
-          <label for="smProgram">Program</label>
-          <select id="smProgram"><option value="">All Programs</option></select>
-        </div>
-        <div class="form-group">
-          <label for="smQuota">Quota</label>
-          <select id="smQuota"><option value="">All Quotas</option></select>
-        </div>
-        <div class="form-group">
-          <label for="smSearch">Search</label>
-          <input type="text" id="smSearch" placeholder="Specialty or hospital&hellip;" />
-        </div>
-      </div>
-    </div>
-
-    <div id="smSummary" class="pred-hero hidden" style="margin-bottom:1.5rem"></div>
-    <div id="smResults">
-      <p style="text-align:center;color:var(--text-muted);padding:40px;">Loading seat matrix&hellip;</p>
-    </div>
-  </section>
 
   <!-- ============================================================
        TAB: SPECIALTY COMPARISON TOOL
@@ -836,25 +765,6 @@
 
   </section><!-- /tab-guide -->
 
-  <!-- ============================================================
-       TAB : HOSPITALS
-  ============================================================ -->
-  <section class="tab-content" id="tab-hospitals">
-    <div class="section-header">
-      <h2>&#127968; Hospital Directory</h2>
-      <p>Browse all training hospitals from the Induction Portal seat data. Click a hospital to view its full profile, seat breakdown, and reviews.</p>
-    </div>
-
-    <div style="max-width:600px;margin:0 auto 1.5rem;padding:0 1rem;">
-      <input type="text" id="hospTabSearch" placeholder="Search hospitals by name&hellip;"
-        style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);padding:0.7rem 1rem;color:var(--text);font-family:var(--font);font-size:0.92rem;outline:none;transition:border-color 0.2s;"
-        onfocus="this.style.borderColor='var(--border-active)'" onblur="this.style.borderColor='var(--border)'" />
-    </div>
-
-    <div id="hospTabGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;max-width:1200px;margin:0 auto;padding:0 1rem 4rem;">
-      <div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:var(--text-muted);">Loading hospitals&hellip;</div>
-    </div>
-  </section><!-- /tab-hospitals -->
 
 </main>
 
