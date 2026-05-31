@@ -116,7 +116,8 @@ service cloud.firestore {
     // Doc ID: 'latest'  Fields: active, type, icon, title, body, link, linkText, id, updatedAt
     match /notifications/{docId} {
       allow read: if true;
-      allow create, update, delete: if false;  // written via admin dashboard or Firebase Console
+      allow create, update: if true;   // admin dashboard writes; gated by PIN-based auth in client
+      allow delete: if false;
     }
 
     // Web push tokens — users write their own token, admin reads all
