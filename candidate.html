@@ -666,6 +666,216 @@
     .pma-score-chip-prog { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
     .pma-score-chip-pctile { font-size: 1.15rem; font-weight: 700; color: var(--neon-cyan); }
     .pma-score-chip-sub { font-size: 0.68rem; color: var(--text-muted); }
+
+    /* ══════════════════════════════════════════════════
+       PERSONALIZED DASHBOARD
+    ══════════════════════════════════════════════════ */
+    .dash-section { margin-bottom: 1.5rem; }
+    .dash-section h3 {
+      font-size: 0.95rem; color: var(--neon-cyan); margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .dash-top-chances { display: flex; flex-direction: column; gap: 0.6rem; }
+    .dash-chance-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      display: flex; justify-content: space-between; align-items: center;
+      transition: border-color 0.2s;
+    }
+    .dash-chance-card:hover { border-color: var(--border-hover); }
+    .dash-chance-info { min-width: 0; flex: 1; }
+    .dash-chance-slot { font-size: 0.88rem; font-weight: 600; color: var(--text); }
+    .dash-chance-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem; }
+    .dash-chance-prob {
+      font-size: 1.1rem; font-weight: 700; flex-shrink: 0; margin-left: 1rem;
+      padding: 0.3rem 0.7rem; border-radius: var(--radius);
+    }
+    .dash-chance-prob.high { color: #27c98b; background: rgba(39,201,139,0.12); }
+    .dash-chance-prob.med  { color: #e8a627; background: rgba(232,166,39,0.12); }
+    .dash-chance-prob.low  { color: #dc3c3c; background: rgba(220,60,60,0.12); }
+
+    /* ══════════════════════════════════════════════════
+       PROBABILITY SCORING
+    ══════════════════════════════════════════════════ */
+    .prob-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.72rem; font-weight: 700; padding: 0.18rem 0.55rem;
+      border-radius: 999px; white-space: nowrap;
+    }
+    .prob-badge.high { background: rgba(39,201,139,0.15); color: #27c98b; border: 1px solid rgba(39,201,139,0.3); }
+    .prob-badge.med  { background: rgba(232,166,39,0.15); color: #e8a627; border: 1px solid rgba(232,166,39,0.3); }
+    .prob-badge.low  { background: rgba(220,60,60,0.15);  color: #dc3c3c; border: 1px solid rgba(220,60,60,0.3); }
+
+    /* ══════════════════════════════════════════════════
+       WHAT-IF SANDBOX
+    ══════════════════════════════════════════════════ */
+    .whatif-card {
+      background: rgba(124,101,196,0.04);
+      border: 1px solid rgba(124,101,196,0.2);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+    .whatif-card h4 {
+      font-size: 0.82rem; font-weight: 700; color: var(--neon-purple);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1rem;
+    }
+    .whatif-controls {
+      display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end;
+      margin-bottom: 1rem;
+    }
+    .whatif-field { display: flex; flex-direction: column; gap: 0.25rem; }
+    .whatif-field label {
+      font-size: 0.7rem; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .whatif-field input, .whatif-field select {
+      padding: 0.5rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-input);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.85rem;
+      width: 110px;
+      outline: none;
+    }
+    .whatif-field input:focus { border-color: var(--neon-purple); }
+    .whatif-run-btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid rgba(124,101,196,0.4);
+      border-radius: var(--radius);
+      background: rgba(124,101,196,0.1);
+      color: var(--neon-purple);
+      font-family: var(--font);
+      font-size: 0.82rem; font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .whatif-run-btn:hover { background: rgba(124,101,196,0.2); }
+    .whatif-results {
+      display: flex; flex-direction: column; gap: 0.5rem;
+      max-height: 300px; overflow-y: auto;
+    }
+    .whatif-result-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.82rem; padding: 0.4rem 0.6rem;
+      border-radius: 4px; background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+    }
+    .whatif-result-row .slot-name { color: var(--text); font-weight: 500; }
+    .whatif-result-row .rank-change { font-weight: 700; }
+    .whatif-result-row .rank-change.improved { color: #27c98b; }
+    .whatif-result-row .rank-change.same { color: var(--text-muted); }
+    .whatif-result-row .rank-change.worsened { color: #dc3c3c; }
+
+    /* ══════════════════════════════════════════════════
+       VOLATILITY INDEX
+    ══════════════════════════════════════════════════ */
+    .vol-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .vol-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.6rem 0.9rem;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .vol-item:hover { border-color: var(--border-hover); }
+    .vol-bar-wrap {
+      flex: 1; height: 6px; background: rgba(255,255,255,0.06);
+      border-radius: 999px; overflow: hidden;
+    }
+    .vol-bar-fill { height: 100%; border-radius: 999px; transition: width 0.4s; }
+    .vol-bar-fill.high { background: linear-gradient(90deg, #e86427, #dc3c3c); }
+    .vol-bar-fill.medium { background: linear-gradient(90deg, #e8a627, #e86427); }
+    .vol-bar-fill.low { background: linear-gradient(90deg, #27c98b, #4db8d9); }
+    .vol-label { font-size: 0.78rem; color: var(--text); font-weight: 500; min-width: 160px; }
+    .vol-value { font-size: 0.75rem; font-weight: 700; min-width: 45px; text-align: right; }
+    .vol-value.high { color: #dc3c3c; }
+    .vol-value.medium { color: #e8a627; }
+    .vol-value.low { color: #27c98b; }
+
+    /* ══════════════════════════════════════════════════
+       PREFERENCE OPTIMIZER
+    ══════════════════════════════════════════════════ */
+    .opt-results { display: flex; flex-direction: column; gap: 0.5rem; }
+    .opt-row {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.6rem 0.9rem;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: border-color 0.2s;
+    }
+    .opt-row:hover { border-color: var(--border-hover); }
+    .opt-rank {
+      font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
+      background: rgba(255,255,255,0.04); border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+    }
+    .opt-slot { flex: 1; font-size: 0.85rem; color: var(--text); font-weight: 500; }
+    .opt-prob { font-size: 0.82rem; font-weight: 700; }
+    .opt-change {
+      font-size: 0.7rem; padding: 0.15rem 0.45rem; border-radius: 4px;
+    }
+    .opt-change.up { background: rgba(39,201,139,0.12); color: #27c98b; }
+    .opt-change.same { background: rgba(255,255,255,0.04); color: var(--text-muted); }
+    .opt-change.down { background: rgba(220,60,60,0.12); color: #dc3c3c; }
+
+    /* ══════════════════════════════════════════════════
+       VERIFIED TRAINEE BADGE
+    ══════════════════════════════════════════════════ */
+    .verified-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.72rem; font-weight: 700;
+      color: #27c98b; background: rgba(39,201,139,0.1);
+      border: 1px solid rgba(39,201,139,0.25);
+      border-radius: 999px; padding: 0.2rem 0.65rem;
+    }
+    .verified-badge svg { width: 12px; height: 12px; fill: currentColor; }
+
+    /* ══════════════════════════════════════════════════
+       COMMUNITY & MENTORSHIP SECTION
+    ══════════════════════════════════════════════════ */
+    .community-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    @media (max-width: 520px) { .community-grid { grid-template-columns: 1fr; } }
+    .community-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
+      transition: border-color 0.2s, background 0.2s;
+      cursor: pointer;
+    }
+    .community-card:hover {
+      border-color: rgba(77,184,217,0.35);
+      background: rgba(77,184,217,0.03);
+    }
+    .community-card h5 {
+      font-size: 0.82rem; font-weight: 700; color: var(--text);
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .community-card p {
+      font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; margin: 0;
+    }
+    .community-card .cc-icon { font-size: 1.2rem; }
+    .mentorship-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.55rem 1rem;
+      border: 1px solid rgba(62,207,142,0.3);
+      border-radius: var(--radius);
+      background: rgba(62,207,142,0.07);
+      color: #3ecf8e;
+      font-size: 0.82rem; font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .mentorship-btn:hover { background: rgba(62,207,142,0.15); }
   </style>
 </head>
 <body>
@@ -776,8 +986,84 @@
     </div>
   </div>
 
+  <!-- ══ Personalized Dashboard ══ -->
+  <div class="profile-card dash-section" id="dashboardCard" style="display:none">
+    <h3>🎯 Your Dashboard</h3>
+    <div id="dashTopChances">
+      <p style="color:var(--text-muted);font-size:0.82rem">Loading your top chances…</p>
+    </div>
+  </div>
+
   <!-- Preference merit analysis — shown when applicant ID is linked -->
   <div class="profile-card" id="prefMetricsCard" style="display:none"></div>
+
+  <!-- ══ What-If Sandbox ══ -->
+  <div class="profile-card" id="whatifCard" style="display:none">
+    <div class="whatif-card">
+      <h4>🧪 What-If Sandbox</h4>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem;">
+        Adjust hypothetical marks to see how it shifts your rank across preferred slots.
+      </p>
+      <div class="whatif-controls">
+        <div class="whatif-field">
+          <label for="whatifExperience">Extra Experience</label>
+          <input type="number" id="whatifExperience" min="0" max="5" step="0.5" value="0" />
+        </div>
+        <div class="whatif-field">
+          <label for="whatifResearch">Extra Research</label>
+          <input type="number" id="whatifResearch" min="0" max="3" step="0.5" value="0" />
+        </div>
+        <div class="whatif-field">
+          <label for="whatifHardArea">Extra Hard Area</label>
+          <input type="number" id="whatifHardArea" min="0" max="2" step="0.5" value="0" />
+        </div>
+        <button class="whatif-run-btn" id="whatifRunBtn">▶ Simulate</button>
+      </div>
+      <div class="whatif-results" id="whatifResults"></div>
+    </div>
+  </div>
+
+  <!-- ══ Trend Volatility Index ══ -->
+  <div class="profile-card" id="volatilityCard" style="display:none">
+    <h3 style="font-size:0.95rem;color:var(--neon-cyan);margin-bottom:1rem;">📊 Trend Volatility Index</h3>
+    <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem;">
+      Your preferred slots where the merit cutoff fluctuates significantly year-over-year.
+    </p>
+    <div class="vol-list" id="volList"></div>
+  </div>
+
+  <!-- ══ Preference Optimizer ══ -->
+  <div class="profile-card" id="optimizerCard" style="display:none">
+    <h3 style="font-size:0.95rem;color:var(--neon-cyan);margin-bottom:0.5rem;">⚡ Preference Optimizer</h3>
+    <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem;">
+      Suggested optimal preference order based on your marks and historical closing merits to maximize placement chances.
+    </p>
+    <div class="opt-results" id="optResults"></div>
+  </div>
+
+  <!-- ══ Community & Mentorship ══ -->
+  <div class="profile-card" id="communityCard">
+    <h3 style="font-size:0.95rem;color:var(--neon-cyan);margin-bottom:1rem;">🤝 Community & Mentorship</h3>
+    <div class="community-grid">
+      <div class="community-card" onclick="window.location.href='reviews.html'">
+        <h5><span class="cc-icon">💬</span> Specialty Sub-Forums</h5>
+        <p>Join focused discussions for competitive specialties — Surgery, Radiology, Cardiology & more.</p>
+      </div>
+      <div class="community-card" id="mentorshipCard">
+        <h5><span class="cc-icon">🎓</span> Direct Mentorship</h5>
+        <p>Request a chat with a verified trainee at your preferred hospital for insider guidance.</p>
+        <button class="mentorship-btn" id="requestMentorBtn">💬 Request a Chat</button>
+      </div>
+      <div class="community-card" onclick="window.location.href='reviews.html#anonymous'">
+        <h5><span class="cc-icon">🔒</span> Anonymous Q&A</h5>
+        <p>Ask sensitive questions about hospital work culture, stipends, or environment anonymously.</p>
+      </div>
+      <div class="community-card" onclick="window.location.href='reviews.html'">
+        <h5><span class="cc-icon">⭐</span> Hospital Reviews</h5>
+        <p>Read and write verified reviews for hospitals on your preference list.</p>
+      </div>
+    </div>
+  </div>
 
   <!-- Contributions linked to this user -->
   <div class="profile-card profile-contributions">
@@ -954,17 +1240,24 @@ function ordinal(n) {
 }
 
 /**
+ * Calculate effective marks for a candidate in a given programme.
+ * Used consistently across percentile/rank computations.
+ */
+function calcEffectiveMarks(cand, prog) {
+  return (cand.marksTotal - (cand.experience || 0)) + (cand.programMarks?.[prog] ?? 0);
+}
+
+/**
  * Compute candidate's percentile among ALL I21 candidates
  * who applied in the same programme. Pure rank-based — policy-agnostic.
  */
 function computeMyPercentile(cand, prog, candidatesMap) {
   if (!cand.applied_in?.[prog]) return null;
-  const myEff = (cand.marksTotal - (cand.experience || 0)) + (cand.programMarks?.[prog] ?? 0);
+  const myEff = calcEffectiveMarks(cand, prog);
   const pool  = Object.values(candidatesMap).filter(c => c.applied_in?.[prog]);
   if (!pool.length) return null;
   const below = pool.filter(c => {
-    const m = (c.marksTotal - (c.experience || 0)) + (c.programMarks?.[c._prog] ?? c.programMarks?.[prog] ?? 0);
-    return m < myEff;
+    return calcEffectiveMarks(c, prog) < myEff;
   }).length;
   return Math.round((below / pool.length) * 100);
 }
@@ -1042,6 +1335,7 @@ async function loadPrefMetrics(cand) {
 
       rightHtml = `
         <span class="pma-status ${statusCls}">${statusLabel}</span>
+        <span class="prob-badge ${getProbClass(computePlacementProbability(myPctile, slot) ?? 0)}">${computePlacementProbability(myPctile, slot) ?? '?'}% prob</span>
         <span class="pma-gap ${gap >= 0 ? 'pos' : 'neg'}">${gapStr}</span>
         <span class="pma-trend-tag ${trendCls}">${trendLabel}</span>`;
 
@@ -1183,6 +1477,7 @@ async function loadLinkedApplicant(id) {
       <div class="linked-progs">${progs.map(p => `<span class="linked-prog-tag">${p}</span>`).join('')}</div>`;
 
     loadPrefMetrics(cand);
+    loadDashboard(cand);
   } catch (e) {
     card.style.display = 'none';
     if (metricsCard) metricsCard.style.display = 'none';
@@ -1307,6 +1602,7 @@ async function loadProfile() {
         if (p.hospital)  chips.innerHTML += `<span class="profile-hero-chip">${esc(p.hospital)}</span>`;
         if (p.inducted && p.inductionYear) chips.innerHTML += `<span class="profile-hero-chip inducted">&#10003; Ind. ${esc(p.inductionYear)}</span>`;
         else if (p.inducted)               chips.innerHTML += `<span class="profile-hero-chip inducted">&#10003; Inducted</span>`;
+        addVerifiedBadge();
       }
     }
   } catch (e) { console.warn('Error loading profile:', e); }
@@ -1421,6 +1717,7 @@ async function saveProfile() {
       if (hospital)  chips.innerHTML += `<span class="profile-hero-chip">${esc(hospital)}</span>`;
       if (inducted && year) chips.innerHTML += `<span class="profile-hero-chip inducted">&#10003; Ind. ${esc(year)}</span>`;
       else if (inducted)    chips.innerHTML += `<span class="profile-hero-chip inducted">&#10003; Inducted</span>`;
+      addVerifiedBadge();
     }
 
     // Cache pic in localStorage so navbar can show it instantly
@@ -1453,6 +1750,261 @@ async function saveProfile() {
 }
 
 document.getElementById('profileSaveBtn').addEventListener('click', saveProfile);
+
+// ══ Probability Scoring ═══════════════════════════════════
+/**
+ * Compute placement probability percentage for a candidate at a given slot.
+ * Uses z-score based on historical cutoff mean/stddev and the candidate's percentile.
+ */
+function computePlacementProbability(myPctile, slot) {
+  if (myPctile == null || !slot || !slot.yearly_percentile) return null;
+  const pctileVals = Object.values(slot.yearly_percentile).filter(v => v != null);
+  if (pctileVals.length < 2) return null;
+  const mean = pctileVals.reduce((a, b) => a + b, 0) / pctileVals.length;
+  const variance = pctileVals.reduce((a, b) => a + (b - mean) ** 2, 0) / pctileVals.length;
+  const sd = Math.sqrt(variance) || 1;
+  // z-score: how many SDs above the mean cutoff the candidate is
+  const z = (myPctile - mean) / sd;
+  // Approximate normal CDF using logistic function (1.7 ≈ π/√3, gives <1% error vs true Φ)
+  const prob = 1 / (1 + Math.exp(-1.7 * z));
+  return Math.round(prob * 100);
+}
+
+function getProbClass(prob) {
+  if (prob >= 65) return 'high';
+  if (prob >= 35) return 'med';
+  return 'low';
+}
+
+// ══ Personalized Dashboard ═══════════════════════════════
+async function loadDashboard(cand) {
+  const card = document.getElementById('dashboardCard');
+  if (!card || !cand) return;
+
+  let lookup, candidatesMap;
+  try {
+    [lookup, candidatesMap] = await Promise.all([fetchFlatLookupIndex(), fetchCandidates()]);
+  } catch (e) { return; }
+
+  const applied = cand.applied_in ?? {};
+  const allPrefs = [];
+  for (const [prog, prefs] of Object.entries(cand.preference || {})) {
+    if (!Array.isArray(prefs)) continue;
+    for (const pref of prefs) allPrefs.push({ prog, pref });
+  }
+  if (!allPrefs.length) return;
+
+  // Compute probabilities for each preference
+  const scored = [];
+  for (const { prog, pref } of allPrefs) {
+    const myPctile = computeMyPercentile(cand, prog, candidatesMap);
+    const key = [prog, pref.quotaName, pref.specialityName, pref.hospitalName]
+      .map(s => (s || '').toLowerCase().trim()).join('|');
+    const slot = lookup[key];
+    const prob = computePlacementProbability(myPctile, slot);
+    if (prob != null) {
+      scored.push({ pref, prog, prob, slot, myPctile });
+    }
+  }
+
+  if (!scored.length) return;
+
+  // Show top 3 chances
+  scored.sort((a, b) => b.prob - a.prob);
+  const top3 = scored.slice(0, 3);
+
+  card.style.display = '';
+  const chancesHtml = top3.map(s => `
+    <div class="dash-chance-card">
+      <div class="dash-chance-info">
+        <div class="dash-chance-slot">${esc(s.pref.specialityName)}</div>
+        <div class="dash-chance-sub">${esc(s.pref.hospitalName)} · ${esc(s.prog)}</div>
+      </div>
+      <div class="dash-chance-prob ${getProbClass(s.prob)}">${s.prob}%</div>
+    </div>`).join('');
+
+  document.getElementById('dashTopChances').innerHTML = `
+    <div class="dash-top-chances">${chancesHtml}</div>
+    <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.75rem;">
+      Probabilities are based on historical cutoff volatility and your current percentile position.
+    </p>`;
+
+  // Load What-If, Volatility, and Optimizer
+  loadWhatIf(cand, scored, lookup, candidatesMap);
+  loadVolatilityIndex(cand, allPrefs, lookup);
+  loadPreferenceOptimizer(scored);
+}
+
+// ══ What-If Sandbox ═══════════════════════════════════════
+function loadWhatIf(cand, scored, lookup, candidatesMap) {
+  const card = document.getElementById('whatifCard');
+  if (!card || !scored.length) return;
+  card.style.display = '';
+
+  const btn = document.getElementById('whatifRunBtn');
+  // Prevent duplicate listeners on re-render
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+
+  newBtn.addEventListener('click', () => {
+    const extraExp = parseFloat(document.getElementById('whatifExperience').value) || 0;
+    const extraRes = parseFloat(document.getElementById('whatifResearch').value) || 0;
+    const extraHard = parseFloat(document.getElementById('whatifHardArea').value) || 0;
+    const totalExtra = extraExp + extraRes + extraHard;
+
+    if (totalExtra === 0) {
+      document.getElementById('whatifResults').innerHTML =
+        '<p style="font-size:0.78rem;color:var(--text-muted)">Adjust at least one value above to see impact.</p>';
+      return;
+    }
+
+    // Simulate: extra marks increase the candidate's effective total
+    // Re-compute percentile with boosted marks
+    const resultsHtml = scored.slice(0, 8).map(s => {
+      const prog = s.prog;
+      const myOrigTotal = calcEffectiveMarks(cand, prog);
+      const myBoostedTotal = myOrigTotal + totalExtra;
+
+      // Count how many in pool are below boosted total
+      const pool = Object.values(candidatesMap).filter(c => c.applied_in?.[prog]);
+      const belowBoosted = pool.filter(c => {
+        return calcEffectiveMarks(c, prog) < myBoostedTotal;
+      }).length;
+      const newPctile = pool.length ? Math.round((belowBoosted / pool.length) * 100) : s.myPctile;
+
+      const newProb = computePlacementProbability(newPctile, s.slot);
+      const diff = (newProb ?? 0) - s.prob;
+      const diffClass = diff > 0 ? 'improved' : diff < 0 ? 'worsened' : 'same';
+      const diffStr = diff > 0 ? `+${diff}%` : diff < 0 ? `${diff}%` : '—';
+
+      return `
+        <div class="whatif-result-row">
+          <span class="slot-name">${esc(s.pref.specialityName)} · ${esc(s.pref.hospitalName)}</span>
+          <span class="rank-change ${diffClass}">${(newProb ?? 0)}% (${diffStr})</span>
+        </div>`;
+    }).join('');
+
+    document.getElementById('whatifResults').innerHTML = resultsHtml;
+  });
+}
+
+// ══ Trend Volatility Index ════════════════════════════════
+function loadVolatilityIndex(cand, allPrefs, lookup) {
+  const card = document.getElementById('volatilityCard');
+  if (!card || !allPrefs.length) return;
+
+  const volData = [];
+  for (const { prog, pref } of allPrefs) {
+    const key = [prog, pref.quotaName, pref.specialityName, pref.hospitalName]
+      .map(s => (s || '').toLowerCase().trim()).join('|');
+    const slot = lookup[key];
+    if (!slot || !slot.yearly_percentile) continue;
+
+    const vals = Object.values(slot.yearly_percentile).filter(v => v != null);
+    if (vals.length < 2) continue;
+    const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+    const variance = vals.reduce((a, b) => a + (b - mean) ** 2, 0) / vals.length;
+    const stddev = Math.sqrt(variance);
+
+    volData.push({
+      label: `${pref.specialityName} — ${pref.hospitalName}`,
+      stddev: Math.round(stddev * 10) / 10,
+      volatility: slot.volatility || 'medium'
+    });
+  }
+
+  if (!volData.length) return;
+
+  // Sort by stddev descending, show top volatile ones
+  volData.sort((a, b) => b.stddev - a.stddev);
+  const topVol = volData.slice(0, 6);
+
+  card.style.display = '';
+  const maxStd = Math.max(...topVol.map(v => v.stddev), 1);
+
+  document.getElementById('volList').innerHTML = topVol.map(v => {
+    const pct = Math.min((v.stddev / maxStd) * 100, 100);
+    const cls = v.stddev > 15 ? 'high' : v.stddev > 8 ? 'medium' : 'low';
+    return `
+      <div class="vol-item">
+        <span class="vol-label">${esc(v.label)}</span>
+        <div class="vol-bar-wrap">
+          <div class="vol-bar-fill ${cls}" style="width:${pct}%"></div>
+        </div>
+        <span class="vol-value ${cls}">${v.stddev}σ</span>
+      </div>`;
+  }).join('');
+}
+
+// ══ Preference Optimizer ══════════════════════════════════
+function loadPreferenceOptimizer(scored) {
+  const card = document.getElementById('optimizerCard');
+  if (!card || !scored.length) return;
+  card.style.display = '';
+
+  // Optimal order: sort by probability descending
+  const optimized = [...scored].sort((a, b) => b.prob - a.prob);
+
+  document.getElementById('optResults').innerHTML = optimized.slice(0, 10).map((s, i) => {
+    const origIdx = scored.indexOf(s);
+    const diff = origIdx - i;
+    let changeHtml = '';
+    if (diff > 0) changeHtml = `<span class="opt-change up">↑${diff}</span>`;
+    else if (diff < 0) changeHtml = `<span class="opt-change down">↓${Math.abs(diff)}</span>`;
+    else changeHtml = `<span class="opt-change same">—</span>`;
+
+    return `
+      <div class="opt-row">
+        <span class="opt-rank">#${i + 1}</span>
+        <span class="opt-slot">${esc(s.pref.specialityName)} · ${esc(s.pref.hospitalName)}</span>
+        <span class="opt-prob ${getProbClass(s.prob)}">${s.prob}%</span>
+        ${changeHtml}
+      </div>`;
+  }).join('');
+}
+
+// ══ Verified Trainee Badge ════════════════════════════════
+function addVerifiedBadge() {
+  const chips = document.getElementById('profileHeroChips');
+  if (!chips) return;
+  // Check if user is inducted (verified trainee)
+  const inductedSel = document.getElementById('pfInducted');
+  if (inductedSel && inductedSel.value === 'inducted') {
+    if (!chips.querySelector('.verified-badge')) {
+      chips.insertAdjacentHTML('afterbegin',
+        `<span class="verified-badge">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          Verified Trainee
+        </span>`);
+    }
+  }
+}
+
+// ══ Mentorship Request ════════════════════════════════════
+document.getElementById('requestMentorBtn')?.addEventListener('click', async () => {
+  const email = getSessionEmail();
+  if (!email) { alert('Please log in first.'); return; }
+  const hospital = document.getElementById('pfHospital')?.value?.trim();
+  const specialty = document.getElementById('pfSpecialty')?.value?.trim();
+
+  if (!hospital && !specialty) {
+    alert('Please set your aspiring hospital or specialty in your profile first.');
+    return;
+  }
+
+  try {
+    await db.collection('mentorship_requests').add({
+      requesterEmail: email,
+      hospital: hospital || '',
+      specialty: specialty || '',
+      status: 'pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert('✓ Mentorship request submitted! You will be notified when a verified trainee responds.');
+  } catch (e) {
+    alert('Error submitting request: ' + e.message);
+  }
+});
 
 // Init
 loadDataLists();
