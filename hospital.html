@@ -379,7 +379,10 @@
       totalSeats += s.seats;
       const key = s.specialityName;
       if (!specialties[key]) specialties[key] = { fcps: 0, ms: 0, md: 0, total: 0 };
-      specialties[key][s.typeName.toLowerCase()] = (specialties[key][s.typeName.toLowerCase()] || 0) + s.seats;
+      const typeKey = (s.typeName || '').toLowerCase();
+      if (typeKey) {
+        specialties[key][typeKey] = (specialties[key][typeKey] || 0) + s.seats;
+      }
       specialties[key].total += s.seats;
     }
 
