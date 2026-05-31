@@ -28,7 +28,18 @@
     "icon": "ℹ️",
     "title": "Data Notes",
     "body": "Data update is in progress... Stay tuned. ",
-"dismissable": false
+    "dismissable": false,
+    "link": null,
+    "linkText": null
+  },
+  {
+    "id": "prp-unstable-data-v1",
+    "active": true,
+    "type": "warning",
+    "icon": "⚠️",
+    "title": "PRP Data Unstable",
+    "body": "Live data from the PRP portal is currently unstable — some applicants are showing drastically reduced marks (e.g. from ~15 down to ~1.6). This is NOT a MeritNama error. It appears the PRP system is glitching or their admins are making backend changes. Do not panic — your actual marks have not changed. We will refresh the data once PRP stabilises.",
+    "dismissable": false,
     "link": null,
     "linkText": null
   }
