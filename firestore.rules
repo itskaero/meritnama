@@ -35,6 +35,13 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Hospital-specific reviews — publicly readable and creatable, no edits/deletes
+    match /hospital_reviews/{reviewId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
     // Presence tracking — each user writes their own doc, admin reads all
     // Doc ID = user email. Written by presence.js on every auth-gated page.
     match /presence/{email} {
