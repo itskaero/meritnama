@@ -107,6 +107,16 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Real-time chat messages — publicly readable and creatable
+    // Updates allowed for reactions (toggling emoji reactions on messages)
+    // Document fields: name, email, text, timestamp, reactions (map), replyTo (map)
+    match /chat_messages/{messageId} {
+      allow read:   if true;
+      allow create: if true;
+      allow update: if true;   // needed for reactions toggle
+      allow delete: if false;
+    }
+
     // Deny everything else
     match /{document=**} {
       allow read, write: if false;
