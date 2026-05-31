@@ -8,6 +8,8 @@
 (function () {
   const MESSAGES_LIMIT = 80;
   const REACTION_EMOJIS = ['👍', '❤️', '😂', '🔥', '💯', '🙏'];
+  const MAX_MESSAGE_LENGTH = 1500;
+  const REPLY_PREVIEW_LENGTH = 100;
 
   let db;
   let messagesUnsubscribe = null;
@@ -286,7 +288,7 @@
     replyingTo = {
       id: msgId,
       name: msg.name || 'Anonymous',
-      text: (msg.text || '').substring(0, 100)
+      text: (msg.text || '').substring(0, REPLY_PREVIEW_LENGTH)
     };
 
     const preview = document.getElementById('chatReplyPreview');
@@ -305,7 +307,7 @@
   // ── Send message ────────────────────────────────────
   async function sendMessage() {
     const input = document.getElementById('chatInput');
-    const text = input.value.trim().substring(0, 1500);
+    const text = input.value.trim().substring(0, MAX_MESSAGE_LENGTH);
     if (!text) return;
 
     const name = getChatName();
@@ -328,7 +330,7 @@
       msgData.replyTo = {
         id: replyingTo.id,
         name: replyingTo.name,
-        text: replyingTo.text.substring(0, 100),
+        text: replyingTo.text.substring(0, REPLY_PREVIEW_LENGTH),
       };
     }
 
