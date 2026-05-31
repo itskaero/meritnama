@@ -316,9 +316,11 @@ function setupTabNavigation() {
 }
 
 function onTabActivated(tab) {
-  if (tab === 'merit')   renderMeritTable();
-  if (tab === 'current') renderCurrentMerit();
-  if (tab === 'policy')  renderPolicyTab();
+  if (tab === 'merit')       renderMeritTable();
+  if (tab === 'current')     renderCurrentMerit();
+  if (tab === 'policy')      renderPolicyTab();
+  if (tab === 'competition') renderCompetitionTab();
+  if (tab === 'seatmatrix')  renderSeatMatrixTab();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1367,6 +1369,490 @@ function initTooltips() {
   });
 }
 
+// ═══════════════════════════════════════════════════════
+// REVERSE SCORE CALCULATOR ("What Do I Need?")
+// ═══════════════════════════════════════════════════════
+
+function setupReverseCalcTab() {
+  const revProg = document.getElementById('revProgram');
+  const revQuota = document.getElementById('revQuota');
+  const revSpec = document.getElementById('revSpecialty');
+  const revHosp = document.getElementById('revHospital');
+
+  populateSelect(revProg, getPrograms(), 'Select Program');
+  populateSelect(revQuota, getQuotas(), 'Select Quota');
+
+  revProg.addEventListener('change', () => {
+    populateSelect(revQuota, getQuotas(revProg.value), 'Select Quota');
+    populateSelect(revSpec, getSpecialties(revProg.value, revQuota.value), 'Select Specialty');
+    revHosp.innerHTML = '<option value="">All Hospitals</option>';
+  });
+  revQuota.addEventListener('change', () => {
+    populateSelect(revSpec, getSpecialties(revProg.value, revQuota.value), 'Select Specialty');
+    revHosp.innerHTML = '<option value="">All Hospitals</option>';
+  });
+  revSpec.addEventListener('change', () => {
+    const hospitals = [...new Set(App.data.flatLookup.filter(r =>
+      (!revProg.value || r.program === revProg.value) &&
+      (!revQuota.value || r.quota === revQuota.value) &&
+      r.specialty === revSpec.value
+    ).map(r => r.hospital))].sort();
+    populateSelect(revHosp, hospitals, 'All Hospitals');
+  });
+
+  document.getElementById('revBtn').addEventListener('click', runReverseCalc);
+}
+
+function runReverseCalc() {
+  const prog = document.getElementById('revProgram').value;
+  const quota = document.getElementById('revQuota').value;
+  const spec = document.getElementById('revSpecialty').value;
+  const hosp = document.getElementById('revHospital').value;
+
+  if (!spec) {
+    alert('Please select at least a specialty.');
+    return;
+  }
+
+  const rows = App.data.flatLookup.filter(r =>
+    (!prog || r.program === prog) &&
+    (!quota || r.quota === quota) &&
+    r.specialty === spec &&
+    (!hosp || r.hospital === hosp)
+  );
+
+  if (!rows.length) {
+    document.getElementById('revResults').classList.remove('hidden');
+    document.getElementById('revResultsContent').innerHTML =
+      '<div class="card" style="text-align:center;padding:2rem;color:var(--text-muted)">No data found for this combination.</div>';
+    return;
+  }
+
+  const activeMax = getActivePolicyMax();
+
+  const cards = rows.map(row => {
+    const years = Object.keys(row.yearly_merit || {}).sort();
+    const latestMerit = row.yearly_merit[years[years.length - 1]];
+    const avgPct = row.avg_pct_of_max;
+    const latestPct = row.latest_pct_of_max;
+
+    // Projected range based on trend
+    let projectedMin = avgPct, projectedMax = avgPct;
+    const stddev = row.stddev || 0;
+    const maxMark = activeMax || 30;
+    const stddevPct = maxMark ? (stddev / maxMark * 100) : 5;
+    if (row.trend === 'rising') {
+      projectedMin = latestPct;
+      projectedMax = latestPct + stddevPct * 0.5;
+    } else if (row.trend === 'falling') {
+      projectedMin = latestPct - stddevPct * 0.5;
+      projectedMax = latestPct;
+    } else {
+      projectedMin = avgPct - stddevPct * 0.3;
+      projectedMax = avgPct + stddevPct * 0.3;
+    }
+
+    const neededRaw = activeMax ? (projectedMax / 100 * activeMax) : latestMerit;
+    const seatsLatest = row.yearly_seats ? row.yearly_seats[years[years.length - 1]] : '—';
+
+    return `<div class="card" style="margin-bottom:1rem;padding:1.25rem;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem;">
+        <div>
+          <strong style="color:var(--neon-cyan);font-size:1rem;">${esc(row.specialty)}</strong>
+          <div style="font-size:0.82rem;color:var(--text-muted);">${esc(row.hospital)} &middot; ${esc(row.program)} &middot; ${esc(row.quota)}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;">Seats (latest)</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--neon-purple);">${seatsLatest}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-top:1rem;">
+        <div class="rev-metric">
+          <div class="rev-metric-label">Average Cutoff</div>
+          <div class="rev-metric-value">${num(avgPct, 1)}%</div>
+          <div class="rev-metric-sub">${activeMax ? num(avgPct / 100 * activeMax, 2) + ' / ' + activeMax : ''}</div>
+        </div>
+        <div class="rev-metric">
+          <div class="rev-metric-label">Latest Cutoff</div>
+          <div class="rev-metric-value">${num(latestPct, 1)}%</div>
+          <div class="rev-metric-sub">${num(latestMerit, 2)} raw (${years[years.length - 1]})</div>
+        </div>
+        <div class="rev-metric">
+          <div class="rev-metric-label">Projected Range</div>
+          <div class="rev-metric-value">${num(projectedMin, 1)}–${num(projectedMax, 1)}%</div>
+          <div class="rev-metric-sub">${activeMax ? num(projectedMin / 100 * activeMax, 2) + '–' + num(projectedMax / 100 * activeMax, 2) + ' / ' + activeMax : ''}</div>
+        </div>
+        <div class="rev-metric">
+          <div class="rev-metric-label">You Need (safe)</div>
+          <div class="rev-metric-value" style="color:var(--neon-green);">${activeMax ? num(neededRaw, 2) : num(latestMerit, 2)}</div>
+          <div class="rev-metric-sub">out of ${activeMax || '?'} marks</div>
+        </div>
+      </div>
+      <div style="margin-top:0.75rem;font-size:0.78rem;display:flex;gap:1rem;flex-wrap:wrap;">
+        <span>Trend: ${trendBadge(row.trend)}</span>
+        <span>Volatility: ${volBadge(row.volatility)}</span>
+        <span>Confidence: ${confBadge(row.confidence)}</span>
+        <span>Data points: ${row.data_points || years.length}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('revResults').classList.remove('hidden');
+  document.getElementById('revResultsContent').innerHTML = `
+    <div style="margin-bottom:1rem;font-size:0.85rem;color:var(--text-muted);">
+      Found <strong>${rows.length}</strong> combination${rows.length > 1 ? 's' : ''} matching your criteria.
+      Scores shown as % of max marks (${activeMax || '?'}).
+    </div>
+    ${cards}`;
+}
+
+// ═══════════════════════════════════════════════════════
+// COMPETITION RATIO / DEMAND INDEX
+// ═══════════════════════════════════════════════════════
+
+let _compData = null;
+
+function setupCompetitionTab() {
+  const compProg = document.getElementById('compProgram');
+  const compQuota = document.getElementById('compQuota');
+  populateSelect(compProg, getPrograms());
+  populateSelect(compQuota, getQuotas());
+
+  compProg.addEventListener('change', renderCompetitionTab);
+  compQuota.addEventListener('change', renderCompetitionTab);
+  document.getElementById('compSearch').addEventListener('input', renderCompetitionTab);
+  document.getElementById('compSort').addEventListener('change', renderCompetitionTab);
+}
+
+async function loadCompetitionData() {
+  if (_compData) return _compData;
+  try {
+    const [candRes, seatsRes] = await Promise.all([
+      fetch('data/induction21_candidates.json'),
+      fetch('data/induction21_seats.json')
+    ]);
+    if (!candRes.ok || !seatsRes.ok) return null;
+    const candRaw = await candRes.json();
+    const candidates = Array.isArray(candRaw) ? candRaw : (candRaw.candidates || Object.values(candRaw));
+    const seats = await seatsRes.json();
+
+    // Build seat lookup: prog|quota|specialty → total seats
+    const seatMap = {};
+    for (const s of seats) {
+      const key = `${s.typeName}|${s.quotaName}|${s.specialityName}`;
+      seatMap[key] = (seatMap[key] || 0) + s.seats;
+    }
+
+    // Count applicants per specialty (from preferences)
+    const applicantMap = {};
+    for (const c of candidates) {
+      if (!c.preference) continue;
+      for (const [prog, prefs] of Object.entries(c.preference)) {
+        const seen = new Set();
+        for (const p of prefs) {
+          const key = `${prog}|${p.quotaName}|${p.specialityName}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            applicantMap[key] = (applicantMap[key] || 0) + 1;
+          }
+        }
+      }
+    }
+
+    // Merge
+    const result = [];
+    const allKeys = new Set([...Object.keys(seatMap), ...Object.keys(applicantMap)]);
+    for (const key of allKeys) {
+      const [prog, quota, specialty] = key.split('|');
+      const totalSeats = seatMap[key] || 0;
+      const applicants = applicantMap[key] || 0;
+      const ratio = totalSeats > 0 ? (applicants / totalSeats) : (applicants > 0 ? Infinity : 0);
+      result.push({ prog, quota, specialty, totalSeats, applicants, ratio });
+    }
+    _compData = result;
+    return result;
+  } catch (e) {
+    console.error('[Competition] Load error:', e);
+    return null;
+  }
+}
+
+async function renderCompetitionTab() {
+  const container = document.getElementById('compResults');
+  const data = await loadCompetitionData();
+  if (!data) {
+    container.innerHTML = '<div class="card" style="text-align:center;padding:2rem;color:var(--text-muted)">Competition data unavailable. Requires induction21_candidates.json and induction21_seats.json.</div>';
+    return;
+  }
+
+  const prog = document.getElementById('compProgram').value;
+  const quota = document.getElementById('compQuota').value;
+  const search = (document.getElementById('compSearch').value || '').toLowerCase();
+  const sort = document.getElementById('compSort').value;
+
+  let filtered = data.filter(r =>
+    (!prog || r.prog === prog) &&
+    (!quota || r.quota === quota) &&
+    (!search || r.specialty.toLowerCase().includes(search))
+  );
+
+  // Sort
+  if (sort === 'ratio-desc') filtered.sort((a, b) => b.ratio - a.ratio);
+  else if (sort === 'ratio-asc') filtered.sort((a, b) => a.ratio - b.ratio);
+  else if (sort === 'specialty') filtered.sort((a, b) => a.specialty.localeCompare(b.specialty));
+  else if (sort === 'applicants-desc') filtered.sort((a, b) => b.applicants - a.applicants);
+
+  if (!filtered.length) {
+    container.innerHTML = '<div class="card" style="text-align:center;padding:2rem;color:var(--text-muted)">No results found.</div>';
+    return;
+  }
+
+  // Summary stats
+  const totalApplicants = filtered.reduce((s, r) => s + r.applicants, 0);
+  const totalSeats = filtered.reduce((s, r) => s + r.totalSeats, 0);
+  const avgRatio = totalSeats > 0 ? (totalApplicants / totalSeats).toFixed(1) : '—';
+  const finiteRatios = filtered.filter(r => r.ratio !== Infinity && isFinite(r.ratio)).map(r => r.ratio);
+  const maxRatio = finiteRatios.length > 0 ? Math.max(...finiteRatios) : 1;
+
+  const rows = filtered.slice(0, 100).map(r => {
+    const ratioStr = r.ratio === Infinity ? '∞' : r.ratio.toFixed(1);
+    const displayRatio = r.ratio === Infinity ? maxRatio : r.ratio;
+    const barWidth = maxRatio > 0 ? Math.min(100, (displayRatio / maxRatio) * 100) : 0;
+    const heatColor = r.ratio > 10 ? 'var(--neon-red, #dc3c3c)' : r.ratio > 5 ? 'var(--neon-gold, #e8a627)' : 'var(--neon-green, #3ecf8e)';
+    return `<tr>
+      <td>${esc(r.specialty)}</td>
+      <td>${esc(r.prog)}</td>
+      <td>${esc(r.quota)}</td>
+      <td style="text-align:right">${r.totalSeats}</td>
+      <td style="text-align:right">${r.applicants}</td>
+      <td style="text-align:right;font-weight:700;color:${heatColor};">${ratioStr}:1</td>
+      <td style="width:120px;"><div style="background:${heatColor};height:8px;border-radius:4px;width:${barWidth}%;opacity:0.7;"></div></td>
+    </tr>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="card" style="margin-bottom:1rem;padding:1rem;">
+      <div style="display:flex;gap:2rem;flex-wrap:wrap;font-size:0.85rem;">
+        <div><strong style="color:var(--neon-cyan);">${filtered.length}</strong> specialties shown</div>
+        <div>Total seats: <strong>${totalSeats.toLocaleString()}</strong></div>
+        <div>Total applications: <strong>${totalApplicants.toLocaleString()}</strong></div>
+        <div>Average ratio: <strong>${avgRatio}:1</strong></div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr>
+          <th>Specialty</th><th>Program</th><th>Quota</th>
+          <th style="text-align:right">Seats</th>
+          <th style="text-align:right">Applicants</th>
+          <th style="text-align:right">Ratio</th>
+          <th>Demand</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    ${filtered.length > 100 ? '<p style="font-size:0.78rem;color:var(--text-muted);margin-top:0.5rem;">Showing top 100 results.</p>' : ''}`;
+}
+
+// ═══════════════════════════════════════════════════════
+// SEAT MATRIX DASHBOARD
+// ═══════════════════════════════════════════════════════
+
+let _seatData = null;
+
+function setupSeatMatrixTab() {
+  const smProg = document.getElementById('smProgram');
+  const smQuota = document.getElementById('smQuota');
+  populateSelect(smProg, getPrograms());
+  populateSelect(smQuota, getQuotas());
+
+  smProg.addEventListener('change', renderSeatMatrixTab);
+  smQuota.addEventListener('change', renderSeatMatrixTab);
+  document.getElementById('smSearch').addEventListener('input', renderSeatMatrixTab);
+}
+
+async function loadSeatData() {
+  if (_seatData) return _seatData;
+  try {
+    const res = await fetch('data/induction21_seats.json');
+    if (!res.ok) return null;
+    _seatData = await res.json();
+    return _seatData;
+  } catch (e) { return null; }
+}
+
+async function renderSeatMatrixTab() {
+  const container = document.getElementById('smResults');
+  const summary = document.getElementById('smSummary');
+  const seats = await loadSeatData();
+  if (!seats) {
+    container.innerHTML = '<div class="card" style="text-align:center;padding:2rem;color:var(--text-muted)">Seat data unavailable.</div>';
+    return;
+  }
+
+  const prog = document.getElementById('smProgram').value;
+  const quota = document.getElementById('smQuota').value;
+  const search = (document.getElementById('smSearch').value || '').toLowerCase();
+
+  let filtered = seats.filter(s =>
+    (!prog || s.typeName === prog) &&
+    (!quota || s.quotaName === quota) &&
+    (!search || s.specialityName.toLowerCase().includes(search) || s.hospitalName.toLowerCase().includes(search))
+  );
+
+  // Group by specialty
+  const bySpec = {};
+  for (const s of filtered) {
+    if (!bySpec[s.specialityName]) bySpec[s.specialityName] = { totalSeats: 0, hospitals: [] };
+    bySpec[s.specialityName].totalSeats += s.seats;
+    bySpec[s.specialityName].hospitals.push(s);
+  }
+
+  const totalSeats = filtered.reduce((sum, s) => sum + s.seats, 0);
+  const totalHospitals = new Set(filtered.map(s => s.hospitalName)).size;
+  const specCount = Object.keys(bySpec).length;
+
+  // Summary
+  summary.classList.remove('hidden');
+  summary.innerHTML = `
+    <div class="pred-hero-right" style="width:100%;">
+      <div class="pred-hero-stats" style="justify-content:flex-start;gap:2rem;">
+        <div><span class="pred-hero-val" style="color:var(--neon-cyan)">${totalSeats}</span><span class="pred-hero-lbl">Total Seats</span></div>
+        <div><span class="pred-hero-val" style="color:var(--neon-purple)">${specCount}</span><span class="pred-hero-lbl">Specialties</span></div>
+        <div><span class="pred-hero-val" style="color:var(--neon-green)">${totalHospitals}</span><span class="pred-hero-lbl">Hospitals</span></div>
+        <div><span class="pred-hero-val">${filtered.length}</span><span class="pred-hero-lbl">Slots</span></div>
+      </div>
+    </div>`;
+
+  // Render specialty cards
+  const specNames = Object.keys(bySpec).sort();
+  const cards = specNames.map(spec => {
+    const data = bySpec[spec];
+    const hospRows = data.hospitals.sort((a, b) => b.seats - a.seats).map(h => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:0.8rem;">${esc(h.hospitalName)}</span>
+        <span style="font-size:0.8rem;font-weight:700;color:var(--neon-cyan);min-width:30px;text-align:right;">${h.seats}</span>
+      </div>`).join('');
+
+    return `<div class="card" style="margin-bottom:0.75rem;padding:1rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+        <strong style="color:var(--text);font-size:0.92rem;">${esc(spec)}</strong>
+        <span style="background:rgba(77,184,217,0.1);color:var(--neon-cyan);padding:2px 10px;border-radius:100px;font-weight:700;font-size:0.82rem;">${data.totalSeats} seats</span>
+      </div>
+      <div style="max-height:200px;overflow-y:auto;">${hospRows}</div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = cards || '<div style="text-align:center;color:var(--text-muted);padding:2rem;">No seats found.</div>';
+}
+
+// ═══════════════════════════════════════════════════════
+// SPECIALTY COMPARISON TOOL
+// ═══════════════════════════════════════════════════════
+
+function setupCompareTab() {
+  const cmpProg = document.getElementById('cmpProgram');
+  populateSelect(cmpProg, getPrograms(), 'FCPS');
+  cmpProg.value = 'FCPS';
+
+  function populateCompareSelects() {
+    const prog = cmpProg.value || 'FCPS';
+    const options = App.data.flatLookup
+      .filter(r => r.program === prog)
+      .map(r => `${r.specialty} — ${r.hospital} (${r.quota})`)
+      .sort();
+
+    for (let i = 1; i <= 3; i++) {
+      const sel = document.getElementById(`cmpSpec${i}`);
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">Select specialty – hospital</option>' +
+        options.map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join('');
+      if (options.includes(cur)) sel.value = cur;
+    }
+  }
+
+  populateCompareSelects();
+  cmpProg.addEventListener('change', populateCompareSelects);
+  document.getElementById('cmpBtn').addEventListener('click', runComparison);
+}
+
+function runComparison() {
+  const prog = document.getElementById('cmpProgram').value || 'FCPS';
+  const selections = [];
+  for (let i = 1; i <= 3; i++) {
+    const val = document.getElementById(`cmpSpec${i}`).value;
+    if (val) selections.push(val);
+  }
+
+  if (selections.length < 2) {
+    alert('Select at least 2 combinations to compare.');
+    return;
+  }
+
+  // Parse selections and find matching rows
+  const rows = selections.map(sel => {
+    // Format: "Specialty — Hospital (Quota)"
+    const match = sel.match(/^(.+?)\s*—\s*(.+?)\s*\((.+?)\)$/);
+    if (!match) return null;
+    const [, spec, hosp, quota] = match;
+    return App.data.flatLookup.find(r =>
+      r.program === prog &&
+      r.specialty === spec.trim() &&
+      r.hospital === hosp.trim() &&
+      r.quota === quota.trim()
+    );
+  }).filter(Boolean);
+
+  if (rows.length < 2) {
+    document.getElementById('cmpResults').classList.remove('hidden');
+    document.getElementById('cmpResults').innerHTML = '<div class="card" style="padding:1.5rem;text-align:center;color:var(--text-muted)">Could not find matching data for selections.</div>';
+    return;
+  }
+
+  const years = getYears();
+  const activeMax = getActivePolicyMax();
+
+  // Build comparison table
+  const metrics = [
+    { label: 'Avg Closing (% of Max)', fn: r => num(r.avg_pct_of_max, 1) + '%' },
+    { label: 'Latest Closing (% of Max)', fn: r => num(r.latest_pct_of_max, 1) + '%' },
+    { label: 'Latest Closing (Raw)', fn: r => num(r.latest_merit, 2) },
+    { label: 'Trend', fn: r => trendBadge(r.trend) },
+    { label: 'Volatility', fn: r => volBadge(r.volatility) },
+    { label: 'Confidence', fn: r => confBadge(r.confidence) },
+    { label: 'Data Points', fn: r => r.data_points || '—' },
+    { label: 'Std Deviation', fn: r => num(r.stddev, 2) },
+  ];
+
+  // Add yearly rows
+  for (const yr of years.slice(-5)) {
+    metrics.push({
+      label: `${yr} Cutoff`,
+      fn: r => r.yearly_merit?.[yr] != null ? num(r.yearly_merit[yr], 2) : '—'
+    });
+    metrics.push({
+      label: `${yr} Seats`,
+      fn: r => r.yearly_seats?.[yr] ?? '—'
+    });
+  }
+
+  const headerCells = rows.map(r => `<th style="min-width:160px;"><div style="font-weight:700;color:var(--neon-cyan);font-size:0.85rem;">${esc(r.specialty)}</div><div style="font-size:0.72rem;color:var(--text-muted);">${esc(r.hospital)}</div><div style="font-size:0.68rem;color:var(--text-light);">${esc(r.quota)}</div></th>`).join('');
+
+  const metricRows = metrics.map(m => {
+    const cells = rows.map(r => `<td>${m.fn(r)}</td>`).join('');
+    return `<tr><td style="font-weight:600;font-size:0.8rem;white-space:nowrap;">${m.label}</td>${cells}</tr>`;
+  }).join('');
+
+  document.getElementById('cmpResults').classList.remove('hidden');
+  document.getElementById('cmpResults').innerHTML = `
+    <div class="card" style="margin-top:1.5rem;overflow-x:auto;">
+      <table class="data-table">
+        <thead><tr><th>Metric</th>${headerCells}</tr></thead>
+        <tbody>${metricRows}</tbody>
+      </table>
+    </div>`;
+}
+
 // Handle URL params
 function handleURLParams() {
   const p     = new URLSearchParams(window.location.search);
@@ -1406,6 +1892,10 @@ function onDataReady() {
   setupMeritTable();
   setupPredictorTab();
   setupCalculatorTab();
+  setupReverseCalcTab();
+  setupCompetitionTab();
+  setupSeatMatrixTab();
+  setupCompareTab();
   setupBackToTop();
   setupHamburger();
   setupKeyboardShortcuts();

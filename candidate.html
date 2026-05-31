@@ -1002,20 +1002,13 @@
     <div class="whatif-card">
       <h4>🧪 What-If Sandbox</h4>
       <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem;">
-        Adjust hypothetical marks to see how it shifts your rank across preferred slots.
+        Add extra marks to your current total to see how it shifts your rank across preferred slots.
+        For example, enter 2 to see what happens if you scored 2 marks higher.
       </p>
       <div class="whatif-controls">
         <div class="whatif-field">
-          <label for="whatifExperience">Extra Experience</label>
-          <input type="number" id="whatifExperience" min="0" max="5" step="0.5" value="0" />
-        </div>
-        <div class="whatif-field">
-          <label for="whatifResearch">Extra Research</label>
-          <input type="number" id="whatifResearch" min="0" max="3" step="0.5" value="0" />
-        </div>
-        <div class="whatif-field">
-          <label for="whatifHardArea">Extra Hard Area</label>
-          <input type="number" id="whatifHardArea" min="0" max="2" step="0.5" value="0" />
+          <label for="whatifExtraMarks">Extra Marks (added to your total)</label>
+          <input type="number" id="whatifExtraMarks" min="-5" max="10" step="0.5" value="0" />
         </div>
         <button class="whatif-run-btn" id="whatifRunBtn">▶ Simulate</button>
       </div>
@@ -1847,14 +1840,11 @@ function loadWhatIf(cand, scored, lookup, candidatesMap) {
   btn.parentNode.replaceChild(newBtn, btn);
 
   newBtn.addEventListener('click', () => {
-    const extraExp = parseFloat(document.getElementById('whatifExperience').value) || 0;
-    const extraRes = parseFloat(document.getElementById('whatifResearch').value) || 0;
-    const extraHard = parseFloat(document.getElementById('whatifHardArea').value) || 0;
-    const totalExtra = extraExp + extraRes + extraHard;
+    const totalExtra = parseFloat(document.getElementById('whatifExtraMarks').value) || 0;
 
     if (totalExtra === 0) {
       document.getElementById('whatifResults').innerHTML =
-        '<p style="font-size:0.78rem;color:var(--text-muted)">Adjust at least one value above to see impact.</p>';
+        '<p style="font-size:0.78rem;color:var(--text-muted)">Enter a non-zero value above to see impact.</p>';
       return;
     }
 
