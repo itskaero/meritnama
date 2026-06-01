@@ -107,6 +107,14 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Applicant chat — real-time group chat for applicants
+    // Publicly readable and creatable. No edits/deletes to maintain integrity.
+    match /applicant_chat/{messageId} {
+      allow read:   if true;
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
     // Deny everything else
     match /{document=**} {
       allow read, write: if false;
