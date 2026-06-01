@@ -2394,6 +2394,7 @@ function _showProfileModal(p) {
 const CHAT = {
   unsubscribe:    null,   // Firestore listener teardown
   messages:       [],     // cached messages
+  _legacy:        [],     // legacy applicant_chat messages
   unreadCount:    0,
   popupOpen:      false,
   tabActive:      false,
@@ -2632,11 +2633,37 @@ function _startChatListener() {
 
   if (CHAT.unsubscribe) CHAT.unsubscribe();
 
+  // Also load legacy applicant_chat messages (one-time fetch, ordered by createdAt)
+  const LEGACY = 'applicant_chat';
+  db.collection(LEGACY).orderBy('createdAt', 'asc').limitToLast(CHAT.MAX_MESSAGES).get()
+    .then(snap => {
+      CHAT._legacy = snap.docs.map(d => {
+        const data = d.data();
+        return {
+          id:   '_legacy_' + d.id,
+          text: data.text,
+          name: data.sender || 'Anonymous',
+          uid:  '_legacy',
+          ts:   data.createdAt,
+        };
+      });
+    })
+    .catch(() => { CHAT._legacy = []; });
+
   CHAT.unsubscribe = db.collection(CHAT.COLLECTION)
     .orderBy('ts', 'asc')
     .limitToLast(CHAT.MAX_MESSAGES)
     .onSnapshot(snap => {
-      CHAT.messages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const fresh = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Merge legacy + new, dedup by id, keep sorted by ts
+      const legacy = (CHAT._legacy || []).filter(l =>
+        !fresh.some(f => f.text === l.text && f.name === l.name)
+      );
+      CHAT.messages = [...legacy, ...fresh].sort((a, b) => {
+        const ta = a.ts?.toMillis?.() ?? a.ts ?? 0;
+        const tb = b.ts?.toMillis?.() ?? b.ts ?? 0;
+        return ta - tb;
+      });
       const isVisible = CHAT.popupOpen || CHAT.tabActive;
       if (!isVisible) {
         CHAT.unreadCount++;

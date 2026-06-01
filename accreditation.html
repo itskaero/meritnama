@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accredited Programs — MeritNama</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── Page-level ───────────────────────────────────────── */
+    body { background: var(--bg-deep, #0d1626); color: var(--text, #e0e6ef); font-family: var(--font, 'Inter', sans-serif); margin: 0; }
+    .page-wrap { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+
+    /* ── Header ───────────────────────────────────────────── */
+    .acc-header { text-align: center; margin-bottom: 2rem; }
+    .acc-header h1 { font-size: 1.8rem; font-weight: 700; margin: 0 0 0.5rem; }
+    .acc-header p { color: var(--text-muted, #7a8fa8); font-size: 0.9rem; margin: 0; }
+
+    /* ── Nav override — replaced by site-header + tab-nav ── */
+
+    /* ── Stats bar ───────────────────────────────────────── */
+    .acc-stats { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { flex: 1 1 140px; background: var(--bg-card, #1a2236); border: 1px solid var(--border, #2a3a52); border-radius: 10px; padding: 0.9rem 1.2rem; text-align: center; }
+    .stat-card .num { font-size: 1.8rem; font-weight: 700; color: var(--neon-cyan, #00d4ff); }
+    .stat-card .lbl { font-size: 0.75rem; color: var(--text-muted, #7a8fa8); margin-top: 0.2rem; }
+
+    /* ── Filter bar ──────────────────────────────────────── */
+    .acc-filters { background: var(--bg-card, #1a2236); border: 1px solid var(--border, #2a3a52); border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: flex-end; }
+    .acc-filters label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.78rem; color: var(--text-muted, #7a8fa8); flex: 1 1 160px; }
+    .acc-filters input, .acc-filters select { padding: 0.5rem 0.7rem; border-radius: 7px; border: 1px solid var(--border, #2a3a52); background: var(--bg-deep, #0d1626); color: var(--text, #e0e6ef); font-size: 0.82rem; }
+    .acc-filters input:focus, .acc-filters select:focus { outline: none; border-color: var(--neon-cyan, #00d4ff); }
+    #resetBtn { padding: 0.5rem 1rem; border-radius: 7px; border: none; background: var(--bg-deep, #0d1626); color: var(--text-muted, #7a8fa8); font-size: 0.82rem; cursor: pointer; }
+    #resetBtn:hover { color: var(--text, #e0e6ef); }
+
+    /* ── Result count ────────────────────────────────────── */
+    .result-info { font-size: 0.82rem; color: var(--text-muted, #7a8fa8); margin-bottom: 0.8rem; }
+
+    /* ── Table ───────────────────────────────────────────── */
+    .acc-table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border, #2a3a52); }
+    table.acc-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+    table.acc-table th { background: var(--bg-card, #1a2236); padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: var(--text-muted, #7a8fa8); border-bottom: 1px solid var(--border, #2a3a52); white-space: nowrap; }
+    table.acc-table td { padding: 0.65rem 1rem; border-bottom: 1px solid rgba(42,58,82,0.6); vertical-align: middle; }
+    table.acc-table tr:last-child td { border-bottom: none; }
+    table.acc-table tr:hover td { background: rgba(0,212,255,0.03); }
+    .type-badge { display: inline-block; padding: 0.2rem 0.55rem; border-radius: 5px; font-size: 0.73rem; font-weight: 600; }
+    .type-fcps   { background: rgba(0,212,255,0.12); color: var(--neon-cyan, #00d4ff); }
+    .type-md     { background: rgba(62,207,142,0.12); color: var(--neon-green, #3ecf8e); }
+    .type-ms     { background: rgba(107,91,255,0.12); color: #8b7df5; }
+    .type-fcpsd  { background: rgba(255,165,50,0.12); color: #ffa532; }
+    .type-mds    { background: rgba(255,100,130,0.12); color: #ff6482; }
+
+    /* ── Accreditation type badges ────────────────────────── */
+    .acc-badge { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.28rem 0.7rem; border-radius: 20px; font-size: 0.73rem; font-weight: 700; white-space: nowrap; letter-spacing: 0.02em; }
+    .acc-fa { background: rgba(62,207,142,0.15); color: #3ecf8e; border: 1px solid rgba(62,207,142,0.3); }
+    .acc-pa { background: rgba(255,165,50,0.15); color: #ffa532; border: 1px solid rgba(255,165,50,0.3); }
+    .acc-other { background: rgba(122,143,168,0.12); color: var(--text-muted, #7a8fa8); border: 1px solid rgba(122,143,168,0.2); }
+
+    /* ── Source note ─────────────────────────────────────── */
+    .source-note { margin-top: 2rem; background: var(--bg-card, #1a2236); border: 1px solid var(--border, #2a3a52); border-radius: 10px; padding: 1rem 1.2rem; font-size: 0.8rem; color: var(--text-muted, #7a8fa8); line-height: 1.6; }
+    .source-note a { color: var(--neon-cyan, #00d4ff); }
+    .source-note strong { color: var(--text, #e0e6ef); }
+
+    /* ── Loading / error ─────────────────────────────────── */
+    #loadMsg { text-align: center; padding: 3rem; color: var(--text-muted, #7a8fa8); }
+
+    @media (max-width: 640px) {
+      table.acc-table th:nth-child(4), table.acc-table td:nth-child(4),
+      table.acc-table th:nth-child(6), table.acc-table td:nth-child(6) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <a href="index.html"><img src="logo.svg" class="logo-img" alt="MeritNama" /></a>
+    </div>
+    <div class="header-meta">
+      <span class="badge badge-info">Accreditation</span>
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="tab-nav" id="mainNav">
+  <a href="index.html" class="tab-btn back-btn" style="text-decoration:none;">&#8592; Historical Data</a>
+  <a href="simulation.html" class="tab-btn" style="text-decoration:none;">&#127973; Induction Portal</a>
+  <a href="accreditation.html" class="tab-btn active" style="text-decoration:none;">&#9989; Accreditation</a>
+  <a href="hospitals.html" class="tab-btn" style="text-decoration:none;">&#127968; Hospitals</a>
+  <a href="reviews.html" class="tab-btn" style="text-decoration:none;">&#128172; Discussion</a>
+  <a href="donate.html" class="tab-btn donate-btn" style="text-decoration:none;">&#9829; Support</a>
+</nav>
+
+<div class="page-wrap">
+
+  <div class="acc-header">
+    <h1>🏥 CPSP Accredited Programs</h1>
+    <p>Official FCPS accreditation data from CPSP — search by hospital, city, or speciality.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="acc-stats" id="statsBar" style="display:none;">
+    <div class="stat-card"><div class="num" id="statTotal">—</div><div class="lbl">Accredited Programs</div></div>
+    <div class="stat-card"><div class="num" id="statHospitals">—</div><div class="lbl">Hospitals</div></div>
+    <div class="stat-card"><div class="num" id="statCities">—</div><div class="lbl">Cities</div></div>
+    <div class="stat-card"><div class="num" id="statSpecs">—</div><div class="lbl">Specialities</div></div>
+  </div>
+
+  <!-- Filters -->
+  <div class="acc-filters" id="filterBar" style="display:none;">
+    <label>Hospital / Institute
+      <input type="text" id="fHospital" placeholder="Search hospital…" autocomplete="off" />
+    </label>
+    <label>City
+      <select id="fCity"><option value="">All Cities</option></select>
+    </label>
+    <label>Speciality
+      <select id="fSpec"><option value="">All Specialities</option></select>
+    </label>
+    <button id="resetBtn">Reset</button>
+  </div>
+
+  <!-- Loading -->
+  <div id="loadMsg">Loading accreditation data…</div>
+
+  <!-- Result count -->
+  <div class="result-info" id="resultInfo" style="display:none;"></div>
+
+  <!-- Table -->
+  <div class="acc-table-wrap" id="tableWrap" style="display:none;">
+    <table class="acc-table">
+      <thead>
+        <tr>
+          <th>Hospital / Institute</th>
+          <th>City</th>
+          <th>Speciality</th>
+          <th>Unit</th>
+          <th>Accreditation Type</th>
+          <th>Since</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="source-note">
+    <strong>Source:</strong> <a href="https://listing.cpsp.edu.pk/weblink_new/accreditation/accredited-institutes-fcps.php" target="_blank" rel="noopener">CPSP Accredited Institutes for FCPS</a> — scraped periodically and stored in <code>data/cpsp_accreditation.json</code>.
+    Always verify on the official <a href="https://www.cpsp.edu.pk/" target="_blank" rel="noopener">CPSP website</a> before making decisions.
+  </div>
+
+</div><!-- /page-wrap -->
+
+<script>
+(function () {
+  'use strict';
+
+  async function loadJSON(path) {
+    const r = await fetch(path);
+    if (!r.ok) throw new Error(`HTTP ${r.status} for ${path}`);
+    return r.json();
+  }
+
+  let ALL_ROWS = [];
+
+  async function init() {
+    try {
+      const accredData = await loadJSON('data/cpsp_accreditation.json');
+
+      // Flatten hospital → programs into rows
+      for (const h of accredData) {
+        for (const p of h.programs) {
+          ALL_ROWS.push({
+            hospital:   h.hospital,
+            city:       h.city,
+            speciality: p.speciality,
+            unit:       p.unit,
+            accType:    p.type,
+            since:      p.since,
+          });
+        }
+      }
+
+      populateFilters();
+      updateStats();
+      renderTable(ALL_ROWS);
+
+      document.getElementById('loadMsg').style.display   = 'none';
+      document.getElementById('statsBar').style.display  = 'flex';
+      document.getElementById('filterBar').style.display = 'flex';
+      document.getElementById('tableWrap').style.display = 'block';
+      document.getElementById('resultInfo').style.display = 'block';
+
+      document.getElementById('fHospital').addEventListener('input', applyFilters);
+      document.getElementById('fCity').addEventListener('change', applyFilters);
+      document.getElementById('fSpec').addEventListener('change', applyFilters);
+      document.getElementById('resetBtn').addEventListener('click', () => {
+        document.getElementById('fHospital').value = '';
+        document.getElementById('fCity').value     = '';
+        document.getElementById('fSpec').value     = '';
+        applyFilters();
+      });
+
+    } catch (err) {
+      document.getElementById('loadMsg').textContent = 'Error loading data: ' + err.message;
+      console.error(err);
+    }
+  }
+
+  function populateFilters() {
+    const cities = [...new Set(ALL_ROWS.map(r => r.city).filter(Boolean))].sort();
+    const sel = document.getElementById('fCity');
+    cities.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      sel.appendChild(opt);
+    });
+
+    const specs = [...new Set(ALL_ROWS.map(r => r.speciality))].sort();
+    const sel2 = document.getElementById('fSpec');
+    specs.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      sel2.appendChild(opt);
+    });
+  }
+
+  function updateStats() {
+    document.getElementById('statTotal').textContent     = ALL_ROWS.length.toLocaleString();
+    document.getElementById('statHospitals').textContent = new Set(ALL_ROWS.map(r => r.hospital)).size.toLocaleString();
+    document.getElementById('statCities').textContent    = new Set(ALL_ROWS.map(r => r.city).filter(Boolean)).size.toLocaleString();
+    document.getElementById('statSpecs').textContent     = new Set(ALL_ROWS.map(r => r.speciality)).size.toLocaleString();
+  }
+
+  function applyFilters() {
+    const hosp = (document.getElementById('fHospital').value || '').toLowerCase();
+    const city = document.getElementById('fCity').value;
+    const spec = document.getElementById('fSpec').value;
+
+    const filtered = ALL_ROWS.filter(r => {
+      if (hosp && !r.hospital.toLowerCase().includes(hosp)) return false;
+      if (city && r.city !== city) return false;
+      if (spec && r.speciality !== spec) return false;
+      return true;
+    });
+
+    renderTable(filtered);
+  }
+
+  function esc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+function accTypeBadge(t) {
+      if (!t) return '';
+      const upper = t.toUpperCase();
+      if (upper.includes('F.A') || upper === 'FA') {
+        return `<span class="acc-badge acc-fa">&#9679; F.A.</span>`;
+      }
+      if (upper.includes('P.A') || upper === 'PA') {
+        return `<span class="acc-badge acc-pa">&#9679; P.A.</span>`;
+      }
+      return `<span class="acc-badge acc-other">${esc(t)}</span>`;
+    }
+
+    function renderTable(rows) {
+      const tbody = document.getElementById('tableBody');
+      const info  = document.getElementById('resultInfo');
+      info.textContent = `Showing ${rows.length.toLocaleString()} of ${ALL_ROWS.length.toLocaleString()} accredited programs`;
+
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted)">No results match your filters.</td></tr>';
+        return;
+      }
+
+      let html = '';
+      for (const r of rows) {
+        html += `<tr>
+          <td style="font-weight:500">${esc(r.hospital)}</td>
+          <td style="color:var(--text-muted);font-size:0.8rem">${esc(r.city)}</td>
+          <td>${esc(r.speciality)}</td>
+          <td style="color:var(--text-muted);font-size:0.8rem">${esc(r.unit)}</td>
+          <td>${accTypeBadge(r.accType)}</td>
+        <td style="color:var(--text-muted);font-size:0.8rem;white-space:nowrap">${esc(r.since)}</td>
+      </tr>`;
+    }
+    tbody.innerHTML = html;
+  }
+
+  init();
+})();
+</script>
+
+<script>
+  // Hamburger nav toggle
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const mainNav = document.getElementById('mainNav');
+  if (hamburgerBtn && mainNav) {
+    hamburgerBtn.addEventListener('click', function () {
+      mainNav.classList.toggle('open');
+      hamburgerBtn.classList.toggle('open');
+    });
+  }
+</script>
+
+</body>
+</html>

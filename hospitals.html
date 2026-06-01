@@ -124,10 +124,23 @@
       <a href="index.html"><img src="logo.svg" class="logo-img" alt="Meritnama" /></a>
     </div>
     <div class="header-meta">
-      <a href="simulation.html?tab=hospitals" class="badge badge-info">← All Hospitals</a>
+      <span class="badge badge-info">Hospitals</span>
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </header>
+
+<!-- ======= NAV ======= -->
+<nav class="tab-nav" id="mainNav">
+  <a href="index.html" class="tab-btn back-btn" style="text-decoration:none;">&#8592; Historical Data</a>
+  <a href="simulation.html" class="tab-btn" style="text-decoration:none;">&#127973; Induction Portal</a>
+  <a href="accreditation.html" class="tab-btn" style="text-decoration:none;">&#9989; Accreditation</a>
+  <a href="hospitals.html" class="tab-btn active" style="text-decoration:none;">&#127968; Hospitals</a>
+  <a href="reviews.html" class="tab-btn" style="text-decoration:none;">&#128172; Discussion</a>
+  <a href="donate.html" class="tab-btn donate-btn" style="text-decoration:none;">&#9829; Support</a>
+</nav>
 
 <!-- ======= HERO ======= -->
 <section class="hosp-hero">
@@ -213,6 +226,17 @@
 
   loadData();
 })();
+</script>
+<script>
+  // Hamburger nav toggle
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const mainNav = document.getElementById('mainNav');
+  if (hamburgerBtn && mainNav) {
+    hamburgerBtn.addEventListener('click', function () {
+      mainNav.classList.toggle('open');
+      hamburgerBtn.classList.toggle('open');
+    });
+  }
 </script>
 </body>
 </html>
