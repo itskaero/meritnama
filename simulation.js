@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderCandStats();
   setupSlotBrowser();
   setupSimulationTab();
+  setupChat();
   updateMyBadge();
 
   // If navigated from profile "Run My Simulation" — scroll to the YOU row
@@ -173,6 +174,14 @@ function setupTabs() {
       if (t === 'competition') renderCompetitionTab();
       if (t === 'hospitals')   renderHospitalsTab();
       if (t === 'profiles')    renderProfilesTab();
+      if (t === 'community') {
+        CHAT.tabActive = true;
+        _resetUnread();
+        _renderAllChatMessages();
+        _chatScrollBottom('chatTabMessages');
+      } else {
+        CHAT.tabActive = false;
+      }
       // close hamburger menu after tab selection on mobile
       nav?.classList.remove('nav-open');
       document.getElementById('hamburgerBtn')?.setAttribute('aria-expanded', 'false');
@@ -652,23 +661,35 @@ function refreshSbDropdowns(from) {
   const prog = SIM.sb.program;
   if (!prog) return;
 
+  // Candidate-preference entries for this program
   const entries = [];
   allCandidates().forEach(c => (c.preference?.[prog] || []).forEach(p => entries.push(p)));
 
+  // Seats-data entries for this program (may include quotas/specs/hosps absent from candidate prefs)
+  const seatRows = SIM.seatsLoaded ? SIM.flatSeats.filter(s => s.typeName === prog) : [];
+
   if (!from || from === 'program') {
-    const quotas = [...new Set(entries.map(e => e.quotaName))].sort();
+    const candQ = new Set(entries.map(e => e.quotaName));
+    const seatQ = new Set(seatRows.map(s => s.quotaName));
+    const quotas = [...new Set([...candQ, ...seatQ])].filter(Boolean).sort();
     fillSelect('sbQuota', quotas, SIM.sb.quota, '— Quota —');
   }
 
-  const byQ = SIM.sb.quota ? entries.filter(e => e.quotaName === SIM.sb.quota) : entries;
+  const byQ     = SIM.sb.quota ? entries.filter(e => e.quotaName === SIM.sb.quota) : entries;
+  const byQSeat = SIM.sb.quota ? seatRows.filter(s => s.quotaName === SIM.sb.quota) : seatRows;
   if (!from || from === 'program' || from === 'quota') {
-    const specs = [...new Set(byQ.map(e => e.specialityName))].sort();
+    const candS = new Set(byQ.map(e => e.specialityName));
+    const seatS = new Set(byQSeat.map(s => s.specialityName));
+    const specs = [...new Set([...candS, ...seatS])].filter(Boolean).sort();
     fillSelect('sbSpec', specs, SIM.sb.spec, '— Specialty —');
   }
 
-  const byQS = SIM.sb.spec ? byQ.filter(e => e.specialityName === SIM.sb.spec) : byQ;
+  const byQS     = SIM.sb.spec ? byQ.filter(e => e.specialityName === SIM.sb.spec) : byQ;
+  const byQSSeat = SIM.sb.spec ? byQSeat.filter(s => s.specialityName === SIM.sb.spec) : byQSeat;
   if (!from || from === 'program' || from === 'quota' || from === 'spec') {
-    const hosps = [...new Set(byQS.map(e => e.hospitalName))].sort();
+    const candH = new Set(byQS.map(e => e.hospitalName));
+    const seatH = new Set(byQSSeat.map(s => s.hospitalName));
+    const hosps = [...new Set([...candH, ...seatH])].filter(Boolean).sort();
     fillSelect('sbHosp', hosps, SIM.sb.hosp, '— Hospital —');
   }
 }
@@ -695,8 +716,12 @@ function renderSlot() {
   const container = document.getElementById('sbResult');
   if (!container) return;
 
-  if (!program || !quota || !spec || !hosp) {
-    container.innerHTML = '<p class="sb-placeholder">Select a program, quota, specialty and hospital above to see ranked applicants.</p>';
+  if (!program || !quota) {
+    container.innerHTML = '<p class="sb-placeholder">Select a programme and quota above (specialty and hospital are optional) to see applicants.</p>';
+    return;
+  }
+  if (!spec || !hosp) {
+    renderPartialSlot();
     return;
   }
 
@@ -833,6 +858,160 @@ function renderSlot() {
   });
   // Refresh modal if already open (slot context may have changed)
   if (SIM.sb.clickedCandId) renderSbQuickViewContent();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SLOT BROWSER — partial view (prog + quota, spec and/or hosp optional)
+// ═══════════════════════════════════════════════════════════════════
+function renderPartialSlot() {
+  const { program, quota, spec, hosp } = SIM.sb;
+  const container = document.getElementById('sbResult');
+  if (!container) return;
+
+  const useSimData = !!(SIM.sim.result && SIM.sim.program === program);
+
+  // Determine grouping dimension
+  // spec set → group by hospital | hosp set → group by specialty | neither → group by specialty
+  const groupKey   = spec ? 'hospitalName' : 'specialityName';
+  const groupLabel = spec ? 'Hospital'     : 'Specialty';
+
+  // Collect groups from seats data first
+  const groupMap = new Map();
+  const seatRows = SIM.flatSeats.filter(s =>
+    s.typeName  === program &&
+    s.quotaName === quota &&
+    (!spec || s.specialityName === spec) &&
+    (!hosp || s.hospitalName   === hosp)
+  );
+  for (const s of seatRows) {
+    const key = s[groupKey];
+    if (!groupMap.has(key)) groupMap.set(key, { key, seats: 0, slots: [] });
+    const g = groupMap.get(key);
+    g.seats += s.seats;
+    g.slots.push({ spec: s.specialityName, hosp: s.hospitalName, seats: s.seats });
+  }
+
+  // Supplement with candidate-preference slots not in seats
+  allCandidates().forEach(c => {
+    const em = effectiveMark(c, program);
+    if (em == null) return;
+    (c.preference?.[program] || []).forEach(p => {
+      if (p.quotaName !== quota) return;
+      if (spec && p.specialityName !== spec) return;
+      if (hosp && p.hospitalName  !== hosp) return;
+      const key = p[groupKey];
+      if (!groupMap.has(key)) groupMap.set(key, { key, seats: 0, slots: [] });
+    });
+  });
+
+  // Build applicant list per group
+  for (const [, grp] of groupMap) {
+    const applicants = [];
+    allCandidates().forEach(c => {
+      const em = effectiveMark(c, program);
+      if (em == null) return;
+      const matched = (c.preference?.[program] || []).find(p =>
+        p.quotaName === quota &&
+        (!spec || p.specialityName === spec) &&
+        (!hosp || p.hospitalName   === hosp) &&
+        p[groupKey] === grp.key
+      );
+      if (matched) {
+        applicants.push({
+          applicantId:     c.applicantId,
+          nameFull:        c.nameFull,
+          marksTotal:      em,
+          preferenceNo:    matched.preferenceNo,
+          slotSpec:        matched.specialityName,
+          slotHosp:        matched.hospitalName,
+          parentInstitute: matched.parentInstitute,
+        });
+      }
+    });
+    applicants.sort((a, b) => b.marksTotal - a.marksTotal);
+    grp.applicants = applicants;
+  }
+
+  const groups = [...groupMap.values()].sort((a, b) => a.key.localeCompare(b.key));
+  const isMe   = id => String(id) === SIM.myId;
+
+  const totalSeats = groups.reduce((s, g) => s + g.seats, 0);
+
+  let html = `
+    <div class="sb-header">
+      <div class="sb-title-block">
+        <span class="sb-spec">${spec ? esc(spec) : hosp ? esc(hosp) : esc(program) + ' \u00b7 ' + esc(quota)}</span>
+        <span class="sb-hosp">${spec ? 'All hospitals \u00b7 ' + esc(quota) : hosp ? esc(hosp) + ' \u2014 all specialties' : 'All slots \u00b7 ' + esc(quota)}</span>
+        <span class="sb-meta">${esc(program)} \u00b7 ${esc(quota)}${spec ? ' \u00b7 ' + esc(spec) : ''}${hosp ? ' \u00b7 ' + esc(hosp) : ''}</span>
+      </div>
+      <div class="sb-stats">
+        <div class="sb-stat"><span class="sb-stat-v">${groups.length}</span><span class="sb-stat-l">${groupLabel}s</span></div>
+        <div class="sb-stat ${totalSeats === 0 ? 'sb-stat-unknown' : ''}"><span class="sb-stat-v">${totalSeats || '?'}</span><span class="sb-stat-l">Total Seats</span></div>
+      </div>
+    </div>
+    ${!useSimData
+      ? `<div class="sb-partial-warn">&#9888;&#65039; Without running the <strong>Simulation</strong> first, the same candidate may appear in multiple slots below. Run the Simulation tab for a de-duplicated, merit-accurate view.</div>`
+      : `<p class="sb-sim-note">Simulation active &mdash; showing predicted standings per slot.</p>`}
+    <div style="padding:12px;display:flex;flex-direction:column;gap:12px;">
+  `;
+
+  if (!groups.length) {
+    html += '<p class="sb-empty">No slots or applicants found for this filter.</p>';
+  } else {
+    for (const grp of groups) {
+      const top5   = grp.applicants.slice(0, 5);
+      const extra  = grp.applicants.length - 5;
+      const myIdx  = SIM.myId ? grp.applicants.findIndex(a => isMe(a.applicantId)) : -1;
+      // Jump button(s): link directly into the full slot view
+      const canSingleJump = grp.slots.length === 1 && grp.slots[0].spec && grp.slots[0].hosp;
+      const jumpBtns = canSingleJump
+        ? `<button class="btn btn-sm sb-partial-jump-btn" data-prog="${esc(program)}" data-quota="${esc(quota)}" data-spec="${esc(grp.slots[0].spec)}" data-hosp="${esc(grp.slots[0].hosp)}">View slot &rarr;</button>`
+        : grp.slots.map(sl =>
+            `<button class="btn btn-sm sb-partial-jump-btn" style="font-size:0.7rem" data-prog="${esc(program)}" data-quota="${esc(quota)}" data-spec="${esc(sl.spec)}" data-hosp="${esc(sl.hosp)}">${esc(spec ? sl.hosp.split(',')[0].trim() : sl.spec)} &rarr;</button>`
+          ).join('');
+
+      html += `
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
+          <div class="sb-partial-group-hdr">
+            <div>
+              <span class="sb-spec" style="font-size:0.95rem">${esc(grp.key)}</span>
+              <span class="sb-meta" style="display:block;margin-top:2px">
+                ${grp.slots.length > 1 ? grp.slots.length + ' slots · ' : ''}${grp.seats || '?'} seat${grp.seats !== 1 ? 's' : ''} &nbsp;&middot;&nbsp; ${grp.applicants.length} applicant${grp.applicants.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              ${myIdx >= 0 ? `<span class="sim-me-badge" style="font-size:0.72rem">YOU #${myIdx + 1}</span>` : ''}
+              ${jumpBtns}
+            </div>
+          </div>
+          <div class="sb-list" style="padding:6px 12px">
+            ${top5.length ? top5.map((a, i) => {
+              const above = grp.seats > 0 && (i + 1) <= grp.seats;
+              const showSlot = grp.slots.length > 1;
+              return `<div class="sb-row ${above ? 'sb-above' : 'sb-below'} ${isMe(a.applicantId) ? 'sb-row-me' : ''}">
+                <span class="sb-rank">#${i + 1}</span>
+                <span class="sb-marks">${fmtM(a.marksTotal)}</span>
+                <span class="sb-pref-no sb-parent">${a.parentInstitute ? '\u2605' : ''}</span>
+                <span class="sb-name">${esc(a.nameFull)}${isMe(a.applicantId) ? ' <span class="me-tag">YOU</span>' : ''}${showSlot ? `<span style="font-size:0.7rem;color:var(--text-muted);margin-left:5px">${esc(spec ? a.slotHosp.split(',')[0].trim() : a.slotSpec)}</span>` : ''}</span>
+                <span></span>
+              </div>`;
+            }).join('') : '<p class="sb-empty">No applicants listed this slot.</p>'}
+            ${extra > 0 ? `<p style="text-align:center;font-size:0.74rem;color:var(--text-muted);padding:4px 0 8px">+${extra} more &mdash; view the full slot for complete list</p>` : ''}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+
+  // Wire up jump buttons
+  container.querySelectorAll('.sb-partial-jump-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      jumpToSlot(btn.dataset.prog, btn.dataset.quota, btn.dataset.spec, btn.dataset.hosp);
+    });
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2205,4 +2384,331 @@ function _showProfileModal(p) {
   `;
 
   modal.classList.remove('hidden');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// COMMUNITY CHAT
+// ═══════════════════════════════════════════════════════════════════
+
+const CHAT = {
+  unsubscribe:    null,   // Firestore listener teardown
+  messages:       [],     // cached messages
+  unreadCount:    0,
+  popupOpen:      false,
+  tabActive:      false,
+  uid:            null,   // anonymous user ID (localStorage)
+  displayName:    null,   // display name (localStorage)
+  COLLECTION:     'sim21_chat',
+  CHAR_LIMIT:     500,
+  MAX_MESSAGES:   80,
+  EMOJIS: ['😊','😂','🙏','❤️','🎉','👍','🔥','💪','🤔','😅',
+            '✅','⚡','🌟','💡','😢','🥺','😍','🙌','✨','🎯',
+            '🏥','🩺','📚','💊','🧬','😎','🤝','👏','💯','🫡'],
+};
+
+function _chatUID() {
+  if (CHAT.uid) return CHAT.uid;
+  let uid = localStorage.getItem('_chat_uid');
+  if (!uid) {
+    uid = 'u_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    localStorage.setItem('_chat_uid', uid);
+  }
+  CHAT.uid = uid;
+  return uid;
+}
+
+function _chatName() {
+  if (CHAT.displayName) return CHAT.displayName;
+  const saved = localStorage.getItem('_chat_name');
+  CHAT.displayName = saved || null;
+  return CHAT.displayName;
+}
+
+function _relTime(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (diff < 60)  return 'just now';
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  return d.toLocaleDateString('en-PK', { day:'numeric', month:'short' });
+}
+
+function setupChat() {
+  // Pre-populate display name from Firestore profile if not already set
+  if (!_chatName()) {
+    try {
+      const session = JSON.parse(localStorage.getItem('meritnama_auth_session') || 'null');
+      const email   = session?.email;
+      if (email) {
+        const db = firebase.firestore();
+        db.collection('user_profiles').doc(email).get().then(doc => {
+          if (doc.exists && doc.data().name && !_chatName()) {
+            const profileName = doc.data().name.trim().slice(0, 40);
+            localStorage.setItem('_chat_name', profileName);
+            CHAT.displayName = profileName;
+            ['chatTabNameBar', 'chatPopupNameBar'].forEach(id => {
+              const el = document.getElementById(id);
+              if (el) _renderChatNameBar(el, id.includes('Tab') ? 'chatTabInput' : 'chatPopupInput');
+            });
+          }
+        }).catch(() => {});
+      }
+    } catch (_) {}
+  }
+
+  // Setup bubble toggle
+  const bubble = document.getElementById('chatBubbleBtn');
+  const popup  = document.getElementById('chatPopup');
+  if (bubble) {
+    bubble.addEventListener('click', () => {
+      const isHidden = popup?.classList.contains('hidden');
+      if (isHidden) {
+        popup?.classList.remove('hidden');
+        CHAT.popupOpen = true;
+        _resetUnread();
+        _chatScrollBottom('chatPopupMessages');
+      } else {
+        popup?.classList.add('hidden');
+        CHAT.popupOpen = false;
+      }
+    });
+  }
+
+  // Close popup when clicking outside
+  document.addEventListener('click', e => {
+    if (!CHAT.popupOpen) return;
+    if (popup?.contains(e.target) || bubble?.contains(e.target)) return;
+    popup?.classList.add('hidden');
+    CHAT.popupOpen = false;
+  });
+
+  // Wire both chat UIs (tab and popup)
+  _wireChatInput('chatTabInput', 'chatTabSendBtn', 'chatTabMessages', 'chatTabCharCount', 'chatTabEmojiBtn', 'chatTabEmojiPicker', 'chatTabNameBar');
+  _wireChatInput('chatPopupInput', 'chatPopupSendBtn', 'chatPopupMessages', 'chatPopupCharCount', 'chatPopupEmojiBtn', 'chatPopupEmojiPicker', 'chatPopupNameBar');
+
+  // Start Firestore listener
+  _startChatListener();
+}
+
+function _wireChatInput(inputId, sendBtnId, msgsId, charCountId, emojiBtnId, emojiPickerId, namBarId) {
+  const input     = document.getElementById(inputId);
+  const sendBtn   = document.getElementById(sendBtnId);
+  const charCount = document.getElementById(charCountId);
+  const emojiBtn  = document.getElementById(emojiBtnId);
+  const emojiPkr  = document.getElementById(emojiPickerId);
+  const namBar    = document.getElementById(namBarId);
+
+  if (!input || !sendBtn) return;
+
+  // Character counter
+  input.addEventListener('input', () => {
+    const len = input.value.length;
+    if (charCount) {
+      charCount.textContent = `${len}/${CHAT.CHAR_LIMIT}`;
+      charCount.style.color = len > CHAT.CHAR_LIMIT * 0.9 ? 'var(--neon-gold)' : '';
+      charCount.style.fontWeight = len > CHAT.CHAR_LIMIT * 0.9 ? '700' : '';
+    }
+  });
+
+  // Send on Enter (Shift+Enter = newline)
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      _sendChatMessage(inputId, msgsId);
+    }
+  });
+
+  sendBtn.addEventListener('click', () => _sendChatMessage(inputId, msgsId));
+
+  // Emoji picker
+  if (emojiBtn && emojiPkr) {
+    // Build emoji grid once
+    if (!emojiPkr.dataset.built) {
+      emojiPkr.innerHTML = CHAT.EMOJIS.map(em =>
+        `<button class="chat-emoji-item" type="button">${em}</button>`
+      ).join('');
+      emojiPkr.dataset.built = '1';
+      emojiPkr.querySelectorAll('.chat-emoji-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const pos = input.selectionStart ?? input.value.length;
+          input.value = input.value.slice(0, pos) + btn.textContent + input.value.slice(pos);
+          input.focus();
+          input.dispatchEvent(new Event('input'));
+          emojiPkr.classList.add('hidden');
+        });
+      });
+    }
+    emojiBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      emojiPkr.classList.toggle('hidden');
+    });
+    document.addEventListener('click', e => {
+      if (!emojiPkr.contains(e.target) && e.target !== emojiBtn) {
+        emojiPkr.classList.add('hidden');
+      }
+    });
+  }
+
+  // Display name bar
+  if (namBar) _renderChatNameBar(namBar, inputId);
+}
+
+function _renderChatNameBar(container, inputId) {
+  const name = _chatName();
+  container.innerHTML = name
+    ? `<span style="font-size:0.75rem;color:var(--text-muted)">Chatting as <strong style="color:var(--neon-cyan)">${esc(name)}</strong></span>
+       <button class="chat-name-change-btn" data-input="${inputId}" style="font-size:0.72rem;background:none;border:none;color:var(--text-muted);cursor:pointer;text-decoration:underline;padding:0">change</button>`
+    : `<span style="font-size:0.75rem;color:var(--neon-gold)">&#9888; Set your display name to chat</span>
+       <button class="chat-name-set-btn" data-input="${inputId}" style="font-size:0.72rem;padding:3px 10px;background:rgba(77,184,217,0.12);border:1px solid rgba(77,184,217,0.3);color:var(--neon-cyan);border-radius:100px;cursor:pointer;">Set name</button>`;
+
+  container.querySelectorAll('.chat-name-set-btn, .chat-name-change-btn').forEach(btn => {
+    btn.addEventListener('click', () => _promptChatName(btn.dataset.input));
+  });
+}
+
+function _promptChatName(returnInputId) {
+  const current = _chatName() || '';
+  const input   = document.getElementById(returnInputId);
+  const name    = window.prompt('Enter your display name for community chat:', current);
+  if (name === null) return; // cancelled
+  const cleaned = name.trim().slice(0, 40);
+  if (!cleaned) {
+    showToast('Display name cannot be empty.', 'warning');
+    return;
+  }
+  localStorage.setItem('_chat_name', cleaned);
+  CHAT.displayName = cleaned;
+  showToast(`Name set to "${cleaned}"`, 'success');
+  // Refresh name bars
+  ['chatTabNameBar', 'chatPopupNameBar'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) _renderChatNameBar(el, id.includes('Tab') ? 'chatTabInput' : 'chatPopupInput');
+  });
+  input?.focus();
+}
+
+function _sendChatMessage(inputId, msgsId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  if (text.length > CHAT.CHAR_LIMIT) {
+    showToast(`Message too long (max ${CHAT.CHAR_LIMIT} chars)`, 'warning');
+    return;
+  }
+  const name = _chatName();
+  if (!name) {
+    showToast('Please set a display name first.', 'warning');
+    _promptChatName(inputId);
+    return;
+  }
+
+  let db;
+  try { db = firebase.firestore(); } catch { showToast('Chat unavailable.', 'error'); return; }
+
+  const uid = _chatUID();
+
+  db.collection(CHAT.COLLECTION).add({
+    text:       text,
+    name:       name,
+    uid:        uid,
+    ts:         firebase.firestore.FieldValue.serverTimestamp(),
+  }).then(() => {
+    input.value = '';
+    const cc = document.getElementById(inputId.replace('Input', 'CharCount'));
+    if (cc) cc.textContent = `0/${CHAT.CHAR_LIMIT}`;
+    _chatScrollBottom(msgsId);
+  }).catch(err => {
+    showToast('Could not send message.', 'error');
+    console.error('Chat send error:', err);
+  });
+}
+
+function _startChatListener() {
+  let db;
+  try { db = firebase.firestore(); } catch { return; }
+
+  if (CHAT.unsubscribe) CHAT.unsubscribe();
+
+  CHAT.unsubscribe = db.collection(CHAT.COLLECTION)
+    .orderBy('ts', 'asc')
+    .limitToLast(CHAT.MAX_MESSAGES)
+    .onSnapshot(snap => {
+      CHAT.messages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const isVisible = CHAT.popupOpen || CHAT.tabActive;
+      if (!isVisible) {
+        CHAT.unreadCount++;
+        _updateBadge();
+      }
+      _renderAllChatMessages();
+      if (isVisible) _chatScrollBottom('chatTabMessages');
+      if (CHAT.popupOpen) _chatScrollBottom('chatPopupMessages');
+    }, err => {
+      console.warn('Chat listener error:', err);
+    });
+}
+
+function _renderAllChatMessages() {
+  _renderChatMessages('chatTabMessages');
+  _renderChatMessages('chatPopupMessages');
+}
+
+function _renderChatMessages(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const uid = _chatUID();
+  if (!CHAT.messages.length) {
+    container.innerHTML = `<div class="chat-empty">No messages yet. Say hello! 👋</div>`;
+    return;
+  }
+  container.innerHTML = CHAT.messages.map(msg => {
+    const isOwn  = msg.uid === uid;
+    const relTm  = _relTime(msg.ts);
+    // Sanitise output — esc() handles HTML chars
+    return `<div class="chat-msg ${isOwn ? 'chat-msg-own' : ''}">
+      <div class="chat-msg-meta">
+        <span class="chat-msg-name ${isOwn ? 'chat-msg-name-own' : ''}">${esc(msg.name || 'Anonymous')}</span>
+        <span class="chat-msg-time">${relTm}</span>
+        ${isOwn ? `<button class="chat-del-btn" data-id="${msg.id}" title="Delete message">&times;</button>` : ''}
+      </div>
+      <div class="chat-msg-bubble ${isOwn ? 'chat-msg-bubble-own' : ''}">${esc(msg.text || '').replace(/\n/g, '<br>')}</div>
+    </div>`;
+  }).join('');
+
+  // Wire delete buttons (own messages only)
+  container.querySelectorAll('.chat-del-btn').forEach(btn => {
+    btn.addEventListener('click', () => _deleteChatMessage(btn.dataset.id));
+  });
+}
+
+function _deleteChatMessage(msgId) {
+  if (!window.confirm('Delete this message?')) return;
+  let db;
+  try { db = firebase.firestore(); } catch { return; }
+  db.collection(CHAT.COLLECTION).doc(msgId).delete()
+    .catch(err => { showToast('Could not delete.', 'error'); console.error(err); });
+}
+
+function _chatScrollBottom(containerId) {
+  requestAnimationFrame(() => {
+    const el = document.getElementById(containerId);
+    if (el) el.scrollTop = el.scrollHeight;
+  });
+}
+
+function _resetUnread() {
+  CHAT.unreadCount = 0;
+  _updateBadge();
+}
+
+function _updateBadge() {
+  const badge = document.getElementById('chatBubbleBadge');
+  if (!badge) return;
+  if (CHAT.unreadCount > 0 && !CHAT.popupOpen && !CHAT.tabActive) {
+    badge.textContent = CHAT.unreadCount > 99 ? '99+' : String(CHAT.unreadCount);
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
 }

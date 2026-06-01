@@ -793,6 +793,190 @@
     .sim-next-line[data-sim-cand]:hover { background: rgba(77,184,217,0.1) !important; opacity: 1 !important; }
     .sim-other-row[data-sim-cand]         { cursor: pointer; }
     .sim-other-row[data-sim-cand]:hover   { background: rgba(77,184,217,0.06) !important; }
+
+    /* ---------------------------------------------------------------
+       SLOT BROWSER — partial view (grouped slots)
+    --------------------------------------------------------------- */
+    .sb-partial-warn {
+      margin: 0 12px 8px; padding: 9px 14px;
+      background: rgba(232,166,39,0.07); border: 1px solid rgba(232,166,39,0.28);
+      border-left: 3px solid var(--neon-gold, #e8a627);
+      border-radius: 0 var(--radius, 10px) var(--radius, 10px) 0;
+      color: var(--neon-gold, #e8a627); font-size: 0.82rem;
+    }
+    .sb-partial-group-hdr {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      flex-wrap: wrap; gap: 10px; padding: 14px 16px;
+      background: linear-gradient(135deg, rgba(77,184,217,0.04) 0%, rgba(124,101,196,0.02) 100%);
+      border-bottom: 1px solid rgba(77,184,217,0.1);
+    }
+
+    /* ---------------------------------------------------------------
+       COMMUNITY CHAT — tab layout
+    --------------------------------------------------------------- */
+    .chat-tab-wrap {
+      max-width: 780px; margin: 0 auto; padding: 0 1rem 4rem;
+      display: flex; flex-direction: column; gap: 0;
+      height: calc(100vh - 340px); min-height: 480px;
+    }
+    .chat-name-bar {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      padding: 8px 14px; background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border); border-bottom: none;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      font-size: 0.8rem;
+    }
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 14px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 10px;
+      scroll-behavior: smooth;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .chat-messages-popup {
+      height: 290px; flex: unset;
+    }
+    .chat-empty {
+      text-align: center; color: var(--text-muted); font-size: 0.85rem;
+      padding: 40px 0; flex: 1; display: flex; align-items: center; justify-content: center;
+    }
+    .chat-msg { display: flex; flex-direction: column; gap: 2px; max-width: 88%; }
+    .chat-msg-own { align-self: flex-end; }
+    .chat-msg-meta {
+      display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+      font-size: 0.71rem; color: var(--text-muted);
+    }
+    .chat-msg-name { font-weight: 700; color: var(--neon-cyan, #4db8d9); }
+    .chat-msg-name-own { color: var(--neon-purple, #7c65c4); }
+    .chat-msg-time { opacity: 0.6; }
+    .chat-del-btn {
+      background: none; border: none; color: var(--text-muted); cursor: pointer;
+      font-size: 0.9rem; padding: 0 3px; opacity: 0.4; transition: opacity 0.15s;
+      line-height: 1;
+    }
+    .chat-del-btn:hover { opacity: 1; color: #e05470; }
+    .chat-msg-bubble {
+      padding: 9px 13px; border-radius: 0 12px 12px 12px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      font-size: 0.86rem; color: var(--text); line-height: 1.5;
+      word-break: break-word; white-space: pre-wrap;
+    }
+    .chat-msg-bubble-own {
+      border-radius: 12px 0 12px 12px;
+      background: rgba(124,101,196,0.12); border-color: rgba(124,101,196,0.25);
+    }
+    .chat-input-area {
+      border: 1px solid var(--border); border-top: 1px solid rgba(77,184,217,0.2);
+      background: rgba(13,22,38,0.9); border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      padding: 10px 14px; display: flex; flex-direction: column; gap: 6px;
+    }
+    .chat-input-area-popup {
+      border-radius: 0 0 14px 14px;
+    }
+    .chat-input-row { display: flex; gap: 8px; align-items: flex-end; }
+    .chat-input-wrap { position: relative; flex: 1; }
+    .chat-textarea {
+      width: 100%; resize: none; background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border); border-radius: var(--radius, 10px);
+      color: var(--text); font-family: var(--font); font-size: 0.87rem;
+      padding: 9px 38px 9px 12px; line-height: 1.45;
+      transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box;
+    }
+    .chat-textarea:focus {
+      outline: none; border-color: var(--neon-cyan, #4db8d9);
+      box-shadow: 0 0 0 3px rgba(77,184,217,0.1);
+    }
+    .chat-emoji-btn {
+      position: absolute; right: 8px; bottom: 8px;
+      background: none; border: none; font-size: 1.1rem; cursor: pointer;
+      line-height: 1; padding: 2px; opacity: 0.6; transition: opacity 0.15s;
+    }
+    .chat-emoji-btn:hover { opacity: 1; }
+    .chat-emoji-picker {
+      position: absolute; bottom: calc(100% + 6px); right: 0; z-index: 200;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg, 16px); padding: 10px;
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .chat-emoji-item {
+      background: none; border: none; font-size: 1.3rem; cursor: pointer;
+      border-radius: 6px; padding: 4px; transition: background 0.12s; line-height: 1;
+    }
+    .chat-emoji-item:hover { background: rgba(255,255,255,0.08); }
+    .chat-send-btn { flex-shrink: 0; align-self: flex-end; white-space: nowrap; }
+    .chat-footer-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.71rem;
+    }
+    .chat-char-count { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+    /* ---------------------------------------------------------------
+       FLOATING CHAT BUBBLE (FAB)
+    --------------------------------------------------------------- */
+    .chat-bubble-btn {
+      position: fixed; bottom: 28px; right: 28px; z-index: 490;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--neon-cyan, #4db8d9), var(--neon-purple, #7c65c4));
+      border: none; cursor: pointer; font-size: 1.5rem; line-height: 1;
+      box-shadow: 0 4px 20px rgba(77,184,217,0.4), 0 2px 8px rgba(0,0,0,0.4);
+      transition: transform 0.18s, box-shadow 0.18s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .chat-bubble-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 6px 28px rgba(77,184,217,0.55), 0 2px 12px rgba(0,0,0,0.4);
+    }
+    .chat-bubble-badge {
+      position: absolute; top: -4px; right: -4px;
+      min-width: 20px; height: 20px; border-radius: 100px;
+      background: #e05470; color: #fff; font-size: 0.65rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 4px; border: 2px solid var(--bg-deep, #0d1626);
+      font-family: var(--font);
+    }
+
+    /* Chat popup panel */
+    .chat-popup {
+      position: fixed; bottom: 98px; right: 28px; z-index: 491;
+      width: 360px; max-width: calc(100vw - 40px);
+      background: var(--bg-card, rgba(16,26,52,0.97));
+      border: 1px solid rgba(77,184,217,0.2);
+      border-radius: 16px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.65), 0 0 40px rgba(77,184,217,0.06);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      animation: chatPopupIn 0.22s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @keyframes chatPopupIn {
+      from { transform: translateY(14px) scale(0.97); opacity: 0; }
+      to   { transform: none; opacity: 1; }
+    }
+    .chat-popup-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 11px 14px;
+      background: linear-gradient(135deg, rgba(77,184,217,0.1) 0%, rgba(124,101,196,0.06) 100%);
+      border-bottom: 1px solid rgba(77,184,217,0.16);
+    }
+    .chat-popup-title {
+      flex: 1; font-weight: 700; font-size: 0.9rem; color: var(--neon-cyan, #4db8d9);
+    }
+    .chat-popup-opentab, .chat-popup-close {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-muted); border-radius: 6px; width: 28px; height: 28px;
+      cursor: pointer; font-size: 0.85rem; display: flex; align-items: center;
+      justify-content: center; transition: background 0.15s; font-family: inherit;
+    }
+    .chat-popup-opentab:hover, .chat-popup-close:hover {
+      background: rgba(255,255,255,0.13); color: var(--text);
+    }
+
+    @media (max-width: 600px) {
+      .chat-bubble-btn { bottom: 18px; right: 18px; width: 50px; height: 50px; font-size: 1.3rem; }
+      .chat-popup { bottom: 82px; right: 12px; width: calc(100vw - 24px); }
+      .chat-tab-wrap { height: auto; min-height: unset; }
+      .chat-messages { height: 340px; flex: unset; }
+    }
   </style>
 </head>
 <body>
@@ -826,12 +1010,13 @@
   <button class="tab-btn active" data-tab="candidates">&#128100; Candidate Pool</button>
   <button class="tab-btn" data-tab="slotbrowser">&#127919; Where Merit Falls</button>
   <button class="tab-btn" data-tab="simulation">&#9889; Seat Allocation</button>
-  <button class="tab-btn" data-tab="seatmatrix">&#127979; Training Seats</button>
-  <button class="tab-btn" data-tab="competition">&#128200; Competition</button>
-  <button class="tab-btn" data-tab="hospitals">&#127968; Hospitals</button>
+  <button class="tab-btn" data-tab="community">&#128172; Community Chat</button>
   <button class="tab-btn" data-tab="profiles">&#128100; Profiles</button>
+  <button class="tab-btn" data-tab="competition">&#128200; Competition</button>
+  <button class="tab-btn" data-tab="seatmatrix">&#127979; Training Seats</button>
+  <button class="tab-btn" data-tab="hospitals">&#127968; Hospitals</button>
   <button class="tab-btn" data-tab="guide">&#10067; Guide</button>
-  <a href="candidatesChanges.html" class="tab-btn" style="text-decoration:none">&#128202; Data Changes</a>
+  <a href="candidatesChanges.html" class="tab-btn" style="text-decoration:none;opacity:0.6;">&#128202; Data Changes</a>
   <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
 </nav>
 
@@ -974,7 +1159,7 @@
   <section class="tab-content" id="tab-slotbrowser">
     <div class="section-header">
       <h2>Where Does Merit Fall?</h2>
-      <p>Select a programme, quota, specialty and hospital to see all applicants ranked by their programme-specific marks &mdash; and where the seat cutoff lands.</p>
+      <p>Select a programme and quota to browse applicants. Specialty and hospital are optional &mdash; select one or both to narrow down, or leave them blank to see an overview across all slots. Run the Simulation tab first for merit-accurate, de-duplicated results.</p>
     </div>
 
     <div class="card filter-card">
@@ -1014,7 +1199,7 @@
     </div>
 
     <div id="sbResult" class="card" style="padding:0;overflow:hidden">
-      <p class="sb-placeholder">Select all four filters above to see the ranked applicant list.</p>
+      <p class="sb-placeholder">Select a programme and quota above (specialty and hospital are optional) to see applicants.</p>
     </div>
     <!-- Candidate detail modal -->
     <div id="sbCandModal" class="sbm-backdrop hidden" role="dialog" aria-modal="true">
@@ -1349,6 +1534,38 @@
     </div>
   </section>
 
+  <!-- ══════════════════════════════════════════
+       TAB: COMMUNITY CHAT
+  ══════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-community">
+    <div class="section-header">
+      <h2>&#128172; Community Chat</h2>
+      <p>A live chat room for Induction Portal applicants. Messages are public and visible to everyone. Be respectful and helpful.</p>
+    </div>
+    <div class="chat-tab-wrap">
+      <!-- Name bar -->
+      <div id="chatTabNameBar" class="chat-name-bar"></div>
+      <!-- Messages area -->
+      <div id="chatTabMessages" class="chat-messages"></div>
+      <!-- Input area -->
+      <div class="chat-input-area">
+        <div class="chat-input-row">
+          <div class="chat-input-wrap">
+            <textarea id="chatTabInput" class="chat-textarea" rows="2"
+              placeholder="Type a message… (Enter to send, Shift+Enter for new line)"></textarea>
+            <button id="chatTabEmojiBtn" class="chat-emoji-btn" title="Emoji" type="button">&#128578;</button>
+            <div id="chatTabEmojiPicker" class="chat-emoji-picker hidden"></div>
+          </div>
+          <button id="chatTabSendBtn" class="btn btn-primary chat-send-btn">Send</button>
+        </div>
+        <div class="chat-footer-row">
+          <span id="chatTabCharCount" class="chat-char-count">0/500</span>
+          <span style="color:var(--text-muted);font-size:0.72rem">Messages are stored publicly in Firebase Firestore</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <!-- ══════════════════════════════════════════
@@ -1437,6 +1654,38 @@
 ══════════════════════════════════════════ -->
 <div class="toast" id="toast"></div>
 
+<!-- ══════════════════════════════════════════
+     FLOATING CHAT BUBBLE + POPUP
+══════════════════════════════════════════ -->
+<button id="chatBubbleBtn" class="chat-bubble-btn" title="Community Chat" aria-label="Open community chat">
+  &#128172;
+  <span id="chatBubbleBadge" class="chat-bubble-badge hidden">0</span>
+</button>
+
+<div id="chatPopup" class="chat-popup hidden" role="dialog" aria-label="Community Chat">
+  <div class="chat-popup-header">
+    <span class="chat-popup-title">&#128172; Community Chat</span>
+    <button id="chatPopupOpenTabBtn" class="chat-popup-opentab" title="Open full chat tab" type="button">&#8599;</button>
+    <button id="chatPopupCloseBtn" class="chat-popup-close" title="Close" type="button">&times;</button>
+  </div>
+  <div id="chatPopupNameBar" class="chat-name-bar" style="padding:6px 12px;border-bottom:1px solid var(--border)"></div>
+  <div id="chatPopupMessages" class="chat-messages chat-messages-popup"></div>
+  <div class="chat-input-area chat-input-area-popup">
+    <div class="chat-input-row">
+      <div class="chat-input-wrap">
+        <textarea id="chatPopupInput" class="chat-textarea" rows="2"
+          placeholder="Message… (Enter to send)"></textarea>
+        <button id="chatPopupEmojiBtn" class="chat-emoji-btn" title="Emoji" type="button">&#128578;</button>
+        <div id="chatPopupEmojiPicker" class="chat-emoji-picker hidden"></div>
+      </div>
+      <button id="chatPopupSendBtn" class="btn btn-primary chat-send-btn" style="padding:0 14px">&#10148;</button>
+    </div>
+    <div class="chat-footer-row">
+      <span id="chatPopupCharCount" class="chat-char-count">0/500</span>
+    </div>
+  </div>
+</div>
+
 <footer class="site-footer">
   <p>MeritNama &middot; Induction 21 &middot; <a href="index.html">Historical Data &rarr;</a></p>
   <p style="margin-top:4px;font-size:0.72rem;opacity:0.5">
@@ -1521,6 +1770,17 @@
   }
 
   document.addEventListener('DOMContentLoaded', _initQuoteStrip);
+
+  // Popup chat close + open-in-tab buttons
+  document.getElementById('chatPopupCloseBtn')?.addEventListener('click', () => {
+    document.getElementById('chatPopup')?.classList.add('hidden');
+    if (typeof CHAT !== 'undefined') CHAT.popupOpen = false;
+  });
+  document.getElementById('chatPopupOpenTabBtn')?.addEventListener('click', () => {
+    document.getElementById('chatPopup')?.classList.add('hidden');
+    if (typeof CHAT !== 'undefined') CHAT.popupOpen = false;
+    document.querySelector('.tab-btn[data-tab="community"]')?.click();
+  });
 
   // Wire up Add Manually modal close + pref builder before simulation.js loads
   document.getElementById('customModalOverlay')?.addEventListener('click', () =>
