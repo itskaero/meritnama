@@ -1579,7 +1579,7 @@
     width:340px;max-width:90vw;height:440px;max-height:70vh;
     background:var(--bg-card,#1a2236);border:1px solid var(--border,#2a3a52);
     border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.4);
-    display:none;flex-direction:column;overflow:hidden;
+    flex-direction:column;overflow:hidden;
   ">
     <!-- Header -->
     <div style="padding:12px 16px;border-bottom:1px solid var(--border,#2a3a52);display:flex;align-items:center;justify-content:space-between;background:var(--bg-card,#1a2236);">
@@ -1645,8 +1645,10 @@
       chatUserName = email.split('@')[0];
       return chatUserName;
     }
-    // Generate anonymous name
-    chatUserName = 'Applicant-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+    // Generate anonymous name using crypto for uniqueness
+    const arr = new Uint8Array(3);
+    crypto.getRandomValues(arr);
+    chatUserName = 'Applicant-' + Array.from(arr, b => b.toString(16).padStart(2,'0')).join('').slice(0,4).toUpperCase();
     return chatUserName;
   }
 
@@ -1671,6 +1673,9 @@
       // Scroll to bottom
       const msgs = document.getElementById('chatMessages');
       if (msgs) msgs.scrollTop = msgs.scrollHeight;
+    } else {
+      // Clean up listener when chat is closed
+      if (unsubscribe) { unsubscribe(); unsubscribe = null; }
     }
   };
 
@@ -1718,7 +1723,11 @@
     const input = document.getElementById('chatInput');
     const text = (input?.value || '').trim();
     if (!text) return;
-    if (text.length > 500) { alert('Message too long (max 500 chars)'); return; }
+    if (text.length > 500) {
+      input.style.borderColor = 'var(--danger,#e05470)';
+      setTimeout(() => { input.style.borderColor = ''; }, 2000);
+      return;
+    }
 
     const sender = getChatDisplayName();
     input.value = '';
