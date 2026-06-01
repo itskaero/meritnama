@@ -1750,11 +1750,12 @@ function openSimCandidateDetail(applicantId) {
 }
 
 /**
- * Base marks for a candidate — raw marksTotal minus experience marks.
- * Experience is excluded from merit ranking per current policy.
+ * Base marks for a candidate — the raw marksTotal.
+ * marksTotal is already the sum of housejob + position + degree + MDCAT (etc.)
+ * and does NOT include experience, so no subtraction is needed.
  */
 function baseMarks(c) {
-  return (c.marksTotal ?? 0) - (c.experience ?? 0);
+  return (c.marksTotal ?? 0);
 }
 
 /**
