@@ -10,3 +10,7 @@ const firebaseConfig = {
   appId: "1:947249523930:web:a7726922936f70c477c9e3",
   measurementId: "G-DRMZ0ZKSLD"
 };
+
+// Web Push VAPID key — Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
+// Paste your key pair's public key here. Without this the Alerts bell is hidden for all users.
+const FIREBASE_VAPID_KEY = "BOcPGgIDFLFP1XErdlNH_uyeGGW-cobRlK5_zVmpKaJg2ANyfe7LT2JBGVFTawPtHr002HEzSwEuuUlCqLM9vkQ";

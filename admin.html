@@ -720,6 +720,24 @@
 
       <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
 
+      <h3 style="font-size:0.9rem;color:var(--accent);margin:0 0 0.5rem;">&#128221; Simulation Notifications Feed</h3>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
+        Edits the simulation page notification feed using the same schema as <code>data/notifications.json</code>.
+        On GitHub Pages this is stored in <code>notifications/simulation_feed</code> in Firestore, because the admin portal cannot directly rewrite static repo files from the browser.
+      </p>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem;">
+        <button id="simNotifLoadBtn" style="padding:8px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Load Current Feed</button>
+        <button id="simNotifFallbackBtn" style="padding:8px 16px;background:rgba(245,200,66,0.12);color:#f5c842;border:1px solid rgba(245,200,66,0.28);border-radius:8px;cursor:pointer;font-weight:600;">Load JSON Fallback</button>
+        <button id="simNotifSaveBtn" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save Feed</button>
+      </div>
+      <div class="modal-field" style="max-width:760px;">
+        <label>Notifications JSON Array</label>
+        <textarea id="simNotifJson" rows="14" spellcheck="false" style="width:100%;resize:vertical;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.8rem;font-family:Consolas,Monaco,monospace;" placeholder='[{"id":"example","active":true,"type":"info","title":"Update","body":"Message","dismissable":true}]'></textarea>
+      </div>
+      <div id="simNotifStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+
       <h3 style="font-size:0.9rem;color:var(--accent);margin:0 0 0.5rem;">&#128241; Web Push Subscribers</h3>
       <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;">
         Users who clicked "Alerts" → allowed browser notifications. Their FCM tokens are stored in <code>push_subscriptions</code>.
@@ -1252,6 +1270,10 @@ function loadBroadcast() {
   loadSubCount();
   document.getElementById('bcSendBtn').onclick = sendLiveUpdate;
   document.getElementById('bcClearBtn').onclick = clearLiveBanner;
+  document.getElementById('simNotifLoadBtn').onclick = loadSimulationNotificationsEditor;
+  document.getElementById('simNotifFallbackBtn').onclick = loadSimulationNotificationsFallback;
+  document.getElementById('simNotifSaveBtn').onclick = saveSimulationNotificationsEditor;
+  loadSimulationNotificationsEditor();
 }
 
 async function loadSubCount() {
@@ -1305,6 +1327,93 @@ async function clearLiveBanner() {
   } catch (e) {
     status.textContent = 'Error: ' + e.message;
     status.style.color = 'var(--neon-pink)';
+  }
+}
+
+function setSimNotifStatus(message, color = 'var(--text-muted)') {
+  const el = document.getElementById('simNotifStatus');
+  if (!el) return;
+  el.textContent = message;
+  el.style.color = color;
+}
+
+function normalizeSimulationNotifications(items) {
+  if (!Array.isArray(items)) {
+    throw new Error('JSON must be an array of notification objects.');
+  }
+  return items.map((item, idx) => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      throw new Error(`Item ${idx + 1} must be an object.`);
+    }
+    if (!item.id || typeof item.id !== 'string') {
+      throw new Error(`Item ${idx + 1} is missing a string "id".`);
+    }
+    if (typeof item.body !== 'string' || !item.body.trim()) {
+      throw new Error(`Item ${idx + 1} is missing a non-empty "body".`);
+    }
+    return {
+      id: item.id.trim(),
+      active: item.active !== false,
+      type: ['info', 'success', 'warning', 'danger'].includes(item.type) ? item.type : 'info',
+      icon: typeof item.icon === 'string' ? item.icon : '',
+      title: typeof item.title === 'string' ? item.title : '',
+      body: item.body,
+      dismissable: item.dismissable !== false,
+      link: typeof item.link === 'string' && item.link.trim() ? item.link.trim() : null,
+      linkText: typeof item.linkText === 'string' && item.linkText.trim() ? item.linkText.trim() : null,
+    };
+  });
+}
+
+async function loadSimulationNotificationsEditor() {
+  const textarea = document.getElementById('simNotifJson');
+  if (!textarea) return;
+  setSimNotifStatus('Loading feed…');
+  try {
+    const snap = await db.collection('notifications').doc('simulation_feed').get();
+    const data = snap.exists ? snap.data() : null;
+    if (Array.isArray(data?.items)) {
+      textarea.value = JSON.stringify(data.items, null, 2);
+      setSimNotifStatus('Loaded Firestore simulation feed.', 'var(--neon-green)');
+      return;
+    }
+    await loadSimulationNotificationsFallback();
+  } catch (e) {
+    setSimNotifStatus('Error loading Firestore feed: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
+async function loadSimulationNotificationsFallback() {
+  const textarea = document.getElementById('simNotifJson');
+  if (!textarea) return;
+  setSimNotifStatus('Loading JSON fallback…');
+  try {
+    const res = await fetch('data/notifications.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const items = await res.json();
+    textarea.value = JSON.stringify(items, null, 2);
+    setSimNotifStatus('Loaded fallback from data/notifications.json.', 'var(--neon-green)');
+  } catch (e) {
+    setSimNotifStatus('Error loading JSON fallback: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
+async function saveSimulationNotificationsEditor() {
+  const textarea = document.getElementById('simNotifJson');
+  if (!textarea) return;
+  setSimNotifStatus('Saving feed…');
+  try {
+    const parsed = JSON.parse(textarea.value);
+    const items = normalizeSimulationNotifications(parsed);
+    textarea.value = JSON.stringify(items, null, 2);
+    await db.collection('notifications').doc('simulation_feed').set({
+      items,
+      source: 'admin',
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    setSimNotifStatus('✓ Simulation feed saved. simulation.html will pick it up live.', 'var(--neon-green)');
+  } catch (e) {
+    setSimNotifStatus('Error saving simulation feed: ' + e.message, 'var(--neon-pink)');
   }
 }
 

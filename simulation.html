@@ -9,6 +9,7 @@
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script>firebase.initializeApp(firebaseConfig);</script>
   <style>
@@ -997,12 +998,28 @@
     </div>
     <div class="header-meta" id="headerMeta">
       <span class="badge badge-info" id="dataStatus">Loading&hellip;</span>
+      <button class="notif-bell-btn" id="notifBellBtn" title="Subscribe to data updates" aria-label="Subscribe to data updates">
+        <svg class="bell-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="17" height="17">
+          <path d="M18 8A6 6 0 1 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="bell-label" id="bellLabel">Alerts</span>
+        <span class="bell-dot" id="bellDot" style="display:none;"></span>
+      </button>
       <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
     </div>
   </div>
 </header>
+
+<!-- ======= LIVE UPDATE BANNER ======= -->
+<div id="liveUpdateBanner" class="live-update-banner" style="display:none;" role="alert" aria-live="polite">
+  <span class="lub-icon" id="lubIcon">&#128276;</span>
+  <span class="lub-text" id="lubText"></span>
+  <a class="lub-link" id="lubLink" href="#" style="display:none;"></a>
+  <button class="lub-close" id="lubClose" aria-label="Dismiss">&times;</button>
+</div>
 
 <!-- ═══════════ NAV ═══════════ -->
 <nav class="tab-nav" id="mainNav">
@@ -1828,5 +1845,108 @@
 <script src="simulation.js"></script>
 <script src="auth.js"></script>
 <script src="presence.js"></script>
+<script>
+// ── Notifications (bell button) ──────────────────────────
+(function () {
+  const NOTIF_KEY = 'mn_push_subscribed';
+
+  function updateBellUI() {
+    const btn   = document.getElementById('notifBellBtn');
+    const label = document.getElementById('bellLabel');
+    const dot   = document.getElementById('bellDot');
+    if (!btn) return;
+    const subbed = localStorage.getItem(NOTIF_KEY) === '1';
+    btn.classList.toggle('subscribed', subbed);
+    if (label) label.textContent = subbed ? 'Subscribed' : 'Alerts';
+    if (dot)   dot.style.display  = subbed ? 'none' : '';
+    btn.title = subbed ? 'Unsubscribe from data update alerts' : 'Subscribe to data update alerts';
+  }
+
+  async function subscribePush() {
+    const btn = document.getElementById('notifBellBtn');
+    btn.classList.add('loading');
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        alert('Please allow notifications in your browser to subscribe to data updates.');
+        return;
+      }
+      const swReg = await navigator.serviceWorker.register('./firebase-messaging-sw.js', { scope: './' });
+      const messaging = firebase.messaging();
+      const token = await messaging.getToken({ vapidKey: window.FIREBASE_VAPID_KEY, serviceWorkerRegistration: swReg });
+      if (token) {
+        await firebase.firestore().collection('push_subscriptions').doc(token).set({
+          token,
+          subscribedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          userAgent: navigator.userAgent.substring(0, 200),
+        }, { merge: true });
+        localStorage.setItem(NOTIF_KEY, '1');
+        updateBellUI();
+      }
+    } catch (e) {
+      console.error('Push subscribe error:', e);
+      alert('Could not enable notifications: ' + e.message);
+    } finally {
+      btn.classList.remove('loading');
+    }
+  }
+
+  async function unsubscribePush() {
+    const btn = document.getElementById('notifBellBtn');
+    btn.classList.add('loading');
+    try {
+      const messaging = firebase.messaging();
+      const token = await messaging.getToken({ vapidKey: window.FIREBASE_VAPID_KEY }).catch(() => null);
+      if (token) {
+        await messaging.deleteToken();
+        await firebase.firestore().collection('push_subscriptions').doc(token).delete().catch(() => {});
+      }
+    } catch (e) { /* ignore */ } finally {
+      localStorage.removeItem(NOTIF_KEY);
+      updateBellUI();
+      document.getElementById('notifBellBtn')?.classList.remove('loading');
+    }
+  }
+
+  function initNotificationBanner() {
+    try {
+      firebase.firestore().collection('notifications').doc('latest').onSnapshot(snap => {
+        const banner = document.getElementById('liveUpdateBanner');
+        if (!banner) return;
+        if (!snap.exists) { banner.style.display = 'none'; return; }
+        const n = snap.data();
+        if (!n || !n.active) { banner.style.display = 'none'; return; }
+        const dismissKey = 'mn_notif_dismissed_' + (n.id || n.updatedAt?.seconds || '0');
+        if (sessionStorage.getItem(dismissKey)) return;
+        const typeMap = { warning: 'lub-warning', info: 'lub-info', success: 'lub-success', danger: 'lub-danger' };
+        banner.className = 'live-update-banner ' + (typeMap[n.type] || 'lub-info');
+        const icon = document.getElementById('lubIcon'); if (icon) icon.textContent = n.icon || '🔔';
+        const text = document.getElementById('lubText'); if (text) text.textContent = (n.title ? n.title + ' — ' : '') + (n.body || '');
+        const link = document.getElementById('lubLink');
+        if (link && n.link) { link.href = n.link; link.textContent = n.linkText || 'View'; link.style.display = ''; }
+        else if (link) { link.style.display = 'none'; }
+        banner.style.display = 'flex';
+        const close = document.getElementById('lubClose');
+        if (close) close.onclick = () => { banner.style.display = 'none'; sessionStorage.setItem(dismissKey, '1'); };
+      });
+    } catch (e) { /* Firestore unavailable */ }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    // Live Firestore banner — runs regardless of push support
+
+    // Bell button (web push) — only if browser + VAPID key support it
+    const btn = document.getElementById('notifBellBtn');
+    if (!btn) return;
+    const supported = ('serviceWorker' in navigator) && ('Notification' in window) && !!window.FIREBASE_VAPID_KEY;
+    if (!supported) { btn.style.display = 'none'; return; }
+    updateBellUI();
+    btn.addEventListener('click', async () => {
+      if (btn.classList.contains('subscribed')) await unsubscribePush();
+      else await subscribePush();
+    });
+  });
+})();
+</script>
 </body>
 </html>

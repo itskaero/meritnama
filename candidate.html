@@ -1036,18 +1036,66 @@
           <option value="inducted">Already inducted</option>
         </select>
       </div>
-      <div class="pf-field" id="inductionYearField" style="display:none;">
-        <label>Induction Year</label>
-        <select id="pfInductionYear">
-          <option value="">Select year</option>
-          <option value="2020">2020</option>
-          <option value="2021">2021</option>
-          <option value="2022">2022</option>
-          <option value="2023">2023</option>
-          <option value="2024">2024</option>
-          <option value="2025">2025</option>
-          <option value="2026">2026</option>
-        </select>
+      <div id="inductedDetailsGroup" style="display:none;">
+        <div class="pf-field">
+          <label>Induction Cycle</label>
+          <select id="pfInductionCycle">
+            <option value="">Select cycle</option>
+            <option value="9">Induction 9</option>
+            <option value="10">Induction 10</option>
+            <option value="11">Induction 11</option>
+            <option value="12">Induction 12</option>
+            <option value="13">Induction 13</option>
+            <option value="14">Induction 14</option>
+            <option value="15">Induction 15</option>
+            <option value="16">Induction 16</option>
+            <option value="17">Induction 17</option>
+            <option value="18">Induction 18</option>
+            <option value="19">Induction 19</option>
+            <option value="20">Induction 20</option>
+            <option value="21">Induction 21</option>
+          </select>
+        </div>
+        <div class="pf-field">
+          <label>Inducted Specialty</label>
+          <input type="text" id="pfInductedSpecialty" placeholder="e.g. Cardiology" list="inductedSpecialtyList" />
+          <datalist id="inductedSpecialtyList"></datalist>
+        </div>
+        <div class="pf-field">
+          <label>Inducted Hospital</label>
+          <input type="text" id="pfInductedHospital" placeholder="e.g. AKUH" list="inductedHospitalList" />
+          <datalist id="inductedHospitalList"></datalist>
+        </div>
+        <div class="pf-field">
+          <label>Quota</label>
+          <select id="pfInductedQuota">
+            <option value="">Select quota</option>
+            <option value="Punjab">Punjab</option>
+            <option value="KPK, Sindh, Balochistan">KPK / Sindh / Balochistan</option>
+            <option value="AJK, G&B,ICT">AJK / G&amp;B / ICT</option>
+            <option value="Armed Force ">Armed Forces</option>
+            <option value="Placement">Placement</option>
+            <option value="Foriegn">Foreign</option>
+            <option value="Disable">Disabled</option>
+          </select>
+        </div>
+        <div class="pf-field">
+          <label>Closing Merit Score</label>
+          <input type="number" id="pfInductedMarks" placeholder="e.g. 28.75" step="0.01" min="0" max="200" />
+        </div>
+        <div class="pf-field" id="inductionYearField">
+          <label>Induction Year</label>
+          <select id="pfInductionYear">
+            <option value="">Select year</option>
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+            <option value="2023">2023</option>
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026">2026</option>
+          </select>
+        </div>
       </div>
 
       <div class="pf-section-head">
@@ -1680,11 +1728,27 @@ async function loadDataLists() {
   } catch (e) { console.warn('Could not load lookup data:', e); }
 }
 
-// Show/hide induction year based on selection
+// Show/hide inducted detail fields based on selection
 document.getElementById('pfInducted').addEventListener('change', function() {
-  document.getElementById('inductionYearField').style.display =
-    this.value === 'inducted' ? '' : 'none';
+  const show = this.value === 'inducted';
+  document.getElementById('inductedDetailsGroup').style.display = show ? '' : 'none';
+  // Also wire the specialty/hospital datalists into the inducted fields
+  if (show) populateInductedDatalist();
 });
+
+function populateInductedDatalist() {
+  // Reuse the same source datalists already built for aspiring fields
+  const specSrc = document.getElementById('specialtyList');
+  const hospSrc = document.getElementById('hospitalList');
+  const specDst = document.getElementById('inductedSpecialtyList');
+  const hospDst = document.getElementById('inductedHospitalList');
+  if (specSrc && specDst && !specDst.children.length) {
+    specDst.innerHTML = specSrc.innerHTML;
+  }
+  if (hospSrc && hospDst && !hospDst.children.length) {
+    hospDst.innerHTML = hospSrc.innerHTML;
+  }
+}
 
 // ── Photo file input ────────────────────────────────────
 document.getElementById('pfPicFile').addEventListener('change', async function() {
@@ -1735,8 +1799,14 @@ async function loadProfile() {
       if (p.hospital) document.getElementById('pfHospital').value = p.hospital;
       if (p.inducted) {
         document.getElementById('pfInducted').value = 'inducted';
-        document.getElementById('inductionYearField').style.display = '';
+        document.getElementById('inductedDetailsGroup').style.display = '';
+        if (p.inductionCycle) document.getElementById('pfInductionCycle').value = p.inductionCycle;
+        if (p.inductedSpecialty) document.getElementById('pfInductedSpecialty').value = p.inductedSpecialty;
+        if (p.inductedHospital) document.getElementById('pfInductedHospital').value = p.inductedHospital;
+        if (p.inductedQuota) document.getElementById('pfInductedQuota').value = p.inductedQuota;
+        if (p.inductedMarks != null) document.getElementById('pfInductedMarks').value = p.inductedMarks;
         if (p.inductionYear) document.getElementById('pfInductionYear').value = p.inductionYear;
+        populateInductedDatalist();
       }
       if (p.applicantId) {
         document.getElementById('pfApplicantId').value = p.applicantId;
@@ -1780,8 +1850,10 @@ async function loadProfile() {
         chips.innerHTML = '';
         if (p.specialty) chips.innerHTML += `<span class="profile-hero-chip">&#127973; ${esc(p.specialty)}</span>`;
         if (p.hospital)  chips.innerHTML += `<span class="profile-hero-chip">${esc(p.hospital)}</span>`;
-        if (p.inducted && p.inductionYear) chips.innerHTML += `<span class="profile-hero-chip inducted">&#10003; Ind. ${esc(p.inductionYear)}</span>`;
-        else if (p.inducted)               chips.innerHTML += `<span class="profile-hero-chip inducted">&#10003; Inducted</span>`;
+        if (p.inducted) {
+          const indLabel = [p.inductionCycle ? `Ind. ${esc(p.inductionCycle)}` : (p.inductionYear ? `Ind. ${esc(p.inductionYear)}` : 'Inducted'), p.inductedSpecialty ? esc(p.inductedSpecialty) : null, p.inductedHospital ? esc(p.inductedHospital) : null].filter(Boolean).join(' · ');
+          chips.innerHTML += `<span class="profile-hero-chip inducted">&#10003; ${indLabel}</span>`;
+        }
         addVerifiedBadge();
       }
 
@@ -1859,6 +1931,12 @@ async function saveProfile() {
   const hospital     = document.getElementById('pfHospital').value.trim();
   const inducted     = document.getElementById('pfInducted').value === 'inducted';
   const year         = document.getElementById('pfInductionYear').value;
+  const inductionCycle    = document.getElementById('pfInductionCycle').value;
+  const inductedSpecialty = document.getElementById('pfInductedSpecialty').value.trim();
+  const inductedHospital  = document.getElementById('pfInductedHospital').value.trim();
+  const inductedQuota     = document.getElementById('pfInductedQuota').value;
+  const inductedMarksRaw  = document.getElementById('pfInductedMarks').value.trim();
+  const inductedMarks     = inductedMarksRaw !== '' ? parseFloat(inductedMarksRaw) : null;
   const applicantId  = document.getElementById('pfApplicantId').value.trim();
   const previewEl    = document.getElementById('photoUploadPreview');
   const newB64       = previewEl._pendingB64 || null;
@@ -1878,6 +1956,11 @@ async function saveProfile() {
     hospital,
     inducted,
     inductionYear: inducted ? year : '',
+    inductionCycle: inducted ? inductionCycle : '',
+    inductedSpecialty: inducted ? inductedSpecialty : '',
+    inductedHospital: inducted ? inductedHospital : '',
+    inductedQuota: inducted ? inductedQuota : '',
+    inductedMarks: inducted && inductedMarks !== null ? inductedMarks : null,
     applicantId: applicantId || '',
     email,
     profileAnim: _profileAnim,
@@ -1912,8 +1995,10 @@ async function saveProfile() {
       chips.innerHTML = '';
       if (specialty) chips.innerHTML += `<span class="profile-hero-chip">&#127973; ${esc(specialty)}</span>`;
       if (hospital)  chips.innerHTML += `<span class="profile-hero-chip">${esc(hospital)}</span>`;
-      if (inducted && year) chips.innerHTML += `<span class="profile-hero-chip inducted">&#10003; Ind. ${esc(year)}</span>`;
-      else if (inducted)    chips.innerHTML += `<span class="profile-hero-chip inducted">&#10003; Inducted</span>`;
+      if (inducted) {
+        const indLabel = [inductionCycle ? `Ind. ${esc(inductionCycle)}` : (year ? `Ind. ${esc(year)}` : 'Inducted'), inductedSpecialty ? esc(inductedSpecialty) : null, inductedHospital ? esc(inductedHospital) : null].filter(Boolean).join(' · ');
+        chips.innerHTML += `<span class="profile-hero-chip inducted">&#10003; ${indLabel}</span>`;
+      }
       addVerifiedBadge();
     }
 

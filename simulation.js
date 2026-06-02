@@ -39,6 +39,7 @@ const MY_ID_KEY      = 'mn_sim_my_id';
 const CUSTOM_KEY     = 'mn_sim_custom_cand';
 const PAGE_SIZE      = 50;
 const MAX_PASSES     = 200;
+const SIM_NOTIF_DISMISSED_KEY = 'mn_sim_dismissed_notifs';
 
 // ═══════════════════════════════════════════════════════════════════
 // INIT
@@ -47,6 +48,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   SIM.myId      = localStorage.getItem(MY_ID_KEY) || null;
   SIM.customCand = loadCustomCand();
 
+  initLiveBanner();
+  initSimulationNotificationFeed();
   showLoading(true);
   await loadData();
   showLoading(false);
@@ -132,16 +135,97 @@ async function loadData() {
     }
   } catch (_) {}
 
-  // Notifications
-  try {
-    const nr = await fetch('data/notifications.json');
-    if (nr.ok) SIM.notifications = await nr.json();
-  } catch (_) {}
+  await loadSimulationNotifications();
 
   const n   = SIM.candidates.length;
   const smsg = SIM.seatsLoaded ? ' + seats' : '';
   setStatus('ok', `${n} candidates${smsg}`);
   document.getElementById('simNoSeatsWarn')?.classList.toggle('hidden', SIM.seatsLoaded);
+}
+
+function initLiveBanner() {
+  try {
+    firebase.firestore().collection('notifications').doc('latest').onSnapshot(snap => {
+      if (!snap.exists) { hideLiveBanner(); return; }
+      const n = snap.data();
+      if (!n || !n.active) { hideLiveBanner(); return; }
+      showLiveBanner(n);
+    });
+  } catch (_) {}
+}
+
+function showLiveBanner(n) {
+  const banner = document.getElementById('liveUpdateBanner');
+  const text   = document.getElementById('lubText');
+  const icon   = document.getElementById('lubIcon');
+  const link   = document.getElementById('lubLink');
+  const close  = document.getElementById('lubClose');
+  if (!banner) return;
+
+  const dismissKey = 'mn_notif_dismissed_' + (n.id || n.updatedAt?.seconds || '0');
+  if (sessionStorage.getItem(dismissKey)) return;
+
+  const typeMap = { warning: 'lub-warning', info: 'lub-info', success: 'lub-success', danger: 'lub-danger' };
+  banner.className = 'live-update-banner ' + (typeMap[n.type] || 'lub-info');
+  if (icon) icon.textContent = n.icon || '🔔';
+  if (text) text.textContent = (n.title ? n.title + ' — ' : '') + (n.body || '');
+
+  if (link && n.link) {
+    link.href = n.link;
+    link.textContent = n.linkText || 'View';
+    link.style.display = '';
+  } else if (link) {
+    link.style.display = 'none';
+  }
+
+  banner.style.display = 'flex';
+  if (close) {
+    close.onclick = () => {
+      banner.style.display = 'none';
+      sessionStorage.setItem(dismissKey, '1');
+    };
+  }
+}
+
+function hideLiveBanner() {
+  const banner = document.getElementById('liveUpdateBanner');
+  if (banner) banner.style.display = 'none';
+}
+
+async function loadSimulationNotifications() {
+  let loaded = false;
+
+  try {
+    const snap = await firebase.firestore().collection('notifications').doc('simulation_feed').get();
+    const data = snap.exists ? snap.data() : null;
+    if (Array.isArray(data?.items)) {
+      SIM.notifications = data.items;
+      loaded = true;
+    }
+  } catch (_) {}
+
+  if (loaded) return;
+
+  try {
+    const nr = await fetch('data/notifications.json', { cache: 'no-store' });
+    if (nr.ok) {
+      const items = await nr.json();
+      if (Array.isArray(items)) {
+        SIM.notifications = items;
+      }
+    }
+  } catch (_) {}
+}
+
+function initSimulationNotificationFeed() {
+  try {
+    firebase.firestore().collection('notifications').doc('simulation_feed').onSnapshot(snap => {
+      const data = snap.exists ? snap.data() : null;
+      if (!Array.isArray(data?.items)) return;
+      SIM.notifications = data.items;
+      renderNotifications();
+    });
+  } catch (_) {}
 }
 
 function setStatus(type, msg) {
@@ -1238,9 +1322,12 @@ function renderSbQuickViewContent() {
 // ═══════════════════════════════════════════════════════════════════
 function renderNotifications() {
   const bar = document.getElementById('notifBar');
-  if (!bar || !SIM.notifications?.length) return;
-  const DISMISSED_KEY = 'mn_sim_dismissed_notifs';
-  const dismissed = JSON.parse(localStorage.getItem(DISMISSED_KEY) || '[]');
+  if (!bar) return;
+  if (!SIM.notifications?.length) {
+    bar.innerHTML = '';
+    return;
+  }
+  const dismissed = JSON.parse(localStorage.getItem(SIM_NOTIF_DISMISSED_KEY) || '[]');
   const active = SIM.notifications.filter(n => n.active && !dismissed.includes(n.id));
   if (!active.length) { bar.innerHTML = ''; return; }
   bar.innerHTML = active.map(n => `
@@ -1258,9 +1345,9 @@ function renderNotifications() {
   bar.querySelectorAll('.notif-dismiss').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.dismissId;
-      const list = JSON.parse(localStorage.getItem(DISMISSED_KEY) || '[]');
+      const list = JSON.parse(localStorage.getItem(SIM_NOTIF_DISMISSED_KEY) || '[]');
       list.push(id);
-      localStorage.setItem(DISMISSED_KEY, JSON.stringify(list));
+      localStorage.setItem(SIM_NOTIF_DISMISSED_KEY, JSON.stringify(list));
       btn.closest('.notif-item')?.remove();
     });
   });

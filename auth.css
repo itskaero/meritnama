@@ -224,7 +224,7 @@ body.auth-locked > *:not(#authGate):not(#authVerifying):not(script):not(link):no
 #bgPickerWrap {
   position: fixed;
   bottom: 22px;
-  right: 22px;
+  left: 22px;
   z-index: 8900;
 }
 
@@ -256,7 +256,7 @@ body.auth-locked > *:not(#authGate):not(#authVerifying):not(script):not(link):no
 #bgPickerPanel {
   position: absolute;
   bottom: calc(100% + 10px);
-  right: 0;
+  left: 0;
   background: rgba(13, 22, 44, 0.95);
   border: 1px solid rgba(77, 184, 217, 0.15);
   border-radius: 14px;
@@ -265,7 +265,7 @@ body.auth-locked > *:not(#authGate):not(#authVerifying):not(script):not(link):no
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7);
-  transform-origin: bottom right;
+  transform-origin: bottom left;
   transform: scale(0.9);
   opacity: 0;
   pointer-events: none;
