@@ -1397,7 +1397,7 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
         sl.others.push({
           ...entry(cand, pref),
           placed:   cand.placed,
-          placedAtHigherPref: !!(cand.placed && placedPrefNo != null && placedPrefNo < pref.preferenceNo),
+          placedAtHigherPref: (placedPrefNo !== null && placedPrefNo < pref.preferenceNo),
           placedAt: cand.placed ? { q: cand._q, s: cand._s, h: cand._h } : null,
         });
       }
@@ -1505,7 +1505,7 @@ function renderSimResults() {
           ? Math.min(...sl.candidates.map(c => c.marksTotal))
           : null;
         const eligibleOthers = sl.others.filter(o => !o.placedAtHigherPref);
-        const nextInLine = eligibleOthers[0] ?? null;
+        const nextInLine = eligibleOthers.find(o => !o.placed) ?? eligibleOthers[0] ?? null;
         const skippedHigherPrefCount = sl.others.length - eligibleOthers.length;
         const meInSlot   = me ? sl.candidates.some(c => String(c.applicantId) === SIM.myId) : false;
         rows.push({ q, s, h, sl, cutoff, nextInLine, meInSlot, eligibleOthers, skippedHigherPrefCount });
@@ -1594,7 +1594,7 @@ function renderSimCard({ q, s, h, sl, cutoff, nextInLine, meInSlot, eligibleOthe
           <span class="sim-other-status">${o.placed ? `→ ${esc(o.placedAt?.s ?? o.placedAt?.h ?? '?')}` : 'unplaced'}</span>
         </div>`).join('')}
     </div>` : ''}
-    ${skippedHigherPrefCount ? `<div class="sim-empty-slot" style="margin-top:8px;font-size:0.72rem;">${skippedHigherPrefCount} already placed at higher preference hidden</div>` : ''}
+    ${skippedHigherPrefCount ? `<div class="sim-empty-slot">${skippedHigherPrefCount} hidden (already placed at higher preferences)</div>` : ''}
   </div>`;
 }
 
