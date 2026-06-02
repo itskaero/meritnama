@@ -1468,6 +1468,13 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
   // Build "others" list for each slot
   const isMe = id => String(id) === SIM.myId;
   for (const cand of prog) {
+    const placedPrefNo = cand.placed
+      ? cand._prefs.find(p =>
+          p.quotaName === cand._q &&
+          p.specialityName === cand._s &&
+          p.hospitalName === cand._h
+        )?.preferenceNo ?? null
+      : null;
     for (const pref of cand._prefs) {
       const sl = slot(pref.quotaName, pref.specialityName, pref.hospitalName);
       if (!sl) continue;
@@ -1477,6 +1484,7 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
         sl.others.push({
           ...entry(cand, pref),
           placed:   cand.placed,
+          placedAtHigherPref: (placedPrefNo !== null && placedPrefNo < pref.preferenceNo),
           placedAt: cand.placed ? { q: cand._q, s: cand._s, h: cand._h } : null,
         });
       }
@@ -1583,9 +1591,11 @@ function renderSimResults() {
         const cutoff = sl.candidates.length
           ? Math.min(...sl.candidates.map(c => c.marksTotal))
           : null;
-        const nextInLine = sl.others.find(o => !o.placed) ?? sl.others[0] ?? null;
+        const eligibleOthers = sl.others.filter(o => !o.placedAtHigherPref);
+        const nextInLine = eligibleOthers.find(o => !o.placed) ?? eligibleOthers[0] ?? null;
+        const skippedHigherPrefCount = sl.others.length - eligibleOthers.length;
         const meInSlot   = me ? sl.candidates.some(c => String(c.applicantId) === SIM.myId) : false;
-        rows.push({ q, s, h, sl, cutoff, nextInLine, meInSlot });
+        rows.push({ q, s, h, sl, cutoff, nextInLine, meInSlot, eligibleOthers, skippedHigherPrefCount });
       }
     }
   }
@@ -1623,7 +1633,7 @@ function renderSimResults() {
   });
 }
 
-function renderSimCard({ q, s, h, sl, cutoff, nextInLine, meInSlot }, program) {
+function renderSimCard({ q, s, h, sl, cutoff, nextInLine, meInSlot, eligibleOthers, skippedHigherPrefCount }, program) {
   const isMe    = id => String(id) === SIM.myId;
   const seats   = sl.jobs;
   const filled  = sl.candidates.length;
@@ -1661,16 +1671,17 @@ function renderSimCard({ q, s, h, sl, cutoff, nextInLine, meInSlot }, program) {
       <span class="sim-next-marks">${fmtM(nextInLine.marksTotal)}</span>
     </div>` : ''}
 
-    ${sl.others.length ? `
-    <button class="btn btn-sm sim-expand-btn" data-count="${sl.others.length}">▼ ${sl.others.length} others</button>
+    ${eligibleOthers.length ? `
+    <button class="btn btn-sm sim-expand-btn" data-count="${eligibleOthers.length}">▼ ${eligibleOthers.length} others</button>
     <div class="sim-others">
-      ${sl.others.map(o => `
+      ${eligibleOthers.map(o => `
         <div class="sim-other-row ${isMe(o.applicantId) ? 'sim-row-me' : ''}" data-sim-cand="${o.applicantId}">
           <span class="sim-other-name">${esc(o.nameFull)}${isMe(o.applicantId) ? ' <span class="me-tag">YOU</span>' : ''}</span>
           <span class="sim-other-marks">${fmtM(o.marksTotal)}</span>
           <span class="sim-other-status">${o.placed ? `→ ${esc(o.placedAt?.s ?? o.placedAt?.h ?? '?')}` : 'unplaced'}</span>
         </div>`).join('')}
     </div>` : ''}
+    ${skippedHigherPrefCount ? `<div class="sim-empty-slot">${skippedHigherPrefCount} hidden (already placed at higher preferences)</div>` : ''}
   </div>`;
 }
 
