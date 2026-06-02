@@ -3050,6 +3050,19 @@
     "specialityName": "Ophthalmology",
     "instituteId": 0,
     "instituteName": "",
+    "hospitalId": 16,
+    "hospitalName": "DHQ Teaching Hospital, Sargodha",
+    "seats": 1
+  },
+  {
+    "typeId": 1,
+    "typeName": "FCPS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 20,
+    "specialityName": "Ophthalmology",
+    "instituteId": 0,
+    "instituteName": "",
     "hospitalId": 4918,
     "hospitalName": "Gujranwala Medical College Teaching Hospital, Gujranwala ",
     "seats": 1
@@ -6198,6 +6211,19 @@
     "instituteName": "",
     "hospitalId": 5,
     "hospitalName": "Benazir Bhutto Hospital, Rawalpindi",
+    "seats": 1
+  },
+  {
+    "typeId": 2,
+    "typeName": "MS",
+    "quotaId": 1,
+    "quotaName": "Punjab",
+    "specialityId": 20,
+    "specialityName": "Ophthalmology",
+    "instituteId": 0,
+    "instituteName": "",
+    "hospitalId": 16,
+    "hospitalName": "DHQ Teaching Hospital, Sargodha",
     "seats": 1
   },
   {
