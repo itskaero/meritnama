@@ -84,7 +84,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     ?.addEventListener('click', closeModal);
   document.getElementById('customModalClose')
     ?.addEventListener('click', closeCustomModal);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSbModal(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeSbModal();
+      closeApplicantSimulationModal();
+    }
+  });
 });
 
 // ═══════════════════════════════════════════════════════════════════
@@ -347,6 +352,7 @@ function updateMyBadge() {
   const badge = document.getElementById('myBadge');
   const clr   = document.getElementById('clearMeBtn');
   const input = document.getElementById('findMeInput');
+  const appSimInput = document.getElementById('appSimIdInput');
   if (!badge) return;
 
   const me = SIM.myId ? (allCandidates().find(c => String(c.applicantId) === SIM.myId)) : null;
@@ -355,9 +361,11 @@ function updateMyBadge() {
     badge.classList.remove('hidden');
     clr?.classList.remove('hidden');
     if (input) input.value = SIM.myId;
+    if (appSimInput && !appSimInput.value) appSimInput.value = SIM.myId;
   } else {
     badge.classList.add('hidden');
     clr?.classList.add('hidden');
+    if (appSimInput) appSimInput.value = '';
   }
 }
 
@@ -1524,12 +1532,22 @@ function setupSimulationTab() {
   });
 
   document.getElementById('runSimBtn')?.addEventListener('click', runSimulation);
+
+  const appInput = document.getElementById('appSimIdInput');
+  const appBtn   = document.getElementById('runApplicantSimBtn');
+  if (appInput && SIM.myId) appInput.value = SIM.myId;
+  appBtn?.addEventListener('click', () => runApplicantSimulation(appInput?.value?.trim()));
+  appInput?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') runApplicantSimulation(appInput.value.trim());
+  });
 }
 
 function runSimulation() {
   const prog  = SIM.sim.program;
-  const cands = allCandidates().filter(c => effectiveMark(c, prog) != null);
-  if (!cands.length) { showToast('No candidates for this program.', 'warning'); return; }
+  if (!allCandidates().some(c => effectiveMark(c, prog) != null)) {
+    showToast('No candidates for this program.', 'warning');
+    return;
+  }
 
   const btn = document.getElementById('runSimBtn');
   btn.disabled = true; btn.textContent = 'Running…';
@@ -1537,8 +1555,7 @@ function runSimulation() {
   // Defer so the browser has time to update the button state
   setTimeout(() => {
     try {
-      const tree = buildSeatTree(prog);
-      SIM.sim.result = runPlacement(cands, tree, prog, SIM.sim.parentBonus);
+      SIM.sim.result = runSimulationForProgram(prog);
       renderSimResults();
     } catch (e) {
       showToast(`Simulation error: ${e.message}`, 'error');
@@ -1546,6 +1563,13 @@ function runSimulation() {
     }
     btn.disabled = false; btn.textContent = '⚡ Run Simulation';
   }, 30);
+}
+
+function runSimulationForProgram(program) {
+  const cands = allCandidates().filter(c => effectiveMark(c, program) != null);
+  if (!cands.length) return null;
+  const tree = buildSeatTree(program);
+  return runPlacement(cands, tree, program, SIM.sim.parentBonus);
 }
 
 function renderSimResults() {
@@ -1683,6 +1707,227 @@ function renderSimCard({ q, s, h, sl, cutoff, nextInLine, meInSlot, eligibleOthe
     </div>` : ''}
     ${skippedHigherPrefCount ? `<div class="sim-empty-slot">${skippedHigherPrefCount} hidden (already placed at higher preferences)</div>` : ''}
   </div>`;
+}
+
+function runApplicantSimulation(idStr) {
+  const id = String(idStr || '').trim();
+  if (!id) {
+    showToast('Enter an Applicant ID first.', 'warning');
+    return;
+  }
+
+  const cand = allCandidates().find(c => String(c.applicantId) === id);
+  if (!cand) {
+    showToast(`ID ${id} not in dataset. Use "Add Manually" to add yourself.`, 'warning');
+    return;
+  }
+
+  SIM.myId = id;
+  localStorage.setItem(MY_ID_KEY, id);
+  updateMyBadge();
+  if (SIM.activeTab === 'candidates') applyAndRenderCandidates();
+
+  const btn = document.getElementById('runApplicantSimBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Running applicant result...'; }
+
+  setTimeout(() => {
+    try {
+      const programs = applicantPrograms(cand);
+      const results = programs.map(program => {
+        const result = runSimulationForProgram(program);
+        const workCand = result?.candidates.find(c => String(c.applicantId) === id) || null;
+        return {
+          program,
+          result,
+          workCand,
+          history: workCand ? buildApplicantPreferenceRows(workCand, result.seatTree) : [],
+        };
+      });
+
+      renderApplicantSimulationModal(cand, results);
+    } catch (e) {
+      showToast(`Applicant simulation error: ${e.message}`, 'error');
+      console.error(e);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Run Applicant Result'; }
+    }
+  }, 30);
+}
+
+function applicantPrograms(cand) {
+  const prefPrograms = Object.keys(cand.preference || {})
+    .filter(p => (cand.preference?.[p] || []).length);
+  const appliedPrograms = Object.entries(cand.applied_in || {})
+    .filter(([, v]) => !!v)
+    .map(([p]) => p);
+  const programs = new Set();
+
+  for (const p of appliedPrograms) {
+    if (effectiveMark(cand, p) != null || prefPrograms.includes(p)) programs.add(p);
+  }
+  for (const p of prefPrograms) {
+    const hasExplicitFlag = Object.prototype.hasOwnProperty.call(cand.applied_in || {}, p);
+    if (effectiveMark(cand, p) != null || !hasExplicitFlag) programs.add(p);
+  }
+
+  const order = ['FCPS', 'FCPS Dentistry', 'MS', 'MD', 'MDS'];
+  return [...programs].sort((a, b) => {
+    const ia = order.indexOf(a);
+    const ib = order.indexOf(b);
+    if (ia !== -1 || ib !== -1) return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    return a.localeCompare(b);
+  });
+}
+
+function buildApplicantPreferenceRows(workCand, seatTree) {
+  const placedPref = workCand.placed
+    ? workCand._prefs.find(p => sameSlot(p, workCand._q, workCand._s, workCand._h))
+    : null;
+  const placedPrefNo = placedPref?.preferenceNo ?? Infinity;
+
+  return workCand._prefs.map(pref => {
+    const sl = seatTree?.[pref.quotaName]?.[pref.specialityName]?.[pref.hospitalName] || null;
+    const score = scoreForPreference(workCand, pref);
+    const cutoff = sl?.candidates?.length
+      ? Math.min(...sl.candidates.map(c => c.marksTotal))
+      : null;
+    const isPlacedHere = workCand.placed && sameSlot(pref, workCand._q, workCand._s, workCand._h);
+    let status = 'beaten';
+    if (!sl) status = 'no_slot';
+    else if (isPlacedHere) status = 'placed';
+    else if (pref.preferenceNo > placedPrefNo) status = 'not_attempted';
+    else if (cutoff == null) status = 'no_cutoff';
+
+    return {
+      pref,
+      status,
+      score,
+      cutoff,
+      delta: cutoff == null ? null : score - cutoff,
+      filled: sl?.candidates?.length ?? 0,
+      seats: sl?.jobs ?? null,
+    };
+  });
+}
+
+function scoreForPreference(workCand, pref) {
+  return workCand.marksTotal + (SIM.sim.parentBonus ? (pref.marks || 0) : 0);
+}
+
+function sameSlot(pref, quota, spec, hosp) {
+  return pref.quotaName === quota && pref.specialityName === spec && pref.hospitalName === hosp;
+}
+
+function renderApplicantSimulationModal(cand, results) {
+  const modal = document.getElementById('appSimModal');
+  const body  = document.getElementById('appSimModalBody');
+  if (!modal || !body) return;
+
+  const validResults = results.filter(r => r.result && r.workCand);
+  const placedCount = validResults.filter(r => r.workCand.placed).length;
+  const programCount = validResults.length;
+  const prefCount = validResults.reduce((sum, r) => sum + r.history.length, 0);
+  const skippedPrograms = results.filter(r => !r.result || !r.workCand).map(r => r.program);
+
+  body.innerHTML = `
+    <div class="app-sim-modal-head">
+      <div>
+        <h3>Applicant simulation result</h3>
+        <p class="app-sim-meta">
+          ${esc(cand.nameFull)} &middot; ID: ${esc(cand.applicantId)}
+          &middot; Base marks: <strong>${fmtM(baseMarks(cand))}</strong>
+          &middot; Parent bonus: <strong>${SIM.sim.parentBonus ? 'On' : 'Off'}</strong>
+        </p>
+      </div>
+      <div class="app-sim-summary-pills">
+        <span class="app-sim-pill ${placedCount ? 'placed' : 'unplaced'}">${placedCount}/${programCount || 0} placed</span>
+        <span class="app-sim-pill">${prefCount} preferences checked</span>
+        <span class="app-sim-pill">${SIM.seatsLoaded ? 'Seat data loaded' : 'Fallback seats'}</span>
+      </div>
+    </div>
+    ${skippedPrograms.length ? `
+      <div class="sim-my unplaced" style="margin-bottom:12px">
+        No runnable candidate pool found for: ${skippedPrograms.map(esc).join(', ')}.
+      </div>` : ''}
+    <div class="app-sim-programs">
+      ${validResults.length
+        ? validResults.map(renderApplicantProgramCard).join('')
+        : '<div class="app-sim-empty">No applied programs with preferences were found for this Applicant ID.</div>'}
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+}
+
+function renderApplicantProgramCard(programResult) {
+  const { program, workCand, history } = programResult;
+  const placed = workCand.placed;
+  const placedRow = history.find(r => r.status === 'placed');
+  const bestMiss = history
+    .filter(r => r.status === 'beaten' && r.delta != null)
+    .sort((a, b) => Math.abs(a.delta) - Math.abs(b.delta))[0];
+  const shortfall = bestMiss ? Math.max(0, -bestMiss.delta) : null;
+  const resultText = placed && placedRow
+    ? `Placed at preference #${placedRow.pref.preferenceNo}: ${esc(placedRow.pref.specialityName)} @ ${esc(shortHospital(placedRow.pref.hospitalName))}`
+    : bestMiss
+    ? `Not placed; closest shown cutoff shortfall is ${fmtM(shortfall)} marks.`
+    : 'Not placed in recorded preferences.';
+
+  return `<div class="app-sim-program-card ${placed ? 'is-placed' : 'is-unplaced'}">
+    <div class="app-sim-program-head">
+      <div>
+        <div class="app-sim-program-title">${esc(program)}</div>
+        <div class="app-sim-program-result"><strong>${placed ? 'Projected placement' : 'No placement'}:</strong> ${resultText}</div>
+      </div>
+      <span class="app-sim-pill ${placed ? 'placed' : 'unplaced'}">${placed ? 'Placed' : 'Unplaced'}</span>
+    </div>
+    <div class="app-sim-pref-list">
+      <div class="app-sim-pref-row app-sim-pref-head">
+        <span>Pref</span><span>Slot</span><span>Your marks</span><span>Cutoff</span><span>Margin</span><span>Status</span>
+      </div>
+      ${history.length ? history.map(renderApplicantPreferenceRow).join('') : '<div class="app-sim-empty">No preferences recorded for this program.</div>'}
+    </div>
+  </div>`;
+}
+
+function renderApplicantPreferenceRow(row) {
+  const { pref, status, score, cutoff, delta } = row;
+  const statusLabel = applicantStatusLabel(status);
+  const deltaClass = delta == null ? '' : (delta >= 0 ? 'good' : 'bad');
+  return `<div class="app-sim-pref-row status-${esc(status)}">
+    <span class="app-sim-pref-no">#${pref.preferenceNo}</span>
+    <div class="app-sim-pref-slot">
+      <span class="app-sim-pref-spec">${esc(pref.specialityName)}</span>
+      <span class="app-sim-pref-hosp">${esc(pref.hospitalName)}</span>
+      <span class="app-sim-pref-quota">${esc(pref.quotaName)}${row.seats != null ? ` &middot; ${row.filled}/${row.seats} seats` : ''}</span>
+    </div>
+    <span class="app-sim-num">${fmtM(score)}</span>
+    <span class="app-sim-num">${fmtM(cutoff)}</span>
+    <span class="app-sim-delta ${deltaClass}">${formatApplicantDelta(delta, status)}</span>
+    <span class="app-sim-status ${esc(status)}">${statusLabel}</span>
+  </div>`;
+}
+
+function applicantStatusLabel(status) {
+  if (status === 'placed') return 'Placed';
+  if (status === 'beaten') return 'Fell short';
+  if (status === 'not_attempted') return 'Lower pref';
+  if (status === 'no_cutoff') return 'No cutoff';
+  return 'No seats';
+}
+
+function formatApplicantDelta(delta, status) {
+  if (delta == null) return '—';
+  if (status === 'beaten' && delta < 0) return `Short ${fmtM(Math.abs(delta))}`;
+  return `${delta >= 0 ? '+' : '-'}${fmtM(Math.abs(delta))}`;
+}
+
+function shortHospital(hospitalName) {
+  return String(hospitalName || '').split(',')[0].trim();
+}
+
+function closeApplicantSimulationModal() {
+  document.getElementById('appSimModal')?.classList.add('hidden');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1861,10 +2106,14 @@ function baseMarks(c) {
  * = baseMarks(c) + programMarks[program]  (programMarks is a per-program bonus)
  * Returns null when applied_in[program] is false (candidate did not apply).
  * A candidate may have applied_in=true but programMarks=0 (0 bonus) — they
- * are still valid and ranked on baseMarks alone.
+ * are still valid and ranked on baseMarks alone. Some imported programme
+ * names are present only in preference data; those preferences imply applying.
  */
 function effectiveMark(c, program) {
-  if (!c.applied_in?.[program]) return null;   // did not apply
+  const appliedIn = c.applied_in || {};
+  const hasExplicitFlag = Object.prototype.hasOwnProperty.call(appliedIn, program);
+  const hasProgramPrefs = (c.preference?.[program] || []).length > 0;
+  if (!appliedIn[program] && (hasExplicitFlag || !hasProgramPrefs)) return null;
   return baseMarks(c) + (c.programMarks?.[program] ?? 0);
 }
 
