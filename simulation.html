@@ -716,6 +716,17 @@
       border-bottom: 1px solid rgba(77,184,217,0.09);
       background: rgba(77,184,217,0.025);
     }
+    .app-sim-track-section { border-top: 1px solid rgba(255,255,255,0.06); }
+    .app-sim-track-section:first-of-type { border-top: none; }
+    .app-sim-track-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 11px 16px; background: rgba(255,255,255,0.025);
+      border-bottom: 1px solid rgba(77,184,217,0.08);
+    }
+    .app-sim-track-head strong { color: var(--text); font-size: 0.82rem; }
+    .app-sim-track-head span:not(.app-sim-pill) {
+      display: block; color: var(--text-muted); font-size: 0.76rem; margin-top: 2px;
+    }
     .app-sim-pref-list { display: flex; flex-direction: column; }
     .app-sim-pref-row {
       display: grid; grid-template-columns: 46px minmax(0, 1fr) 96px 96px 110px 104px;
