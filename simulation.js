@@ -40,8 +40,6 @@ const CUSTOM_KEY     = 'mn_sim_custom_cand';
 const PAGE_SIZE      = 50;
 const MAX_PASSES     = 200;
 const SIM_NOTIF_DISMISSED_KEY = 'mn_sim_dismissed_notifs';
-const QUOTA_CYCLE_MAIN  = 'main';
-const QUOTA_CYCLE_ARMED = 'armed';
 
 // ═══════════════════════════════════════════════════════════════════
 // INIT
@@ -845,14 +843,15 @@ function renderSlot() {
     for (const a of applicants) {
       const sc = simMap[String(a.applicantId)];
       if (!sc) { a._simStatus = null; continue; }
-      const placement = placementForQuota(sc, quota);
-      if (placement && placement.q === quota && placement.s === spec && placement.h === hosp) {
+      if (sc.placed && sc._q === quota && sc._s === spec && sc._h === hosp) {
         a._simStatus = 'selected';
-      } else if (placement) {
-        const placedPref = findPlacementPref(sc, placement);
+      } else if (sc.placed) {
+        const placedPref = sc._prefs?.find(
+          p => p.quotaName === sc._q && p.specialityName === sc._s && p.hospitalName === sc._h
+        );
         a._simStatus = (placedPref && placedPref.preferenceNo < a.preferenceNo)
           ? 'higher-pref' : 'elsewhere';
-        a._placedAt = `${placement.s} @ ${placement.h.split(',')[0].trim()}`;
+        a._placedAt = `${sc._s} @ ${sc._h.split(',')[0].trim()}`;
       } else {
         a._simStatus = 'unplaced';
       }
@@ -1267,7 +1266,17 @@ function renderSbQuickViewContent() {
   const simCand = (SIM.sim.result && SIM.sim.program === program)
     ? SIM.sim.result.candidates.find(sc => String(sc.applicantId) === SIM.sb.clickedCandId)
     : null;
-  const simSummary = simCand ? renderPlacementSummaryInline(simCand) : '';
+  const placedPrefNo = simCand?.placed
+    ? (simCand._prefs?.find(p =>
+        p.quotaName === simCand._q && p.specialityName === simCand._s && p.hospitalName === simCand._h
+      )?.preferenceNo ?? null)
+    : null;
+
+  const simSummary = simCand
+    ? (simCand.placed
+        ? `<span class="sbqv-status-placed">&#10003; Pref #${placedPrefNo ?? '?'} &mdash; ${esc(simCand._s)} @ ${esc(simCand._h.split(',')[0].trim())}</span>`
+        : `<span class="sbqv-status-unplaced">Not placed</span>`)
+    : '';
 
   inner.innerHTML = `
     <div class="sbqv-header">
@@ -1283,13 +1292,11 @@ function renderSbQuickViewContent() {
         const seats = SIM.seats?.[program]?.[p.quotaName]?.[p.specialityName]?.[p.hospitalName] ?? null;
         let statusTag = '';
         if (simCand) {
-          const placement = placementForQuota(simCand, p.quotaName);
-          const placedPrefNo = placement?.preferenceNo ?? null;
-          if (placement && placement.q === p.quotaName && placement.s === p.specialityName && placement.h === p.hospitalName) {
+          if (simCand.placed && simCand._q === p.quotaName && simCand._s === p.specialityName && simCand._h === p.hospitalName) {
             statusTag = '<span class="sbqv-tag sbqv-tag-placed">&#10003; Selected</span>';
-          } else if (placement && placedPrefNo !== null && p.preferenceNo > placedPrefNo) {
+          } else if (simCand.placed && placedPrefNo !== null && p.preferenceNo > placedPrefNo) {
             statusTag = '<span class="sbqv-tag sbqv-tag-skip">&#8593; skipped</span>';
-          } else if (placement) {
+          } else if (simCand.placed) {
             statusTag = '<span class="sbqv-tag sbqv-tag-miss">not placed</span>';
           }
         }
@@ -1381,80 +1388,24 @@ function buildSeatTree(program) {
   return tree;
 }
 
-function normalizedQuota(q) {
-  return String(q ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
-}
-
-function quotaCycle(q) {
-  return normalizedQuota(q) === 'armed force' ? QUOTA_CYCLE_ARMED : QUOTA_CYCLE_MAIN;
-}
-
-function findPlacementPref(workCand, placement) {
-  if (!workCand || !placement) return null;
-  return workCand._prefs?.find(p =>
-    p.quotaName      === placement.q &&
-    p.specialityName === placement.s &&
-    p.hospitalName   === placement.h
-  ) ?? null;
-}
-
-function placementForCycle(workCand, cycle) {
-  if (!workCand) return null;
-  if (workCand.placements) return workCand.placements[cycle] ?? null;
-  if (!workCand.placed) return null;
-  return {
-    cycle,
-    q: workCand._q,
-    s: workCand._s,
-    h: workCand._h,
-    preferenceNo: findPlacementPref(workCand, { q: workCand._q, s: workCand._s, h: workCand._h })?.preferenceNo ?? null,
-  };
-}
-
-function placementForQuota(workCand, quotaName) {
-  return placementForCycle(workCand, quotaCycle(quotaName));
-}
-
-function renderPlacementSummaryInline(workCand) {
-  const parts = [
-    placementForCycle(workCand, QUOTA_CYCLE_MAIN),
-    placementForCycle(workCand, QUOTA_CYCLE_ARMED),
-  ].filter(Boolean).map(p => {
-    const label = p.cycle === QUOTA_CYCLE_ARMED ? 'Armed' : 'Main';
-    return `<span class="sbqv-status-placed">&#10003; ${label}: Pref #${p.preferenceNo ?? '?'} &mdash; ${esc(p.s)} @ ${esc(p.h.split(',')[0].trim())}</span>`;
-  });
-
-  return parts.length
-    ? parts.join(' &middot; ')
-    : '<span class="sbqv-status-unplaced">Not placed</span>';
-}
-
-function placementFromWorkCand(workCand, cycle) {
-  if (!workCand?.placed) return null;
-  return {
-    cycle,
-    q: workCand._q,
-    s: workCand._s,
-    h: workCand._h,
-    preferenceNo: findPlacementPref(workCand, { q: workCand._q, s: workCand._s, h: workCand._h })?.preferenceNo ?? null,
-  };
-}
-
 /**
- * Run one PRP placement cycle over a filtered quota set.
- * Armed Force is separate from the main quota cycle, so a candidate can be
- * projected in both cycles before making a final choice outside simulation.
+ * Run the PRP placement algorithm.
+ *
+ * @param {Object[]} candidates - candidates filtered to this program
+ * @param {Object}   seatTree   - {quota: {spec: {hosp: {jobs, candidates:[], others:[]}}}}
+ * @param {string}   program    - program name for selecting program-specific marks
+ * @param {boolean}  parentBonus - add pref.marks to effective marks if true
+ * @returns {{ seatTree, candidates }}
  */
-function runPlacementCycle(candidates, seatTree, program, parentBonus, cycle, prefFilter) {
+function runPlacement(candidates, seatTree, program, parentBonus = false) {
+  // Working copies
   const prog = candidates.map(c => ({
     applicantId: c.applicantId,
     nameFull:    c.nameFull,
     marksTotal:  effectiveMark(c, program) ?? baseMarks(c),
     _prefs:      (c.preference?.[program] || [])
-                   .filter(prefFilter)
                    .slice().sort((a, b) => a.preferenceNo - b.preferenceNo),
     placed: false, _q: null, _s: null, _h: null,
-    _cycle: cycle,
   }));
 
   const slot   = (q, s, h) => seatTree?.[q]?.[s]?.[h];
@@ -1464,15 +1415,16 @@ function runPlacementCycle(candidates, seatTree, program, parentBonus, cycle, pr
     nameFull:     cand.nameFull,
     marksTotal:   effM(cand, pref),
     preferenceNo: pref.preferenceNo,
-    cycle,
   });
+
+  let prevPlaced = -1;
 
   for (let pass = 0; pass < MAX_PASSES; pass++) {
     const unplaced = prog.filter(c => !c.placed)
                         .sort((a, b) => b.marksTotal - a.marksTotal);
     if (!unplaced.length) break;
 
-    let changed = false;
+    let placed = 0;
 
     for (const cand of unplaced) {
       for (const pref of cand._prefs) {
@@ -1485,7 +1437,7 @@ function runPlacementCycle(candidates, seatTree, program, parentBonus, cycle, pr
           sl.candidates.push(entry(cand, pref));
           cand.placed = true;
           cand._q = pref.quotaName; cand._s = pref.specialityName; cand._h = pref.hospitalName;
-          changed = true;
+          placed++;
           break;
         } else {
           const lowest = sl.candidates.reduce((m, c) => c.marksTotal < m.marksTotal ? c : m);
@@ -1501,17 +1453,20 @@ function runPlacementCycle(candidates, seatTree, program, parentBonus, cycle, pr
             sl.candidates.push(entry(cand, pref));
             cand.placed = true;
             cand._q = pref.quotaName; cand._s = pref.specialityName; cand._h = pref.hospitalName;
-            changed = true;
+            placed++;
             break;
           }
         }
       }
     }
 
-    if (!changed) break;
+    const total = prog.filter(c => c.placed).length;
+    if (total === prevPlaced) break;
+    prevPlaced = total;
   }
 
-  // Build "others" list for each slot in this quota cycle.
+  // Build "others" list for each slot
+  const isMe = id => String(id) === SIM.myId;
   for (const cand of prog) {
     const placedPrefNo = cand.placed
       ? cand._prefs.find(p =>
@@ -1536,63 +1491,7 @@ function runPlacementCycle(candidates, seatTree, program, parentBonus, cycle, pr
     }
   }
 
-  return prog;
-}
-
-/**
- * Run the PRP placement algorithm.
- *
- * @param {Object[]} candidates - candidates filtered to this program
- * @param {Object}   seatTree   - {quota: {spec: {hosp: {jobs, candidates:[], others:[]}}}}
- * @param {string}   program    - program name for selecting program-specific marks
- * @param {boolean}  parentBonus - add pref.marks to effective marks if true
- * @returns {{ seatTree, candidates }}
- */
-function runPlacement(candidates, seatTree, program, parentBonus = false) {
-  const mainProg = runPlacementCycle(
-    candidates,
-    seatTree,
-    program,
-    parentBonus,
-    QUOTA_CYCLE_MAIN,
-    pref => quotaCycle(pref.quotaName) !== QUOTA_CYCLE_ARMED
-  );
-  const armedProg = runPlacementCycle(
-    candidates,
-    seatTree,
-    program,
-    parentBonus,
-    QUOTA_CYCLE_ARMED,
-    pref => quotaCycle(pref.quotaName) === QUOTA_CYCLE_ARMED
-  );
-
-  const mainById  = Object.fromEntries(mainProg.map(c => [String(c.applicantId), c]));
-  const armedById = Object.fromEntries(armedProg.map(c => [String(c.applicantId), c]));
-
-  const prog = candidates.map(c => {
-    const marksTotal = effectiveMark(c, program) ?? baseMarks(c);
-    const prefs = (c.preference?.[program] || [])
-      .slice().sort((a, b) => a.preferenceNo - b.preferenceNo);
-    const mainPlacement  = placementFromWorkCand(mainById[String(c.applicantId)], QUOTA_CYCLE_MAIN);
-    const armedPlacement = placementFromWorkCand(armedById[String(c.applicantId)], QUOTA_CYCLE_ARMED);
-    const displayPlacement = mainPlacement ?? armedPlacement;
-    return {
-      applicantId: c.applicantId,
-      nameFull:    c.nameFull,
-      marksTotal,
-      _prefs:      prefs,
-      placements: {
-        [QUOTA_CYCLE_MAIN]:  mainPlacement,
-        [QUOTA_CYCLE_ARMED]: armedPlacement,
-      },
-      placed: !!displayPlacement,
-      _q: displayPlacement?.q ?? null,
-      _s: displayPlacement?.s ?? null,
-      _h: displayPlacement?.h ?? null,
-    };
-  });
-
-  // Sort placed and others by marks desc.
+  // Sort placed and others by marks desc
   for (const specs of Object.values(seatTree)) {
     for (const hosps of Object.values(specs)) {
       for (const sl of Object.values(hosps)) {
@@ -1661,17 +1560,13 @@ function renderSimResults() {
   const me = SIM.myId ? candidates.find(c => String(c.applicantId) === SIM.myId) : null;
   let myHtml = '';
   if (me) {
-    const myPlacements = [
-      placementForCycle(me, QUOTA_CYCLE_MAIN),
-      placementForCycle(me, QUOTA_CYCLE_ARMED),
-    ].filter(Boolean);
-    if (myPlacements.length) {
-      const placementLines = myPlacements.map(p => {
-        const label = p.cycle === QUOTA_CYCLE_ARMED ? 'Armed Force' : 'Main quota';
-        return `${esc(label)}: ${esc(p.s)} at ${esc(p.h)} (${esc(p.q)} &middot; ${esc(program)} &middot; Pref #${p.preferenceNo ?? '?'})`;
-      }).join('<br>');
+    if (me.placed) {
+      const prefNo = me._prefs?.find(p =>
+        p.quotaName === me._q && p.specialityName === me._s && p.hospitalName === me._h
+      )?.preferenceNo ?? '?';
       myHtml = `<div class="sim-my placed">
-        ✅ <strong>Projected placement${myPlacements.length > 1 ? 's' : ''}:</strong> ${placementLines}
+        ✅ <strong>Projected placement:</strong> ${esc(me._s)} at ${esc(me._h)}
+        &nbsp;(${esc(me._q)} &middot; ${program} &middot; Pref #${prefNo})
       </div>`;
     } else {
       myHtml = `<div class="sim-my unplaced">
@@ -1681,10 +1576,8 @@ function renderSimResults() {
     }
   }
 
-  const mainPlaced  = candidates.filter(c => placementForCycle(c, QUOTA_CYCLE_MAIN)).length;
-  const armedPlaced = candidates.filter(c => placementForCycle(c, QUOTA_CYCLE_ARMED)).length;
-  const placed      = candidates.filter(c => c.placed).length;
-  const total       = candidates.length;
+  const placed  = candidates.filter(c => c.placed).length;
+  const total   = candidates.length;
 
   // Flatten tree to rows, apply filter
   const rows = [];
@@ -1699,7 +1592,7 @@ function renderSimResults() {
           ? Math.min(...sl.candidates.map(c => c.marksTotal))
           : null;
         const eligibleOthers = sl.others.filter(o => !o.placedAtHigherPref);
-        const nextInLine = eligibleOthers.find(o => !o.placed) ?? eligibleOthers[0] ?? null;
+        const nextInLine = eligibleOthers[0] ?? null;
         const skippedHigherPrefCount = sl.others.length - eligibleOthers.length;
         const meInSlot   = me ? sl.candidates.some(c => String(c.applicantId) === SIM.myId) : false;
         rows.push({ q, s, h, sl, cutoff, nextInLine, meInSlot, eligibleOthers, skippedHigherPrefCount });
@@ -1714,9 +1607,7 @@ function renderSimResults() {
     ${myHtml}
     <div class="sim-summary card">
       <div class="sim-summary-grid">
-        <div><span class="sim-sum-val">${placed.toLocaleString()}</span><span class="sim-sum-lbl">Any placement</span></div>
-        <div><span class="sim-sum-val">${mainPlaced.toLocaleString()}</span><span class="sim-sum-lbl">Main quota</span></div>
-        <div><span class="sim-sum-val">${armedPlaced.toLocaleString()}</span><span class="sim-sum-lbl">Armed Force</span></div>
+        <div><span class="sim-sum-val">${placed.toLocaleString()}</span><span class="sim-sum-lbl">Placed</span></div>
         <div><span class="sim-sum-val">${(total - placed).toLocaleString()}</span><span class="sim-sum-lbl">Unplaced</span></div>
         <div><span class="sim-sum-val">${filledSlots}</span><span class="sim-sum-lbl">Slots filled</span></div>
         <div><span class="sim-sum-val">${rows.length}</span><span class="sim-sum-lbl">Total slots</span></div>
@@ -1775,7 +1666,7 @@ function renderSimCard({ q, s, h, sl, cutoff, nextInLine, meInSlot, eligibleOthe
 
     ${nextInLine ? `
     <div class="sim-next-line ${isMe(nextInLine.applicantId) ? 'sim-next-me' : ''} ${nextInLine.placed ? 'sim-next-placed-elsewhere' : ''}" data-sim-cand="${nextInLine.applicantId}">
-      <span class="sim-next-lbl">${nextInLine.placed ? 'Best applicant:' : 'Next in line:'}</span>
+      <span class="sim-next-lbl">Next in line:</span>
       <span class="sim-next-name">${esc(nextInLine.nameFull)}${isMe(nextInLine.applicantId) ? ' <span class="me-tag">YOU</span>' : ''}${nextInLine.placed ? ` <span class="custom-tag">→ ${esc(nextInLine.placedAt?.s ?? '?')}</span>` : ''}</span>
       <span class="sim-next-marks">${fmtM(nextInLine.marksTotal)}</span>
     </div>` : ''}
@@ -1808,11 +1699,17 @@ function renderSimCard({ q, s, h, sl, cutoff, nextInLine, meInSlot, eligibleOthe
  * status: 'placed' | 'beaten' | 'not_attempted' | 'no_slot'
  */
 function computeCandidateHistory(workCand, seatTree) {
+  const placedPref = workCand.placed
+    ? workCand._prefs.find(p =>
+        p.quotaName       === workCand._q &&
+        p.specialityName  === workCand._s &&
+        p.hospitalName    === workCand._h)
+    : null;
+  const placedPrefNo = placedPref?.preferenceNo ?? Infinity;
+
   const history = [];
   for (const pref of workCand._prefs) {
     const sl = seatTree?.[pref.quotaName]?.[pref.specialityName]?.[pref.hospitalName];
-    const placement = placementForQuota(workCand, pref.quotaName);
-    const placedPrefNo = placement?.preferenceNo ?? Infinity;
 
     if (!sl) {
       history.push({ pref, status: 'no_slot' });
@@ -1820,18 +1717,18 @@ function computeCandidateHistory(workCand, seatTree) {
     }
 
     const isPlacedHere =
-      placement &&
-      pref.quotaName      === placement.q &&
-      pref.specialityName === placement.s &&
-      pref.hospitalName   === placement.h;
+      workCand.placed &&
+      pref.quotaName      === workCand._q &&
+      pref.specialityName === workCand._s &&
+      pref.hospitalName   === workCand._h;
 
     if (isPlacedHere) {
       history.push({ pref, status: 'placed' });
-      continue;
+      break; // remaining prefs are 'not_attempted'
     }
 
     if (pref.preferenceNo > placedPrefNo) {
-      // Already placed at a better preference in this quota cycle.
+      // Already placed at a better (earlier) preference
       history.push({ pref, status: 'not_attempted' });
       continue;
     }
@@ -1852,6 +1749,7 @@ function computeCandidateHistory(workCand, seatTree) {
 
   return history;
 }
+
 function openSimCandidateDetail(applicantId) {
   if (!SIM.sim.result) return;
   const { seatTree, candidates } = SIM.sim.result;
@@ -1869,28 +1767,26 @@ function openSimCandidateDetail(applicantId) {
 
   // Placement banner
   let banner;
-  const placements = [
-    placementForCycle(workCand, QUOTA_CYCLE_MAIN),
-    placementForCycle(workCand, QUOTA_CYCLE_ARMED),
-  ].filter(Boolean);
-  if (placements.length) {
-    const placementRows = placements.map(p => {
-      const label = p.cycle === QUOTA_CYCLE_ARMED ? 'Armed Force' : 'Main quota';
-      return `${esc(label)}: ${esc(p.s)} <span style="opacity:0.75"> @ ${esc(p.h)}</span>
-        &nbsp;·&nbsp; <span style="font-size:0.86em;opacity:0.8">${esc(p.q)} &nbsp;·&nbsp; Preference #${p.preferenceNo ?? '?'}</span>`;
-    }).join('<br>');
+  if (workCand.placed) {
+    const prefNo = workCand._prefs.find(p =>
+      p.quotaName      === workCand._q &&
+      p.specialityName === workCand._s &&
+      p.hospitalName   === workCand._h
+    )?.preferenceNo ?? '?';
     banner = `<div class="sim-my placed" style="margin-bottom:16px">
-      ✅ <strong>Placed:</strong> ${placementRows}
+      ✅ <strong>Placed:</strong> ${esc(workCand._s)}
+      <span style="opacity:0.75"> @ ${esc(workCand._h)}</span>
+      &nbsp;·&nbsp; <span style="font-size:0.86em;opacity:0.8">${esc(workCand._q)} &nbsp;·&nbsp; Preference #${prefNo}</span>
     </div>`;
   } else {
     banner = `<div class="sim-my unplaced" style="margin-bottom:16px">
       ⚠️ <strong>Not placed.</strong>
-      No main quota or Armed Force placement is projected.
+      All ${workCand._prefs.length} preferences were filled by higher-scoring candidates.
     </div>`;
   }
 
   // History rows
-  const notAttempted = 0;
+  const notAttempted = workCand._prefs.length - history.length;
   const histRows = history.map(h => {
     const { pref, status } = h;
     let icon, detail, cls;
@@ -1905,7 +1801,7 @@ function openSimCandidateDetail(applicantId) {
       if (h.capacity != null) detail += `<br><span style="opacity:0.65">${h.filled}/${h.capacity} seats</span>`;
     } else if (status === 'not_attempted') {
       icon = '⏭'; cls = 'sim-hist-skip';
-      detail = 'Already placed at better pref in this quota cycle';
+      detail = 'Already placed at better pref';
     } else {
       icon = '—'; cls = 'sim-hist-nodata';
       detail = 'No seat data';
