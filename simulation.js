@@ -40,6 +40,21 @@ const CUSTOM_KEY     = 'mn_sim_custom_cand';
 const PAGE_SIZE      = 50;
 const MAX_PASSES     = 200;
 const SIM_NOTIF_DISMISSED_KEY = 'mn_sim_dismissed_notifs';
+const QUOTA_TRACKS = {
+  ARMED: 'armed',
+  CIVILIAN: 'civilian',
+};
+const CIVILIAN_QUOTA_KEYS = new Set([
+  'kpk sindh balochistan',
+  'punjab',
+  'disable',
+  'foreign',
+  'foriegn',
+  'ajk gb ict',
+  'ajk g b ict',
+  'dental',
+  'placement',
+]);
 
 // ═══════════════════════════════════════════════════════════════════
 // INIT
@@ -847,9 +862,12 @@ function renderSlot() {
   const useSimData = !!(SIM.sim.result && SIM.sim.program === program);
   if (useSimData) {
     const simMap = {};
-    for (const sc of SIM.sim.result.candidates) simMap[String(sc.applicantId)] = sc;
+    for (const sc of SIM.sim.result.candidates) {
+      simMap[simRecordKey(sc.applicantId, sc._track)] = sc;
+    }
+    const slotTrack = quotaTrack(quota);
     for (const a of applicants) {
-      const sc = simMap[String(a.applicantId)];
+      const sc = simMap[simRecordKey(a.applicantId, slotTrack)];
       if (!sc) { a._simStatus = null; continue; }
       if (sc.placed && sc._q === quota && sc._s === spec && sc._h === hosp) {
         a._simStatus = 'selected';
@@ -1271,9 +1289,12 @@ function renderSbQuickViewContent() {
   const prefs = (c.preference?.[program] || []).slice().sort((a, b) => a.preferenceNo - b.preferenceNo);
   const marks = effectiveMark(c, program);
 
-  const simCand = (SIM.sim.result && SIM.sim.program === program)
-    ? SIM.sim.result.candidates.find(sc => String(sc.applicantId) === SIM.sb.clickedCandId)
-    : null;
+  const simRecords = (SIM.sim.result && SIM.sim.program === program)
+    ? SIM.sim.result.candidates.filter(sc => String(sc.applicantId) === SIM.sb.clickedCandId)
+    : [];
+  const simByTrack = {};
+  simRecords.forEach(sc => { simByTrack[sc._track] = sc; });
+  const simCand = simByTrack[quotaTrack(quota)] || simRecords[0] || null;
   const placedPrefNo = simCand?.placed
     ? (simCand._prefs?.find(p =>
         p.quotaName === simCand._q && p.specialityName === simCand._s && p.hospitalName === simCand._h
@@ -1298,13 +1319,19 @@ function renderSbQuickViewContent() {
       ${prefs.length ? prefs.map(p => {
         const isCurrent = p.quotaName === quota && p.specialityName === spec && p.hospitalName === hosp;
         const seats = SIM.seats?.[program]?.[p.quotaName]?.[p.specialityName]?.[p.hospitalName] ?? null;
+        const prefSimCand = simByTrack[quotaTrack(p.quotaName)] || null;
+        const prefPlacedPrefNo = prefSimCand?.placed
+          ? (prefSimCand._prefs?.find(pp =>
+              pp.quotaName === prefSimCand._q && pp.specialityName === prefSimCand._s && pp.hospitalName === prefSimCand._h
+            )?.preferenceNo ?? null)
+          : null;
         let statusTag = '';
-        if (simCand) {
-          if (simCand.placed && simCand._q === p.quotaName && simCand._s === p.specialityName && simCand._h === p.hospitalName) {
+        if (prefSimCand) {
+          if (prefSimCand.placed && prefSimCand._q === p.quotaName && prefSimCand._s === p.specialityName && prefSimCand._h === p.hospitalName) {
             statusTag = '<span class="sbqv-tag sbqv-tag-placed">&#10003; Selected</span>';
-          } else if (simCand.placed && placedPrefNo !== null && p.preferenceNo > placedPrefNo) {
+          } else if (prefSimCand.placed && prefPlacedPrefNo !== null && p.preferenceNo > prefPlacedPrefNo) {
             statusTag = '<span class="sbqv-tag sbqv-tag-skip">&#8593; skipped</span>';
-          } else if (simCand.placed) {
+          } else if (prefSimCand.placed) {
             statusTag = '<span class="sbqv-tag sbqv-tag-miss">not placed</span>';
           }
         }
@@ -1396,6 +1423,44 @@ function buildSeatTree(program) {
   return tree;
 }
 
+function normalizeQuotaName(quotaName) {
+  return String(quotaName || '')
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\band\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function quotaTrack(quotaName) {
+  const q = normalizeQuotaName(quotaName);
+  if (q.includes('armed force')) return QUOTA_TRACKS.ARMED;
+  // Anything outside the Armed Force quota competes as a civilian track.
+  // Keep the named set here so alternate spellings stay intentional/documented.
+  return CIVILIAN_QUOTA_KEYS.has(q) ? QUOTA_TRACKS.CIVILIAN : QUOTA_TRACKS.CIVILIAN;
+}
+
+function quotaTrackLabel(track) {
+  return track === QUOTA_TRACKS.ARMED ? 'Armed' : 'Civilian';
+}
+
+function trackSort(track) {
+  return track === QUOTA_TRACKS.CIVILIAN ? 0 : 1;
+}
+
+function simRecordKey(applicantId, track) {
+  return `${String(applicantId)}::${track || ''}`;
+}
+
+function candidateTrackPrefs(candidate, program, track) {
+  return (candidate.preference?.[program] || [])
+    .filter(p => quotaTrack(p.quotaName) === track)
+    .slice()
+    .sort((a, b) => a.preferenceNo - b.preferenceNo);
+}
+
 /**
  * Run the PRP placement algorithm.
  *
@@ -1407,14 +1472,20 @@ function buildSeatTree(program) {
  */
 function runPlacement(candidates, seatTree, program, parentBonus = false) {
   // Working copies
-  const prog = candidates.map(c => ({
-    applicantId: c.applicantId,
-    nameFull:    c.nameFull,
-    marksTotal:  effectiveMark(c, program) ?? baseMarks(c),
-    _prefs:      (c.preference?.[program] || [])
-                   .slice().sort((a, b) => a.preferenceNo - b.preferenceNo),
-    placed: false, _q: null, _s: null, _h: null,
-  }));
+  const prog = candidates.flatMap(c => {
+    const marksTotal = effectiveMark(c, program) ?? baseMarks(c);
+    return [QUOTA_TRACKS.CIVILIAN, QUOTA_TRACKS.ARMED]
+      .map(track => ({
+        applicantId: c.applicantId,
+        nameFull:    c.nameFull,
+        marksTotal,
+        _track:      track,
+        _trackLabel: quotaTrackLabel(track),
+        _prefs:      candidateTrackPrefs(c, program, track),
+        placed: false, _q: null, _s: null, _h: null,
+      }))
+      .filter(cw => cw._prefs.length);
+  });
 
   const slot   = (q, s, h) => seatTree?.[q]?.[s]?.[h];
   const effM   = (cand, pref) => cand.marksTotal + (parentBonus ? (pref.marks || 0) : 0);
@@ -1423,6 +1494,8 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
     nameFull:     cand.nameFull,
     marksTotal:   effM(cand, pref),
     preferenceNo: pref.preferenceNo,
+    _track:       cand._track,
+    _trackLabel:  cand._trackLabel,
   });
 
   let prevPlaced = -1;
@@ -1451,9 +1524,12 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
           const lowest = sl.candidates.reduce((m, c) => c.marksTotal < m.marksTotal ? c : m);
           if (em > lowest.marksTotal) {
             sl.candidates = sl.candidates.filter(
-              c => String(c.applicantId) !== String(lowest.applicantId)
+              c => !(String(c.applicantId) === String(lowest.applicantId) && c._track === lowest._track)
             );
-            const evicted = prog.find(c => String(c.applicantId) === String(lowest.applicantId));
+            const evicted = prog.find(c =>
+              String(c.applicantId) === String(lowest.applicantId) &&
+              c._track === lowest._track
+            );
             if (evicted) {
               evicted.placed = false;
               evicted._q = evicted._s = evicted._h = null;
@@ -1494,6 +1570,8 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
           placed:   cand.placed,
           placedAtHigherPref: (placedPrefNo !== null && placedPrefNo < pref.preferenceNo),
           placedAt: cand.placed ? { q: cand._q, s: cand._s, h: cand._h } : null,
+          _track:   cand._track,
+          _trackLabel: cand._trackLabel,
         });
       }
     }
@@ -1581,16 +1659,19 @@ function renderSimResults() {
   if (!container) return;
 
   // My result banner
-  const me = SIM.myId ? candidates.find(c => String(c.applicantId) === SIM.myId) : null;
+  const meRecords = SIM.myId ? candidates.filter(c => String(c.applicantId) === SIM.myId) : [];
   let myHtml = '';
-  if (me) {
-    if (me.placed) {
-      const prefNo = me._prefs?.find(p =>
-        p.quotaName === me._q && p.specialityName === me._s && p.hospitalName === me._h
-      )?.preferenceNo ?? '?';
+  if (meRecords.length) {
+    const placedMe = meRecords.filter(c => c.placed);
+    if (placedMe.length) {
       myHtml = `<div class="sim-my placed">
-        ✅ <strong>Projected placement:</strong> ${esc(me._s)} at ${esc(me._h)}
-        &nbsp;(${esc(me._q)} &middot; ${program} &middot; Pref #${prefNo})
+        ✅ <strong>Projected placement${placedMe.length > 1 ? 's' : ''}:</strong>
+        ${placedMe.map(me => {
+          const prefNo = me._prefs?.find(p =>
+            p.quotaName === me._q && p.specialityName === me._s && p.hospitalName === me._h
+          )?.preferenceNo ?? '?';
+          return `${esc(me._trackLabel)}: ${esc(me._s)} at ${esc(me._h)} (${esc(me._q)} &middot; Pref #${prefNo})`;
+        }).join(' &nbsp; | &nbsp; ')}
       </div>`;
     } else {
       myHtml = `<div class="sim-my unplaced">
@@ -1618,7 +1699,7 @@ function renderSimResults() {
         const eligibleOthers = sl.others.filter(o => !o.placedAtHigherPref);
         const nextInLine = eligibleOthers[0] ?? null;
         const skippedHigherPrefCount = sl.others.length - eligibleOthers.length;
-        const meInSlot   = me ? sl.candidates.some(c => String(c.applicantId) === SIM.myId) : false;
+        const meInSlot   = meRecords.length ? sl.candidates.some(c => String(c.applicantId) === SIM.myId) : false;
         rows.push({ q, s, h, sl, cutoff, nextInLine, meInSlot, eligibleOthers, skippedHigherPrefCount });
       }
     }
@@ -1653,7 +1734,7 @@ function renderSimResults() {
   // Delegate clicks on candidate rows → open placement detail modal
   container.addEventListener('click', e => {
     const el = e.target.closest('[data-sim-cand]');
-    if (el) openSimCandidateDetail(el.dataset.simCand);
+    if (el) openSimCandidateDetail(el.dataset.simCand, el.dataset.simTrack);
   });
 }
 
@@ -1679,7 +1760,7 @@ function renderSimCard({ q, s, h, sl, cutoff, nextInLine, meInSlot, eligibleOthe
     <div class="sim-placed">
       ${sl.candidates.length
         ? sl.candidates.map(c => `
-          <div class="sim-row ${isMe(c.applicantId) ? 'sim-row-me' : ''}" data-sim-cand="${c.applicantId}">
+          <div class="sim-row ${isMe(c.applicantId) ? 'sim-row-me' : ''}" data-sim-cand="${c.applicantId}" data-sim-track="${esc(c._track)}">
             <span class="sim-row-name">${esc(c.nameFull)}${isMe(c.applicantId) ? ' <span class="me-tag">YOU</span>' : ''}</span>
             <span class="sim-row-marks">${fmtM(c.marksTotal)}</span>
             <span class="sim-row-pref">P${c.preferenceNo}</span>
@@ -1689,7 +1770,7 @@ function renderSimCard({ q, s, h, sl, cutoff, nextInLine, meInSlot, eligibleOthe
     </div>
 
     ${nextInLine ? `
-    <div class="sim-next-line ${isMe(nextInLine.applicantId) ? 'sim-next-me' : ''} ${nextInLine.placed ? 'sim-next-placed-elsewhere' : ''}" data-sim-cand="${nextInLine.applicantId}">
+    <div class="sim-next-line ${isMe(nextInLine.applicantId) ? 'sim-next-me' : ''} ${nextInLine.placed ? 'sim-next-placed-elsewhere' : ''}" data-sim-cand="${nextInLine.applicantId}" data-sim-track="${esc(nextInLine._track)}">
       <span class="sim-next-lbl">Next in line:</span>
       <span class="sim-next-name">${esc(nextInLine.nameFull)}${isMe(nextInLine.applicantId) ? ' <span class="me-tag">YOU</span>' : ''}${nextInLine.placed ? ` <span class="custom-tag">→ ${esc(nextInLine.placedAt?.s ?? '?')}</span>` : ''}</span>
       <span class="sim-next-marks">${fmtM(nextInLine.marksTotal)}</span>
@@ -1699,7 +1780,7 @@ function renderSimCard({ q, s, h, sl, cutoff, nextInLine, meInSlot, eligibleOthe
     <button class="btn btn-sm sim-expand-btn" data-count="${eligibleOthers.length}">▼ ${eligibleOthers.length} others</button>
     <div class="sim-others">
       ${eligibleOthers.map(o => `
-        <div class="sim-other-row ${isMe(o.applicantId) ? 'sim-row-me' : ''}" data-sim-cand="${o.applicantId}">
+        <div class="sim-other-row ${isMe(o.applicantId) ? 'sim-row-me' : ''}" data-sim-cand="${o.applicantId}" data-sim-track="${esc(o._track)}">
           <span class="sim-other-name">${esc(o.nameFull)}${isMe(o.applicantId) ? ' <span class="me-tag">YOU</span>' : ''}</span>
           <span class="sim-other-marks">${fmtM(o.marksTotal)}</span>
           <span class="sim-other-status">${o.placed ? `→ ${esc(o.placedAt?.s ?? o.placedAt?.h ?? '?')}` : 'unplaced'}</span>
@@ -1735,12 +1816,21 @@ function runApplicantSimulation(idStr) {
       const programs = applicantPrograms(cand);
       const results = programs.map(program => {
         const result = runSimulationForProgram(program);
-        const workCand = result?.candidates.find(c => String(c.applicantId) === id) || null;
+        const tracks = result
+          ? result.candidates
+              .filter(c => String(c.applicantId) === id)
+              .sort((a, b) => trackSort(a._track) - trackSort(b._track))
+              .map(workCand => ({
+                track: workCand._track,
+                trackLabel: workCand._trackLabel,
+                workCand,
+                history: buildApplicantPreferenceRows(workCand, result.seatTree),
+              }))
+          : [];
         return {
           program,
           result,
-          workCand,
-          history: workCand ? buildApplicantPreferenceRows(workCand, result.seatTree) : [],
+          tracks,
         };
       });
 
@@ -1823,11 +1913,12 @@ function renderApplicantSimulationModal(cand, results) {
   const body  = document.getElementById('appSimModalBody');
   if (!modal || !body) return;
 
-  const validResults = results.filter(r => r.result && r.workCand);
-  const placedCount = validResults.filter(r => r.workCand.placed).length;
-  const programCount = validResults.length;
-  const prefCount = validResults.reduce((sum, r) => sum + r.history.length, 0);
-  const skippedPrograms = results.filter(r => !r.result || !r.workCand).map(r => r.program);
+  const validResults = results.filter(r => r.result && r.tracks.length);
+  const trackResults = validResults.flatMap(r => r.tracks);
+  const placedCount = trackResults.filter(r => r.workCand.placed).length;
+  const trackCount = trackResults.length;
+  const prefCount = trackResults.reduce((sum, r) => sum + r.history.length, 0);
+  const skippedPrograms = results.filter(r => !r.result || !r.tracks.length).map(r => r.program);
 
   body.innerHTML = `
     <div class="app-sim-modal-head">
@@ -1840,7 +1931,7 @@ function renderApplicantSimulationModal(cand, results) {
         </p>
       </div>
       <div class="app-sim-summary-pills">
-        <span class="app-sim-pill ${placedCount ? 'placed' : 'unplaced'}">${placedCount}/${programCount || 0} placed</span>
+        <span class="app-sim-pill ${placedCount ? 'placed' : 'unplaced'}">${placedCount}/${trackCount || 0} tracks placed</span>
         <span class="app-sim-pill">${prefCount} preferences checked</span>
         <span class="app-sim-pill">${SIM.seatsLoaded ? 'Seat data loaded' : 'Fallback seats'}</span>
       </div>
@@ -1860,7 +1951,23 @@ function renderApplicantSimulationModal(cand, results) {
 }
 
 function renderApplicantProgramCard(programResult) {
-  const { program, workCand, history } = programResult;
+  const { program, tracks } = programResult;
+  const placedCount = tracks.filter(t => t.workCand.placed).length;
+
+  return `<div class="app-sim-program-card ${placedCount ? 'is-placed' : 'is-unplaced'}">
+    <div class="app-sim-program-head">
+      <div>
+        <div class="app-sim-program-title">${esc(program)}</div>
+        <div class="app-sim-program-result"><strong>${placedCount ? 'Projected placement' : 'No placement'}:</strong> ${placedCount}/${tracks.length} quota tracks placed</div>
+      </div>
+      <span class="app-sim-pill ${placedCount ? 'placed' : 'unplaced'}">${placedCount ? `${placedCount} placed` : 'Unplaced'}</span>
+    </div>
+    ${tracks.map(renderApplicantTrackSection).join('')}
+  </div>`;
+}
+
+function renderApplicantTrackSection(trackResult) {
+  const { workCand, history, trackLabel } = trackResult;
   const placed = workCand.placed;
   const placedRow = history.find(r => r.status === 'placed');
   const bestMiss = history
@@ -1873,19 +1980,17 @@ function renderApplicantProgramCard(programResult) {
     ? `Not placed; closest shown cutoff shortfall is ${fmtM(shortfall)} marks.`
     : 'Not placed in recorded preferences.';
 
-  return `<div class="app-sim-program-card ${placed ? 'is-placed' : 'is-unplaced'}">
-    <div class="app-sim-program-head">
-      <div>
-        <div class="app-sim-program-title">${esc(program)}</div>
-        <div class="app-sim-program-result"><strong>${placed ? 'Projected placement' : 'No placement'}:</strong> ${resultText}</div>
-      </div>
+  return `<div class="app-sim-track-section ${placed ? 'is-placed' : 'is-unplaced'}">
+    <div class="app-sim-track-head">
+      <div><strong>${esc(trackLabel)} placement</strong><span>${resultText}</span></div>
       <span class="app-sim-pill ${placed ? 'placed' : 'unplaced'}">${placed ? 'Placed' : 'Unplaced'}</span>
     </div>
+    ${placed ? '<div class="app-sim-program-note">One final seat is allocated in this quota track. Lower preferences may still show that the applicant would clear the cutoff, but they are skipped after this earlier track placement.</div>' : ''}
     <div class="app-sim-pref-list">
       <div class="app-sim-pref-row app-sim-pref-head">
         <span>Pref</span><span>Slot</span><span>Your marks</span><span>Cutoff</span><span>Margin</span><span>Status</span>
       </div>
-      ${history.length ? history.map(renderApplicantPreferenceRow).join('') : '<div class="app-sim-empty">No preferences recorded for this program.</div>'}
+      ${history.length ? history.map(renderApplicantPreferenceRow).join('') : '<div class="app-sim-empty">No preferences recorded for this quota track.</div>'}
     </div>
   </div>`;
 }
@@ -1911,13 +2016,16 @@ function renderApplicantPreferenceRow(row) {
 function applicantStatusLabel(status) {
   if (status === 'placed') return 'Placed';
   if (status === 'beaten') return 'Fell short';
-  if (status === 'not_attempted') return 'Lower pref';
+  if (status === 'not_attempted') return 'Skipped';
   if (status === 'no_cutoff') return 'No cutoff';
   return 'No seats';
 }
 
 function formatApplicantDelta(delta, status) {
   if (delta == null) return '—';
+  if (status === 'not_attempted') {
+    return delta >= 0 ? `Would clear +${fmtM(delta)}` : `Would short ${fmtM(Math.abs(delta))}`;
+  }
   if (status === 'beaten' && delta < 0) return `Short ${fmtM(Math.abs(delta))}`;
   return `${delta >= 0 ? '+' : '-'}${fmtM(Math.abs(delta))}`;
 }
@@ -1995,12 +2103,15 @@ function computeCandidateHistory(workCand, seatTree) {
   return history;
 }
 
-function openSimCandidateDetail(applicantId) {
+function openSimCandidateDetail(applicantId, track = null) {
   if (!SIM.sim.result) return;
   const { seatTree, candidates } = SIM.sim.result;
   const prog = SIM.sim.program;
 
-  const workCand = candidates.find(c => String(c.applicantId) === String(applicantId));
+  const workCand = candidates.find(c =>
+    String(c.applicantId) === String(applicantId) &&
+    (!track || c._track === track)
+  ) || candidates.find(c => String(c.applicantId) === String(applicantId));
   const origCand = allCandidates().find(c => String(c.applicantId) === String(applicantId));
   if (!workCand || !origCand) return;
 
@@ -2078,7 +2189,7 @@ function openSimCandidateDetail(applicantId) {
       <h3>${esc(origCand.nameFull)} ${isMe ? '<span class="me-tag">YOU</span>' : ''}</h3>
       <p class="cand-detail-meta">
         ID: ${origCand.applicantId}
-        &nbsp;·&nbsp; ${esc(prog)} marks: <strong>${fmtM(workCand.marksTotal)}</strong>
+        &nbsp;·&nbsp; ${esc(prog)} ${esc(workCand._trackLabel || '')} marks: <strong>${fmtM(workCand.marksTotal)}</strong>
       </p>
     </div>
     ${banner}
@@ -2639,18 +2750,23 @@ function _showProfileModal(p) {
   if (p.applicantId) {
     const simResult = SIM.sim?.result;
     if (simResult) {
-      const simCand = simResult.candidates.find(
+      const simCands = simResult.candidates.filter(
         c => String(c.applicantId) === String(p.applicantId)
       );
-      if (simCand) {
+      if (simCands.length) {
         const prog = SIM.sim.program || '';
-        if (simCand.placed) {
+        const placedCands = simCands.filter(c => c.placed);
+        if (placedCands.length) {
           placementHtml = `
             <div style="margin:0.5rem 0;padding:0.9rem 1rem;border-radius:10px;background:rgba(62,207,142,0.05);border:1px solid rgba(62,207,142,0.2);">
-              <div style="font-size:0.72rem;font-weight:700;color:var(--neon-green);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.55rem;">✅ Projected Placement <span style="opacity:0.6;font-weight:500;text-transform:none;">(${esc(prog)} simulation)</span></div>
-              <div style="font-size:0.97rem;font-weight:700;color:var(--text);margin-bottom:0.2rem;">${esc(simCand._s)}</div>
-              <div style="font-size:0.82rem;color:var(--text-muted);">🏥 ${esc(simCand._h)}</div>
-              <div style="font-size:0.77rem;color:var(--text-muted);margin-top:0.25rem;">Quota: ${esc(simCand._q)}</div>
+              <div style="font-size:0.72rem;font-weight:700;color:var(--neon-green);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.55rem;">✅ Projected Placement${placedCands.length > 1 ? 's' : ''} <span style="opacity:0.6;font-weight:500;text-transform:none;">(${esc(prog)} simulation)</span></div>
+              ${placedCands.map(simCand => `
+                <div style="padding:0.35rem 0;border-top:1px solid rgba(255,255,255,0.06);">
+                  <div style="font-size:0.78rem;color:var(--neon-green);font-weight:700;">${esc(simCand._trackLabel || 'Quota')} track</div>
+                  <div style="font-size:0.97rem;font-weight:700;color:var(--text);margin-bottom:0.2rem;">${esc(simCand._s)}</div>
+                  <div style="font-size:0.82rem;color:var(--text-muted);">🏥 ${esc(simCand._h)}</div>
+                  <div style="font-size:0.77rem;color:var(--text-muted);margin-top:0.25rem;">Quota: ${esc(simCand._q)}</div>
+                </div>`).join('')}
             </div>`;
         } else {
           placementHtml = `
