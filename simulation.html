@@ -665,6 +665,86 @@
     .sim-other-marks  { font-variant-numeric: tabular-nums; color: var(--text-light, #3a506e); }
     .sim-other-status { font-size: 0.67rem; color: var(--text-muted); opacity: 0.65; }
 
+    /* Applicant-specific all-program simulation */
+    .app-sim-tool {
+      margin-top: 16px; padding: 14px;
+      border: 1px solid rgba(77,184,217,0.14);
+      border-radius: var(--radius, 10px);
+      background: linear-gradient(135deg, rgba(77,184,217,0.06), rgba(124,101,196,0.035));
+    }
+    .app-sim-tool-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: 10px; flex-wrap: wrap; margin-bottom: 10px;
+    }
+    .app-sim-tool-title { font-weight: 800; color: var(--text); font-size: 0.9rem; }
+    .app-sim-tool-hint { color: var(--text-muted); font-size: 0.76rem; }
+    .app-sim-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .app-sim-row .mt-filter-input { flex: 1; min-width: 190px; }
+    .app-sim-modal-box { width: min(980px, 94vw); max-height: 88vh; overflow-y: auto; }
+    .app-sim-modal-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 14px; flex-wrap: wrap; padding-right: 24px; margin-bottom: 14px;
+    }
+    .app-sim-modal-head h3 { margin: 0 0 4px; }
+    .app-sim-meta { color: var(--text-muted); font-size: 0.8rem; margin: 0; }
+    .app-sim-summary-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+    .app-sim-pill {
+      border: 1px solid rgba(77,184,217,0.18); border-radius: 100px;
+      background: rgba(77,184,217,0.08); color: var(--neon-cyan, #4db8d9);
+      padding: 3px 9px; font-size: 0.72rem; font-weight: 700;
+    }
+    .app-sim-pill.placed { color: var(--neon-green, #3ecf8e); border-color: rgba(62,207,142,0.25); background: rgba(62,207,142,0.1); }
+    .app-sim-pill.unplaced { color: #e05470; border-color: rgba(224,84,112,0.25); background: rgba(224,84,112,0.08); }
+    .app-sim-programs { display: flex; flex-direction: column; gap: 14px; }
+    .app-sim-program-card {
+      border: 1px solid var(--border); border-radius: var(--radius-lg, 16px);
+      background: rgba(16,26,52,0.82); overflow: hidden;
+    }
+    .app-sim-program-head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 12px; padding: 14px 16px;
+      background: linear-gradient(135deg, rgba(77,184,217,0.06), rgba(124,101,196,0.03));
+      border-bottom: 1px solid rgba(77,184,217,0.12);
+    }
+    .app-sim-program-title { font-weight: 800; color: var(--text); }
+    .app-sim-program-result { color: var(--text-muted); font-size: 0.8rem; margin-top: 2px; }
+    .app-sim-program-result strong { color: var(--neon-cyan, #4db8d9); }
+    .app-sim-program-card.is-placed .app-sim-program-result strong { color: var(--neon-green, #3ecf8e); }
+    .app-sim-program-card.is-unplaced .app-sim-program-result strong { color: #e05470; }
+    .app-sim-pref-list { display: flex; flex-direction: column; }
+    .app-sim-pref-row {
+      display: grid; grid-template-columns: 46px minmax(0, 1fr) 96px 96px 110px 104px;
+      gap: 10px; align-items: center; padding: 11px 16px;
+      border-top: 1px solid rgba(255,255,255,0.04); font-size: 0.8rem;
+    }
+    .app-sim-pref-row:first-child { border-top: none; }
+    .app-sim-pref-head {
+      color: var(--text-muted); font-size: 0.68rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      background: rgba(255,255,255,0.025);
+    }
+    .app-sim-pref-head span:nth-child(n+3) { text-align: right; }
+    .app-sim-pref-head span:last-child { text-align: right; }
+    .app-sim-pref-row.status-placed { background: rgba(62,207,142,0.08); }
+    .app-sim-pref-row.status-beaten { background: rgba(224,84,112,0.045); }
+    .app-sim-pref-row.status-not_attempted { opacity: 0.55; }
+    .app-sim-pref-no { color: var(--text-muted); font-weight: 700; font-variant-numeric: tabular-nums; }
+    .app-sim-pref-slot { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .app-sim-pref-spec { color: var(--text); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .app-sim-pref-hosp, .app-sim-pref-quota { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .app-sim-num { text-align: right; font-variant-numeric: tabular-nums; color: var(--text); }
+    .app-sim-delta.good { color: var(--neon-green, #3ecf8e); font-weight: 800; }
+    .app-sim-delta.bad { color: #e05470; font-weight: 800; }
+    .app-sim-status {
+      justify-self: end; border-radius: 100px; padding: 3px 8px;
+      background: rgba(255,255,255,0.05); color: var(--text-muted);
+      border: 1px solid rgba(255,255,255,0.08); font-size: 0.7rem; font-weight: 800;
+      white-space: nowrap;
+    }
+    .app-sim-status.placed { color: var(--neon-green, #3ecf8e); border-color: rgba(62,207,142,0.28); background: rgba(62,207,142,0.1); }
+    .app-sim-status.beaten { color: #e05470; border-color: rgba(224,84,112,0.25); background: rgba(224,84,112,0.08); }
+    .app-sim-empty { color: var(--text-muted); text-align: center; padding: 26px 12px; font-size: 0.85rem; }
+
     /* ---------------------------------------------------------------
        ADD MANUALLY MODAL
     --------------------------------------------------------------- */
@@ -703,6 +783,13 @@
       .sim-summary-grid { grid-template-columns: 1fr 1fr; }
       .sim-summary-grid > div:nth-child(2) { border-right: none; }
       .sim-summary-grid > div:nth-child(3) { border-top: 1px solid var(--border); }
+      .app-sim-pref-row { grid-template-columns: 40px 1fr 78px; }
+      .app-sim-pref-head span:nth-child(4),
+      .app-sim-pref-head span:nth-child(5),
+      .app-sim-pref-head span:nth-child(6),
+      .app-sim-pref-row .app-sim-num:nth-child(4),
+      .app-sim-pref-row .app-sim-delta { display: none; }
+      .app-sim-status { grid-column: 2 / -1; justify-self: start; }
     }
     @media (max-width: 600px) {
       .sim-findme-bar { padding: 8px 12px; flex-wrap: wrap; gap: 6px; }
@@ -1399,8 +1486,10 @@
           <label for="simProgram">Programme</label>
           <select id="simProgram" class="mt-filter-sel">
             <option value="FCPS">FCPS</option>
+            <option value="FCPS Dentistry">FCPS Dentistry</option>
             <option value="MS">MS</option>
             <option value="MD">MD</option>
+            <option value="MDS">MDS</option>
           </select>
         </div>
         <div class="form-group">
@@ -1415,6 +1504,17 @@
           <input type="checkbox" id="simParentBonus" />
           Parent Institute Bonus (+5&nbsp;marks within slot)
         </label>
+      </div>
+
+      <div class="app-sim-tool">
+        <div class="app-sim-tool-head">
+          <span class="app-sim-tool-title">Applicant-wise result</span>
+          <span class="app-sim-tool-hint">Enter an Applicant ID to auto-run all applied programs and see preference cutoffs.</span>
+        </div>
+        <div class="app-sim-row">
+          <input type="number" id="appSimIdInput" class="mt-filter-input" placeholder="Applicant ID&hellip;" />
+          <button id="runApplicantSimBtn" class="btn btn-primary">Run Applicant Result</button>
+        </div>
       </div>
 
       <div id="simNoSeatsWarn" class="sim-no-seats-warn hidden">
@@ -1594,6 +1694,17 @@
   <div class="modal-box" style="max-width:680px;max-height:85vh;overflow-y:auto">
     <button class="modal-close" id="candidateModalClose" title="Close">&times;</button>
     <div id="candidateModalBody"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     APPLICANT ALL-PROGRAM SIMULATION MODAL
+══════════════════════════════════════════ -->
+<div class="modal hidden" id="appSimModal" role="dialog" aria-modal="true">
+  <div class="modal-overlay" id="appSimModalOverlay"></div>
+  <div class="modal-box app-sim-modal-box">
+    <button class="modal-close" id="appSimModalClose" title="Close">&times;</button>
+    <div id="appSimModalBody"></div>
   </div>
 </div>
 
@@ -1805,6 +1916,10 @@
     document.getElementById('customModal')?.classList.add('hidden'));
   document.getElementById('customCancelBtn')?.addEventListener('click', () =>
     document.getElementById('customModal')?.classList.add('hidden'));
+  document.getElementById('appSimModalOverlay')?.addEventListener('click', () =>
+    document.getElementById('appSimModal')?.classList.add('hidden'));
+  document.getElementById('appSimModalClose')?.addEventListener('click', () =>
+    document.getElementById('appSimModal')?.classList.add('hidden'));
 
   let _prefCount = 0;
   const PROGS_LIST = ['FCPS', 'MS', 'MD'];
