@@ -1881,6 +1881,7 @@ function renderApplicantProgramCard(programResult) {
       </div>
       <span class="app-sim-pill ${placed ? 'placed' : 'unplaced'}">${placed ? 'Placed' : 'Unplaced'}</span>
     </div>
+    ${placed ? '<div class="app-sim-program-note">One final seat is allocated per program. Lower preferences may still show that the applicant would clear the cutoff, but they are skipped after this earlier placement.</div>' : ''}
     <div class="app-sim-pref-list">
       <div class="app-sim-pref-row app-sim-pref-head">
         <span>Pref</span><span>Slot</span><span>Your marks</span><span>Cutoff</span><span>Margin</span><span>Status</span>
@@ -1911,13 +1912,16 @@ function renderApplicantPreferenceRow(row) {
 function applicantStatusLabel(status) {
   if (status === 'placed') return 'Placed';
   if (status === 'beaten') return 'Fell short';
-  if (status === 'not_attempted') return 'Lower pref';
+  if (status === 'not_attempted') return 'Skipped';
   if (status === 'no_cutoff') return 'No cutoff';
   return 'No seats';
 }
 
 function formatApplicantDelta(delta, status) {
   if (delta == null) return '—';
+  if (status === 'not_attempted') {
+    return delta >= 0 ? `Would clear +${fmtM(delta)}` : `Would short ${fmtM(Math.abs(delta))}`;
+  }
   if (status === 'beaten' && delta < 0) return `Short ${fmtM(Math.abs(delta))}`;
   return `${delta >= 0 ? '+' : '-'}${fmtM(Math.abs(delta))}`;
 }

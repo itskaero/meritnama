@@ -711,6 +711,11 @@
     .app-sim-program-result strong { color: var(--neon-cyan, #4db8d9); }
     .app-sim-program-card.is-placed .app-sim-program-result strong { color: var(--neon-green, #3ecf8e); }
     .app-sim-program-card.is-unplaced .app-sim-program-result strong { color: #e05470; }
+    .app-sim-program-note {
+      padding: 9px 16px; color: var(--text-muted); font-size: 0.76rem;
+      border-bottom: 1px solid rgba(77,184,217,0.09);
+      background: rgba(77,184,217,0.025);
+    }
     .app-sim-pref-list { display: flex; flex-direction: column; }
     .app-sim-pref-row {
       display: grid; grid-template-columns: 46px minmax(0, 1fr) 96px 96px 110px 104px;
@@ -743,6 +748,7 @@
     }
     .app-sim-status.placed { color: var(--neon-green, #3ecf8e); border-color: rgba(62,207,142,0.28); background: rgba(62,207,142,0.1); }
     .app-sim-status.beaten { color: #e05470; border-color: rgba(224,84,112,0.25); background: rgba(224,84,112,0.08); }
+    .app-sim-status.not_attempted { color: var(--neon-gold, #e8a627); border-color: rgba(232,166,39,0.24); background: rgba(232,166,39,0.07); }
     .app-sim-empty { color: var(--text-muted); text-align: center; padding: 26px 12px; font-size: 0.85rem; }
 
     /* ---------------------------------------------------------------
