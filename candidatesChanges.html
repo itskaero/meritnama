@@ -182,12 +182,11 @@
 
 <script>
 (function () {
+  const PRIVATE_FIELDS = new Set(['emailId', 'pmdcNo', 'contactNumber']);
+
   const FIELD_LABELS = {
     nameFull: 'Name',
-    emailId: 'Email',
-    pmdcNo: 'PMDC No.',
     cnic: 'CNIC',
-    contactNumber: 'Contact',
     programMarks: 'Programme marks',
     applied_in: 'Applied programmes',
     degree: 'Degree aggregate',
@@ -248,9 +247,10 @@
 
   function renderCandidate(c) {
     const id = c.applicantId;
-    const fieldsHtml = (c.fields || []).length
+    const visibleFields = (c.fields || []).filter(f => !PRIVATE_FIELDS.has(f.field));
+    const fieldsHtml = visibleFields.length
       ? '<table class="cc-table"><thead><tr><th>Field</th><th>Previous</th><th>Current</th></tr></thead><tbody>' +
-        (c.fields || []).map(f => '<tr><td>' + esc(FIELD_LABELS[f.field] || f.field) + '</td><td class="cc-old">' +
+        visibleFields.map(f => '<tr><td>' + esc(FIELD_LABELS[f.field] || f.field) + '</td><td class="cc-old">' +
           formatVal(f.old) + '</td><td class="cc-new">' + formatVal(f.new) + '</td></tr>').join('') +
         '</tbody></table>'
       : '<p style="color:var(--text-muted);font-size:0.82rem;margin:0">No field-level changes.</p>';

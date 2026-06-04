@@ -38,7 +38,7 @@
     "type": "info",
     "icon": "📊",
     "title": "Candidate Data Refreshed",
-    "body": "Induction 21 candidate data was updated: 982 existing applicants changed and 59 new applicants were added compared to the previous snapshot. Review field, mark, and preference differences on the Data Changes page.",
+    "body": "Induction 21 candidate data was updated 84% of candidates were fetched again (16% were left before portal locked): 612 existing applicants changed and 10 new applicants were added compared to the previous snapshot. Review field, mark, and preference differences on the Data Changes page.",
     "dismissable": true,
     "link": "candidatesChanges.html",
     "linkText": "View changes"

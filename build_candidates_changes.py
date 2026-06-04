@@ -12,12 +12,10 @@ OLD_PATH = ROOT / "data" / "old-induction21_candidates.json"
 NEW_PATH = ROOT / "data" / "induction21_candidates.json"
 OUT_PATH = ROOT / "data" / "candidates_changes.json"
 
+# Excluded from diffs: emailId, pmdcNo, contactNumber (private contact / registration data)
 SCALAR_KEYS = [
     "nameFull",
-    "emailId",
-    "pmdcNo",
     "cnic",
-    "contactNumber",
     "programMarks",
     "applied_in",
     "degree",
