@@ -1049,7 +1049,21 @@
       border-bottom: 1px solid rgba(77,184,217,0.06);
     }
     .invite-list-row:last-child { border-bottom: none; }
-    .invite-list-row span:last-child { color: var(--text-muted); font-size: 0.75rem; }
+    .invite-list-meta {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;
+      color: var(--text-muted); font-size: 0.75rem;
+    }
+    .invite-pin-chip {
+      display: inline-flex; align-items: center; gap: 0.25rem;
+      padding: 0.12rem 0.38rem; border-radius: 6px;
+      background: rgba(77,184,217,0.08); color: var(--neon-cyan);
+      font-family: Consolas, Monaco, monospace; font-size: 0.74rem;
+    }
+    .invite-copy-small {
+      border: 1px solid rgba(77,184,217,0.25); border-radius: 6px;
+      background: rgba(77,184,217,0.06); color: var(--neon-cyan);
+      font-size: 0.68rem; padding: 0.12rem 0.45rem; cursor: pointer;
+    }
     @media (max-width: 640px) {
       .invite-header { flex-direction: column; }
       .invite-form { grid-template-columns: 1fr; }
@@ -2082,10 +2096,9 @@ async function getInviteSummary(email) {
   const authData = authDoc.exists ? authDoc.data() : {};
   const profileData = profileDoc.exists ? profileDoc.data() : {};
   const inviteLimit = asInviteLimit(profileData.inviteLimit, asInviteLimit(authData.inviteLimit));
-  const profileUsed = asInviteLimit(profileData.invitesUsed, 0);
-  const invitedCount = invitedSnap.size;
-  const invitesUsed = Math.max(profileUsed, invitedCount);
-  return { inviteLimit, invitesUsed, invitedSnap };
+  // Source of truth is the actual invite records. user_profiles.invitesUsed is
+  // only a cached mirror, so stale profile data cannot wrongly block invites.
+  return { inviteLimit, invitesUsed: invitedSnap.size, invitedSnap, authDoc };
 }
 
 function renderInviteSummary(summary) {
@@ -2113,9 +2126,25 @@ function renderInviteSummary(summary) {
       ? rows.map(row => `
           <div class="invite-list-row">
             <span>${esc(row.data.name || row.email)}<br><small style="color:var(--text-muted)">${esc(row.email)}</small></span>
-            <span>${inviteDateLabel(row.data.invitedAt || row.data.addedAt)}</span>
+            <span class="invite-list-meta">
+              <span>${inviteDateLabel(row.data.invitedAt || row.data.addedAt)}</span>
+              ${row.data.manualInvitePin
+                ? `<span class="invite-pin-chip">PIN ${esc(row.data.manualInvitePin)}</span><button class="invite-copy-small" type="button" data-email="${esc(row.email)}" data-pin="${esc(row.data.manualInvitePin)}">Copy</button>`
+                : '<span>PIN not saved</span>'}
+            </span>
           </div>`).join('')
       : 'No invites used yet.';
+    body.querySelectorAll('.invite-copy-small').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const text = `MeritNama portal access\nURL: ${PORTAL_URL}\nEmail: ${btn.dataset.email}\nPIN: ${btn.dataset.pin}`;
+        try {
+          await navigator.clipboard.writeText(text);
+          setInviteStatus('Saved invite credentials copied.', 'success');
+        } catch (_) {
+          setInviteStatus('Copy failed. Please copy the PIN manually from the invite log.', 'error');
+        }
+      });
+    });
   }
 
   return remaining;
@@ -2129,16 +2158,12 @@ async function loadInvitePanel() {
     const summary = await getInviteSummary(email);
     renderInviteSummary(summary);
 
-    // Keep the profile counter aligned with actual invite documents if older data exists.
-    const profileRef = db.collection('user_profiles').doc(email);
-    const profileDoc = await profileRef.get();
-    const storedUsed = profileDoc.exists ? asInviteLimit(profileDoc.data().invitesUsed, 0) : 0;
-    if (summary.invitesUsed > storedUsed) {
-      await profileRef.set({
-        inviteLimit: summary.inviteLimit,
-        invitesUsed: summary.invitesUsed,
-      }, { merge: true });
-    }
+    // Best-effort cache for Firebase inspection. The invite docs remain source
+    // of truth so a profile write failure never prevents manual invites.
+    db.collection('user_profiles').doc(email).set({
+      inviteLimit: summary.inviteLimit,
+      invitesUsed: summary.invitesUsed,
+    }, { merge: true }).catch(e => console.warn('Invite cache update failed:', e));
   } catch (e) {
     console.warn('Error loading invite quota:', e);
     const pill = document.getElementById('inviteQuotaPill');
@@ -2179,31 +2204,23 @@ async function submitInvite() {
 
   try {
     const pinHash = await hashPin(pin);
-    const inviterAuthRef = db.collection('authorized_users').doc(inviterEmail);
-    const inviterProfileRef = db.collection('user_profiles').doc(inviterEmail);
     const inviteeAuthRef = db.collection('authorized_users').doc(inviteeEmail);
+    const summary = await getInviteSummary(inviterEmail);
+
+    if (!summary.authDoc.exists) {
+      throw new Error('Your access record could not be verified.');
+    }
+    if (summary.invitesUsed >= summary.inviteLimit) {
+      throw new Error(`Invite limit reached (${summary.invitesUsed}/${summary.inviteLimit}).`);
+    }
 
     await db.runTransaction(async tx => {
-      const [inviterAuthDoc, inviterProfileDoc, inviteeDoc] = await Promise.all([
-        tx.get(inviterAuthRef),
-        tx.get(inviterProfileRef),
-        tx.get(inviteeAuthRef),
-      ]);
-
-      if (!inviterAuthDoc.exists) throw new Error('Your access record could not be verified.');
+      const inviteeDoc = await tx.get(inviteeAuthRef);
       if (inviteeDoc.exists) throw new Error('That email already has portal access.');
-
-      const authData = inviterAuthDoc.data() || {};
-      const profileData = inviterProfileDoc.exists ? inviterProfileDoc.data() : {};
-      const inviteLimit = asInviteLimit(profileData.inviteLimit, asInviteLimit(authData.inviteLimit));
-      const invitesUsed = asInviteLimit(profileData.invitesUsed, 0);
-
-      if (invitesUsed >= inviteLimit) {
-        throw new Error(`Invite limit reached (${inviteLimit}/${inviteLimit}).`);
-      }
 
       tx.set(inviteeAuthRef, {
         pin: pinHash,
+        manualInvitePin: pin,
         isAdmin: false,
         name: name || inviteeEmail,
         addedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -2212,13 +2229,13 @@ async function submitInvite() {
         inviteSource: 'manual_profile_invite',
         inviteLimit: DEFAULT_INVITE_LIMIT,
       }, { merge: true });
-
-      tx.set(inviterProfileRef, {
-        inviteLimit,
-        invitesUsed: firebase.firestore.FieldValue.increment(1),
-        lastInvitedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      }, { merge: true });
     });
+
+    db.collection('user_profiles').doc(inviterEmail).set({
+      inviteLimit: summary.inviteLimit,
+      invitesUsed: summary.invitesUsed + 1,
+      lastInvitedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true }).catch(e => console.warn('Invite cache update failed:', e));
 
     setInviteStatus('Invite created. Copy the credentials below and share them manually.', 'success');
     if (resultEl) {
