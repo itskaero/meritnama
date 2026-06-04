@@ -573,12 +573,13 @@
               <th>Name</th>
               <th>Email</th>
               <th>Access Level</th>
+              <th>Invite Limit</th>
               <th>Added</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody id="usersBody">
-            <tr><td colspan="5" class="empty-state">Loading users&hellip;</td></tr>
+            <tr><td colspan="6" class="empty-state">Loading users&hellip;</td></tr>
           </tbody>
         </table>
       </div>
@@ -772,6 +773,10 @@
         <option value="Standard User">Standard User</option>
         <option value="Admin">Admin</option>
       </select>
+    </div>
+    <div class="modal-field">
+      <label>Invite Limit <span style="text-transform:none;font-size:0.7rem;">(manual invites allowed)</span></label>
+      <input type="number" id="modalInviteLimit" min="0" max="100" step="1" value="2" />
     </div>
     <label class="toggle-row">
       <input type="checkbox" id="modalSendEmail" checked />
@@ -1047,12 +1052,18 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+function asInviteLimit(value, fallback = 2) {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : fallback;
+}
+
 // --- Grant Access Modal ---
 function openAddUserModal(prefillEmail) {
   document.getElementById('modalEmail').value = prefillEmail || '';
   document.getElementById('modalName').value  = '';
   document.getElementById('modalPin').value   = '';
   document.getElementById('modalLevel').value = 'Standard User';
+  document.getElementById('modalInviteLimit').value = '2';
   document.getElementById('modalSendEmail').checked = true;
   const statusEl = document.getElementById('modalStatus');
   statusEl.textContent = '';
@@ -1072,6 +1083,8 @@ async function submitAddUser() {
   const email    = document.getElementById('modalEmail').value.trim().toLowerCase();
   const pin      = document.getElementById('modalPin').value.trim();
   const level    = document.getElementById('modalLevel').value;
+  const inviteLimitRaw = document.getElementById('modalInviteLimit').value.trim();
+  const inviteLimit = asInviteLimit(inviteLimitRaw, 2);
   const doEmail  = document.getElementById('modalSendEmail').checked;
   const statusEl = document.getElementById('modalStatus');
   const btn      = document.getElementById('modalSubmitBtn');
@@ -1098,8 +1111,10 @@ async function submitAddUser() {
       pin:     pinHash,
       isAdmin: level === 'Admin',
       name:    name || email,
+      inviteLimit,
       addedAt: firebase.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
+    await db.collection('user_profiles').doc(email).set({ inviteLimit }, { merge: true });
 
     if (doEmail) {
       try {
@@ -1196,25 +1211,31 @@ let allUsers = [];
 
 async function loadUsers() {
   const tbody = document.getElementById('usersBody');
-  tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Loading\u2026</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading\u2026</td></tr>';
   try {
-    const snapshot = await db.collection('authorized_users').get();
+    const [snapshot, profileSnap] = await Promise.all([
+      db.collection('authorized_users').get(),
+      db.collection('user_profiles').get(),
+    ]);
+    const profiles = {};
+    profileSnap.docs.forEach(doc => { profiles[doc.id] = doc.data(); });
     allUsers = snapshot.docs.map(doc => ({
       email:   doc.id,
       name:    doc.data().name || doc.id,
       isAdmin: doc.data().isAdmin || false,
+      inviteLimit: asInviteLimit(profiles[doc.id]?.inviteLimit, asInviteLimit(doc.data().inviteLimit, 2)),
       addedAt: doc.data().addedAt ? doc.data().addedAt.toDate() : null,
     }));
     renderUsers();
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Error: ${escapeHtml(err.message)}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Error: ${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
 function renderUsers() {
   const tbody = document.getElementById('usersBody');
   if (allUsers.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No authorized users found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No authorized users found.</td></tr>';
     return;
   }
   const sorted = [...allUsers].sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
@@ -1229,10 +1250,37 @@ function renderUsers() {
       <td>${escapeHtml(u.name)}</td>
       <td class="presence-email">${escapeHtml(u.email)}</td>
       <td>${badge}</td>
+      <td>${u.inviteLimit}</td>
       <td>${added}</td>
-      <td><button class="remove-btn" onclick="confirmRemoveUser('${escapeHtml(u.email)}')">Remove</button></td>
+      <td>
+        <button class="action-btn" onclick="promptInviteLimit('${escapeHtml(u.email)}')">Set Limit</button>
+        <button class="remove-btn" onclick="confirmRemoveUser('${escapeHtml(u.email)}')">Remove</button>
+      </td>
     </tr>`;
   }).join('');
+}
+
+async function promptInviteLimit(email) {
+  const user = allUsers.find(u => u.email === email);
+  const current = user ? user.inviteLimit : 2;
+  const value = prompt(`Manual invite limit for ${email}:`, String(current));
+  if (value === null) return;
+  const trimmed = value.trim();
+  if (!/^\d+$/.test(trimmed)) {
+    alert('Invite limit must be a whole number.');
+    return;
+  }
+  const inviteLimit = asInviteLimit(trimmed, current);
+  try {
+    await Promise.all([
+      db.collection('authorized_users').doc(email).set({ inviteLimit }, { merge: true }),
+      db.collection('user_profiles').doc(email).set({ inviteLimit }, { merge: true }),
+    ]);
+    if (user) user.inviteLimit = inviteLimit;
+    renderUsers();
+  } catch (err) {
+    alert('Failed to update invite limit: ' + err.message);
+  }
 }
 
 async function confirmRemoveUser(email) {
