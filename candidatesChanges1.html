@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Candidate Data Changes — MeritNama</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { background: var(--bg-deep, #0d1626); color: var(--text, #e0e6ef); margin: 0; }
+    .cc-wrap { max-width: 1400px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+
+    .cc-header { margin-bottom: 1.25rem; }
+    .cc-header h1 { font-size: 1.6rem; margin: 0 0 0.4rem; }
+    .cc-header p { color: var(--text-muted, #7a8fa8); font-size: 0.88rem; margin: 0; line-height: 1.5; }
+
+    .cc-meta {
+      display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem;
+    }
+    .cc-stat {
+      flex: 1 1 120px; background: var(--bg-card, #1a2236);
+      border: 1px solid var(--border, #2a3a52); border-radius: 10px;
+      padding: 0.75rem 1rem; text-align: center;
+    }
+    .cc-stat .num { font-size: 1.5rem; font-weight: 700; color: var(--neon-cyan, #00d4ff); }
+    .cc-stat .lbl { font-size: 0.72rem; color: var(--text-muted, #7a8fa8); margin-top: 0.15rem; }
+    .cc-stat.added .num { color: var(--neon-green, #3ecf8e); }
+    .cc-stat.changed .num { color: var(--neon-gold, #e8a627); }
+
+    .cc-toolbar {
+      display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center;
+      margin-bottom: 1rem;
+    }
+    .cc-toolbar input, .cc-toolbar select {
+      padding: 0.5rem 0.75rem; border-radius: 8px;
+      border: 1px solid var(--border, #2a3a52);
+      background: var(--bg-card, #1a2236); color: var(--text, #e0e6ef);
+      font-size: 0.85rem;
+    }
+    .cc-toolbar input { flex: 1 1 200px; min-width: 140px; }
+    .cc-toolbar input:focus { outline: none; border-color: var(--neon-cyan, #00d4ff); }
+    .cc-gen { font-size: 0.78rem; color: var(--text-muted, #7a8fa8); margin-left: auto; }
+
+    .cc-layout {
+      display: grid;
+      grid-template-columns: minmax(140px, 200px) 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .cc-index {
+      position: sticky;
+      top: 12px;
+      max-height: calc(100vh - 24px);
+      overflow: auto;
+      background: var(--bg-card, #1a2236);
+      border: 1px solid var(--border, #2a3a52);
+      border-radius: 10px;
+      padding: 0.35rem 0;
+    }
+    .cc-index-title {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-muted, #7a8fa8);
+      padding: 0.5rem 0.75rem 0.35rem;
+      border-bottom: 1px solid var(--border, #2a3a52);
+      position: sticky; top: 0; background: var(--bg-card, #1a2236); z-index: 1;
+    }
+    .cc-id-row {
+      display: block; width: 100%; text-align: left;
+      padding: 0.35rem 0.75rem; border: none; background: transparent;
+      color: var(--neon-cyan, #00d4ff); font-size: 0.82rem; font-weight: 600;
+      font-variant-numeric: tabular-nums; cursor: pointer;
+      font-family: inherit;
+    }
+    .cc-id-row:hover, .cc-id-row:focus {
+      background: rgba(0, 212, 255, 0.08); outline: none;
+    }
+    .cc-id-row.active { background: rgba(0, 212, 255, 0.14); color: #fff; }
+    .cc-id-row.status-added { color: var(--neon-green, #3ecf8e); }
+    .cc-id-row.status-removed { color: #ff6482; }
+
+    .cc-details { min-width: 0; }
+
+    .cc-candidate {
+      scroll-margin-top: 80px;
+      background: var(--bg-card, #1a2236);
+      border: 1px solid var(--border, #2a3a52);
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .cc-candidate:target { border-color: rgba(0, 212, 255, 0.45); box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.2); }
+    .cc-cand-head {
+      display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 1rem;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border, #2a3a52);
+      background: rgba(0, 0, 0, 0.15);
+    }
+    .cc-cand-head h2 {
+      margin: 0; font-size: 1rem; font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .cc-cand-head .name { color: var(--text-muted, #7a8fa8); font-size: 0.82rem; font-weight: 400; }
+    .cc-badge {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; padding: 0.2rem 0.55rem; border-radius: 100px;
+    }
+    .cc-badge.changed { background: rgba(232, 166, 39, 0.15); color: #e8a627; }
+    .cc-badge.added { background: rgba(62, 207, 142, 0.15); color: #3ecf8e; }
+    .cc-badge.removed { background: rgba(255, 100, 130, 0.15); color: #ff6482; }
+
+    .cc-section { padding: 0.75rem 1rem 1rem; }
+    .cc-section h3 {
+      margin: 0 0 0.6rem; font-size: 0.78rem; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--text-muted, #7a8fa8);
+    }
+
+    .cc-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .cc-table th {
+      text-align: left; padding: 0.45rem 0.6rem; color: var(--text-muted, #7a8fa8);
+      font-weight: 600; border-bottom: 1px solid var(--border, #2a3a52);
+    }
+    .cc-table td {
+      padding: 0.45rem 0.6rem; border-bottom: 1px solid rgba(42, 58, 82, 0.5);
+      vertical-align: top; word-break: break-word;
+    }
+    .cc-table tr:last-child td { border-bottom: none; }
+    .cc-old { color: #ff9a9a; }
+    .cc-new { color: #9ae6b0; }
+    .cc-mono { font-family: ui-monospace, monospace; font-size: 0.76rem; white-space: pre-wrap; }
+
+    .cc-pref-block {
+      margin-bottom: 0.65rem; padding: 0.55rem 0.65rem;
+      background: rgba(0, 0, 0, 0.2); border-radius: 8px;
+      font-size: 0.78rem; line-height: 1.45;
+    }
+    .cc-pref-block strong { color: var(--neon-cyan, #00d4ff); }
+
+    #loadMsg { text-align: center; padding: 3rem; color: var(--text-muted, #7a8fa8); }
+    #loadErr { color: #ff6482; }
+
+    @media (max-width: 800px) {
+      .cc-layout { grid-template-columns: 1fr; }
+      .cc-index {
+        position: static; max-height: 220px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <a href="index.html"><img src="logo.svg" class="logo-img" alt="MeritNama" /></a>
+    </div>
+    <div class="header-meta">
+      <span class="badge badge-info">Data Changes</span>
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<nav class="tab-nav" id="mainNav">
+  <a href="index.html" class="tab-btn back-btn" style="text-decoration:none;">&#8592; Historical Data</a>
+  <a href="simulation.html" class="tab-btn" style="text-decoration:none;">&#127973; Induction Portal</a>
+  <a href="candidatesChanges.html" class="tab-btn active" style="text-decoration:none;">&#128202; Data Changes</a>
+  <a href="accreditation.html" class="tab-btn" style="text-decoration:none;">&#9989; Accreditation</a>
+  <a href="donate.html" class="tab-btn donate-btn" style="text-decoration:none;">&#9829; Support</a>
+</nav>
+
+<div class="cc-wrap">
+  <div class="cc-header">
+    <h1>&#128202; Candidate Data Changes</h1>
+    <p>Compares the previous snapshot (<code>old-induction21_candidates.json</code>) with the current data (<code>induction21_candidates.json</code>). Click an applicant ID to jump to their changes.</p>
+  </div>
+
+  <div id="loadMsg">Loading change log&hellip;</div>
+  <div id="appRoot" class="hidden"></div>
+</div>
+
+<script>
+(function () {
+  const FIELD_LABELS = {
+    nameFull: 'Name',
+    emailId: 'Email',
+    pmdcNo: 'PMDC No.',
+    cnic: 'CNIC',
+    contactNumber: 'Contact',
+    programMarks: 'Programme marks',
+    applied_in: 'Applied programmes',
+    degree: 'Degree aggregate',
+    houseJob: 'House job',
+    experience: 'Experience',
+    research: 'Research',
+    position: 'Position',
+    hardAreas: 'Hard areas',
+    matric: 'Matric',
+    fsc: 'FSc',
+    attempts: 'Attempts',
+    mdcat: 'MDCAT',
+    marksTotal: 'Total merit marks',
+    scrutiny: 'Scrutiny status',
+    _record: 'Record'
+  };
+
+  function esc(s) {
+    return String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function formatVal(v) {
+    if (v === null || v === undefined || v === '') return '<span class="cc-old">—</span>';
+    if (typeof v === 'object') return '<span class="cc-mono">' + esc(JSON.stringify(v, null, 0)) + '</span>';
+    return esc(v);
+  }
+
+  function candAnchor(id) {
+    return 'cand-' + id;
+  }
+
+  function renderPrefChange(p) {
+    const prog = esc(p.program || '');
+    const no = p.preferenceNo != null ? ' #' + esc(p.preferenceNo) : '';
+    if (p.kind === 'count') {
+      return '<div class="cc-pref-block"><strong>' + prog + '</strong> preference count: ' +
+        esc(p.oldCount) + ' → ' + esc(p.newCount) + '</div>';
+    }
+    if (p.kind === 'added') {
+      const n = p.new || {};
+      return '<div class="cc-pref-block"><strong>' + prog + no + '</strong> <span class="cc-new">added</span>: ' +
+        esc(n.specialityName) + ' — ' + esc(n.hospitalName) + '</div>';
+    }
+    if (p.kind === 'removed') {
+      const o = p.old || {};
+      return '<div class="cc-pref-block"><strong>' + prog + no + '</strong> <span class="cc-old">removed</span>: ' +
+        esc(o.specialityName) + ' — ' + esc(o.hospitalName) + '</div>';
+    }
+    const bits = (p.fields || []).map(f =>
+      esc(f.field) + ': <span class="cc-old">' + esc(f.old) + '</span> → <span class="cc-new">' + esc(f.new) + '</span>'
+    ).join('; ');
+    return '<div class="cc-pref-block"><strong>' + prog + no + '</strong> ' + bits + '</div>';
+  }
+
+  function renderCandidate(c) {
+    const id = c.applicantId;
+    const fieldsHtml = (c.fields || []).length
+      ? '<table class="cc-table"><thead><tr><th>Field</th><th>Previous</th><th>Current</th></tr></thead><tbody>' +
+        (c.fields || []).map(f => '<tr><td>' + esc(FIELD_LABELS[f.field] || f.field) + '</td><td class="cc-old">' +
+          formatVal(f.old) + '</td><td class="cc-new">' + formatVal(f.new) + '</td></tr>').join('') +
+        '</tbody></table>'
+      : '<p style="color:var(--text-muted);font-size:0.82rem;margin:0">No field-level changes.</p>';
+
+    const prefsHtml = (c.preferences || []).length
+      ? '<div class="cc-section"><h3>Preferences</h3>' + (c.preferences || []).map(renderPrefChange).join('') + '</div>'
+      : '';
+
+    const name = c.nameFull ? '<span class="name">' + esc(c.nameFull) + '</span>' : '';
+
+    return '<article class="cc-candidate" id="' + esc(candAnchor(id)) + '">' +
+      '<div class="cc-cand-head">' +
+        '<h2>Applicant ' + esc(id) + '</h2>' + name +
+        '<span class="cc-badge ' + esc(c.status) + '">' + esc(c.status) + '</span>' +
+      '</div>' +
+      '<div class="cc-section"><h3>Profile &amp; marks</h3>' + fieldsHtml + '</div>' +
+      prefsHtml +
+      '</article>';
+  }
+
+  function scrollToCandidate(id) {
+    const el = document.getElementById(candAnchor(id));
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelectorAll('.cc-id-row').forEach(btn => {
+      btn.classList.toggle('active', Number(btn.dataset.id) === Number(id));
+    });
+  }
+
+  function setupHamburger() {
+    const btn = document.getElementById('hamburgerBtn');
+    const nav = document.getElementById('mainNav');
+    if (!btn || !nav) return;
+    btn.addEventListener('click', () => {
+      nav.classList.toggle('open');
+      btn.classList.toggle('open');
+    });
+  }
+
+  let allCandidates = [];
+
+  function applyFilter() {
+    const q = (document.getElementById('ccSearch')?.value || '').trim();
+    const status = document.getElementById('ccStatus')?.value || '';
+    const filtered = allCandidates.filter(c => {
+      if (status && c.status !== status) return false;
+      if (!q) return true;
+      return String(c.applicantId).includes(q) ||
+        (c.nameFull && c.nameFull.toLowerCase().includes(q.toLowerCase()));
+    });
+
+    const indexEl = document.getElementById('ccIndexList');
+    const detailsEl = document.getElementById('ccDetails');
+    const countEl = document.getElementById('ccFilterCount');
+    if (!indexEl || !detailsEl) return;
+
+    countEl.textContent = filtered.length + ' shown';
+
+    indexEl.innerHTML = filtered.map(c =>
+      '<button type="button" class="cc-id-row status-' + esc(c.status) + '" data-id="' + esc(c.applicantId) + '">' +
+        esc(c.applicantId) + '</button>'
+    ).join('');
+
+    indexEl.querySelectorAll('.cc-id-row').forEach(btn => {
+      btn.addEventListener('click', () => scrollToCandidate(btn.dataset.id));
+    });
+
+    detailsEl.innerHTML = filtered.map(renderCandidate).join('');
+  }
+
+  function renderApp(data) {
+    const s = data.summary || {};
+    const root = document.getElementById('appRoot');
+    root.innerHTML =
+      '<div class="cc-meta">' +
+        '<div class="cc-stat"><div class="num">' + esc(s.oldCount) + '</div><div class="lbl">Previous pool</div></div>' +
+        '<div class="cc-stat"><div class="num">' + esc(s.newCount) + '</div><div class="lbl">Current pool</div></div>' +
+        '<div class="cc-stat changed"><div class="num">' + esc(s.changed) + '</div><div class="lbl">Updated</div></div>' +
+        '<div class="cc-stat added"><div class="num">' + esc(s.added) + '</div><div class="lbl">New applicants</div></div>' +
+        '<div class="cc-stat"><div class="num">' + esc(s.totalUpdates) + '</div><div class="lbl">Total in this log</div></div>' +
+      '</div>' +
+      '<div class="cc-toolbar">' +
+        '<input type="search" id="ccSearch" placeholder="Search applicant ID or name…" />' +
+        '<select id="ccStatus"><option value="">All statuses</option>' +
+          '<option value="changed">Changed</option><option value="added">Added</option><option value="removed">Removed</option></select>' +
+        '<span id="ccFilterCount"></span>' +
+        '<span class="cc-gen">Generated ' + esc(data.generatedAt || '') + '</span>' +
+      '</div>' +
+      '<div class="cc-layout">' +
+        '<aside class="cc-index"><div class="cc-index-title">Applicant IDs</div><div id="ccIndexList"></div></aside>' +
+        '<div class="cc-details" id="ccDetails"></div>' +
+      '</div>';
+
+    root.classList.remove('hidden');
+    allCandidates = data.candidates || [];
+    document.getElementById('ccSearch').addEventListener('input', applyFilter);
+    document.getElementById('ccStatus').addEventListener('change', applyFilter);
+    applyFilter();
+
+    const hash = location.hash.replace(/^#/, '');
+    if (hash.startsWith('cand-')) {
+      const id = hash.slice(5);
+      setTimeout(() => scrollToCandidate(id), 100);
+    }
+  }
+
+  async function init() {
+    setupHamburger();
+    const loadMsg = document.getElementById('loadMsg');
+    try {
+      const res = await fetch('data/candidates_changes.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      loadMsg.classList.add('hidden');
+      renderApp(data);
+    } catch (e) {
+      loadMsg.innerHTML = '<span id="loadErr">Could not load <code>data/candidates_changes.json</code>. ' +
+        'Run <code>python build_candidates_changes.py</code> after updating candidate snapshots. (' +
+        esc(e.message) + ')</span>';
+    }
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
