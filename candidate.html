@@ -1437,6 +1437,7 @@ const db = firebase.firestore();
 const SESSION_KEY = 'meritnama_auth_session';
 const DEFAULT_INVITE_LIMIT = 2;
 const PORTAL_URL = 'https://itskaero.github.io/meritnama/';
+let inviteSummaryCache = null;
 
 function getSessionEmail() {
   try {
@@ -2086,6 +2087,15 @@ function setInviteControlsDisabled(disabled) {
   });
 }
 
+function inviteErrorMessage(err) {
+  const code = err?.code || '';
+  const message = err?.message || String(err || 'Could not create invite.');
+  if (code === 'resource-exhausted' || /quota/i.test(message)) {
+    return 'Firebase quota was exceeded while creating the invite. Try again after the quota resets, or check the Firebase project usage/billing.';
+  }
+  return message;
+}
+
 async function getInviteSummary(email) {
   const [authDoc, profileDoc, invitedSnap] = await Promise.all([
     db.collection('authorized_users').doc(email).get(),
@@ -2098,7 +2108,7 @@ async function getInviteSummary(email) {
   const inviteLimit = asInviteLimit(profileData.inviteLimit, asInviteLimit(authData.inviteLimit));
   // Source of truth is the actual invite records. user_profiles.invitesUsed is
   // only a cached mirror, so stale profile data cannot wrongly block invites.
-  return { inviteLimit, invitesUsed: invitedSnap.size, invitedSnap, authDoc };
+  return { inviteLimit, invitesUsed: invitedSnap.size, invitedDocs: invitedSnap.docs, authDoc };
 }
 
 function renderInviteSummary(summary) {
@@ -2112,7 +2122,7 @@ function renderInviteSummary(summary) {
     submitBtn.textContent = remaining <= 0 ? 'Invite Limit Reached' : 'Create Manual Invite';
   }
 
-  const rows = summary.invitedSnap.docs
+  const rows = (summary.invitedDocs || [])
     .map(doc => ({ email: doc.id, data: doc.data() }))
     .sort((a, b) => {
       const at = a.data.invitedAt?.toMillis?.() || a.data.addedAt?.toMillis?.() || 0;
@@ -2156,6 +2166,7 @@ async function loadInvitePanel() {
 
   try {
     const summary = await getInviteSummary(email);
+    inviteSummaryCache = summary;
     renderInviteSummary(summary);
 
     // Best-effort cache for Firebase inspection. The invite docs remain source
@@ -2205,7 +2216,7 @@ async function submitInvite() {
   try {
     const pinHash = await hashPin(pin);
     const inviteeAuthRef = db.collection('authorized_users').doc(inviteeEmail);
-    const summary = await getInviteSummary(inviterEmail);
+    const summary = inviteSummaryCache || await getInviteSummary(inviterEmail);
 
     if (!summary.authDoc.exists) {
       throw new Error('Your access record could not be verified.');
@@ -2214,28 +2225,36 @@ async function submitInvite() {
       throw new Error(`Invite limit reached (${summary.invitesUsed}/${summary.inviteLimit}).`);
     }
 
-    await db.runTransaction(async tx => {
-      const inviteeDoc = await tx.get(inviteeAuthRef);
-      if (inviteeDoc.exists) throw new Error('That email already has portal access.');
+    const inviteeDoc = await inviteeAuthRef.get();
+    if (inviteeDoc.exists) throw new Error('That email already has portal access.');
 
-      tx.set(inviteeAuthRef, {
-        pin: pinHash,
-        manualInvitePin: pin,
-        isAdmin: false,
-        name: name || inviteeEmail,
-        addedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        invitedBy: inviterEmail,
-        invitedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        inviteSource: 'manual_profile_invite',
-        inviteLimit: DEFAULT_INVITE_LIMIT,
-      }, { merge: true });
-    });
+    const inviteData = {
+      pin: pinHash,
+      manualInvitePin: pin,
+      isAdmin: false,
+      name: name || inviteeEmail,
+      addedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      invitedBy: inviterEmail,
+      invitedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      inviteSource: 'manual_profile_invite',
+      inviteLimit: DEFAULT_INVITE_LIMIT,
+    };
+    await inviteeAuthRef.set(inviteData);
 
     db.collection('user_profiles').doc(inviterEmail).set({
       inviteLimit: summary.inviteLimit,
       invitesUsed: summary.invitesUsed + 1,
       lastInvitedAt: firebase.firestore.FieldValue.serverTimestamp(),
     }, { merge: true }).catch(e => console.warn('Invite cache update failed:', e));
+
+    inviteSummaryCache = {
+      ...summary,
+      invitesUsed: summary.invitesUsed + 1,
+      invitedDocs: [
+        { id: inviteeEmail, data: () => inviteData },
+        ...(summary.invitedDocs || []),
+      ],
+    };
 
     setInviteStatus('Invite created. Copy the credentials below and share them manually.', 'success');
     if (resultEl) {
@@ -2260,11 +2279,12 @@ async function submitInvite() {
     document.getElementById('inviteName').value = '';
     document.getElementById('inviteEmail').value = '';
     document.getElementById('invitePin').value = generateInvitePin();
+    renderInviteSummary(inviteSummaryCache);
   } catch (e) {
-    setInviteStatus(e.message || 'Could not create invite.', 'error');
+    setInviteStatus(inviteErrorMessage(e), 'error');
   } finally {
     setInviteControlsDisabled(false);
-    loadInvitePanel();
+    if (inviteSummaryCache) renderInviteSummary(inviteSummaryCache);
   }
 }
 
