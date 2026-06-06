@@ -129,7 +129,9 @@ service cloud.firestore {
     }
 
     // Live update notifications — admin writes, everyone reads
-    // Doc ID: 'latest'  Fields: active, type, icon, title, body, link, linkText, id, updatedAt
+    // Doc IDs: latest (banner), simulation_feed (feed items), fetch_progress (live fetch bar)
+    // fetch_progress fields: active, status, percent, fetched, total, title, message, icon,
+    //                        startedAt, pausedAt, updatedAt
     match /notifications/{docId} {
       allow read: if true;
       allow create, update: if true;   // admin dashboard writes; gated by PIN-based auth in client

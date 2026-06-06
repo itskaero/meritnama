@@ -64,6 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   SIM.customCand = loadCustomCand();
 
   initLiveBanner();
+  initFetchProgress();
   initSimulationNotificationFeed();
   showLoading(true);
   await loadData();
@@ -210,6 +211,160 @@ function showLiveBanner(n) {
 function hideLiveBanner() {
   const banner = document.getElementById('liveUpdateBanner');
   if (banner) banner.style.display = 'none';
+}
+
+const FETCH_PROGRESS = {
+  unsubscribe: null,
+  tickTimer:    null,
+  data:         null,
+};
+
+function initFetchProgress() {
+  try {
+    if (FETCH_PROGRESS.unsubscribe) FETCH_PROGRESS.unsubscribe();
+    FETCH_PROGRESS.unsubscribe = firebase.firestore()
+      .collection('notifications').doc('fetch_progress')
+      .onSnapshot(snap => {
+        if (!snap.exists) { hideFetchProgress(); return; }
+        const d = snap.data();
+        if (!d?.active) { hideFetchProgress(); return; }
+        FETCH_PROGRESS.data = d;
+        renderFetchProgress(d);
+        _startFetchProgressTick();
+      });
+  } catch (_) {}
+}
+
+function hideFetchProgress() {
+  FETCH_PROGRESS.data = null;
+  _stopFetchProgressTick();
+  document.getElementById('fetchProgressWrap')?.classList.add('hidden');
+}
+
+function _clampFetchPercent(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(100, Math.round(n)));
+}
+
+function _fetchTsToDate(ts) {
+  if (!ts) return null;
+  if (ts.toDate) return ts.toDate();
+  const d = new Date(ts);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function _formatFetchDuration(ms) {
+  if (ms == null || ms < 0) return '—';
+  const totalSec = Math.floor(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  if (h > 0) return `${h}h ${m}m ${s}s`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
+function _fetchElapsedMs(d) {
+  const started = _fetchTsToDate(d.startedAt);
+  if (!started) return null;
+  const status = d.status || 'running';
+  let endMs = Date.now();
+  if (status === 'paused') {
+    const paused = _fetchTsToDate(d.pausedAt);
+    if (paused) endMs = paused.getTime();
+  } else if (status === 'completed') {
+    const updated = _fetchTsToDate(d.updatedAt);
+    if (updated) endMs = updated.getTime();
+  }
+  return Math.max(0, endMs - started.getTime());
+}
+
+function _fetchStatusLabel(status) {
+  if (status === 'paused') return 'Paused';
+  if (status === 'completed') return 'Completed';
+  return 'Running';
+}
+
+function _fetchStatusIcon(status) {
+  if (status === 'paused') return '⏸';
+  if (status === 'completed') return '✅';
+  return '⏳';
+}
+
+function renderFetchProgress(d) {
+  const wrap = document.getElementById('fetchProgressWrap');
+  if (!wrap) return;
+
+  const status = ['running', 'paused', 'completed'].includes(d.status) ? d.status : 'running';
+  const percent = _clampFetchPercent(d.percent);
+  wrap.classList.remove('hidden', 'is-paused', 'is-completed');
+  if (status === 'paused') wrap.classList.add('is-paused');
+  if (status === 'completed') wrap.classList.add('is-completed');
+
+  const iconEl = document.getElementById('fetchProgressIcon');
+  const titleEl = document.getElementById('fetchProgressTitle');
+  const msgEl = document.getElementById('fetchProgressMessage');
+  const statusEl = document.getElementById('fetchProgressStatus');
+  const barEl = document.getElementById('fetchProgressBar');
+  const countsEl = document.getElementById('fetchProgressCounts');
+  const pctEl = document.getElementById('fetchProgressPercent');
+  const startedEl = document.getElementById('fetchProgressStarted');
+  const elapsedEl = document.getElementById('fetchProgressElapsed');
+
+  if (iconEl) iconEl.textContent = d.icon || _fetchStatusIcon(status);
+  if (titleEl) titleEl.textContent = d.title || 'Fetching candidate data';
+  if (msgEl) {
+    msgEl.textContent = d.message || '';
+    msgEl.style.display = d.message ? '' : 'none';
+  }
+  if (statusEl) {
+    statusEl.textContent = _fetchStatusLabel(status);
+    statusEl.className = `fetch-progress-status fetch-progress-status-${status}`;
+  }
+  if (barEl) barEl.style.width = `${percent}%`;
+
+  const fetched = Number(d.fetched);
+  const total = Number(d.total);
+  if (countsEl) {
+    if (Number.isFinite(fetched) && Number.isFinite(total) && total > 0) {
+      countsEl.innerHTML = `<strong>${fetched.toLocaleString()}</strong> / ${total.toLocaleString()} fetched`;
+    } else if (Number.isFinite(fetched)) {
+      countsEl.innerHTML = `<strong>${fetched.toLocaleString()}</strong> fetched`;
+    } else {
+      countsEl.textContent = '';
+    }
+  }
+
+  if (pctEl) pctEl.innerHTML = `<strong>${percent}%</strong> complete`;
+
+  const started = _fetchTsToDate(d.startedAt);
+  if (startedEl) {
+    startedEl.innerHTML = started
+      ? `Started <strong>${started.toLocaleString('en-PK', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</strong>`
+      : '';
+  }
+
+  if (elapsedEl) {
+    const elapsed = _fetchElapsedMs(d);
+    elapsedEl.innerHTML = elapsed != null
+      ? `Elapsed <strong>${_formatFetchDuration(elapsed)}</strong>${status === 'paused' ? ' (paused)' : ''}`
+      : '';
+  }
+}
+
+function _startFetchProgressTick() {
+  _stopFetchProgressTick();
+  FETCH_PROGRESS.tickTimer = setInterval(() => {
+    if (FETCH_PROGRESS.data?.status === 'running') renderFetchProgress(FETCH_PROGRESS.data);
+  }, 1000);
+}
+
+function _stopFetchProgressTick() {
+  if (FETCH_PROGRESS.tickTimer) {
+    clearInterval(FETCH_PROGRESS.tickTimer);
+    FETCH_PROGRESS.tickTimer = null;
+  }
 }
 
 async function loadSimulationNotifications() {
