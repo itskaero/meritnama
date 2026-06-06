@@ -620,6 +620,75 @@ function renderCandidateTable(slice, total) {
   );
 }
 
+const MARKS_FIELD_LABELS = {
+  degree: 'Degree',
+  houseJob: 'House Job',
+  experience: 'Experience',
+  research: 'Research',
+  position: 'Position',
+  hardAreas: 'Hard Areas',
+  matric: 'Matric',
+  fsc: 'FSC',
+  attempts: 'Attempts',
+  mdcat: 'MDCAT',
+};
+
+function _marksFieldLabel(field) {
+  return MARKS_FIELD_LABELS[field] || String(field || '').replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
+}
+
+function _renderMarksExplanationHtml(c) {
+  const exp = c?.marksExplanation;
+  if (!exp || typeof exp !== 'object') return '';
+
+  const included = Array.isArray(exp.includedComponents) ? exp.includedComponents : [];
+  const excluded = Array.isArray(exp.excludedComponents) ? exp.excludedComponents : [];
+  const summaryRows = [
+    ['Total marks source', exp.usedMarksTotalSource],
+    ['Official agg. marks', exp.officialAggMarks],
+    ['Calculated total', exp.calculatedMarksTotal],
+    ['Difference', exp.differenceFromCalculated],
+  ].filter(([, v]) => v != null && v !== '');
+
+  const renderItems = (items, emptyText) => {
+    if (!items.length) return `<p style="margin:0;font-size:0.76rem;color:var(--text-muted)">${emptyText}</p>`;
+    return `<div class="marks-exp-list">${items.map(item => `
+      <div class="marks-exp-item">
+        <div class="marks-exp-item-hdr">
+          <span class="marks-exp-item-field">${esc(_marksFieldLabel(item.field))}</span>
+          <span class="marks-exp-item-val">${fmtM(item.value)}</span>
+        </div>
+        ${item.reason ? `<div class="marks-exp-item-reason">${esc(item.reason)}</div>` : ''}
+      </div>`).join('')}</div>`;
+  };
+
+  return `
+    <details class="marks-explanation">
+      <summary>Marks explanation</summary>
+      <div class="marks-exp-body">
+        ${summaryRows.length ? `
+        <div>
+          <p class="marks-exp-section-title">Portal total breakdown</p>
+          <div class="marks-exp-grid">
+            ${summaryRows.map(([label, value]) => `
+              <span>${esc(label)}</span>
+              <span class="marks-exp-val">${typeof value === 'number' ? fmtM(value) : esc(value)}</span>
+            `).join('')}
+          </div>
+        </div>` : ''}
+        <div>
+          <p class="marks-exp-section-title">Included in official total</p>
+          ${renderItems(included, 'No included components listed.')}
+        </div>
+        <div>
+          <p class="marks-exp-section-title">Excluded from official total</p>
+          ${renderItems(excluded, 'No excluded components listed.')}
+        </div>
+        ${exp.programMarksNote ? `<p class="marks-exp-note">${esc(exp.programMarksNote)}</p>` : ''}
+      </div>
+    </details>`;
+}
+
 function openCandidateDetail(idStr) {
   const c = allCandidates().find(c => String(c.applicantId) === String(idStr));
   if (!c) return;
@@ -671,6 +740,8 @@ function openCandidateDetail(idStr) {
         <span><strong>Base Total</strong></span><span class="score-bk-val"><strong>${fmtM(baseMarks(c))}</strong></span>
       </div>
     </details>` : ''}
+
+    ${_renderMarksExplanationHtml(c)}
 
     ${progs.map(prog => {
       const prefs = (c.preference[prog] || []).slice().sort((a, b) => a.preferenceNo - b.preferenceNo);
@@ -2192,6 +2263,7 @@ function openSimCandidateDetail(applicantId, track = null) {
         &nbsp;·&nbsp; ${esc(prog)} ${esc(workCand._trackLabel || '')} marks: <strong>${fmtM(workCand.marksTotal)}</strong>
       </p>
     </div>
+    ${_renderMarksExplanationHtml(origCand)}
     ${banner}
     <p class="sim-hist-section-lbl">Preference-by-preference breakdown (${esc(prog)})</p>
     <div class="sim-hist-list">
@@ -2863,12 +2935,28 @@ const CHAT = {
   tabActive:      false,
   uid:            null,   // anonymous user ID (localStorage)
   displayName:    null,   // display name (localStorage)
+  pendingAttach:  {},     // keyed by chat UI prefix (Tab / Popup)
+  sending:        false,
   COLLECTION:     'sim21_chat',
   CHAR_LIMIT:     500,
   MAX_MESSAGES:   80,
+  MAX_IMAGE_INPUT: 12 * 1024 * 1024,
+  MAX_IMAGE_STORED: 300 * 1024,
+  MAX_FILE_SIZE:  300 * 1024,
+  MAX_DOC_BYTES:  950 * 1024,
   EMOJIS: ['😊','😂','🙏','❤️','🎉','👍','🔥','💪','🤔','😅',
             '✅','⚡','🌟','💡','😢','🥺','😍','🙌','✨','🎯',
             '🏥','🩺','📚','💊','🧬','😎','🤝','👏','💯','🫡'],
+  REACTION_EMOJIS: ['👍','❤️','😂','😮','😢','🙏','🔥','🎉','👏','💯'],
+  IMAGE_TYPES: new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']),
+  FILE_TYPES: new Set([
+    'application/pdf', 'text/plain',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/zip', 'application/x-zip-compressed',
+  ]),
 };
 
 function _chatUID() {
@@ -2942,6 +3030,9 @@ function setupChat() {
 
   // Close popup when clicking outside
   document.addEventListener('click', e => {
+    if (!e.target.closest('.chat-react-add-btn') && !e.target.closest('.chat-react-picker')) {
+      document.querySelectorAll('.chat-react-picker').forEach(p => p.classList.add('hidden'));
+    }
     if (!CHAT.popupOpen) return;
     if (popup?.contains(e.target) || bubble?.contains(e.target)) return;
     popup?.classList.add('hidden');
@@ -2949,20 +3040,209 @@ function setupChat() {
   });
 
   // Wire both chat UIs (tab and popup)
-  _wireChatInput('chatTabInput', 'chatTabSendBtn', 'chatTabMessages', 'chatTabCharCount', 'chatTabEmojiBtn', 'chatTabEmojiPicker', 'chatTabNameBar');
-  _wireChatInput('chatPopupInput', 'chatPopupSendBtn', 'chatPopupMessages', 'chatPopupCharCount', 'chatPopupEmojiBtn', 'chatPopupEmojiPicker', 'chatPopupNameBar');
+  _wireChatInput({
+    prefix: 'Tab',
+    inputId: 'chatTabInput',
+    sendBtnId: 'chatTabSendBtn',
+    msgsId: 'chatTabMessages',
+    charCountId: 'chatTabCharCount',
+    emojiBtnId: 'chatTabEmojiBtn',
+    emojiPickerId: 'chatTabEmojiPicker',
+    nameBarId: 'chatTabNameBar',
+    imageBtnId: 'chatTabImageBtn',
+    imageInputId: 'chatTabImageInput',
+    fileBtnId: 'chatTabFileBtn',
+    fileInputId: 'chatTabFileInput',
+    attachPreviewId: 'chatTabAttachPreview',
+  });
+  _wireChatInput({
+    prefix: 'Popup',
+    inputId: 'chatPopupInput',
+    sendBtnId: 'chatPopupSendBtn',
+    msgsId: 'chatPopupMessages',
+    charCountId: 'chatPopupCharCount',
+    emojiBtnId: 'chatPopupEmojiBtn',
+    emojiPickerId: 'chatPopupEmojiPicker',
+    nameBarId: 'chatPopupNameBar',
+    imageBtnId: 'chatPopupImageBtn',
+    imageInputId: 'chatPopupImageInput',
+    fileBtnId: 'chatPopupFileBtn',
+    fileInputId: 'chatPopupFileInput',
+    attachPreviewId: 'chatPopupAttachPreview',
+  });
 
   // Start Firestore listener
   _startChatListener();
 }
 
-function _wireChatInput(inputId, sendBtnId, msgsId, charCountId, emojiBtnId, emojiPickerId, namBarId) {
-  const input     = document.getElementById(inputId);
-  const sendBtn   = document.getElementById(sendBtnId);
-  const charCount = document.getElementById(charCountId);
-  const emojiBtn  = document.getElementById(emojiBtnId);
-  const emojiPkr  = document.getElementById(emojiPickerId);
-  const namBar    = document.getElementById(namBarId);
+function _chatPrefixKey(prefix) {
+  return prefix || 'Tab';
+}
+
+function _formatFileSize(bytes) {
+  if (!bytes || bytes < 1024) return `${bytes || 0} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function _chatCompressImage(file, maxPx = 900, quality = 0.78) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width;
+        let h = img.height;
+        if (w > maxPx || h > maxPx) {
+          if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
+          else { w = Math.round(w * maxPx / h); h = maxPx; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        canvas.toBlob(blob => {
+          if (!blob) { reject(new Error('compress failed')); return; }
+          resolve(new File([blob], (file.name || 'image.jpg').replace(/\.\w+$/, '.jpg'), {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+          }));
+        }, 'image/jpeg', quality);
+      };
+      img.onerror = () => reject(new Error('image load failed'));
+      img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error('read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function _chatPrepareImage(file) {
+  const steps = [
+    { maxPx: 1000, quality: 0.78 },
+    { maxPx: 800, quality: 0.7 },
+    { maxPx: 640, quality: 0.62 },
+    { maxPx: 480, quality: 0.55 },
+    { maxPx: 360, quality: 0.48 },
+  ];
+  let last = file;
+  for (const step of steps) {
+    last = await _chatCompressImage(file, step.maxPx, step.quality);
+    if (last.size <= CHAT.MAX_IMAGE_STORED) return last;
+  }
+  return last;
+}
+
+function _fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function _estimateDocBytes(payload) {
+  try { return new Blob([JSON.stringify(payload)]).size; } catch { return 0; }
+}
+
+function _renderChatAttachPreview(prefix) {
+  const key = _chatPrefixKey(prefix);
+  const previewEl = document.getElementById(key === 'Tab' ? 'chatTabAttachPreview' : 'chatPopupAttachPreview');
+  if (!previewEl) return;
+
+  const pending = CHAT.pendingAttach[key];
+  if (!pending) {
+    previewEl.classList.add('hidden');
+    previewEl.innerHTML = '';
+    return;
+  }
+
+  const isImage = pending.kind === 'image';
+  const thumb = isImage && pending.previewUrl
+    ? `<img class="chat-attach-thumb" src="${pending.previewUrl}" alt="Preview" />`
+    : `<div class="chat-attach-file-icon">&#128206;</div>`;
+
+  previewEl.innerHTML = `
+    ${thumb}
+    <div class="chat-attach-meta">
+      <div class="chat-attach-name">${esc(pending.name)}</div>
+      <div class="chat-attach-size">${_formatFileSize(pending.size)}${isImage ? ' · image' : ' · file'}</div>
+    </div>
+    <button class="chat-attach-remove" type="button" data-prefix="${key}" title="Remove attachment">&times;</button>
+  `;
+  previewEl.classList.remove('hidden');
+  previewEl.querySelector('.chat-attach-remove')?.addEventListener('click', () => {
+    _clearChatAttachment(key);
+  });
+}
+
+function _clearChatAttachment(prefix) {
+  const key = _chatPrefixKey(prefix);
+  const pending = CHAT.pendingAttach[key];
+  if (pending?.previewUrl) URL.revokeObjectURL(pending.previewUrl);
+  delete CHAT.pendingAttach[key];
+  const imageInput = document.getElementById(key === 'Tab' ? 'chatTabImageInput' : 'chatPopupImageInput');
+  const fileInput  = document.getElementById(key === 'Tab' ? 'chatTabFileInput' : 'chatPopupFileInput');
+  if (imageInput) imageInput.value = '';
+  if (fileInput) fileInput.value = '';
+  _renderChatAttachPreview(key);
+}
+
+async function _setChatAttachment(prefix, file, kind) {
+  const key = _chatPrefixKey(prefix);
+  if (!file) return;
+
+  const isImage = kind === 'image';
+  const maxInput = isImage ? CHAT.MAX_IMAGE_INPUT : CHAT.MAX_FILE_SIZE;
+  if (file.size > maxInput) {
+    showToast(
+      isImage ? 'Image too large. Try a smaller photo.' : `File too large (max ${_formatFileSize(CHAT.MAX_FILE_SIZE)})`,
+      'warning'
+    );
+    return;
+  }
+
+  const mime = file.type || '';
+  if (isImage) {
+    if (!CHAT.IMAGE_TYPES.has(mime) && !file.name.match(/\.(jpe?g|png|gif|webp)$/i)) {
+      showToast('Unsupported image type. Use JPG, PNG, GIF, or WebP.', 'warning');
+      return;
+    }
+  } else if (!CHAT.FILE_TYPES.has(mime) && !file.name.match(/\.(pdf|txt|docx?|xlsx?|zip)$/i)) {
+    showToast('Unsupported file type. Use PDF, TXT, DOC, XLS, or ZIP.', 'warning');
+    return;
+  }
+
+  let uploadFile = file;
+  if (isImage) {
+    try { uploadFile = await _chatPrepareImage(file); } catch (_) { uploadFile = file; }
+    if (uploadFile.size > CHAT.MAX_IMAGE_STORED) {
+      showToast(`Image too large after compression (max ${_formatFileSize(CHAT.MAX_IMAGE_STORED)}). Try a smaller photo.`, 'warning');
+      return;
+    }
+  }
+
+  _clearChatAttachment(key);
+  CHAT.pendingAttach[key] = {
+    kind,
+    file: uploadFile,
+    name: uploadFile.name || file.name,
+    size: uploadFile.size,
+    mime: uploadFile.type || mime,
+    previewUrl: isImage ? URL.createObjectURL(uploadFile) : null,
+  };
+  _renderChatAttachPreview(key);
+}
+
+function _wireChatInput(cfg) {
+  const input     = document.getElementById(cfg.inputId);
+  const sendBtn   = document.getElementById(cfg.sendBtnId);
+  const charCount = document.getElementById(cfg.charCountId);
+  const emojiBtn  = document.getElementById(cfg.emojiBtnId);
+  const emojiPkr  = document.getElementById(cfg.emojiPickerId);
+  const namBar    = document.getElementById(cfg.nameBarId);
+  const prefix    = _chatPrefixKey(cfg.prefix);
 
   if (!input || !sendBtn) return;
 
@@ -2980,11 +3260,30 @@ function _wireChatInput(inputId, sendBtnId, msgsId, charCountId, emojiBtnId, emo
   input.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      _sendChatMessage(inputId, msgsId);
+      _sendChatMessage(cfg.inputId, cfg.msgsId, prefix);
     }
   });
 
-  sendBtn.addEventListener('click', () => _sendChatMessage(inputId, msgsId));
+  sendBtn.addEventListener('click', () => _sendChatMessage(cfg.inputId, cfg.msgsId, prefix));
+
+  // Image / file upload buttons
+  const imageBtn  = document.getElementById(cfg.imageBtnId);
+  const imageInput = document.getElementById(cfg.imageInputId);
+  const fileBtn   = document.getElementById(cfg.fileBtnId);
+  const fileInput = document.getElementById(cfg.fileInputId);
+
+  imageBtn?.addEventListener('click', () => imageInput?.click());
+  fileBtn?.addEventListener('click', () => fileInput?.click());
+  imageInput?.addEventListener('change', () => {
+    const file = imageInput.files?.[0];
+    if (file) _setChatAttachment(prefix, file, 'image');
+    imageInput.value = '';
+  });
+  fileInput?.addEventListener('change', () => {
+    const file = fileInput.files?.[0];
+    if (file) _setChatAttachment(prefix, file, 'file');
+    fileInput.value = '';
+  });
 
   // Emoji picker
   if (emojiBtn && emojiPkr) {
@@ -3016,7 +3315,7 @@ function _wireChatInput(inputId, sendBtnId, msgsId, charCountId, emojiBtnId, emo
   }
 
   // Display name bar
-  if (namBar) _renderChatNameBar(namBar, inputId);
+  if (namBar) _renderChatNameBar(namBar, cfg.inputId);
 }
 
 function _renderChatNameBar(container, inputId) {
@@ -3053,11 +3352,27 @@ function _promptChatName(returnInputId) {
   input?.focus();
 }
 
-function _sendChatMessage(inputId, msgsId) {
+async function _encodeChatAttachment(pending) {
+  const dataUrl = await _fileToDataUrl(pending.file);
+  if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:')) {
+    throw new Error('encode failed');
+  }
+  return {
+    name: pending.name,
+    size: pending.size,
+    mime: pending.mime,
+    dataUrl,
+  };
+}
+
+function _sendChatMessage(inputId, msgsId, prefix) {
+  if (CHAT.sending) return;
   const input = document.getElementById(inputId);
   if (!input) return;
   const text = input.value.trim();
-  if (!text) return;
+  const key = _chatPrefixKey(prefix);
+  const pending = CHAT.pendingAttach[key] || null;
+  if (!text && !pending) return;
   if (text.length > CHAT.CHAR_LIMIT) {
     showToast(`Message too long (max ${CHAT.CHAR_LIMIT} chars)`, 'warning');
     return;
@@ -3073,20 +3388,44 @@ function _sendChatMessage(inputId, msgsId) {
   try { db = firebase.firestore(); } catch { showToast('Chat unavailable.', 'error'); return; }
 
   const uid = _chatUID();
+  const sendBtn = document.getElementById(inputId.replace('Input', 'SendBtn'));
+  CHAT.sending = true;
+  if (sendBtn) sendBtn.disabled = true;
 
-  db.collection(CHAT.COLLECTION).add({
-    text:       text,
-    name:       name,
-    uid:        uid,
-    ts:         firebase.firestore.FieldValue.serverTimestamp(),
-  }).then(() => {
+  (async () => {
+    const payload = {
+      text: text || '',
+      name,
+      uid,
+      ts: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    if (pending) {
+      const encoded = await _encodeChatAttachment(pending);
+      payload.type = pending.kind;
+      payload.fileName = encoded.name;
+      payload.fileSize = encoded.size;
+      payload.mimeType = encoded.mime;
+      if (pending.kind === 'image') payload.imageData = encoded.dataUrl;
+      else payload.fileData = encoded.dataUrl;
+
+      if (_estimateDocBytes(payload) > CHAT.MAX_DOC_BYTES) {
+        throw new Error('Attachment too large for Firestore. Try a smaller file or shorter caption.');
+      }
+    }
+
+    await db.collection(CHAT.COLLECTION).add(payload);
     input.value = '';
     const cc = document.getElementById(inputId.replace('Input', 'CharCount'));
     if (cc) cc.textContent = `0/${CHAT.CHAR_LIMIT}`;
+    _clearChatAttachment(key);
     _chatScrollBottom(msgsId);
-  }).catch(err => {
-    showToast('Could not send message.', 'error');
+  })().catch(err => {
+    showToast(err?.message || 'Could not send message.', 'error');
     console.error('Chat send error:', err);
+  }).finally(() => {
+    CHAT.sending = false;
+    if (sendBtn) sendBtn.disabled = false;
   });
 }
 
@@ -3145,6 +3484,45 @@ function _renderAllChatMessages() {
   _renderChatMessages('chatPopupMessages');
 }
 
+function _chatReactionHtml(msg, uid) {
+  const reactions = msg.reactions || {};
+  const entries = Object.entries(reactions).filter(([, users]) => Array.isArray(users) && users.length);
+  const chips = entries.map(([emoji, users]) => {
+    const count = users.length;
+    const own = users.includes(uid);
+    return `<button class="chat-reaction-btn ${own ? 'chat-reaction-btn-own' : ''}" type="button"
+      data-id="${msg.id}" data-emoji="${emoji}" title="React with ${emoji}">${emoji}<span>${count}</span></button>`;
+  }).join('');
+  const pickerItems = CHAT.REACTION_EMOJIS.map(em =>
+    `<button class="chat-react-picker-item" type="button" data-id="${msg.id}" data-emoji="${em}">${em}</button>`
+  ).join('');
+  return `<div class="chat-reactions">
+    ${chips}
+    <div class="chat-msg-body-wrap">
+      <button class="chat-react-add-btn" type="button" data-id="${msg.id}" title="Add reaction">+</button>
+      <div class="chat-react-picker hidden" data-for="${msg.id}">${pickerItems}</div>
+    </div>
+  </div>`;
+}
+
+function _chatMessageBodyHtml(msg) {
+  const parts = [];
+  if (msg.text) parts.push(esc(msg.text).replace(/\n/g, '<br>'));
+  const imageSrc = msg.imageData || msg.imageUrl;
+  if (imageSrc) {
+    parts.push(`<a href="${esc(imageSrc)}" target="_blank" rel="noopener"><img class="chat-msg-image" src="${esc(imageSrc)}" alt="Shared image" loading="lazy" /></a>`);
+  }
+  const fileSrc = msg.fileData || msg.fileUrl;
+  if (fileSrc) {
+    const label = esc(msg.fileName || 'Download file');
+    const size = msg.fileSize ? ` (${_formatFileSize(msg.fileSize)})` : '';
+    const download = msg.fileName ? ` download="${esc(msg.fileName)}"` : '';
+    parts.push(`<a class="chat-msg-file" href="${esc(fileSrc)}"${download} target="_blank" rel="noopener">&#128206; ${label}${size}</a>`);
+  }
+  if (!parts.length) parts.push('<span style="opacity:0.6">(empty message)</span>');
+  return parts.join('');
+}
+
 function _renderChatMessages(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -3156,21 +3534,66 @@ function _renderChatMessages(containerId) {
   container.innerHTML = CHAT.messages.map(msg => {
     const isOwn  = msg.uid === uid;
     const relTm  = _relTime(msg.ts);
-    // Sanitise output — esc() handles HTML chars
+    const canReact = !String(msg.id).startsWith('_legacy_');
     return `<div class="chat-msg ${isOwn ? 'chat-msg-own' : ''}">
       <div class="chat-msg-meta">
         <span class="chat-msg-name ${isOwn ? 'chat-msg-name-own' : ''}">${esc(msg.name || 'Anonymous')}</span>
         <span class="chat-msg-time">${relTm}</span>
-        ${isOwn ? `<button class="chat-del-btn" data-id="${msg.id}" title="Delete message">&times;</button>` : ''}
+        ${isOwn && canReact ? `<button class="chat-del-btn" data-id="${msg.id}" title="Delete message">&times;</button>` : ''}
       </div>
-      <div class="chat-msg-bubble ${isOwn ? 'chat-msg-bubble-own' : ''}">${esc(msg.text || '').replace(/\n/g, '<br>')}</div>
+      <div class="chat-msg-bubble ${isOwn ? 'chat-msg-bubble-own' : ''}">${_chatMessageBodyHtml(msg)}</div>
+      ${canReact ? _chatReactionHtml(msg, uid) : ''}
     </div>`;
   }).join('');
 
-  // Wire delete buttons (own messages only)
   container.querySelectorAll('.chat-del-btn').forEach(btn => {
     btn.addEventListener('click', () => _deleteChatMessage(btn.dataset.id));
   });
+  container.querySelectorAll('.chat-reaction-btn, .chat-react-picker-item').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      _toggleChatReaction(btn.dataset.id, btn.dataset.emoji);
+      container.querySelectorAll('.chat-react-picker').forEach(p => p.classList.add('hidden'));
+    });
+  });
+  container.querySelectorAll('.chat-react-add-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const picker = container.querySelector(`.chat-react-picker[data-for="${btn.dataset.id}"]`);
+      if (!picker) return;
+      const wasOpen = !picker.classList.contains('hidden');
+      container.querySelectorAll('.chat-react-picker').forEach(p => p.classList.add('hidden'));
+      if (!wasOpen) picker.classList.remove('hidden');
+    });
+  });
+}
+
+async function _toggleChatReaction(msgId, emoji) {
+  if (!msgId || !emoji || String(msgId).startsWith('_legacy_')) return;
+  let db;
+  try { db = firebase.firestore(); } catch { showToast('Chat unavailable.', 'error'); return; }
+
+  const uid = _chatUID();
+  const ref = db.collection(CHAT.COLLECTION).doc(msgId);
+
+  try {
+    await db.runTransaction(async tx => {
+      const snap = await tx.get(ref);
+      if (!snap.exists) return;
+      const data = snap.data();
+      const reactions = { ...(data.reactions || {}) };
+      const list = [...(reactions[emoji] || [])];
+      const idx = list.indexOf(uid);
+      if (idx >= 0) list.splice(idx, 1);
+      else list.push(uid);
+      if (list.length) reactions[emoji] = list;
+      else delete reactions[emoji];
+      tx.update(ref, { reactions });
+    });
+  } catch (err) {
+    showToast('Could not update reaction.', 'error');
+    console.error('Reaction error:', err);
+  }
 }
 
 function _deleteChatMessage(msgId) {
