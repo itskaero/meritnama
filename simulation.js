@@ -620,6 +620,75 @@ function renderCandidateTable(slice, total) {
   );
 }
 
+const MARKS_FIELD_LABELS = {
+  degree: 'Degree',
+  houseJob: 'House Job',
+  experience: 'Experience',
+  research: 'Research',
+  position: 'Position',
+  hardAreas: 'Hard Areas',
+  matric: 'Matric',
+  fsc: 'FSC',
+  attempts: 'Attempts',
+  mdcat: 'MDCAT',
+};
+
+function _marksFieldLabel(field) {
+  return MARKS_FIELD_LABELS[field] || String(field || '').replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
+}
+
+function _renderMarksExplanationHtml(c) {
+  const exp = c?.marksExplanation;
+  if (!exp || typeof exp !== 'object') return '';
+
+  const included = Array.isArray(exp.includedComponents) ? exp.includedComponents : [];
+  const excluded = Array.isArray(exp.excludedComponents) ? exp.excludedComponents : [];
+  const summaryRows = [
+    ['Total marks source', exp.usedMarksTotalSource],
+    ['Official agg. marks', exp.officialAggMarks],
+    ['Calculated total', exp.calculatedMarksTotal],
+    ['Difference', exp.differenceFromCalculated],
+  ].filter(([, v]) => v != null && v !== '');
+
+  const renderItems = (items, emptyText) => {
+    if (!items.length) return `<p style="margin:0;font-size:0.76rem;color:var(--text-muted)">${emptyText}</p>`;
+    return `<div class="marks-exp-list">${items.map(item => `
+      <div class="marks-exp-item">
+        <div class="marks-exp-item-hdr">
+          <span class="marks-exp-item-field">${esc(_marksFieldLabel(item.field))}</span>
+          <span class="marks-exp-item-val">${fmtM(item.value)}</span>
+        </div>
+        ${item.reason ? `<div class="marks-exp-item-reason">${esc(item.reason)}</div>` : ''}
+      </div>`).join('')}</div>`;
+  };
+
+  return `
+    <details class="marks-explanation">
+      <summary>Marks explanation</summary>
+      <div class="marks-exp-body">
+        ${summaryRows.length ? `
+        <div>
+          <p class="marks-exp-section-title">Portal total breakdown</p>
+          <div class="marks-exp-grid">
+            ${summaryRows.map(([label, value]) => `
+              <span>${esc(label)}</span>
+              <span class="marks-exp-val">${typeof value === 'number' ? fmtM(value) : esc(value)}</span>
+            `).join('')}
+          </div>
+        </div>` : ''}
+        <div>
+          <p class="marks-exp-section-title">Included in official total</p>
+          ${renderItems(included, 'No included components listed.')}
+        </div>
+        <div>
+          <p class="marks-exp-section-title">Excluded from official total</p>
+          ${renderItems(excluded, 'No excluded components listed.')}
+        </div>
+        ${exp.programMarksNote ? `<p class="marks-exp-note">${esc(exp.programMarksNote)}</p>` : ''}
+      </div>
+    </details>`;
+}
+
 function openCandidateDetail(idStr) {
   const c = allCandidates().find(c => String(c.applicantId) === String(idStr));
   if (!c) return;
@@ -671,6 +740,8 @@ function openCandidateDetail(idStr) {
         <span><strong>Base Total</strong></span><span class="score-bk-val"><strong>${fmtM(baseMarks(c))}</strong></span>
       </div>
     </details>` : ''}
+
+    ${_renderMarksExplanationHtml(c)}
 
     ${progs.map(prog => {
       const prefs = (c.preference[prog] || []).slice().sort((a, b) => a.preferenceNo - b.preferenceNo);
@@ -2192,6 +2263,7 @@ function openSimCandidateDetail(applicantId, track = null) {
         &nbsp;·&nbsp; ${esc(prog)} ${esc(workCand._trackLabel || '')} marks: <strong>${fmtM(workCand.marksTotal)}</strong>
       </p>
     </div>
+    ${_renderMarksExplanationHtml(origCand)}
     ${banner}
     <p class="sim-hist-section-lbl">Preference-by-preference breakdown (${esc(prog)})</p>
     <div class="sim-hist-list">
