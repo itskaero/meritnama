@@ -38,6 +38,9 @@ const SIM = {
     options:        [],
     activeOptionId: 'portal',
     showSelector:   true,
+    noticeTitle:    'About merit marks',
+    candidateNotice:'',
+    showNotice:     true,
   },
 };
 
@@ -2520,6 +2523,11 @@ function applyMarksConfig(data) {
 
   SIM.marks.options = options.length ? options : DEFAULT_MARKS_OPTIONS.slice();
   SIM.marks.showSelector = readMarksConfigBool(data?.showSelector, true);
+  SIM.marks.noticeTitle = typeof data?.noticeTitle === 'string' && data.noticeTitle.trim()
+    ? data.noticeTitle.trim()
+    : 'About merit marks';
+  SIM.marks.candidateNotice = typeof data?.candidateNotice === 'string' ? data.candidateNotice : '';
+  SIM.marks.showNotice = readMarksConfigBool(data?.showNotice, true);
 
   const defaultId = typeof data?.defaultOptionId === 'string' ? data.defaultOptionId : 'portal';
   const storedId = localStorage.getItem(MARKS_OPTION_KEY);
@@ -2544,6 +2552,7 @@ function applyMarksConfig(data) {
   }
 
   syncMarksSelectorUI();
+  syncMarksNoticeUI();
   updateMarksBasisLabels();
 }
 
@@ -2633,13 +2642,36 @@ function syncMarksSelectorUI() {
     wrap.classList.toggle('hidden', !SIM.marks.showSelector);
   });
 
-  const note = document.getElementById('marksBasisNote');
-  if (note) {
-    note.classList.toggle('hidden', !SIM.marks.showSelector);
-    note.textContent = SIM.marks.showSelector
-      ? 'Ranking uses the selected merit formula. Portal marksTotal may omit or double-count some components.'
-      : `Ranking uses: ${getActiveMarksLabel()}`;
+  syncMarksNoticeUI();
+}
+
+function defaultMarksNoticeBody() {
+  if (!SIM.marks.showSelector) {
+    return 'All candidates are ranked using the same merit formula. Administrators have set a fixed formula for everyone — you cannot change it here.';
   }
+  return 'Use the Merit basis dropdown to choose how base marks are calculated. Rankings and simulation results update when you change it. Portal marksTotal may not match the sum of all components.';
+}
+
+function syncMarksNoticeUI() {
+  const formula = getActiveMarksLabel();
+  document.querySelectorAll('.marks-info-banner').forEach(banner => {
+    const titleEl = banner.querySelector('.marks-info-banner-title');
+    const textEl = banner.querySelector('.marks-info-banner-text');
+    const formulaEl = banner.querySelector('[data-marks-banner-formula]');
+
+    if (!SIM.marks.showNotice) {
+      banner.classList.add('hidden');
+      return;
+    }
+
+    banner.classList.remove('hidden');
+    if (titleEl) titleEl.textContent = SIM.marks.noticeTitle || 'About merit marks';
+    if (textEl) {
+      const custom = SIM.marks.candidateNotice?.trim();
+      textEl.textContent = custom || defaultMarksNoticeBody();
+    }
+    if (formulaEl) formulaEl.textContent = formula;
+  });
 }
 
 function setupMarksSelectors() {
@@ -2647,6 +2679,7 @@ function setupMarksSelectors() {
   document.getElementById('candMarksBasis')?.addEventListener('change', handler);
   document.getElementById('simMarksBasis')?.addEventListener('change', handler);
   syncMarksSelectorUI();
+  syncMarksNoticeUI();
   updateMarksBasisLabels();
 }
 
@@ -2660,6 +2693,7 @@ function setActiveMarksOption(id) {
 
 function onMarksOptionChanged(clearSim) {
   updateMarksBasisLabels();
+  syncMarksNoticeUI();
   updateMyBadge();
   applyAndRenderCandidates();
   if (clearSim) {

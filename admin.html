@@ -1126,6 +1126,23 @@
         </div>
       </div>
 
+      <div class="modal-field" style="max-width:760px;margin-bottom:1rem;border:1px solid rgba(77,184,217,0.25);border-radius:8px;padding:1rem;background:rgba(77,184,217,0.04);">
+        <div style="font-size:0.82rem;font-weight:700;color:var(--neon-cyan);margin-bottom:0.65rem;">Candidate notice (simulation page)</div>
+        <p style="font-size:0.75rem;color:var(--text-muted);margin:0 0 0.75rem;">Shown as a highlighted banner near merit filters so candidates understand how marks are calculated.</p>
+        <div class="modal-field" style="margin:0 0 0.65rem;">
+          <label>Notice title</label>
+          <input type="text" id="marksCfgNoticeTitle" placeholder="About merit marks" />
+        </div>
+        <div class="modal-field" style="margin:0 0 0.65rem;">
+          <label>Notice message</label>
+          <textarea id="marksCfgNotice" rows="4" spellcheck="true" style="width:100%;resize:vertical;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.82rem;line-height:1.45;" placeholder="Example: Rankings use marksTotal minus MDCAT because the portal total sometimes includes MDCAT incorrectly. Contact us if your marks look wrong."></textarea>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:500;cursor:pointer;font-size:0.82rem;">
+          <input type="checkbox" id="marksCfgShowNotice" checked style="accent-color:var(--accent);" />
+          Show notice banner on simulation page
+        </label>
+      </div>
+
       <div id="marksCfgList" style="max-width:760px;margin-bottom:1rem;"></div>
 
       <div class="modal-field" style="max-width:760px;border:1px solid var(--border);border-radius:8px;padding:1rem;background:rgba(255,255,255,0.02);">
@@ -2051,6 +2068,7 @@ function loadBroadcast() {
   };
   document.getElementById('fpSaveBtn').onclick = saveFetchProgressEditor;
   document.getElementById('fpClearBtn').onclick = clearFetchProgressEditor;
+  initMarksConfigAdmin();
   loadSimulationNotificationsEditor();
   loadFetchProgressEditor();
 }
@@ -2326,6 +2344,9 @@ let marksCfgDraft = {
   options: [],
   defaultOptionId: 'portal',
   showSelector: true,
+  noticeTitle: 'About merit marks',
+  candidateNotice: '',
+  showNotice: true,
 };
 
 function cloneDefaultMarksOptions() {
@@ -2484,8 +2505,14 @@ function initMarksConfigAdmin() {
       options: cloneDefaultMarksOptions(),
       defaultOptionId: 'portal',
       showSelector: true,
+      noticeTitle: 'About merit marks',
+      candidateNotice: '',
+      showNotice: true,
     };
     document.getElementById('marksCfgShowSelector').checked = true;
+    document.getElementById('marksCfgShowNotice').checked = true;
+    document.getElementById('marksCfgNoticeTitle').value = marksCfgDraft.noticeTitle;
+    document.getElementById('marksCfgNotice').value = '';
     renderMarksCfgList();
     setMarksCfgStatus('Loaded built-in defaults (not saved yet).', 'var(--neon-green)');
   });
@@ -2512,15 +2539,26 @@ async function loadMarksConfigEditor() {
         ? data.defaultOptionId
         : marksCfgDraft.options[0]?.id || 'portal';
       marksCfgDraft.showSelector = readConfigBool(data.showSelector, true);
+      marksCfgDraft.noticeTitle = typeof data.noticeTitle === 'string' && data.noticeTitle.trim()
+        ? data.noticeTitle.trim()
+        : 'About merit marks';
+      marksCfgDraft.candidateNotice = typeof data.candidateNotice === 'string' ? data.candidateNotice : '';
+      marksCfgDraft.showNotice = readConfigBool(data.showNotice, true);
     } else {
       marksCfgDraft = {
         options: cloneDefaultMarksOptions(),
         defaultOptionId: 'portal',
         showSelector: true,
+        noticeTitle: 'About merit marks',
+        candidateNotice: '',
+        showNotice: true,
       };
     }
     ensureMarksCfgDraft();
     document.getElementById('marksCfgShowSelector').checked = marksCfgDraft.showSelector;
+    document.getElementById('marksCfgShowNotice').checked = marksCfgDraft.showNotice;
+    document.getElementById('marksCfgNoticeTitle').value = marksCfgDraft.noticeTitle;
+    document.getElementById('marksCfgNotice').value = marksCfgDraft.candidateNotice;
     renderMarksCfgList();
     setMarksCfgStatus(snap.exists ? 'Loaded Firestore marks config.' : 'No saved config — showing defaults.', 'var(--neon-green)');
   } catch (e) {
@@ -2528,9 +2566,15 @@ async function loadMarksConfigEditor() {
       options: cloneDefaultMarksOptions(),
       defaultOptionId: 'portal',
       showSelector: true,
+      noticeTitle: 'About merit marks',
+      candidateNotice: '',
+      showNotice: true,
     };
     ensureMarksCfgDraft();
     document.getElementById('marksCfgShowSelector').checked = true;
+    document.getElementById('marksCfgShowNotice').checked = true;
+    document.getElementById('marksCfgNoticeTitle').value = marksCfgDraft.noticeTitle;
+    document.getElementById('marksCfgNotice').value = '';
     renderMarksCfgList();
     setMarksCfgStatus('Error loading config — showing defaults: ' + e.message, 'var(--neon-pink)');
   }
@@ -2582,6 +2626,9 @@ async function saveMarksConfigEditor() {
     || marksCfgDraft.defaultOptionId
     || marksCfgDraft.options[0].id;
   const showSelector = !!document.getElementById('marksCfgShowSelector')?.checked;
+  const showNotice = !!document.getElementById('marksCfgShowNotice')?.checked;
+  const noticeTitle = document.getElementById('marksCfgNoticeTitle')?.value.trim() || 'About merit marks';
+  const candidateNotice = document.getElementById('marksCfgNotice')?.value || '';
   setMarksCfgStatus('Saving config…');
   try {
     const payload = {
@@ -2592,12 +2639,18 @@ async function saveMarksConfigEditor() {
       }),
       defaultOptionId,
       showSelector,
+      showNotice,
+      noticeTitle,
+      candidateNotice,
       source: 'admin',
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
     await db.collection('notifications').doc('marks_config').set(payload);
     marksCfgDraft.defaultOptionId = defaultOptionId;
     marksCfgDraft.showSelector = showSelector;
+    marksCfgDraft.showNotice = showNotice;
+    marksCfgDraft.noticeTitle = noticeTitle;
+    marksCfgDraft.candidateNotice = candidateNotice;
     setMarksCfgStatus('✓ Marks config saved. Simulation page updates live.', 'var(--neon-green)');
   } catch (e) {
     setMarksCfgStatus('Error saving config: ' + e.message, 'var(--neon-pink)');
