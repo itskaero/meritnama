@@ -2506,27 +2506,41 @@ function normalizeMarksOption(raw, idx = 0) {
   return { id, label, base, sumFields, adjustments };
 }
 
+function readMarksConfigBool(value, defaultValue = true) {
+  if (value === true || value === false) return value;
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return defaultValue;
+}
+
 function applyMarksConfig(data) {
   const options = Array.isArray(data?.options) && data.options.length
     ? data.options.map((o, i) => normalizeMarksOption(o, i)).filter(Boolean)
     : DEFAULT_MARKS_OPTIONS.slice();
 
   SIM.marks.options = options.length ? options : DEFAULT_MARKS_OPTIONS.slice();
-  SIM.marks.showSelector = data?.showSelector !== false;
+  SIM.marks.showSelector = readMarksConfigBool(data?.showSelector, true);
 
   const defaultId = typeof data?.defaultOptionId === 'string' ? data.defaultOptionId : 'portal';
   const storedId = localStorage.getItem(MARKS_OPTION_KEY);
   const ids = new Set(SIM.marks.options.map(o => o.id));
   const pick = id => ids.has(id) ? id : null;
 
-  SIM.marks.activeOptionId =
-    pick(storedId) ||
-    pick(defaultId) ||
-    SIM.marks.options[0]?.id ||
-    'portal';
+  if (!SIM.marks.showSelector) {
+    SIM.marks.activeOptionId =
+      pick(defaultId) ||
+      SIM.marks.options[0]?.id ||
+      'portal';
+  } else {
+    SIM.marks.activeOptionId =
+      pick(storedId) ||
+      pick(defaultId) ||
+      SIM.marks.options[0]?.id ||
+      'portal';
 
-  if (!pick(storedId) && SIM.marks.activeOptionId) {
-    localStorage.setItem(MARKS_OPTION_KEY, SIM.marks.activeOptionId);
+    if (!pick(storedId) && SIM.marks.activeOptionId) {
+      localStorage.setItem(MARKS_OPTION_KEY, SIM.marks.activeOptionId);
+    }
   }
 
   syncMarksSelectorUI();
@@ -2534,20 +2548,27 @@ function applyMarksConfig(data) {
 }
 
 async function loadMarksConfig() {
-  applyMarksConfig({ options: DEFAULT_MARKS_OPTIONS, defaultOptionId: 'portal', showSelector: true });
-
   try {
     const snap = await firebase.firestore().collection('notifications').doc('marks_config').get();
-    if (snap.exists) applyMarksConfig(snap.data());
-  } catch (_) {}
+    if (snap.exists) {
+      applyMarksConfig(snap.data());
+    } else {
+      applyMarksConfig({ options: DEFAULT_MARKS_OPTIONS, defaultOptionId: 'portal', showSelector: true });
+    }
+  } catch (_) {
+    applyMarksConfig({ options: DEFAULT_MARKS_OPTIONS, defaultOptionId: 'portal', showSelector: true });
+  }
 }
 
 function initMarksConfig() {
   loadMarksConfig();
   try {
     firebase.firestore().collection('notifications').doc('marks_config').onSnapshot(snap => {
-      if (!snap.exists) return;
-      applyMarksConfig(snap.data());
+      if (!snap.exists) {
+        applyMarksConfig({ options: DEFAULT_MARKS_OPTIONS, defaultOptionId: 'portal', showSelector: true });
+      } else {
+        applyMarksConfig(snap.data());
+      }
       onMarksOptionChanged(false);
     });
   } catch (_) {}
@@ -2608,8 +2629,13 @@ function syncMarksSelectorUI() {
     sel.closest('.marks-basis-wrap')?.classList.toggle('hidden', !SIM.marks.showSelector);
   }
 
+  document.querySelectorAll('.marks-basis-wrap').forEach(wrap => {
+    wrap.classList.toggle('hidden', !SIM.marks.showSelector);
+  });
+
   const note = document.getElementById('marksBasisNote');
   if (note) {
+    note.classList.toggle('hidden', !SIM.marks.showSelector);
     note.textContent = SIM.marks.showSelector
       ? 'Ranking uses the selected merit formula. Portal marksTotal may omit or double-count some components.'
       : `Ranking uses: ${getActiveMarksLabel()}`;

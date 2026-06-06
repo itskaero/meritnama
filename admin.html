@@ -1110,7 +1110,13 @@
       <div style="display:flex;gap:1rem;flex-wrap:wrap;max-width:760px;margin-bottom:1rem;">
         <div class="modal-field" style="flex:1;min-width:200px;">
           <label>Default option for new visitors</label>
-          <select id="marksCfgDefault" style="width:100%;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;"></select>
+          <select id="marksCfgDefault" style="width:100%;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;">
+            <option value="portal">Portal total (marksTotal)</option>
+            <option value="minus-mdcat">marksTotal − MDCAT</option>
+            <option value="plus-mdcat">marksTotal + MDCAT</option>
+            <option value="minus-experience">marksTotal − Experience</option>
+            <option value="degree-housejob">Degree + House Job</option>
+          </select>
         </div>
         <div class="modal-field" style="flex:0 0 auto;display:flex;align-items:flex-end;padding-bottom:2px;">
           <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:500;cursor:pointer;">
@@ -1932,7 +1938,15 @@ async function loadUsers() {
 
 function renderUsers() {
   const tbody = document.getElementById('usersBody');
-  if (allUsers.length === 0) {
+  const q = (document.getElementById('filterUsers')?.value || '').toLowerCase().trim();
+  let list = allUsers;
+  if (q) {
+    list = list.filter(u =>
+      (u.name || '').toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q)
+    );
+  }
+  if (!list.length) {
     tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No authorized users found.</td></tr>';
     return;
   }
@@ -2334,6 +2348,13 @@ function ensureMarksCfgDraft() {
   }
 }
 
+function readConfigBool(value, defaultValue = true) {
+  if (value === true || value === false) return value;
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return defaultValue;
+}
+
 function setMarksCfgStatus(message, color = 'var(--text-muted)') {
   const el = document.getElementById('marksCfgStatus');
   if (!el) return;
@@ -2439,7 +2460,15 @@ function readMarksNewAdjRows() {
   })).filter(a => MARKS_COMPONENT_FIELDS.includes(a.field));
 }
 
+let _marksCfgAdminReady = false;
+
 function initMarksConfigAdmin() {
+  if (_marksCfgAdminReady) {
+    renderMarksCfgList();
+    loadMarksConfigEditor();
+    return;
+  }
+  _marksCfgAdminReady = true;
   const baseSel = document.getElementById('marksNewBase');
   const sumWrap = document.getElementById('marksNewSumWrap');
   if (baseSel && sumWrap) {
@@ -2482,7 +2511,7 @@ async function loadMarksConfigEditor() {
       marksCfgDraft.defaultOptionId = typeof data.defaultOptionId === 'string'
         ? data.defaultOptionId
         : marksCfgDraft.options[0]?.id || 'portal';
-      marksCfgDraft.showSelector = data.showSelector !== false;
+      marksCfgDraft.showSelector = readConfigBool(data.showSelector, true);
     } else {
       marksCfgDraft = {
         options: cloneDefaultMarksOptions(),
@@ -2552,7 +2581,7 @@ async function saveMarksConfigEditor() {
   const defaultOptionId = document.getElementById('marksCfgDefault')?.value
     || marksCfgDraft.defaultOptionId
     || marksCfgDraft.options[0].id;
-  const showSelector = document.getElementById('marksCfgShowSelector')?.checked !== false;
+  const showSelector = !!document.getElementById('marksCfgShowSelector')?.checked;
   setMarksCfgStatus('Saving config…');
   try {
     const payload = {
