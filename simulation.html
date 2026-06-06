@@ -649,6 +649,9 @@
     }
     .sim-bonus-label { display: flex; align-items: center; gap: 7px; font-size: 0.83rem; color: var(--text-light); cursor: pointer; }
     .sim-bonus-label input { accent-color: var(--neon-cyan, #4db8d9); cursor: pointer; }
+    .marks-basis-wrap { display: flex; flex-direction: column; gap: 4px; min-width: 220px; }
+    .marks-basis-wrap label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
+    .marks-basis-note { font-size: 0.72rem; color: var(--text-muted); max-width: 520px; line-height: 1.45; }
 
     /* My result banner */
     .sim-my { padding: 14px 18px; border-radius: var(--radius-lg, 16px); margin-bottom: 16px; font-size: 0.9rem; animation: fadeInUp 0.3s ease both; }
@@ -1416,7 +1419,12 @@
             <option value="MD">MD</option>
           </select>
         </div>
+        <div class="form-group marks-basis-wrap">
+          <label for="candMarksBasis">Merit basis</label>
+          <select id="candMarksBasis" class="mt-filter-sel" title="Formula used for base marks in this table and allocation"></select>
+        </div>
       </div>
+      <p id="marksBasisNote" class="marks-basis-note" style="margin-top:10px"></p>
       <div style="margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <span id="candCount" class="mt-count"></span>
       </div>
@@ -1459,7 +1467,7 @@
           <tr>
             <th>#</th>
             <th>Name</th>
-            <th data-sort="marksTotal" style="cursor:pointer">Base &#8597;</th>
+            <th data-sort="marksTotal" style="cursor:pointer"><span data-marks-basis-label>Base</span> &#8597;</th>
             <th data-sort="FCPS" style="cursor:pointer">FCPS &#8597;</th>
             <th data-sort="MS" style="cursor:pointer">MS &#8597;</th>
             <th data-sort="MD" style="cursor:pointer">MD &#8597;</th>
@@ -1712,6 +1720,10 @@
         <div class="form-group">
           <label for="simFilter">Filter results</label>
           <input type="text" id="simFilter" class="mt-filter-input" placeholder="Specialty or hospital&hellip;" />
+        </div>
+        <div class="form-group marks-basis-wrap">
+          <label for="simMarksBasis">Merit basis</label>
+          <select id="simMarksBasis" class="mt-filter-sel" title="Formula used when running placement simulation"></select>
         </div>
       </div>
 

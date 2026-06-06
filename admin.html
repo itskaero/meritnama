@@ -18,8 +18,14 @@
       --muted:     #6b84a8;
       --success:   #3ecf8e;
       --danger:    #e05470;
+      --warning:   #f5c842;
       --radius:    10px;
       --radius-lg: 16px;
+      --text-muted: #6b84a8;
+      --bg-card:   rgba(16, 26, 52, 0.85);
+      --neon-cyan: #4db8d9;
+      --neon-green: #3ecf8e;
+      --neon-pink: #e05470;
       --font:      'Segoe UI', system-ui, -apple-system, sans-serif;
       --mono:      'Consolas', 'Courier New', monospace;
       --glow-c:    0 0 14px rgba(77,184,217,0.22), 0 0 32px rgba(77,184,217,0.08);
@@ -185,8 +191,7 @@
 
     /* â”€â”€ Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     #dashboard { display: none; }
-    #dashboard.active { display: block; animation: fadeInUp 0.35s ease both; }
-    .dash-body { max-width: 960px; margin: 0 auto; padding: 1.5rem 1.2rem 3rem; }
+    #dashboard.active { display: flex; min-height: calc(100vh - 62px); }
 
     /* â”€â”€ Stat cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .stats-row {
@@ -443,7 +448,195 @@
       box-shadow: 0 0 8px rgba(224,84,112,0.18);
     }
 
+    /* ── Dashboard layout (sidebar) ─────────────────── */
+    /* (flex layout defined above with #dashboard.active) */
+    .dash-sidebar {
+      width: 220px; flex-shrink: 0;
+      background: rgba(4, 8, 22, 0.96);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      position: sticky; top: 62px; height: calc(100vh - 62px);
+      overflow-y: auto;
+    }
+    .sidebar-nav { padding: 1rem 0.65rem; flex: 1; }
+    .sidebar-section {
+      font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--muted); padding: 0.85rem 0.75rem 0.35rem; font-weight: 700;
+    }
+    .sidebar-link {
+      display: flex; align-items: center; gap: 0.65rem;
+      width: 100%; padding: 0.55rem 0.75rem; margin-bottom: 2px;
+      border: none; border-radius: 8px; background: transparent;
+      color: var(--muted); font-size: 0.82rem; font-family: var(--font);
+      cursor: pointer; text-align: left; transition: background 0.15s, color 0.15s;
+    }
+    .sidebar-link:hover { background: rgba(77,184,217,0.08); color: var(--text); }
+    .sidebar-link.active {
+      background: rgba(77,184,217,0.12); color: var(--accent); font-weight: 600;
+      box-shadow: inset 2px 0 0 var(--accent);
+    }
+    .sidebar-link .nav-icon { width: 1.25rem; text-align: center; flex-shrink: 0; font-size: 0.95rem; }
+    .sidebar-link .nav-badge {
+      margin-left: auto; font-size: 0.65rem; font-weight: 700;
+      background: rgba(77,184,217,0.15); color: var(--accent);
+      padding: 0.1rem 0.45rem; border-radius: 99px; min-width: 1.2rem; text-align: center;
+    }
+    .sidebar-footer {
+      padding: 0.85rem; border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 0.4rem;
+    }
+    .sidebar-ext-link {
+      font-size: 0.75rem; color: var(--muted); text-decoration: none;
+      padding: 0.35rem 0.5rem; border-radius: 6px; transition: color 0.15s, background 0.15s;
+    }
+    .sidebar-ext-link:hover { color: var(--accent); background: rgba(77,184,217,0.06); }
+
+    .dash-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .dash-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--border);
+      background: rgba(13, 22, 38, 0.6); backdrop-filter: blur(8px);
+      position: sticky; top: 62px; z-index: 50;
+    }
+    .dash-header h1 { font-size: 1.15rem; font-weight: 700; color: var(--text); margin: 0; }
+    .dash-header-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.15rem; }
+    .dash-header-actions { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; }
+    .header-pill {
+      font-size: 0.72rem; padding: 0.3rem 0.65rem; border-radius: 99px;
+      border: 1px solid var(--border); color: var(--muted); background: rgba(255,255,255,0.03);
+    }
+    .header-pill.live { border-color: rgba(62,207,142,0.3); color: var(--success); }
+    .header-btn {
+      padding: 0.38rem 0.85rem; border: 1px solid var(--border); border-radius: 8px;
+      background: rgba(16,26,52,0.8); color: var(--accent); cursor: pointer;
+      font-size: 0.78rem; font-family: var(--font);
+      transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    }
+    .header-btn:hover { border-color: var(--accent); background: rgba(77,184,217,0.08); transform: translateY(-1px); }
+    .dash-content { padding: 1.25rem 1.5rem 3rem; max-width: 1200px; width: 100%; }
+
+    /* Overview grids */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.85rem; margin-bottom: 1.25rem;
+    }
+    .metric-card {
+      background: rgba(16,26,52,0.85); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1rem 0.85rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .metric-card:hover { border-color: var(--border-hv); transform: translateY(-2px); }
+    .metric-card.highlight { border-color: rgba(62,207,142,0.25); }
+    .metric-val { font-size: 1.65rem; font-weight: 700; color: var(--accent); line-height: 1.1; }
+    .metric-val.green { color: var(--success); }
+    .metric-val.warn { color: #f5c842; }
+    .metric-lbl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 0.35rem; }
+    .metric-delta { font-size: 0.68rem; color: var(--muted); margin-top: 0.25rem; }
+
+    .overview-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;
+    }
+    @media (max-width: 900px) { .overview-grid { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: rgba(16,26,52,0.7); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 1.1rem 1.15rem;
+      backdrop-filter: blur(8px);
+    }
+    .panel-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 0.85rem; gap: 0.5rem;
+    }
+    .panel-title { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+    .panel-sub { font-size: 0.68rem; color: var(--muted); }
+
+    /* Mini bar chart */
+    .trend-chart { display: flex; align-items: flex-end; gap: 6px; height: 100px; padding-top: 0.5rem; }
+    .trend-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+    .trend-bars { display: flex; align-items: flex-end; gap: 2px; height: 72px; width: 100%; justify-content: center; }
+    .trend-bar {
+      width: 42%; border-radius: 3px 3px 0 0; min-height: 2px;
+      transition: height 0.4s ease;
+    }
+    .trend-bar.ok { background: linear-gradient(to top, rgba(62,207,142,0.5), var(--success)); }
+    .trend-bar.fail { background: linear-gradient(to top, rgba(224,84,112,0.4), var(--danger)); }
+    .trend-lbl { font-size: 0.6rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+    .quick-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem; }
+    .qa-btn {
+      padding: 0.55rem 1rem; border-radius: 8px; border: 1px solid var(--border);
+      background: rgba(77,184,217,0.08); color: var(--accent); cursor: pointer;
+      font-size: 0.8rem; font-family: var(--font); font-weight: 600;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+    .qa-btn:hover { background: rgba(77,184,217,0.15); border-color: var(--accent); transform: translateY(-1px); }
+    .qa-btn.secondary { background: rgba(124,101,196,0.1); color: var(--accent2); border-color: rgba(124,101,196,0.25); }
+
+    .activity-list { list-style: none; }
+    .activity-item {
+      display: flex; align-items: flex-start; gap: 0.65rem;
+      padding: 0.55rem 0; border-bottom: 1px solid rgba(77,184,217,0.06);
+      font-size: 0.78rem;
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 0.35rem; flex-shrink: 0; }
+    .activity-dot.ok { background: var(--success); }
+    .activity-dot.fail { background: var(--danger); }
+    .activity-meta { color: var(--muted); font-size: 0.68rem; margin-top: 0.15rem; }
+
+    .page-bar-row { display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.45rem; font-size: 0.75rem; }
+    .page-bar-label { width: 38%; flex-shrink: 0; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .page-bar-track { flex: 1; height: 8px; background: rgba(255,255,255,0.04); border-radius: 99px; overflow: hidden; }
+    .page-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width 0.5s ease; }
+    .page-bar-count { width: 2rem; text-align: right; color: var(--muted); font-size: 0.68rem; flex-shrink: 0; }
+
+    .broadcast-section {
+      border: 1px solid var(--border); border-radius: var(--radius-lg);
+      margin-bottom: 1rem; overflow: hidden; background: rgba(16,26,52,0.5);
+    }
+    .broadcast-section summary {
+      padding: 0.85rem 1.1rem; cursor: pointer; font-size: 0.88rem;
+      font-weight: 600; color: var(--accent); list-style: none;
+      display: flex; align-items: center; gap: 0.5rem;
+      transition: background 0.15s;
+    }
+    .broadcast-section summary::-webkit-details-marker { display: none; }
+    .broadcast-section summary::before { content: '▸'; font-size: 0.75rem; transition: transform 0.2s; }
+    .broadcast-section[open] summary::before { transform: rotate(90deg); }
+    .broadcast-section summary:hover { background: rgba(77,184,217,0.05); }
+    .broadcast-section-body { padding: 0 1.1rem 1.1rem; border-top: 1px solid var(--border); }
+
+    .admin-toast {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 3000;
+      padding: 0.75rem 1.15rem; border-radius: 10px; font-size: 0.82rem;
+      background: rgba(13,22,40,0.96); border: 1px solid var(--border);
+      color: var(--text); box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      transform: translateY(120%); opacity: 0; transition: transform 0.3s, opacity 0.3s;
+      max-width: 360px;
+    }
+    .admin-toast.show { transform: translateY(0); opacity: 1; }
+    .admin-toast.success { border-color: rgba(62,207,142,0.4); color: var(--success); }
+    .admin-toast.error { border-color: rgba(224,84,112,0.4); color: var(--danger); }
+
+    .tab-nav { display: none; }
+
     /* ── Responsive ──────────────────────────────────── */
+    @media (max-width: 768px) {
+      #dashboard.active { flex-direction: column; }
+      .dash-sidebar {
+        width: 100%; height: auto; position: static;
+        flex-direction: row; overflow-x: auto; border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .sidebar-nav { display: flex; flex-wrap: nowrap; padding: 0.5rem; gap: 0.25rem; overflow-x: auto; }
+      .sidebar-section, .sidebar-footer { display: none; }
+      .sidebar-link { white-space: nowrap; padding: 0.45rem 0.65rem; font-size: 0.78rem; }
+      .sidebar-link .nav-badge { display: none; }
+      .dash-header { padding: 0.85rem 1rem; flex-wrap: wrap; }
+      .dash-content { padding: 1rem; }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    }
     @media (max-width: 600px) {
       .stats-row { grid-template-columns: 1fr 1fr; }
       .controls  { flex-direction: column; }
@@ -459,7 +652,7 @@
     <img src="logo.svg" alt="MeritNama" />
     <div>
       <div class="topbar-title">MeritNama Admin</div>
-      <div class="topbar-sub">Access Management</div>
+      <div class="topbar-sub">Admin Dashboard</div>
     </div>
   </div>
   <button class="logout-btn" id="logoutBtn" style="display:none;">&#x23FB; Logout</button>
@@ -489,71 +682,134 @@
 
 <!-- Dashboard (hidden until admin auth) -->
 <div id="dashboard">
-  <div class="dash-body">
+  <aside class="dash-sidebar">
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">Main</div>
+      <button class="sidebar-link active" data-tab="overview"><span class="nav-icon">📊</span> Overview</button>
+      <button class="sidebar-link" data-tab="logs"><span class="nav-icon">📋</span> Access Logs</button>
+      <div class="sidebar-section">People</div>
+      <button class="sidebar-link" data-tab="users"><span class="nav-icon">👥</span> Users <span class="nav-badge" id="navBadgeUsers">—</span></button>
+      <button class="sidebar-link" data-tab="profiles"><span class="nav-icon">🪪</span> Profiles <span class="nav-badge" id="navBadgeProfiles">—</span></button>
+      <button class="sidebar-link" data-tab="mentorship"><span class="nav-icon">🎓</span> Mentorship <span class="nav-badge" id="navBadgeMentors">—</span></button>
+      <div class="sidebar-section">Finance</div>
+      <button class="sidebar-link" data-tab="contributions"><span class="nav-icon">💰</span> Contributions</button>
+      <div class="sidebar-section">Site</div>
+      <button class="sidebar-link" data-tab="broadcast"><span class="nav-icon">📢</span> Broadcast &amp; Config</button>
+    </nav>
+    <div class="sidebar-footer">
+      <a class="sidebar-ext-link" href="index.html" target="_blank" rel="noopener">↗ Main site</a>
+      <a class="sidebar-ext-link" href="simulation.html" target="_blank" rel="noopener">↗ Simulation</a>
+      <a class="sidebar-ext-link" href="candidate.html" target="_blank" rel="noopener">↗ Candidate lookup</a>
+    </div>
+  </aside>
 
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-value" id="statTotal">&mdash;</div>
-        <div class="stat-label">Total Accesses</div>
+  <main class="dash-main">
+    <header class="dash-header">
+      <div>
+        <h1 id="dashPageTitle">Overview</h1>
+        <div class="dash-header-sub" id="dashPageSub">Platform metrics and live activity</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-value" id="statSuccess">&mdash;</div>
-        <div class="stat-label">Successful</div>
+      <div class="dash-header-actions">
+        <span class="header-pill live" id="headerOnlinePill">● 0 online</span>
+        <span class="header-pill" id="sessionTimer">Session active</span>
+        <button class="header-btn" id="refreshAllBtn" title="Refresh all data">↻ Refresh</button>
       </div>
-      <div class="stat-card">
-        <div class="stat-value" id="statFailed">&mdash;</div>
-        <div class="stat-label">Failed</div>
+    </header>
+
+    <div class="dash-content">
+
+    <!-- ── Tab: Overview ───────────────────────────── -->
+    <div id="tab-overview">
+      <div class="quick-actions">
+        <button class="qa-btn" onclick="openAddUserModal('')">+ Grant access</button>
+        <button class="qa-btn secondary" onclick="switchTab('broadcast')">Send live banner</button>
+        <button class="qa-btn secondary" onclick="window.open('simulation.html','_blank')">Open simulation</button>
       </div>
-      <div class="stat-card">
-        <div class="stat-value" id="statUnique">&mdash;</div>
-        <div class="stat-label">Unique Users</div>
+
+      <div class="metrics-grid" id="overviewMetrics">
+        <div class="metric-card highlight"><div class="metric-val green" id="ovOnline">—</div><div class="metric-lbl">Online now</div></div>
+        <div class="metric-card"><div class="metric-val" id="ovUsers">—</div><div class="metric-lbl">Authorized users</div></div>
+        <div class="metric-card"><div class="metric-val" id="ovProfiles">—</div><div class="metric-lbl">User profiles</div></div>
+        <div class="metric-card"><div class="metric-val" id="ovLogins7d">—</div><div class="metric-lbl">Logins (7 days)</div><div class="metric-delta" id="ovSuccessRate">—</div></div>
+        <div class="metric-card"><div class="metric-val" id="ovMentors">—</div><div class="metric-lbl">Active mentors</div></div>
+        <div class="metric-card"><div class="metric-val" id="ovContribPKR">—</div><div class="metric-lbl">Contributions (PKR)</div></div>
+        <div class="metric-card"><div class="metric-val warn" id="ovFailed24h">—</div><div class="metric-lbl">Failed logins (24h)</div></div>
+        <div class="metric-card"><div class="metric-val" id="ovChatMsgs">—</div><div class="metric-lbl">Sim chat msgs</div></div>
       </div>
-      <div class="stat-card">
-        <div class="stat-value online-count" id="statOnline">&mdash;</div>
-        <div class="stat-label">Online Now</div>
+
+      <div class="overview-grid">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Access activity — last 7 days</div>
+              <div class="panel-sub"><span style="color:var(--success)">■</span> Success &nbsp; <span style="color:var(--danger)">■</span> Failed</div>
+            </div>
+          </div>
+          <div class="trend-chart" id="accessTrendChart"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Popular pages</div>
+            <div class="panel-sub">From recent access logs</div>
+          </div>
+          <div id="pagePopularity"></div>
+        </div>
+      </div>
+
+      <div class="overview-grid">
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Live users</div>
+            <span class="live-badge"><span class="live-dot green"></span> Real-time</span>
+          </div>
+          <div class="table-wrap" style="margin:0;border:none;background:transparent;">
+            <table class="presence-table">
+              <thead><tr><th>Status</th><th>Email</th><th>Page</th><th>Last seen</th></tr></thead>
+              <tbody id="presenceBody">
+                <tr><td colspan="4" class="empty-state">Waiting for presence data…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Recent access</div>
+            <button class="header-btn" style="padding:0.25rem 0.6rem;font-size:0.68rem;" onclick="switchTab('logs')">View all →</button>
+          </div>
+          <ul class="activity-list" id="recentActivityList">
+            <li class="empty-state" style="padding:1rem 0;">Loading…</li>
+          </ul>
+        </div>
       </div>
     </div>
 
-    <!-- Live Users panel -->
-    <div class="section-title">
-      Live Users
-      <span class="live-badge"><span class="live-dot green"></span> Real-time</span>
-    </div>
-    <div class="table-wrap">
-      <table class="presence-table">
-        <thead>
-          <tr>
-            <th>Status</th>
-            <th>Email</th>
-            <th>Current Page</th>
-            <th>Last Seen</th>
-          </tr>
-        </thead>
-        <tbody id="presenceBody">
-          <tr><td colspan="4" class="empty-state">Waiting for presence data&hellip;</td></tr>
-        </tbody>
-      </table>
+    <!-- hidden legacy stats (updated by JS for compatibility) -->
+    <div style="display:none">
+      <span id="statTotal"></span><span id="statSuccess"></span><span id="statFailed"></span>
+      <span id="statUnique"></span><span id="statOnline"></span>
     </div>
 
-    <!-- Tab nav -->
+    <!-- legacy tab nav (hidden, sidebar used instead) -->
     <nav class="tab-nav">
-      <button class="tab-btn active" data-tab="logs">Access Logs</button>
+      <button class="tab-btn" data-tab="overview">Overview</button>
+      <button class="tab-btn" data-tab="logs">Access Logs</button>
       <button class="tab-btn" data-tab="users">Authorized Users</button>
       <button class="tab-btn" data-tab="contributions">Contributions</button>
-      <button class="tab-btn" data-tab="mentorship">&#127891; Mentorship</button>
-      <button class="tab-btn" data-tab="broadcast">&#128276; Broadcast</button>
-      <button class="tab-btn" data-tab="profiles">&#128100; Profiles</button>
+      <button class="tab-btn" data-tab="mentorship">Mentorship</button>
+      <button class="tab-btn" data-tab="broadcast">Broadcast</button>
+      <button class="tab-btn" data-tab="profiles">Profiles</button>
     </nav>
 
     <!-- ── Tab: Access Logs ────────────────────────── -->
-    <div id="tab-logs">
+    <div id="tab-logs" style="display:none;">
       <div class="controls">
-        <input type="text" id="filterEmail" placeholder="Filter by email&hellip;" />
+        <input type="text" id="filterEmail" placeholder="Filter by email…" />
         <select id="filterStatus">
           <option value="all">All Status</option>
           <option value="success">Success Only</option>
           <option value="failed">Failed Only</option>
         </select>
+        <span id="logsCount" class="header-pill" style="font-size:0.72rem;">—</span>
         <button id="refreshBtn">&#x21BB; Refresh</button>
         <button id="addUserBtn">+ Add User</button>
       </div>
@@ -582,6 +838,7 @@
     <!-- ── Tab: Authorized Users ───────────────────── -->
     <div id="tab-users" style="display:none;">
       <div class="controls">
+        <input type="text" id="filterUsers" placeholder="Search name or email…" />
         <button id="addUserBtn2">+ Add User</button>
         <button id="refreshUsersBtn">&#x21BB; Refresh</button>
       </div>
@@ -609,6 +866,11 @@
 
     <!-- ── Tab: Contributions ──────────────────────── -->
     <div id="tab-contributions" style="display:none;">
+      <div class="metrics-grid" style="margin-bottom:1rem;max-width:480px;">
+        <div class="metric-card"><div class="metric-val" id="contribTotalPKR">—</div><div class="metric-lbl">Total PKR</div></div>
+        <div class="metric-card"><div class="metric-val" id="contribTotalUSD">—</div><div class="metric-lbl">Total USD</div></div>
+        <div class="metric-card"><div class="metric-val" id="contribCount">—</div><div class="metric-lbl">Records</div></div>
+      </div>
       <div class="controls">
         <button id="addContribBtn">+ Add Contribution</button>
         <button id="refreshContribBtn">&#x21BB; Refresh</button>
@@ -674,6 +936,7 @@
     <!-- ── Tab: User Profiles ─────────────────────────── -->
     <div id="tab-profiles" style="display:none;">
       <div class="controls" style="align-items:center;flex-wrap:wrap;gap:0.5rem;">
+        <input type="text" id="filterProfiles" placeholder="Search name, email, specialty…" style="min-width:200px;" />
         <button id="refreshProfilesBtn">&#x21BB; Refresh</button>
         <span id="profilesCount" style="font-size:0.78rem;color:var(--text-muted);">Loading…</span>
       </div>
@@ -699,7 +962,9 @@
 
     <!-- ══ BROADCAST NOTIFICATIONS TAB ══ -->
     <div id="tab-broadcast" style="display:none;">
-      <h3 style="font-size:0.9rem;color:var(--accent);margin:0 0 0.5rem;">&#128226; Live In-App Banner</h3>
+      <details class="broadcast-section" open>
+        <summary>📢 Live In-App Banner</summary>
+        <div class="broadcast-section-body">
       <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;">
         Writes to <code>notifications/latest</code>. All users on the site see the banner immediately via Firestore onSnapshot.
       </p>
@@ -740,6 +1005,8 @@
         <button id="bcClearBtn" style="padding:8px 16px;background:rgba(224,84,112,0.15);color:var(--neon-pink);border:1px solid rgba(224,84,112,0.3);border-radius:8px;cursor:pointer;font-weight:600;">&#10005; Clear Banner</button>
       </div>
       <div id="bcStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
+        </div>
+      </details>
 
       <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
 
@@ -821,21 +1088,91 @@
         <textarea id="simNotifJson" rows="14" spellcheck="false" style="width:100%;resize:vertical;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.8rem;font-family:Consolas,Monaco,monospace;" placeholder='[{"id":"example","active":true,"type":"info","title":"Update","body":"Message","dismissable":true}]'></textarea>
       </div>
       <div id="simNotifStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
+        </div>
+      </details>
 
-      <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+      <details class="broadcast-section">
+        <summary>📊 Simulation Merit Formulas</summary>
+        <div class="broadcast-section-body">
+      <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
+        Configure how base merit marks are calculated on the simulation page (candidate pool, slot browser, and allocation).
+        Stored in <code>notifications/marks_config</code>. Users pick from these options unless you hide the selector.
+        Use adjustments when portal <code>marksTotal</code> includes or excludes components inconsistently (e.g. MDCAT).
+      </p>
 
-      <h3 style="font-size:0.9rem;color:var(--accent);margin:0 0 0.5rem;">&#128241; Web Push Subscribers</h3>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem;">
+        <button id="marksCfgLoadBtn" style="padding:8px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Load Config</button>
+        <button id="marksCfgDefaultsBtn" style="padding:8px 16px;background:rgba(245,200,66,0.12);color:#f5c842;border:1px solid rgba(245,200,66,0.28);border-radius:8px;cursor:pointer;font-weight:600;">Reset to Defaults</button>
+        <button id="marksCfgSaveBtn" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save Config</button>
+      </div>
+
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;max-width:760px;margin-bottom:1rem;">
+        <div class="modal-field" style="flex:1;min-width:200px;">
+          <label>Default option for new visitors</label>
+          <select id="marksCfgDefault" style="width:100%;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;"></select>
+        </div>
+        <div class="modal-field" style="flex:0 0 auto;display:flex;align-items:flex-end;padding-bottom:2px;">
+          <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:500;cursor:pointer;">
+            <input type="checkbox" id="marksCfgShowSelector" checked style="accent-color:var(--accent);" />
+            Show selector on simulation page
+          </label>
+        </div>
+      </div>
+
+      <div id="marksCfgList" style="max-width:760px;margin-bottom:1rem;"></div>
+
+      <div class="modal-field" style="max-width:760px;border:1px solid var(--border);border-radius:8px;padding:1rem;background:rgba(255,255,255,0.02);">
+        <div style="font-size:0.82rem;font-weight:700;color:var(--accent);margin-bottom:0.75rem;">Add formula option</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <div class="modal-field" style="margin:0;">
+            <label>ID <span style="font-weight:400;">(slug, unique)</span></label>
+            <input type="text" id="marksNewId" placeholder="e.g. minus-mdcat" />
+          </div>
+          <div class="modal-field" style="margin:0;">
+            <label>Label <span style="font-weight:400;">(shown to users)</span></label>
+            <input type="text" id="marksNewLabel" placeholder="e.g. marksTotal − MDCAT" />
+          </div>
+          <div class="modal-field" style="margin:0;">
+            <label>Base</label>
+            <select id="marksNewBase" style="width:100%;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;">
+              <option value="marksTotal">marksTotal (portal aggregate)</option>
+              <option value="sum">Sum of components</option>
+            </select>
+          </div>
+          <div class="modal-field" style="margin:0;" id="marksNewSumWrap">
+            <label>Sum fields <span style="font-weight:400;">(comma-separated)</span></label>
+            <input type="text" id="marksNewSumFields" placeholder="degree, houseJob" />
+          </div>
+        </div>
+        <div class="modal-field" style="margin:0.75rem 0 0;">
+          <label>Adjustments <span style="font-weight:400;">(optional add/subtract on base)</span></label>
+          <div id="marksNewAdjRows" style="display:flex;flex-direction:column;gap:6px;margin-top:6px;"></div>
+          <button type="button" id="marksNewAdjAddBtn" style="margin-top:8px;padding:6px 12px;background:rgba(77,184,217,0.1);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.25);border-radius:6px;cursor:pointer;font-size:0.78rem;">+ Add adjustment</button>
+        </div>
+        <button type="button" id="marksNewAddBtn" style="margin-top:1rem;padding:8px 16px;background:rgba(62,207,142,0.15);color:var(--success);border:1px solid rgba(62,207,142,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Add to list</button>
+      </div>
+
+      <div id="marksCfgStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
+        </div>
+      </details>
+
+      <details class="broadcast-section">
+        <summary>📱 Web Push Subscribers</summary>
+        <div class="broadcast-section-body">
       <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;">
         Users who clicked "Alerts" → allowed browser notifications. Their FCM tokens are stored in <code>push_subscriptions</code>.
         To send a push to closed browsers, use <a href="https://console.firebase.google.com" target="_blank" rel="noopener" style="color:var(--neon-cyan);">Firebase Console → Cloud Messaging</a>.
       </p>
       <div style="font-size:0.9rem;">Subscriber count: <strong id="bcSubCount" style="color:var(--neon-cyan);">loading…</strong></div>
+        </div>
+      </details>
     </div>
 
-  </div>
+    </div><!-- /dash-content -->
+  </main>
 </div>
 
-<!-- Grant Access Modal -->
+<div id="adminToast" class="admin-toast" role="status" aria-live="polite"></div>
 <div class="modal-overlay" id="addUserModal">
   <div class="modal-card">
     <div class="modal-title">Grant Portal Access</div>
@@ -1011,6 +1348,7 @@ async function sendWelcomeEmail(name, email, pin, accessLevel) {
 }
 
 const ADMIN_SESSION_KEY = 'meritnama_admin_session';
+const ADMIN_TAB_KEY = 'mn_admin_tab';
 const SESSION_DURATION = 2 * 60 * 60 * 1000; // 2 hours
 
 let allLogs = [];
@@ -1171,6 +1509,144 @@ async function loadLogs() {
 
   updateStats();
   renderLogs();
+  renderAccessTrendChart();
+  renderPagePopularity();
+  renderRecentActivity();
+}
+
+function renderAccessTrendChart() {
+  const el = document.getElementById('accessTrendChart');
+  if (!el) return;
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - i);
+    days.push(d);
+  }
+  const buckets = days.map(d => ({
+    label: d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }),
+    ok: 0, fail: 0,
+    start: d.getTime(),
+    end: d.getTime() + 86400000,
+  }));
+  for (const log of allLogs) {
+    if (!log.timestamp) continue;
+    const t = log.timestamp.getTime();
+    const b = buckets.find(x => t >= x.start && t < x.end);
+    if (!b) continue;
+    if (log.success) b.ok++; else b.fail++;
+  }
+  const maxVal = Math.max(1, ...buckets.map(b => b.ok + b.fail));
+  el.innerHTML = buckets.map(b => {
+    const okH = Math.round((b.ok / maxVal) * 68);
+    const failH = Math.round((b.fail / maxVal) * 68);
+    return `<div class="trend-col" title="${b.label}: ${b.ok} ok, ${b.fail} failed">
+      <div class="trend-bars">
+        ${b.ok ? `<div class="trend-bar ok" style="height:${okH}px"></div>` : ''}
+        ${b.fail ? `<div class="trend-bar fail" style="height:${failH}px"></div>` : ''}
+        ${!b.ok && !b.fail ? '<div class="trend-bar ok" style="height:2px;opacity:0.2"></div>' : ''}
+      </div>
+      <span class="trend-lbl">${escapeHtml(b.label)}</span>
+    </div>`;
+  }).join('');
+
+  const sevenDayOk = buckets.reduce((s, b) => s + b.ok, 0);
+  const sevenDayTotal = buckets.reduce((s, b) => s + b.ok + b.fail, 0);
+  const rate = sevenDayTotal ? Math.round((sevenDayOk / sevenDayTotal) * 100) : 0;
+  const ovLogins = document.getElementById('ovLogins7d');
+  const ovRate = document.getElementById('ovSuccessRate');
+  if (ovLogins) ovLogins.textContent = sevenDayOk.toLocaleString();
+  if (ovRate) ovRate.textContent = `${rate}% success rate (7d)`;
+}
+
+function renderPagePopularity() {
+  const el = document.getElementById('pagePopularity');
+  if (!el) return;
+  const counts = {};
+  for (const log of allLogs) {
+    if (!log.success || !log.page || log.page === '—') continue;
+    const p = log.page.length > 40 ? log.page.slice(0, 38) + '…' : log.page;
+    counts[p] = (counts[p] || 0) + 1;
+  }
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  if (!sorted.length) {
+    el.innerHTML = '<p class="empty-state" style="padding:0.5rem 0;font-size:0.78rem;">No page data yet.</p>';
+    return;
+  }
+  const max = sorted[0][1];
+  el.innerHTML = sorted.map(([page, n]) => `
+    <div class="page-bar-row">
+      <span class="page-bar-label" title="${escapeHtml(page)}">${escapeHtml(page)}</span>
+      <div class="page-bar-track"><div class="page-bar-fill" style="width:${Math.round(n / max * 100)}%"></div></div>
+      <span class="page-bar-count">${n}</span>
+    </div>`).join('');
+}
+
+function renderRecentActivity() {
+  const el = document.getElementById('recentActivityList');
+  if (!el) return;
+  const recent = allLogs.slice(0, 8);
+  if (!recent.length) {
+    el.innerHTML = '<li class="empty-state" style="padding:0.5rem 0;">No recent activity.</li>';
+    return;
+  }
+  el.innerHTML = recent.map(l => {
+    const time = l.timestamp
+      ? l.timestamp.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+      : '—';
+    return `<li class="activity-item">
+      <span class="activity-dot ${l.success ? 'ok' : 'fail'}"></span>
+      <div>
+        <div>${escapeHtml(l.email)} ${l.success ? '<span class="badge-success" style="font-size:0.65rem;padding:0.1rem 0.35rem;">OK</span>' : '<span class="badge-fail" style="font-size:0.65rem;padding:0.1rem 0.35rem;">Fail</span>'}</div>
+        <div class="activity-meta">${escapeHtml(time)} · ${escapeHtml(l.page || '—')}</div>
+      </div>
+    </li>`;
+  }).join('');
+}
+
+async function loadOverviewMetrics() {
+  try {
+    const [usersSnap, profilesSnap, mentorsSnap, mreqSnap, contribSnap, chatSnap] = await Promise.all([
+      db.collection('authorized_users').get(),
+      db.collection('user_profiles').get(),
+      db.collection('mentors').get(),
+      db.collection('mentorship_requests').orderBy('createdAt', 'desc').limit(100).get().catch(() => ({ size: 0, docs: [] })),
+      db.collection('contributions').get(),
+      db.collection('sim21_chat').limit(500).get().catch(() => ({ size: 0 })),
+    ]);
+
+    const userCount = usersSnap.size;
+    const profileCount = profilesSnap.size;
+    const mentorActive = mentorsSnap.docs.filter(d => d.data().available).length;
+    const pendingReqs = mreqSnap.docs
+      ? mreqSnap.docs.filter(d => (d.data().status || 'pending') === 'pending').length
+      : 0;
+    let totalPKR = 0;
+    contribSnap.forEach(d => { totalPKR += Number(d.data().amountPKR) || 0; });
+
+    overviewMetricsCache = { userCount, profileCount, mentorActive, pendingReqs, totalPKR, chatCount: chatSnap.size || 0 };
+
+    setText('ovUsers', userCount);
+    setText('ovProfiles', profileCount);
+    setText('ovMentors', mentorActive);
+    setText('ovContribPKR', totalPKR ? (totalPKR >= 1000 ? `${Math.round(totalPKR / 1000)}k` : totalPKR) : '0');
+    setText('ovChatMsgs', chatSnap.size >= 500 ? '500+' : String(chatSnap.size || 0));
+    setText('navBadgeUsers', userCount);
+    setText('navBadgeProfiles', profileCount);
+    setText('navBadgeMentors', mentorActive || pendingReqs ? `${mentorActive}${pendingReqs ? '+' + pendingReqs : ''}` : '0');
+
+    const now = Date.now();
+    const failed24h = allLogs.filter(l => !l.success && l.timestamp && (now - l.timestamp.getTime()) < 86400000).length;
+    setText('ovFailed24h', failed24h);
+  } catch (e) {
+    console.warn('Overview metrics error:', e);
+  }
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
 }
 
 function updateStats() {
@@ -1196,6 +1672,8 @@ function renderLogs() {
   }
 
   const tbody = document.getElementById('logsBody');
+  const countEl = document.getElementById('logsCount');
+  if (countEl) countEl.textContent = `${filtered.length} of ${allLogs.length}`;
   if (filtered.length === 0) {
     tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No logs found.</td></tr>';
     return;
@@ -1383,6 +1861,12 @@ function subscribePresence() {
       }
 
       document.getElementById('statOnline').textContent = rows.filter(r => r.isGreen).length;
+
+      const online = rows.filter(r => r.isGreen).length;
+      setText('ovOnline', online);
+      setText('headerOnlinePill', `● ${online} online`);
+      const pill = document.getElementById('headerOnlinePill');
+      if (pill) pill.classList.toggle('live', online > 0);
     }, err => {
       console.warn('Presence snapshot error:', err);
     });
@@ -1412,7 +1896,7 @@ function renderUsers() {
     tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No authorized users found.</td></tr>';
     return;
   }
-  const sorted = [...allUsers].sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
+  const sorted = [...list].sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
   tbody.innerHTML = sorted.map(u => {
     const badge = u.isAdmin
       ? '<span class="user-badge admin-badge">Admin</span>'
@@ -1474,20 +1958,28 @@ async function confirmRemoveUser(email) {
 }
 
 function switchTab(tab) {
-  document.getElementById('tab-logs').style.display          = tab === 'logs'          ? '' : 'none';
-  document.getElementById('tab-users').style.display         = tab === 'users'         ? '' : 'none';
-  document.getElementById('tab-contributions').style.display = tab === 'contributions' ? '' : 'none';
-  document.getElementById('tab-mentorship').style.display    = tab === 'mentorship'    ? '' : 'none';
-  document.getElementById('tab-broadcast').style.display     = tab === 'broadcast'     ? '' : 'none';
-  document.getElementById('tab-profiles').style.display      = tab === 'profiles'      ? '' : 'none';
-  document.querySelectorAll('.tab-btn').forEach(btn => {
+  const tabs = ['overview', 'logs', 'users', 'contributions', 'mentorship', 'broadcast', 'profiles'];
+  for (const t of tabs) {
+    const el = document.getElementById('tab-' + t);
+    if (el) el.style.display = tab === t ? '' : 'none';
+  }
+  document.querySelectorAll('.sidebar-link[data-tab], .tab-btn[data-tab]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tab);
   });
+  const meta = TAB_META[tab] || TAB_META.overview;
+  const titleEl = document.getElementById('dashPageTitle');
+  const subEl = document.getElementById('dashPageSub');
+  if (titleEl) titleEl.textContent = meta.title;
+  if (subEl) subEl.textContent = meta.sub;
+  try { localStorage.setItem(ADMIN_TAB_KEY, tab); } catch (_) {}
+
+  if (tab === 'overview')     { loadOverviewMetrics(); renderAccessTrendChart(); renderRecentActivity(); }
   if (tab === 'users')         loadUsers();
   if (tab === 'contributions') loadContributions();
   if (tab === 'mentorship')    loadMentorship();
   if (tab === 'broadcast')     loadBroadcast();
   if (tab === 'profiles')      loadProfiles();
+  if (tab === 'logs')          loadLogs();
 }
 
 // ── BROADCAST NOTIFICATIONS ──────────────────────────────────────────────────
@@ -1544,6 +2036,7 @@ async function sendLiveUpdate() {
     await db.collection('notifications').doc('latest').set(payload);
     status.textContent = '✓ Banner sent! Users will see it instantly.';
     status.style.color = 'var(--neon-green)';
+    showAdminToast('Live banner sent.', 'success');
   } catch (e) {
     status.textContent = 'Error: ' + e.message;
     status.style.color = 'var(--neon-pink)';
@@ -1762,17 +2255,285 @@ async function saveSimulationNotificationsEditor() {
   }
 }
 
+// ── SIMULATION MERIT FORMULAS ────────────────────────────────────────────────
+const MARKS_COMPONENT_FIELDS = [
+  'mdcat', 'experience', 'matric', 'fsc', 'degree', 'houseJob',
+  'research', 'position', 'hardAreas', 'attempts',
+];
+const DEFAULT_MARKS_OPTIONS = [
+  { id: 'portal', label: 'Portal total (marksTotal)', base: 'marksTotal', adjustments: [] },
+  { id: 'minus-mdcat', label: 'marksTotal − MDCAT', base: 'marksTotal', adjustments: [{ field: 'mdcat', op: 'subtract' }] },
+  { id: 'plus-mdcat', label: 'marksTotal + MDCAT', base: 'marksTotal', adjustments: [{ field: 'mdcat', op: 'add' }] },
+  { id: 'minus-experience', label: 'marksTotal − Experience', base: 'marksTotal', adjustments: [{ field: 'experience', op: 'subtract' }] },
+  { id: 'degree-housejob', label: 'Degree + House Job', base: 'sum', sumFields: ['degree', 'houseJob'], adjustments: [] },
+];
+
+let marksCfgDraft = {
+  options: DEFAULT_MARKS_OPTIONS.slice(),
+  defaultOptionId: 'portal',
+  showSelector: true,
+};
+
+function setMarksCfgStatus(message, color = 'var(--text-muted)') {
+  const el = document.getElementById('marksCfgStatus');
+  if (!el) return;
+  el.textContent = message;
+  el.style.color = color;
+}
+
+function normalizeMarksOptionAdmin(raw, idx = 0) {
+  if (!raw || typeof raw !== 'object') return null;
+  const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : `opt-${idx + 1}`;
+  const label = typeof raw.label === 'string' && raw.label.trim() ? raw.label.trim() : id;
+  const base = raw.base === 'sum' ? 'sum' : 'marksTotal';
+  const sumFields = Array.isArray(raw.sumFields)
+    ? raw.sumFields.filter(f => MARKS_COMPONENT_FIELDS.includes(f) || f === 'marksTotal')
+    : [];
+  const adjustments = Array.isArray(raw.adjustments)
+    ? raw.adjustments
+        .filter(a => a && (a.op === 'add' || a.op === 'subtract') && MARKS_COMPONENT_FIELDS.includes(a.field))
+        .map(a => ({ field: a.field, op: a.op }))
+    : [];
+  const out = { id, label, base, adjustments };
+  if (base === 'sum') out.sumFields = sumFields.length ? sumFields : ['degree', 'houseJob'];
+  return out;
+}
+
+function formatMarksOptionSummary(opt) {
+  if (opt.base === 'sum') {
+    const sum = (opt.sumFields || []).join(' + ') || 'components';
+    const adj = (opt.adjustments || []).map(a => `${a.op === 'add' ? '+' : '−'} ${a.field}`).join(' ');
+    return adj ? `${sum} ${adj}` : sum;
+  }
+  const adj = (opt.adjustments || []).map(a => `${a.op === 'add' ? '+' : '−'} ${a.field}`).join(' ');
+  return adj ? `marksTotal ${adj}` : 'marksTotal';
+}
+
+function renderMarksCfgList() {
+  const list = document.getElementById('marksCfgList');
+  const defSel = document.getElementById('marksCfgDefault');
+  if (!list || !defSel) return;
+
+  if (!marksCfgDraft.options.length) {
+    list.innerHTML = '<p style="font-size:0.8rem;color:var(--text-muted);">No options yet. Add one below.</p>';
+  } else {
+    list.innerHTML = marksCfgDraft.options.map((opt, idx) => `
+      <div style="display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.75rem;border:1px solid var(--border);border-radius:8px;margin-bottom:0.5rem;background:rgba(255,255,255,0.02);">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:0.85rem;font-weight:600;color:var(--text);">${escapeHtml(opt.label)}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);font-family:var(--mono);">${escapeHtml(opt.id)} · ${escapeHtml(formatMarksOptionSummary(opt))}</div>
+        </div>
+        <button type="button" data-marks-remove="${idx}" style="padding:4px 10px;background:rgba(224,84,112,0.12);color:var(--danger);border:1px solid rgba(224,84,112,0.28);border-radius:6px;cursor:pointer;font-size:0.75rem;">Remove</button>
+      </div>
+    `).join('');
+    list.querySelectorAll('[data-marks-remove]').forEach(btn => {
+      btn.onclick = () => {
+        const i = +btn.dataset.marksRemove;
+        marksCfgDraft.options.splice(i, 1);
+        if (!marksCfgDraft.options.some(o => o.id === marksCfgDraft.defaultOptionId)) {
+          marksCfgDraft.defaultOptionId = marksCfgDraft.options[0]?.id || '';
+        }
+        renderMarksCfgList();
+      };
+    });
+  }
+
+  defSel.innerHTML = marksCfgDraft.options.map(o =>
+    `<option value="${escapeHtml(o.id)}">${escapeHtml(o.label)}</option>`
+  ).join('');
+  defSel.value = marksCfgDraft.defaultOptionId || marksCfgDraft.options[0]?.id || '';
+}
+
+function addMarksNewAdjRow(field = 'mdcat', op = 'subtract') {
+  const wrap = document.getElementById('marksNewAdjRows');
+  if (!wrap) return;
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:8px;align-items:center;';
+  row.innerHTML = `
+    <select class="marks-adj-op" style="padding:6px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.8rem;">
+      <option value="subtract">Subtract</option>
+      <option value="add">Add</option>
+    </select>
+    <select class="marks-adj-field" style="flex:1;padding:6px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.8rem;">
+      ${MARKS_COMPONENT_FIELDS.map(f => `<option value="${f}">${f}</option>`).join('')}
+    </select>
+    <button type="button" class="marks-adj-rm" style="padding:4px 8px;background:rgba(224,84,112,0.1);color:var(--danger);border:1px solid rgba(224,84,112,0.25);border-radius:6px;cursor:pointer;">✕</button>
+  `;
+  row.querySelector('.marks-adj-op').value = op;
+  row.querySelector('.marks-adj-field').value = field;
+  row.querySelector('.marks-adj-rm').onclick = () => row.remove();
+  wrap.appendChild(row);
+}
+
+function readMarksNewAdjRows() {
+  const wrap = document.getElementById('marksNewAdjRows');
+  if (!wrap) return [];
+  return [...wrap.querySelectorAll('div')].map(row => ({
+    op: row.querySelector('.marks-adj-op')?.value === 'add' ? 'add' : 'subtract',
+    field: row.querySelector('.marks-adj-field')?.value || 'mdcat',
+  })).filter(a => MARKS_COMPONENT_FIELDS.includes(a.field));
+}
+
+function initMarksConfigAdmin() {
+  const baseSel = document.getElementById('marksNewBase');
+  const sumWrap = document.getElementById('marksNewSumWrap');
+  if (baseSel && sumWrap) {
+    baseSel.onchange = () => {
+      sumWrap.style.display = baseSel.value === 'sum' ? '' : 'none';
+    };
+    baseSel.dispatchEvent(new Event('change'));
+  }
+
+  document.getElementById('marksCfgLoadBtn')?.addEventListener('click', loadMarksConfigEditor);
+  document.getElementById('marksCfgDefaultsBtn')?.addEventListener('click', () => {
+    marksCfgDraft = {
+      options: DEFAULT_MARKS_OPTIONS.map(o => ({ ...o, adjustments: (o.adjustments || []).slice(), sumFields: o.sumFields ? o.sumFields.slice() : undefined })),
+      defaultOptionId: 'portal',
+      showSelector: true,
+    };
+    document.getElementById('marksCfgShowSelector').checked = true;
+    renderMarksCfgList();
+    setMarksCfgStatus('Loaded built-in defaults (not saved yet).', 'var(--neon-green)');
+  });
+  document.getElementById('marksCfgSaveBtn')?.addEventListener('click', saveMarksConfigEditor);
+  document.getElementById('marksNewAdjAddBtn')?.addEventListener('click', () => addMarksNewAdjRow());
+  document.getElementById('marksNewAddBtn')?.addEventListener('click', addMarksOptionFromForm);
+
+  addMarksNewAdjRow();
+  loadMarksConfigEditor();
+}
+
+async function loadMarksConfigEditor() {
+  setMarksCfgStatus('Loading config…');
+  try {
+    const snap = await db.collection('notifications').doc('marks_config').get();
+    if (snap.exists) {
+      const data = snap.data();
+      marksCfgDraft.options = Array.isArray(data.options) && data.options.length
+        ? data.options.map((o, i) => normalizeMarksOptionAdmin(o, i)).filter(Boolean)
+        : DEFAULT_MARKS_OPTIONS.slice();
+      marksCfgDraft.defaultOptionId = typeof data.defaultOptionId === 'string'
+        ? data.defaultOptionId
+        : marksCfgDraft.options[0]?.id || 'portal';
+      marksCfgDraft.showSelector = data.showSelector !== false;
+    } else {
+      marksCfgDraft = {
+        options: DEFAULT_MARKS_OPTIONS.slice(),
+        defaultOptionId: 'portal',
+        showSelector: true,
+      };
+    }
+    document.getElementById('marksCfgShowSelector').checked = marksCfgDraft.showSelector;
+    renderMarksCfgList();
+    setMarksCfgStatus(snap.exists ? 'Loaded Firestore marks config.' : 'No saved config — showing defaults.', 'var(--neon-green)');
+  } catch (e) {
+    setMarksCfgStatus('Error loading config: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
+function addMarksOptionFromForm() {
+  const id = document.getElementById('marksNewId')?.value.trim();
+  const label = document.getElementById('marksNewLabel')?.value.trim();
+  const base = document.getElementById('marksNewBase')?.value === 'sum' ? 'sum' : 'marksTotal';
+  const sumRaw = document.getElementById('marksNewSumFields')?.value || '';
+  const sumFields = sumRaw.split(',').map(s => s.trim()).filter(Boolean);
+  const adjustments = readMarksNewAdjRows();
+
+  if (!id || !/^[a-z0-9][a-z0-9-_]*$/i.test(id)) {
+    setMarksCfgStatus('Option ID is required (letters, numbers, hyphens, underscores).', 'var(--neon-pink)');
+    return;
+  }
+  if (!label) {
+    setMarksCfgStatus('Label is required.', 'var(--neon-pink)');
+    return;
+  }
+  if (marksCfgDraft.options.some(o => o.id === id)) {
+    setMarksCfgStatus('An option with this ID already exists.', 'var(--neon-pink)');
+    return;
+  }
+
+  const opt = normalizeMarksOptionAdmin({ id, label, base, sumFields, adjustments });
+  if (!opt) {
+    setMarksCfgStatus('Could not build option.', 'var(--neon-pink)');
+    return;
+  }
+  marksCfgDraft.options.push(opt);
+  if (!marksCfgDraft.defaultOptionId) marksCfgDraft.defaultOptionId = opt.id;
+  renderMarksCfgList();
+  document.getElementById('marksNewId').value = '';
+  document.getElementById('marksNewLabel').value = '';
+  document.getElementById('marksNewAdjRows').innerHTML = '';
+  addMarksNewAdjRow();
+  setMarksCfgStatus(`Added "${label}". Save to publish.`, 'var(--neon-green)');
+}
+
+async function saveMarksConfigEditor() {
+  if (!marksCfgDraft.options.length) {
+    setMarksCfgStatus('Add at least one formula option.', 'var(--neon-pink)');
+    return;
+  }
+  const defaultOptionId = document.getElementById('marksCfgDefault')?.value || marksCfgDraft.options[0].id;
+  const showSelector = document.getElementById('marksCfgShowSelector')?.checked !== false;
+  setMarksCfgStatus('Saving config…');
+  try {
+    const payload = {
+      options: marksCfgDraft.options.map(o => {
+        const item = { id: o.id, label: o.label, base: o.base, adjustments: o.adjustments || [] };
+        if (o.base === 'sum') item.sumFields = o.sumFields || [];
+        return item;
+      }),
+      defaultOptionId,
+      showSelector,
+      source: 'admin',
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+    await db.collection('notifications').doc('marks_config').set(payload);
+    marksCfgDraft.defaultOptionId = defaultOptionId;
+    marksCfgDraft.showSelector = showSelector;
+    setMarksCfgStatus('✓ Marks config saved. Simulation page updates live.', 'var(--neon-green)');
+  } catch (e) {
+    setMarksCfgStatus('Error saving config: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
 // --- UI Binding ---
 function showDashboard() {
   document.getElementById('loginWrap').style.display = 'none';
   document.getElementById('logoutBtn').style.display = '';
   document.getElementById('dashboard').classList.add('active');
+  const session = getAdminSession();
+  const sub = document.querySelector('.topbar-sub');
+  if (sub && session) sub.textContent = session.email;
+  startSessionTimer();
   loadLogs();
+  loadOverviewMetrics();
   subscribePresence();
+  const savedTab = localStorage.getItem(ADMIN_TAB_KEY) || 'overview';
+  switchTab(TAB_META[savedTab] ? savedTab : 'overview');
+}
+
+async function refreshAllAdminData() {
+  const btn = document.getElementById('refreshAllBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '↻ …'; }
+  try {
+    await loadLogs();
+    await loadOverviewMetrics();
+    const tab = localStorage.getItem(ADMIN_TAB_KEY) || 'overview';
+    if (tab === 'users') await loadUsers();
+    if (tab === 'contributions') await loadContributions();
+    if (tab === 'profiles') await loadProfiles();
+    if (tab === 'mentorship') await loadMentorship();
+    showAdminToast('Data refreshed.', 'success');
+  } catch (e) {
+    showAdminToast('Refresh failed: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '↻ Refresh'; }
+  }
 }
 
 function showLogin() {
   clearAdminSession();
+  if (sessionTimerInterval) { clearInterval(sessionTimerInterval); sessionTimerInterval = null; }
   if (presenceUnsubscribe) { presenceUnsubscribe(); presenceUnsubscribe = null; }
   document.getElementById('loginWrap').style.display = '';
   document.getElementById('logoutBtn').style.display = 'none';
@@ -1782,6 +2543,9 @@ function showLogin() {
   document.getElementById('adminError').textContent = '';
 }
 
+document.getElementById('adminPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('adminSubmit').click();
+});
 document.getElementById('adminSubmit').addEventListener('click', async function () {
   const email = document.getElementById('adminEmail').value;
   const pin = document.getElementById('adminPass').value;
@@ -1809,14 +2573,23 @@ document.getElementById('adminSubmit').addEventListener('click', async function 
 });
 
 document.getElementById('logoutBtn').addEventListener('click', showLogin);
+document.getElementById('refreshAllBtn')?.addEventListener('click', refreshAllAdminData);
 document.getElementById('refreshBtn').addEventListener('click', loadLogs);
 document.getElementById('filterEmail').addEventListener('input', renderLogs);
 document.getElementById('filterStatus').addEventListener('change', renderLogs);
 document.getElementById('addUserBtn').addEventListener('click', () => openAddUserModal(''));
 document.getElementById('addUserBtn2').addEventListener('click', () => openAddUserModal(''));
 document.getElementById('refreshUsersBtn').addEventListener('click', loadUsers);
-document.querySelectorAll('.tab-btn').forEach(btn => {
+document.getElementById('filterUsers')?.addEventListener('input', renderUsers);
+document.querySelectorAll('.sidebar-link[data-tab], .tab-btn[data-tab]').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeAddUserModal();
+    closeContribModal();
+    document.getElementById('addContribModal')?.classList.remove('open');
+  }
 });
 document.getElementById('modalCancelBtn').addEventListener('click', closeAddUserModal);
 document.getElementById('modalSubmitBtn').addEventListener('click', submitAddUser);
@@ -1846,6 +2619,14 @@ async function loadContributions() {
 
 function renderContributions() {
   const tbody = document.getElementById('contribBody');
+  let sumPKR = 0, sumUSD = 0;
+  for (const c of allContributions) {
+    sumPKR += Number(c.amountPKR) || 0;
+    sumUSD += Number(c.amountUSD) || 0;
+  }
+  setText('contribTotalPKR', sumPKR ? 'PKR ' + sumPKR.toLocaleString() : '0');
+  setText('contribTotalUSD', sumUSD ? '$' + sumUSD.toFixed(2) : '$0');
+  setText('contribCount', allContributions.length);
   if (allContributions.length === 0) {
     tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No contributions recorded yet.</td></tr>';
     return;
@@ -1981,8 +2762,11 @@ document.getElementById('contribPKR').addEventListener('input', function() {
 document.getElementById('refreshMentorsBtn')?.addEventListener('click', loadMentors);
 document.getElementById('refreshMReqBtn')?.addEventListener('click', loadMentorRequests);
 document.getElementById('refreshProfilesBtn')?.addEventListener('click', loadProfiles);
+document.getElementById('filterProfiles')?.addEventListener('input', renderProfiles);
 
 // --- User Profiles ---
+let allProfiles = [];
+
 async function loadProfiles() {
   const tbody = document.getElementById('profilesBody');
   const countEl = document.getElementById('profilesCount');
@@ -1990,38 +2774,54 @@ async function loadProfiles() {
   countEl.textContent = 'Loading…';
   try {
     const snap = await db.collection('user_profiles').orderBy('updatedAt', 'desc').get();
-    countEl.textContent = snap.size + ' profile' + (snap.size === 1 ? '' : 's') + ' set up';
-    if (snap.empty) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No profiles set up yet.</td></tr>';
-      return;
-    }
-    tbody.innerHTML = snap.docs.map(doc => {
-      const d = doc.data();
-      const email = doc.id;
-      const name = d.name || '<span style="color:var(--muted)">—</span>';
-      const specialty = d.specialty ? escapeHtml(d.specialty) : '<span style="color:var(--muted)">—</span>';
-      const hospital = d.hospital ? escapeHtml(d.hospital) : '<span style="color:var(--muted)">—</span>';
-      const status = d.inducted
-        ? `<span style="color:var(--success);font-weight:600;">Inducted ${d.inductionYear ? escapeHtml(String(d.inductionYear)) : ''}</span>`
-        : '<span style="color:var(--text-muted);">Applicant</span>';
-      const appId = d.applicantId ? `<code style="font-size:0.78rem;">${escapeHtml(String(d.applicantId))}</code>` : '<span style="color:var(--muted)">—</span>';
-      const updated = d.updatedAt
-        ? d.updatedAt.toDate().toLocaleDateString('en-PK', { day:'2-digit', month:'short', year:'numeric' })
-        : '—';
-      return `<tr>
-        <td>${escapeHtml(d.name || '—')}</td>
-        <td style="font-size:0.78rem;">${escapeHtml(email)}</td>
-        <td>${specialty}</td>
-        <td>${hospital}</td>
-        <td>${status}</td>
-        <td>${appId}</td>
-        <td style="font-size:0.78rem;">${updated}</td>
-      </tr>`;
-    }).join('');
+    allProfiles = snap.docs.map(doc => ({ email: doc.id, ...doc.data() }));
+    renderProfiles();
   } catch (err) {
     tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Error: ${escapeHtml(err.message)}</td></tr>`;
     countEl.textContent = '';
   }
+}
+
+function renderProfiles() {
+  const tbody = document.getElementById('profilesBody');
+  const countEl = document.getElementById('profilesCount');
+  const q = (document.getElementById('filterProfiles')?.value || '').toLowerCase().trim();
+  let list = allProfiles;
+  if (q) {
+    list = list.filter(d =>
+      (d.name || '').toLowerCase().includes(q) ||
+      (d.email || '').toLowerCase().includes(q) ||
+      (d.specialty || '').toLowerCase().includes(q) ||
+      (d.hospital || '').toLowerCase().includes(q)
+    );
+  }
+  const inducted = allProfiles.filter(d => d.inducted).length;
+  countEl.textContent = `${list.length} shown · ${allProfiles.length} total · ${inducted} inducted`;
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No profiles match.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(d => {
+    const email = d.email;
+    const specialty = d.specialty ? escapeHtml(d.specialty) : '<span style="color:var(--muted);">—</span>';
+    const hospital = d.hospital ? escapeHtml(d.hospital) : '<span style="color:var(--muted);">—</span>';
+    const status = d.inducted
+      ? `<span style="color:var(--success);font-weight:600;">Inducted ${d.inductionYear ? escapeHtml(String(d.inductionYear)) : ''}</span>`
+      : '<span style="color:var(--text-muted);">Applicant</span>';
+    const appId = d.applicantId ? `<code style="font-size:0.78rem;">${escapeHtml(String(d.applicantId))}</code>` : '<span style="color:var(--muted);">—</span>';
+    const updated = d.updatedAt
+      ? d.updatedAt.toDate().toLocaleDateString('en-PK', { day:'2-digit', month:'short', year:'numeric' })
+      : '—';
+    return `<tr>
+      <td>${escapeHtml(d.name || '—')}</td>
+      <td style="font-size:0.78rem;">${escapeHtml(email)}</td>
+      <td>${specialty}</td>
+      <td>${hospital}</td>
+      <td>${status}</td>
+      <td>${appId}</td>
+      <td style="font-size:0.78rem;">${updated}</td>
+    </tr>`;
+  }).join('');
 }
 
 // --- Mentorship ---

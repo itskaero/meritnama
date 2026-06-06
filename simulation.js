@@ -33,10 +33,54 @@ const SIM = {
     parentBonus: false,
     filter:      '',
   },
+
+  marks: {
+    options:        [],
+    activeOptionId: 'portal',
+    showSelector:   true,
+  },
 };
 
-const MY_ID_KEY      = 'mn_sim_my_id';
-const CUSTOM_KEY     = 'mn_sim_custom_cand';
+const MY_ID_KEY           = 'mn_sim_my_id';
+const CUSTOM_KEY          = 'mn_sim_custom_cand';
+const MARKS_OPTION_KEY    = 'mn_marks_option_id';
+const MARKS_COMPONENT_FIELDS = [
+  'mdcat', 'experience', 'matric', 'fsc', 'degree', 'houseJob',
+  'research', 'position', 'hardAreas', 'attempts',
+];
+const DEFAULT_MARKS_OPTIONS = [
+  {
+    id: 'portal',
+    label: 'Portal total (marksTotal)',
+    base: 'marksTotal',
+    adjustments: [],
+  },
+  {
+    id: 'minus-mdcat',
+    label: 'marksTotal − MDCAT',
+    base: 'marksTotal',
+    adjustments: [{ field: 'mdcat', op: 'subtract' }],
+  },
+  {
+    id: 'plus-mdcat',
+    label: 'marksTotal + MDCAT',
+    base: 'marksTotal',
+    adjustments: [{ field: 'mdcat', op: 'add' }],
+  },
+  {
+    id: 'minus-experience',
+    label: 'marksTotal − Experience',
+    base: 'marksTotal',
+    adjustments: [{ field: 'experience', op: 'subtract' }],
+  },
+  {
+    id: 'degree-housejob',
+    label: 'Degree + House Job',
+    base: 'sum',
+    sumFields: ['degree', 'houseJob'],
+    adjustments: [],
+  },
+];
 const PAGE_SIZE      = 50;
 const MAX_PASSES     = 200;
 const SIM_NOTIF_DISMISSED_KEY = 'mn_sim_dismissed_notifs';
@@ -66,6 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initLiveBanner();
   initFetchProgress();
   initSimulationNotificationFeed();
+  initMarksConfig();
   showLoading(true);
   await loadData();
   showLoading(false);
@@ -80,6 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderCandStats();
   setupSlotBrowser();
   setupSimulationTab();
+  setupMarksSelectors();
   setupChat();
   updateMyBadge();
 
@@ -721,6 +767,8 @@ function applyAndRenderCandidates() {
     if (key === 'nameFull') { av = a.nameFull; bv = b.nameFull; }
     else if (['FCPS','MS','MD'].includes(key)) {
       av = effectiveMark(a, key) ?? 0; bv = effectiveMark(b, key) ?? 0;
+    } else if (key === 'marksTotal') {
+      av = baseMarks(a); bv = baseMarks(b);
     } else {
       av = a[key] ?? 0; bv = b[key] ?? 0;
     }
@@ -870,7 +918,7 @@ function openCandidateDetail(idStr) {
       <div>
         <h3>${esc(c.nameFull)} ${isMe ? '<span class="me-tag">YOU</span>' : ''}
           ${c._custom ? '<span class="custom-tag">manual</span>' : ''}</h3>
-        <p class="cand-detail-meta">ID: ${c.applicantId} &nbsp;·&nbsp; Base: <strong>${fmtM(baseMarks(c))}</strong></p>
+        <p class="cand-detail-meta">ID: ${c.applicantId} &nbsp;·&nbsp; ${esc(getActiveMarksLabel())}: <strong>${fmtM(baseMarks(c))}</strong> &nbsp;·&nbsp; Portal marksTotal: ${fmtM(c.marksTotal)}</p>
       </div>
     </div>
 
@@ -892,7 +940,8 @@ function openCandidateDetail(idStr) {
       <summary>Score breakdown</summary>
       <div class="score-bk-grid">
         ${scoreRows.map(([l, v]) => `<span>${l}</span><span class="score-bk-val">${fmtM(v)}</span>`).join('')}
-        <span><strong>Base Total</strong></span><span class="score-bk-val"><strong>${fmtM(baseMarks(c))}</strong></span>
+        <span><strong>Portal marksTotal</strong></span><span class="score-bk-val">${fmtM(c.marksTotal)}</span>
+        <span><strong>Merit base (${esc(getActiveMarksLabel())})</strong></span><span class="score-bk-val"><strong>${fmtM(baseMarks(c))}</strong></span>
       </div>
     </details>` : ''}
 
@@ -1828,6 +1877,8 @@ function setupSimulationTab() {
 
   document.getElementById('simParentBonus')?.addEventListener('change', e => {
     SIM.sim.parentBonus = e.target.checked;
+    SIM.sim.result = null;
+    document.getElementById('simResults').innerHTML = '';
   });
 
   document.getElementById('simFilter')?.addEventListener('input', e => {
@@ -1943,6 +1994,7 @@ function renderSimResults() {
         <div><span class="sim-sum-val">${filledSlots}</span><span class="sim-sum-lbl">Slots filled</span></div>
         <div><span class="sim-sum-val">${rows.length}</span><span class="sim-sum-lbl">Total slots</span></div>
       </div>
+      <p style="margin-top:10px;font-size:0.72rem;color:var(--text-muted)">Merit basis: <strong>${esc(getActiveMarksLabel())}</strong>${SIM.sim.parentBonus ? ' · Parent institute bonus on' : ''}</p>
     </div>
     <div class="sim-grid">
       ${rows.map(r => renderSimCard(r, program)).join('')}
@@ -2152,7 +2204,9 @@ function renderApplicantSimulationModal(cand, results) {
         <h3>Applicant simulation result</h3>
         <p class="app-sim-meta">
           ${esc(cand.nameFull)} &middot; ID: ${esc(cand.applicantId)}
+          &middot; Merit basis: <strong>${esc(getActiveMarksLabel())}</strong>
           &middot; Base marks: <strong>${fmtM(baseMarks(cand))}</strong>
+          &middot; Portal marksTotal: <strong>${fmtM(cand.marksTotal)}</strong>
           &middot; Parent bonus: <strong>${SIM.sim.parentBonus ? 'On' : 'Off'}</strong>
         </p>
       </div>
@@ -2431,12 +2485,169 @@ function openSimCandidateDetail(applicantId, track = null) {
 }
 
 /**
- * Base marks for a candidate — the raw marksTotal.
- * marksTotal is already the sum of housejob + position + degree + MDCAT (etc.)
- * and does NOT include experience, so no subtraction is needed.
+ * Resolve base merit marks for a candidate using the active marks formula.
+ * Formulas are admin-configurable (Firestore) with local fallback defaults.
+ */
+function normalizeMarksOption(raw, idx = 0) {
+  if (!raw || typeof raw !== 'object') return null;
+  const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : `opt-${idx + 1}`;
+  const label = typeof raw.label === 'string' && raw.label.trim()
+    ? raw.label.trim()
+    : id;
+  const base = raw.base === 'sum' ? 'sum' : 'marksTotal';
+  const sumFields = Array.isArray(raw.sumFields)
+    ? raw.sumFields.filter(f => MARKS_COMPONENT_FIELDS.includes(f) || f === 'marksTotal')
+    : [];
+  const adjustments = Array.isArray(raw.adjustments)
+    ? raw.adjustments
+        .filter(a => a && (a.op === 'add' || a.op === 'subtract') && MARKS_COMPONENT_FIELDS.includes(a.field))
+        .map(a => ({ field: a.field, op: a.op }))
+    : [];
+  return { id, label, base, sumFields, adjustments };
+}
+
+function applyMarksConfig(data) {
+  const options = Array.isArray(data?.options) && data.options.length
+    ? data.options.map((o, i) => normalizeMarksOption(o, i)).filter(Boolean)
+    : DEFAULT_MARKS_OPTIONS.slice();
+
+  SIM.marks.options = options.length ? options : DEFAULT_MARKS_OPTIONS.slice();
+  SIM.marks.showSelector = data?.showSelector !== false;
+
+  const defaultId = typeof data?.defaultOptionId === 'string' ? data.defaultOptionId : 'portal';
+  const storedId = localStorage.getItem(MARKS_OPTION_KEY);
+  const ids = new Set(SIM.marks.options.map(o => o.id));
+  const pick = id => ids.has(id) ? id : null;
+
+  SIM.marks.activeOptionId =
+    pick(storedId) ||
+    pick(defaultId) ||
+    SIM.marks.options[0]?.id ||
+    'portal';
+
+  if (!pick(storedId) && SIM.marks.activeOptionId) {
+    localStorage.setItem(MARKS_OPTION_KEY, SIM.marks.activeOptionId);
+  }
+
+  syncMarksSelectorUI();
+  updateMarksBasisLabels();
+}
+
+async function loadMarksConfig() {
+  applyMarksConfig({ options: DEFAULT_MARKS_OPTIONS, defaultOptionId: 'portal', showSelector: true });
+
+  try {
+    const snap = await firebase.firestore().collection('notifications').doc('marks_config').get();
+    if (snap.exists) applyMarksConfig(snap.data());
+  } catch (_) {}
+}
+
+function initMarksConfig() {
+  loadMarksConfig();
+  try {
+    firebase.firestore().collection('notifications').doc('marks_config').onSnapshot(snap => {
+      if (!snap.exists) return;
+      applyMarksConfig(snap.data());
+      onMarksOptionChanged(false);
+    });
+  } catch (_) {}
+}
+
+function getMarksOption(id) {
+  const key = id ?? SIM.marks.activeOptionId;
+  return SIM.marks.options.find(o => o.id === key)
+    || DEFAULT_MARKS_OPTIONS.find(o => o.id === key)
+    || DEFAULT_MARKS_OPTIONS[0];
+}
+
+function resolveBaseMarks(c, option) {
+  const opt = option || getMarksOption();
+  let total = 0;
+  if (opt.base === 'sum') {
+    total = (opt.sumFields || []).reduce((s, f) => s + (c[f] ?? 0), 0);
+  } else {
+    total = c.marksTotal ?? 0;
+  }
+  for (const adj of (opt.adjustments || [])) {
+    const val = c[adj.field] ?? 0;
+    if (adj.op === 'add') total += val;
+    else if (adj.op === 'subtract') total -= val;
+  }
+  return total;
+}
+
+function getActiveMarksLabel() {
+  return getMarksOption()?.label || 'Base';
+}
+
+function updateMarksBasisLabels() {
+  const label = getActiveMarksLabel();
+  document.querySelectorAll('[data-marks-basis-label]').forEach(el => {
+    el.textContent = label;
+  });
+}
+
+function syncMarksSelectorUI() {
+  const selects = [
+    document.getElementById('candMarksBasis'),
+    document.getElementById('simMarksBasis'),
+  ].filter(Boolean);
+
+  for (const sel of selects) {
+    const prev = sel.value;
+    sel.innerHTML = SIM.marks.options.map(o =>
+      `<option value="${esc(o.id)}">${esc(o.label)}</option>`
+    ).join('');
+    sel.value = SIM.marks.activeOptionId;
+    if (!sel.value && SIM.marks.options.length) {
+      sel.value = SIM.marks.options[0].id;
+    } else if (prev && [...sel.options].some(o => o.value === prev)) {
+      sel.value = prev;
+    }
+    sel.disabled = !SIM.marks.showSelector || SIM.marks.options.length <= 1;
+    sel.closest('.marks-basis-wrap')?.classList.toggle('hidden', !SIM.marks.showSelector);
+  }
+
+  const note = document.getElementById('marksBasisNote');
+  if (note) {
+    note.textContent = SIM.marks.showSelector
+      ? 'Ranking uses the selected merit formula. Portal marksTotal may omit or double-count some components.'
+      : `Ranking uses: ${getActiveMarksLabel()}`;
+  }
+}
+
+function setupMarksSelectors() {
+  const handler = e => setActiveMarksOption(e.target.value);
+  document.getElementById('candMarksBasis')?.addEventListener('change', handler);
+  document.getElementById('simMarksBasis')?.addEventListener('change', handler);
+  syncMarksSelectorUI();
+  updateMarksBasisLabels();
+}
+
+function setActiveMarksOption(id) {
+  if (!id || !SIM.marks.options.some(o => o.id === id)) return;
+  SIM.marks.activeOptionId = id;
+  localStorage.setItem(MARKS_OPTION_KEY, id);
+  syncMarksSelectorUI();
+  onMarksOptionChanged(true);
+}
+
+function onMarksOptionChanged(clearSim) {
+  updateMarksBasisLabels();
+  updateMyBadge();
+  applyAndRenderCandidates();
+  if (clearSim) {
+    SIM.sim.result = null;
+    document.getElementById('simResults').innerHTML = '';
+  }
+  if (SIM.sb.program) renderSlot();
+}
+
+/**
+ * Base marks for a candidate — resolved via admin/user-selected formula.
  */
 function baseMarks(c) {
-  return (c.marksTotal ?? 0);
+  return resolveBaseMarks(c);
 }
 
 /**
