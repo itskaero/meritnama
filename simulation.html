@@ -537,6 +537,54 @@
     }
     .notif-dismiss:hover { opacity: 1; }
 
+    /* -- Live fetch progress (admin-controlled) -- */
+    .fetch-progress-wrap {
+      border-bottom: 1px solid rgba(77,184,217,0.16);
+      background: linear-gradient(180deg, rgba(77,184,217,0.08) 0%, rgba(13,22,38,0.4) 100%);
+      padding: 12px 22px;
+    }
+    .fetch-progress-wrap.hidden { display: none; }
+    .fetch-progress-inner { max-width: 980px; margin: 0 auto; }
+    .fetch-progress-top {
+      display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px;
+    }
+    .fetch-progress-icon { font-size: 1.2rem; line-height: 1.2; flex-shrink: 0; }
+    .fetch-progress-head { flex: 1; min-width: 0; }
+    .fetch-progress-title { font-weight: 700; font-size: 0.88rem; color: var(--text); }
+    .fetch-progress-message { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; line-height: 1.45; }
+    .fetch-progress-status {
+      flex-shrink: 0; font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; padding: 4px 10px; border-radius: 100px;
+      border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04);
+      color: var(--text-muted);
+    }
+    .fetch-progress-status-running { color: var(--neon-cyan, #4db8d9); border-color: rgba(77,184,217,0.35); background: rgba(77,184,217,0.1); }
+    .fetch-progress-status-paused { color: var(--neon-gold, #e8a627); border-color: rgba(232,166,39,0.35); background: rgba(232,166,39,0.1); }
+    .fetch-progress-status-completed { color: var(--neon-green, #3ecf8e); border-color: rgba(62,207,142,0.35); background: rgba(62,207,142,0.1); }
+    .fetch-progress-bar-wrap {
+      height: 8px; border-radius: 100px; overflow: hidden;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(77,184,217,0.15);
+      margin-bottom: 8px;
+    }
+    .fetch-progress-bar {
+      height: 100%; width: 0; border-radius: 100px;
+      background: linear-gradient(90deg, var(--neon-cyan, #4db8d9), var(--neon-purple, #7c65c4));
+      box-shadow: 0 0 12px rgba(77,184,217,0.45);
+      transition: width 0.35s ease;
+    }
+    .fetch-progress-wrap.is-paused .fetch-progress-bar {
+      background: linear-gradient(90deg, rgba(232,166,39,0.85), rgba(232,166,39,0.55));
+      box-shadow: none;
+    }
+    .fetch-progress-wrap.is-completed .fetch-progress-bar {
+      background: linear-gradient(90deg, var(--neon-green, #3ecf8e), rgba(62,207,142,0.7));
+    }
+    .fetch-progress-meta {
+      display: flex; flex-wrap: wrap; gap: 8px 16px;
+      font-size: 0.72rem; color: var(--text-muted);
+    }
+    .fetch-progress-meta strong { color: var(--text); font-weight: 600; }
+
     /* ---------------------------------------------------------------
        GUIDE TAB
     --------------------------------------------------------------- */
@@ -1288,6 +1336,29 @@
   <span class="ticker-value">Updated ${CANDIDATE_UPDATED}</span>
   <span class="ticker-sep">&middot;</span>
   <span class="ticker-info">${CANDIDATE_COUNT} candidates &middot; <a href="candidatesChanges.html" style="color:inherit">view changes &#8594;</a></span>
+</div>
+
+<!-- ═══════════ LIVE FETCH PROGRESS (admin-controlled) ═══════════ -->
+<div id="fetchProgressWrap" class="fetch-progress-wrap hidden" role="status" aria-live="polite">
+  <div class="fetch-progress-inner">
+    <div class="fetch-progress-top">
+      <span id="fetchProgressIcon" class="fetch-progress-icon">&#9203;</span>
+      <div class="fetch-progress-head">
+        <div id="fetchProgressTitle" class="fetch-progress-title">Fetching candidate data</div>
+        <div id="fetchProgressMessage" class="fetch-progress-message"></div>
+      </div>
+      <span id="fetchProgressStatus" class="fetch-progress-status fetch-progress-status-running">Running</span>
+    </div>
+    <div class="fetch-progress-bar-wrap">
+      <div id="fetchProgressBar" class="fetch-progress-bar"></div>
+    </div>
+    <div class="fetch-progress-meta">
+      <span id="fetchProgressCounts"></span>
+      <span id="fetchProgressPercent"></span>
+      <span id="fetchProgressStarted"></span>
+      <span id="fetchProgressElapsed"></span>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════ MOTIVATIONAL QUOTE STRIP ═══════════ -->

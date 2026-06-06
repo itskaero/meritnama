@@ -721,6 +721,69 @@
 
       <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
 
+      <h3 style="font-size:0.9rem;color:var(--accent);margin:0 0 0.5rem;">&#128202; Live Fetch Progress</h3>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
+        Controls the progress bar on <code>simulation.html</code> via <code>notifications/fetch_progress</code>.
+        Update percent, counts, status (running / paused / completed), and timing fields manually while data is being fetched.
+      </p>
+      <label class="toggle-row" style="margin-bottom:0.75rem;">
+        <input type="checkbox" id="fpActive" />
+        Show progress bar on simulation page
+      </label>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;max-width:760px;">
+        <div class="modal-field">
+          <label>Status</label>
+          <select id="fpStatus" style="width:100%;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;">
+            <option value="running">Running</option>
+            <option value="paused">Paused</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label>Percent (0–100)</label>
+          <input type="number" id="fpPercent" min="0" max="100" step="1" value="0" />
+        </div>
+        <div class="modal-field">
+          <label>Fetched count</label>
+          <input type="number" id="fpFetched" min="0" step="1" placeholder="e.g. 1240" />
+        </div>
+        <div class="modal-field">
+          <label>Total count</label>
+          <input type="number" id="fpTotal" min="0" step="1" placeholder="e.g. 2950" />
+        </div>
+      </div>
+      <div class="modal-field" style="max-width:520px;margin-top:0.75rem;">
+        <label>Title</label>
+        <input type="text" id="fpTitle" placeholder="Fetching candidate data" />
+      </div>
+      <div class="modal-field" style="max-width:520px;">
+        <label>Message <span style="text-transform:none;font-weight:400;">(optional detail)</span></label>
+        <textarea id="fpMessage" rows="2" style="width:100%;resize:vertical;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;" placeholder="Fetching preferences from portal API…"></textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.75rem;max-width:760px;">
+        <div class="modal-field">
+          <label>Started at</label>
+          <input type="datetime-local" id="fpStartedAt" />
+        </div>
+        <div class="modal-field">
+          <label>Paused at <span style="text-transform:none;font-weight:400;">(auto when paused)</span></label>
+          <input type="datetime-local" id="fpPausedAt" />
+        </div>
+        <div class="modal-field">
+          <label>Icon <span style="text-transform:none;font-weight:400;">(emoji)</span></label>
+          <input type="text" id="fpIcon" placeholder="⏳" />
+        </div>
+      </div>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem;">
+        <button id="fpLoadBtn" style="padding:8px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Load Current</button>
+        <button id="fpNowBtn" style="padding:8px 16px;background:rgba(245,200,66,0.12);color:#f5c842;border:1px solid rgba(245,200,66,0.28);border-radius:8px;cursor:pointer;font-weight:600;">Set started = now</button>
+        <button id="fpSaveBtn" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save Progress</button>
+        <button id="fpClearBtn" style="padding:8px 16px;background:rgba(224,84,112,0.15);color:var(--neon-pink);border:1px solid rgba(224,84,112,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Hide Progress Bar</button>
+      </div>
+      <div id="fpStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+
       <h3 style="font-size:0.9rem;color:var(--accent);margin:0 0 0.5rem;">&#128221; Simulation Notifications Feed</h3>
       <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
         Edits the simulation page notification feed using the same schema as <code>data/notifications.json</code>.
@@ -1321,7 +1384,15 @@ function loadBroadcast() {
   document.getElementById('simNotifLoadBtn').onclick = loadSimulationNotificationsEditor;
   document.getElementById('simNotifFallbackBtn').onclick = loadSimulationNotificationsFallback;
   document.getElementById('simNotifSaveBtn').onclick = saveSimulationNotificationsEditor;
+  document.getElementById('fpLoadBtn').onclick = loadFetchProgressEditor;
+  document.getElementById('fpNowBtn').onclick = () => {
+    const el = document.getElementById('fpStartedAt');
+    if (el) el.value = tsToDatetimeLocal(new Date());
+  };
+  document.getElementById('fpSaveBtn').onclick = saveFetchProgressEditor;
+  document.getElementById('fpClearBtn').onclick = clearFetchProgressEditor;
   loadSimulationNotificationsEditor();
+  loadFetchProgressEditor();
 }
 
 async function loadSubCount() {
@@ -1375,6 +1446,118 @@ async function clearLiveBanner() {
   } catch (e) {
     status.textContent = 'Error: ' + e.message;
     status.style.color = 'var(--neon-pink)';
+  }
+}
+
+function setFetchProgressStatus(message, color = 'var(--text-muted)') {
+  const el = document.getElementById('fpStatus');
+  if (!el) return;
+  el.textContent = message;
+  el.style.color = color;
+}
+
+function tsToDatetimeLocal(ts) {
+  const d = ts?.toDate ? ts.toDate() : (ts instanceof Date ? ts : new Date(ts));
+  if (!(d instanceof Date) || Number.isNaN(d.getTime())) return '';
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function datetimeLocalToDate(value) {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function fillFetchProgressForm(data) {
+  const d = data || {};
+  document.getElementById('fpActive').checked = d.active === true;
+  document.getElementById('fpStatus').value = ['running', 'paused', 'completed'].includes(d.status) ? d.status : 'running';
+  document.getElementById('fpPercent').value = Number.isFinite(Number(d.percent)) ? Math.max(0, Math.min(100, Number(d.percent))) : 0;
+  document.getElementById('fpFetched').value = Number.isFinite(Number(d.fetched)) ? Number(d.fetched) : '';
+  document.getElementById('fpTotal').value = Number.isFinite(Number(d.total)) ? Number(d.total) : '';
+  document.getElementById('fpTitle').value = d.title || '';
+  document.getElementById('fpMessage').value = d.message || '';
+  document.getElementById('fpIcon').value = d.icon || '';
+  document.getElementById('fpStartedAt').value = tsToDatetimeLocal(d.startedAt);
+  document.getElementById('fpPausedAt').value = tsToDatetimeLocal(d.pausedAt);
+}
+
+async function loadFetchProgressEditor() {
+  setFetchProgressStatus('Loading fetch progress…');
+  try {
+    const snap = await db.collection('notifications').doc('fetch_progress').get();
+    fillFetchProgressForm(snap.exists ? snap.data() : {});
+    setFetchProgressStatus(snap.exists ? 'Loaded current fetch progress.' : 'No saved progress yet — defaults loaded.', 'var(--neon-green)');
+  } catch (e) {
+    setFetchProgressStatus('Error: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
+async function saveFetchProgressEditor() {
+  setFetchProgressStatus('Saving…');
+  try {
+    const active = document.getElementById('fpActive').checked;
+    const status = document.getElementById('fpStatus').value;
+    const percent = Math.max(0, Math.min(100, Number(document.getElementById('fpPercent').value) || 0));
+    const fetchedRaw = document.getElementById('fpFetched').value.trim();
+    const totalRaw = document.getElementById('fpTotal').value.trim();
+    const title = document.getElementById('fpTitle').value.trim();
+    const message = document.getElementById('fpMessage').value.trim();
+    const icon = document.getElementById('fpIcon').value.trim();
+    const startedAt = datetimeLocalToDate(document.getElementById('fpStartedAt').value);
+    const pausedAtInput = document.getElementById('fpPausedAt').value;
+    let pausedAt = datetimeLocalToDate(pausedAtInput);
+
+    const existing = await db.collection('notifications').doc('fetch_progress').get();
+    const prev = existing.exists ? existing.data() : {};
+
+    const payload = {
+      active,
+      status,
+      percent,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    if (title) payload.title = title;
+    else payload.title = 'Fetching candidate data';
+    if (message) payload.message = message;
+    if (icon) payload.icon = icon;
+
+    if (fetchedRaw !== '') payload.fetched = Math.max(0, Number(fetchedRaw) || 0);
+    if (totalRaw !== '') payload.total = Math.max(0, Number(totalRaw) || 0);
+
+    if (startedAt) payload.startedAt = firebase.firestore.Timestamp.fromDate(startedAt);
+    else if (active && prev.startedAt) payload.startedAt = prev.startedAt;
+    else if (active) payload.startedAt = firebase.firestore.FieldValue.serverTimestamp();
+
+    if (status === 'paused') {
+      payload.pausedAt = pausedAt
+        ? firebase.firestore.Timestamp.fromDate(pausedAt)
+        : firebase.firestore.FieldValue.serverTimestamp();
+    } else {
+      payload.pausedAt = firebase.firestore.FieldValue.delete();
+    }
+
+    await db.collection('notifications').doc('fetch_progress').set(payload, { merge: true });
+    setFetchProgressStatus('✓ Fetch progress saved. Simulation page updates instantly.', 'var(--neon-green)');
+    await loadFetchProgressEditor();
+  } catch (e) {
+    setFetchProgressStatus('Error: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
+async function clearFetchProgressEditor() {
+  setFetchProgressStatus('Hiding progress bar…');
+  try {
+    await db.collection('notifications').doc('fetch_progress').set({
+      active: false,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    document.getElementById('fpActive').checked = false;
+    setFetchProgressStatus('✓ Progress bar hidden on simulation page.', 'var(--neon-green)');
+  } catch (e) {
+    setFetchProgressStatus('Error: ' + e.message, 'var(--neon-pink)');
   }
 }
 
