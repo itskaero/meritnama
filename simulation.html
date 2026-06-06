@@ -652,6 +652,26 @@
     .marks-basis-wrap { display: flex; flex-direction: column; gap: 4px; min-width: 220px; }
     .marks-basis-wrap label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
     .marks-basis-note { font-size: 0.72rem; color: var(--text-muted); max-width: 520px; line-height: 1.45; }
+    .marks-info-banner {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 14px 16px; margin: 0 0 14px;
+      background: linear-gradient(135deg, rgba(77,184,217,0.14) 0%, rgba(77,184,217,0.05) 100%);
+      border: 1px solid rgba(77,184,217,0.38);
+      border-left: 4px solid var(--neon-cyan, #4db8d9);
+      border-radius: 0 var(--radius, 10px) var(--radius, 10px) 0;
+      color: var(--text-light); font-size: 0.84rem; line-height: 1.5;
+      max-width: 920px; box-shadow: 0 0 18px rgba(77,184,217,0.08);
+    }
+    .marks-info-banner.hidden { display: none !important; }
+    .marks-info-banner-icon { font-size: 1.35rem; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+    .marks-info-banner-title { font-weight: 700; color: var(--neon-cyan, #4db8d9); margin-bottom: 6px; font-size: 0.9rem; letter-spacing: 0.2px; }
+    .marks-info-banner-text { color: var(--text-light); white-space: pre-wrap; }
+    .marks-info-banner-formula {
+      margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(77,184,217,0.2);
+      font-size: 0.78rem; color: var(--text-muted);
+    }
+    .marks-info-banner-formula strong { color: var(--text); font-weight: 600; }
+    .marks-info-banner-formula span { color: var(--neon-cyan, #4db8d9); font-weight: 600; }
 
     /* My result banner */
     .sim-my { padding: 14px 18px; border-radius: var(--radius-lg, 16px); margin-bottom: 16px; font-size: 0.9rem; animation: fadeInUp 0.3s ease both; }
@@ -1405,6 +1425,14 @@
     </div>
 
     <div class="card filter-card">
+      <div class="marks-info-banner hidden" role="status" aria-live="polite">
+        <div class="marks-info-banner-icon" aria-hidden="true">📊</div>
+        <div class="marks-info-banner-content">
+          <div class="marks-info-banner-title"></div>
+          <div class="marks-info-banner-text"></div>
+          <div class="marks-info-banner-formula"><strong>Active formula:</strong> <span data-marks-banner-formula></span></div>
+        </div>
+      </div>
       <div class="input-grid">
         <div class="form-group">
           <label for="candSearch">Search by name</label>
@@ -1424,7 +1452,7 @@
           <select id="candMarksBasis" class="mt-filter-sel" title="Formula used for base marks in this table and allocation"></select>
         </div>
       </div>
-      <p id="marksBasisNote" class="marks-basis-note" style="margin-top:10px"></p>
+      <p id="marksBasisNote" class="marks-basis-note hidden" style="margin-top:10px"></p>
       <div style="margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <span id="candCount" class="mt-count"></span>
       </div>
@@ -1706,6 +1734,14 @@
     </div>
 
     <div class="card">
+      <div class="marks-info-banner hidden" role="status" aria-live="polite">
+        <div class="marks-info-banner-icon" aria-hidden="true">📊</div>
+        <div class="marks-info-banner-content">
+          <div class="marks-info-banner-title"></div>
+          <div class="marks-info-banner-text"></div>
+          <div class="marks-info-banner-formula"><strong>Active formula:</strong> <span data-marks-banner-formula></span></div>
+        </div>
+      </div>
       <div class="input-grid">
         <div class="form-group">
           <label for="simProgram">Programme</label>
