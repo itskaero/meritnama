@@ -412,6 +412,25 @@
     .user-badge.admin-badge {
       background: rgba(124,101,196,0.12); color: var(--accent2); border-color: rgba(124,101,196,0.25);
     }
+    .invite-quota-badge {
+      display: inline-flex; align-items: center; padding: 0.12rem 0.5rem; border-radius: 100px;
+      font-size: 0.68rem; font-weight: 700; background: rgba(62,207,142,0.12);
+      color: var(--neon-green, #3ecf8e); border: 1px solid rgba(62,207,142,0.28);
+    }
+    .invite-quota-badge.invite-quota-low {
+      background: rgba(232,166,39,0.12); color: var(--neon-gold, #e8a627);
+      border-color: rgba(232,166,39,0.28);
+    }
+    .invite-quota-badge.invite-quota-empty {
+      background: rgba(224,84,112,0.1); color: var(--danger);
+      border-color: rgba(224,84,112,0.28);
+    }
+    .invite-meta-sub { display: block; font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
+    .invitees-cell {
+      display: inline-block; max-width: 220px; white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; font-size: 0.78rem; color: var(--text-muted);
+    }
+    .invited-by-cell { font-size: 0.78rem; color: var(--text-muted); max-width: 180px; }
     .remove-btn {
       background: transparent; border: 1px solid rgba(224,84,112,0.35);
       color: var(--danger); border-radius: 6px;
@@ -545,6 +564,7 @@
             <tr>
               <th>Time</th>
               <th>Email</th>
+              <th>Invited By</th>
               <th>Status</th>
               <th>IP Address</th>
               <th>Page</th>
@@ -553,7 +573,7 @@
             </tr>
           </thead>
           <tbody id="logsBody">
-            <tr><td colspan="7" class="empty-state">Loading logs&hellip;</td></tr>
+            <tr><td colspan="8" class="empty-state">Loading logs&hellip;</td></tr>
           </tbody>
         </table>
       </div>
@@ -573,13 +593,15 @@
               <th>Name</th>
               <th>Email</th>
               <th>Access Level</th>
-              <th>Invite Limit</th>
+              <th>Invites Left</th>
+              <th>Invited By</th>
+              <th>Invited Users</th>
               <th>Added</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody id="usersBody">
-            <tr><td colspan="6" class="empty-state">Loading users&hellip;</td></tr>
+            <tr><td colspan="8" class="empty-state">Loading users&hellip;</td></tr>
           </tbody>
         </table>
       </div>
@@ -992,6 +1014,7 @@ const ADMIN_SESSION_KEY = 'meritnama_admin_session';
 const SESSION_DURATION = 2 * 60 * 60 * 1000; // 2 hours
 
 let allLogs = [];
+let authUserMeta = { byEmail: {}, inviteesByInviter: {} };
 
 // --- Session Management ---
 function getAdminSession() {
@@ -1033,8 +1056,102 @@ async function verifyAdmin(email, pin) {
   return data.pin === pin;
 }
 
+async function loadAuthUserMeta() {
+  const [snapshot, profileSnap] = await Promise.all([
+    db.collection('authorized_users').get(),
+    db.collection('user_profiles').get(),
+  ]);
+  const profiles = {};
+  profileSnap.docs.forEach(doc => { profiles[doc.id] = doc.data(); });
+
+  const byEmail = {};
+  const inviteesByInviter = {};
+
+  snapshot.docs.forEach(doc => {
+    const data = doc.data();
+    const email = doc.id;
+    const invitedBy = (data.invitedBy || '').toLowerCase().trim();
+    byEmail[email] = {
+      email,
+      name: data.name || email,
+      isAdmin: !!data.isAdmin,
+      inviteLimit: asInviteLimit(profiles[email]?.inviteLimit, asInviteLimit(data.inviteLimit, 2)),
+      invitedBy: invitedBy || null,
+      invitedAt: data.invitedAt?.toDate?.() || null,
+      inviteSource: data.inviteSource || null,
+      addedAt: data.addedAt?.toDate?.() || null,
+    };
+    if (invitedBy) {
+      if (!inviteesByInviter[invitedBy]) inviteesByInviter[invitedBy] = [];
+      inviteesByInviter[invitedBy].push({
+        email,
+        name: data.name || email,
+        invitedAt: data.invitedAt?.toDate?.() || null,
+      });
+    }
+  });
+
+  Object.values(inviteesByInviter).forEach(list => {
+    list.sort((a, b) => (b.invitedAt || 0) - (a.invitedAt || 0));
+  });
+
+  authUserMeta = { byEmail, inviteesByInviter };
+  return authUserMeta;
+}
+
+function getInviteStats(email) {
+  const user = authUserMeta.byEmail[email];
+  const invitees = authUserMeta.inviteesByInviter[email] || [];
+  const limit = user?.inviteLimit ?? 2;
+  const used = invitees.length;
+  return { limit, used, left: Math.max(limit - used, 0), invitees };
+}
+
+function formatInvitedByLabel(email) {
+  const key = (email || '').toLowerCase().trim();
+  const user = authUserMeta.byEmail[key];
+  if (!user?.invitedBy) return null;
+  const inviter = authUserMeta.byEmail[user.invitedBy];
+  return inviter ? `${inviter.name} (${user.invitedBy})` : user.invitedBy;
+}
+
+function renderInvitedByCell(email) {
+  const label = formatInvitedByLabel(email);
+  if (!label) return '<span class="invited-by-cell" style="opacity:0.55">Admin portal</span>';
+  const user = authUserMeta.byEmail[(email || '').toLowerCase().trim()];
+  const title = user?.invitedAt
+    ? `Invited ${user.invitedAt.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`
+    : label;
+  return `<span class="invited-by-cell" title="${escapeHtml(title)}">${escapeHtml(label)}</span>`;
+}
+
+function renderInviteQuotaCell(stats) {
+  const cls = stats.left <= 0
+    ? 'invite-quota-empty'
+    : (stats.left <= 1 ? 'invite-quota-low' : '');
+  return `<span class="invite-quota-badge ${cls}">${stats.left} left</span>
+    <span class="invite-meta-sub">${stats.used}/${stats.limit} used</span>`;
+}
+
+function renderInviteesCell(email) {
+  const invitees = authUserMeta.inviteesByInviter[email] || [];
+  if (!invitees.length) return '<span style="opacity:0.45">—</span>';
+  const title = invitees.map(i => {
+    const when = i.invitedAt
+      ? i.invitedAt.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })
+      : '—';
+    return `${i.name} (${i.email}) · ${when}`;
+  }).join('\n');
+  const label = invitees.map(i => i.name || i.email).join(', ');
+  return `<span class="invitees-cell" title="${escapeHtml(title)}">${escapeHtml(label)}</span>`;
+}
+
 // --- Load Logs ---
 async function loadLogs() {
+  try {
+    await loadAuthUserMeta();
+  } catch (_) {}
+
   const snapshot = await db.collection('access_logs')
     .orderBy('timestamp', 'desc')
     .limit(500)
@@ -1080,7 +1197,7 @@ function renderLogs() {
 
   const tbody = document.getElementById('logsBody');
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No logs found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No logs found.</td></tr>';
     return;
   }
 
@@ -1096,10 +1213,12 @@ function renderLogs() {
     const actionBtn = actionEmail
       ? `<button class="action-btn" onclick="openAddUserModal('${actionEmail}')">Grant Access</button>`
       : 'â€”';
+    const invitedBy = l.email !== 'â€”' ? renderInvitedByCell(l.email) : '—';
 
     return `<tr>
       <td>${time}</td>
       <td>${escapeHtml(l.email)}</td>
+      <td>${invitedBy}</td>
       <td>${badge}</td>
       <td class="ip-cell">${escapeHtml(l.ip)}</td>
       <td>${escapeHtml(l.page)}</td>
@@ -1274,31 +1393,23 @@ let allUsers = [];
 
 async function loadUsers() {
   const tbody = document.getElementById('usersBody');
-  tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading\u2026</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading\u2026</td></tr>';
   try {
-    const [snapshot, profileSnap] = await Promise.all([
-      db.collection('authorized_users').get(),
-      db.collection('user_profiles').get(),
-    ]);
-    const profiles = {};
-    profileSnap.docs.forEach(doc => { profiles[doc.id] = doc.data(); });
-    allUsers = snapshot.docs.map(doc => ({
-      email:   doc.id,
-      name:    doc.data().name || doc.id,
-      isAdmin: doc.data().isAdmin || false,
-      inviteLimit: asInviteLimit(profiles[doc.id]?.inviteLimit, asInviteLimit(doc.data().inviteLimit, 2)),
-      addedAt: doc.data().addedAt ? doc.data().addedAt.toDate() : null,
-    }));
+    await loadAuthUserMeta();
+    allUsers = Object.values(authUserMeta.byEmail).map(user => {
+      const stats = getInviteStats(user.email);
+      return { ...user, ...stats };
+    });
     renderUsers();
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Error: ${escapeHtml(err.message)}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Error: ${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
 function renderUsers() {
   const tbody = document.getElementById('usersBody');
   if (allUsers.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No authorized users found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No authorized users found.</td></tr>';
     return;
   }
   const sorted = [...allUsers].sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
@@ -1313,7 +1424,9 @@ function renderUsers() {
       <td>${escapeHtml(u.name)}</td>
       <td class="presence-email">${escapeHtml(u.email)}</td>
       <td>${badge}</td>
-      <td>${u.inviteLimit}</td>
+      <td>${renderInviteQuotaCell(u)}</td>
+      <td>${renderInvitedByCell(u.email)}</td>
+      <td>${renderInviteesCell(u.email)}</td>
       <td>${added}</td>
       <td>
         <button class="action-btn" onclick="promptInviteLimit('${escapeHtml(u.email)}')">Set Limit</button>
@@ -1339,7 +1452,10 @@ async function promptInviteLimit(email) {
       db.collection('authorized_users').doc(email).set({ inviteLimit }, { merge: true }),
       db.collection('user_profiles').doc(email).set({ inviteLimit }, { merge: true }),
     ]);
-    if (user) user.inviteLimit = inviteLimit;
+    if (user) {
+      user.inviteLimit = inviteLimit;
+      user.left = Math.max(inviteLimit - (user.used || 0), 0);
+    }
     renderUsers();
   } catch (err) {
     alert('Failed to update invite limit: ' + err.message);
@@ -1350,9 +1466,7 @@ async function confirmRemoveUser(email) {
   if (!confirm(`Remove access for ${email}?\n\nThis will immediately prevent them from logging in.`)) return;
   try {
     await db.collection('authorized_users').doc(email).delete();
-    allUsers = allUsers.filter(u => u.email !== email);
-    renderUsers();
-    // Update unique users stat if logs are loaded
+    await loadUsers();
     updateStats();
   } catch (err) {
     alert('Failed to remove user: ' + err.message);
