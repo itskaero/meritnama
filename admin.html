@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard â€” MeritNama</title>
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <title>Admin Dashboard — MeritNama</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1263,6 +1264,76 @@
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+// Dashboard core (must load before any other admin logic)
+const ADMIN_SESSION_KEY = 'meritnama_admin_session';
+const ADMIN_TAB_KEY = 'mn_admin_tab';
+const SESSION_DURATION = 2 * 60 * 60 * 1000; // 2 hours
+
+const TAB_META = {
+  overview:      { title: 'Overview',           sub: 'Platform metrics and live activity' },
+  logs:          { title: 'Access Logs',        sub: 'Login attempts and portal access history' },
+  users:         { title: 'Authorized Users',   sub: 'Manage portal access and credentials' },
+  profiles:      { title: 'User Profiles',      sub: 'Applicant and trainee profile data' },
+  mentorship:    { title: 'Mentorship',         sub: 'Mentors and mentorship requests' },
+  contributions: { title: 'Contributions',      sub: 'Financial contribution records' },
+  broadcast:     { title: 'Broadcast & Config', sub: 'Live banners, simulation feed, merit formulas' },
+};
+
+let allLogs = [];
+let authUserMeta = { byEmail: {}, inviteesByInviter: {} };
+let overviewMetricsCache = {};
+let sessionTimerInterval = null;
+let _toastTimer = null;
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function showAdminToast(msg, type = 'info') {
+  const el = document.getElementById('adminToast');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'admin-toast show' + (type === 'success' ? ' success' : type === 'error' ? ' error' : '');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+function getAdminSession() {
+  try {
+    const raw = localStorage.getItem(ADMIN_SESSION_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (s && typeof s.email === 'string' && typeof s.ts === 'number' && (Date.now() - s.ts) < SESSION_DURATION) return s;
+  } catch (e) { /* ignore */ }
+  return null;
+}
+
+function setAdminSession(email) {
+  localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ email, ts: Date.now() }));
+}
+
+function clearAdminSession() {
+  localStorage.removeItem(ADMIN_SESSION_KEY);
+}
+
+function startSessionTimer() {
+  if (sessionTimerInterval) clearInterval(sessionTimerInterval);
+  const el = document.getElementById('sessionTimer');
+  if (!el) return;
+  const tick = () => {
+    const s = getAdminSession();
+    if (!s) { el.textContent = 'Session expired'; return; }
+    const left = SESSION_DURATION - (Date.now() - s.ts);
+    if (left <= 0) { showLogin(); showAdminToast('Session expired — please sign in again.', 'error'); return; }
+    const m = Math.floor(left / 60000);
+    const sec = Math.floor((left % 60000) / 1000);
+    el.textContent = `Session: ${m}:${String(sec).padStart(2, '0')}`;
+  };
+  tick();
+  sessionTimerInterval = setInterval(tick, 1000);
+}
+
 // â”€â”€ EmailJS Configuration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Setup:
 // 1. Sign up at https://www.emailjs.com/
@@ -1345,32 +1416,6 @@ async function sendWelcomeEmail(name, email, pin, accessLevel) {
     to_name:      name || email,
     html_content: buildEmailHtml(name || email, email, pin, accessLevel),
   });
-}
-
-const ADMIN_SESSION_KEY = 'meritnama_admin_session';
-const ADMIN_TAB_KEY = 'mn_admin_tab';
-const SESSION_DURATION = 2 * 60 * 60 * 1000; // 2 hours
-
-let allLogs = [];
-let authUserMeta = { byEmail: {}, inviteesByInviter: {} };
-
-// --- Session Management ---
-function getAdminSession() {
-  try {
-    const raw = localStorage.getItem(ADMIN_SESSION_KEY);
-    if (!raw) return null;
-    const s = JSON.parse(raw);
-    if (s && typeof s.email === 'string' && typeof s.ts === 'number' && (Date.now() - s.ts) < SESSION_DURATION) return s;
-  } catch (e) { /* ignore */ }
-  return null;
-}
-
-function setAdminSession(email) {
-  localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ email, ts: Date.now() }));
-}
-
-function clearAdminSession() {
-  localStorage.removeItem(ADMIN_SESSION_KEY);
 }
 
 // --- Admin Auth ---
@@ -1642,11 +1687,6 @@ async function loadOverviewMetrics() {
   } catch (e) {
     console.warn('Overview metrics error:', e);
   }
-}
-
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
 }
 
 function updateStats() {
@@ -2269,10 +2309,30 @@ const DEFAULT_MARKS_OPTIONS = [
 ];
 
 let marksCfgDraft = {
-  options: DEFAULT_MARKS_OPTIONS.slice(),
+  options: [],
   defaultOptionId: 'portal',
   showSelector: true,
 };
+
+function cloneDefaultMarksOptions() {
+  return DEFAULT_MARKS_OPTIONS.map(o => ({
+    id: o.id,
+    label: o.label,
+    base: o.base,
+    adjustments: (o.adjustments || []).slice(),
+    sumFields: o.sumFields ? o.sumFields.slice() : undefined,
+  }));
+}
+
+function ensureMarksCfgDraft() {
+  if (!Array.isArray(marksCfgDraft.options) || !marksCfgDraft.options.length) {
+    marksCfgDraft.options = cloneDefaultMarksOptions();
+  }
+  const ids = new Set(marksCfgDraft.options.map(o => o.id));
+  if (!marksCfgDraft.defaultOptionId || !ids.has(marksCfgDraft.defaultOptionId)) {
+    marksCfgDraft.defaultOptionId = marksCfgDraft.options[0]?.id || 'portal';
+  }
+}
 
 function setMarksCfgStatus(message, color = 'var(--text-muted)') {
   const el = document.getElementById('marksCfgStatus');
@@ -2314,9 +2374,14 @@ function renderMarksCfgList() {
   const defSel = document.getElementById('marksCfgDefault');
   if (!list || !defSel) return;
 
+  ensureMarksCfgDraft();
+
   if (!marksCfgDraft.options.length) {
     list.innerHTML = '<p style="font-size:0.8rem;color:var(--text-muted);">No options yet. Add one below.</p>';
-  } else {
+    defSel.innerHTML = '<option value="">— No options —</option>';
+    defSel.value = '';
+    return;
+  }
     list.innerHTML = marksCfgDraft.options.map((opt, idx) => `
       <div style="display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.75rem;border:1px solid var(--border);border-radius:8px;margin-bottom:0.5rem;background:rgba(255,255,255,0.02);">
         <div style="flex:1;min-width:0;">
@@ -2336,12 +2401,12 @@ function renderMarksCfgList() {
         renderMarksCfgList();
       };
     });
-  }
 
   defSel.innerHTML = marksCfgDraft.options.map(o =>
     `<option value="${escapeHtml(o.id)}">${escapeHtml(o.label)}</option>`
   ).join('');
-  defSel.value = marksCfgDraft.defaultOptionId || marksCfgDraft.options[0]?.id || '';
+  defSel.value = marksCfgDraft.defaultOptionId;
+  if (!defSel.value) defSel.value = marksCfgDraft.options[0].id;
 }
 
 function addMarksNewAdjRow(field = 'mdcat', op = 'subtract') {
@@ -2387,7 +2452,7 @@ function initMarksConfigAdmin() {
   document.getElementById('marksCfgLoadBtn')?.addEventListener('click', loadMarksConfigEditor);
   document.getElementById('marksCfgDefaultsBtn')?.addEventListener('click', () => {
     marksCfgDraft = {
-      options: DEFAULT_MARKS_OPTIONS.map(o => ({ ...o, adjustments: (o.adjustments || []).slice(), sumFields: o.sumFields ? o.sumFields.slice() : undefined })),
+      options: cloneDefaultMarksOptions(),
       defaultOptionId: 'portal',
       showSelector: true,
     };
@@ -2400,6 +2465,7 @@ function initMarksConfigAdmin() {
   document.getElementById('marksNewAddBtn')?.addEventListener('click', addMarksOptionFromForm);
 
   addMarksNewAdjRow();
+  renderMarksCfgList();
   loadMarksConfigEditor();
 }
 
@@ -2409,25 +2475,35 @@ async function loadMarksConfigEditor() {
     const snap = await db.collection('notifications').doc('marks_config').get();
     if (snap.exists) {
       const data = snap.data();
-      marksCfgDraft.options = Array.isArray(data.options) && data.options.length
+      const parsed = Array.isArray(data.options)
         ? data.options.map((o, i) => normalizeMarksOptionAdmin(o, i)).filter(Boolean)
-        : DEFAULT_MARKS_OPTIONS.slice();
+        : [];
+      marksCfgDraft.options = parsed.length ? parsed : cloneDefaultMarksOptions();
       marksCfgDraft.defaultOptionId = typeof data.defaultOptionId === 'string'
         ? data.defaultOptionId
         : marksCfgDraft.options[0]?.id || 'portal';
       marksCfgDraft.showSelector = data.showSelector !== false;
     } else {
       marksCfgDraft = {
-        options: DEFAULT_MARKS_OPTIONS.slice(),
+        options: cloneDefaultMarksOptions(),
         defaultOptionId: 'portal',
         showSelector: true,
       };
     }
+    ensureMarksCfgDraft();
     document.getElementById('marksCfgShowSelector').checked = marksCfgDraft.showSelector;
     renderMarksCfgList();
     setMarksCfgStatus(snap.exists ? 'Loaded Firestore marks config.' : 'No saved config — showing defaults.', 'var(--neon-green)');
   } catch (e) {
-    setMarksCfgStatus('Error loading config: ' + e.message, 'var(--neon-pink)');
+    marksCfgDraft = {
+      options: cloneDefaultMarksOptions(),
+      defaultOptionId: 'portal',
+      showSelector: true,
+    };
+    ensureMarksCfgDraft();
+    document.getElementById('marksCfgShowSelector').checked = true;
+    renderMarksCfgList();
+    setMarksCfgStatus('Error loading config — showing defaults: ' + e.message, 'var(--neon-pink)');
   }
 }
 
@@ -2468,11 +2544,14 @@ function addMarksOptionFromForm() {
 }
 
 async function saveMarksConfigEditor() {
+  ensureMarksCfgDraft();
   if (!marksCfgDraft.options.length) {
     setMarksCfgStatus('Add at least one formula option.', 'var(--neon-pink)');
     return;
   }
-  const defaultOptionId = document.getElementById('marksCfgDefault')?.value || marksCfgDraft.options[0].id;
+  const defaultOptionId = document.getElementById('marksCfgDefault')?.value
+    || marksCfgDraft.defaultOptionId
+    || marksCfgDraft.options[0].id;
   const showSelector = document.getElementById('marksCfgShowSelector')?.checked !== false;
   setMarksCfgStatus('Saving config…');
   try {
@@ -2509,7 +2588,7 @@ function showDashboard() {
   loadOverviewMetrics();
   subscribePresence();
   const savedTab = localStorage.getItem(ADMIN_TAB_KEY) || 'overview';
-  switchTab(TAB_META[savedTab] ? savedTab : 'overview');
+  switchTab(Object.prototype.hasOwnProperty.call(TAB_META, savedTab) ? savedTab : 'overview');
 }
 
 async function refreshAllAdminData() {
