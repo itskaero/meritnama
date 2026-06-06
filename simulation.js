@@ -2866,11 +2866,12 @@ const CHAT = {
   pendingAttach:  {},     // keyed by chat UI prefix (Tab / Popup)
   sending:        false,
   COLLECTION:     'sim21_chat',
-  STORAGE_PATH:   'sim21_chat_uploads',
   CHAR_LIMIT:     500,
   MAX_MESSAGES:   80,
-  MAX_IMAGE_SIZE: 5 * 1024 * 1024,
-  MAX_FILE_SIZE:  10 * 1024 * 1024,
+  MAX_IMAGE_INPUT: 12 * 1024 * 1024,
+  MAX_IMAGE_STORED: 300 * 1024,
+  MAX_FILE_SIZE:  300 * 1024,
+  MAX_DOC_BYTES:  950 * 1024,
   EMOJIS: ['😊','😂','🙏','❤️','🎉','👍','🔥','💪','🤔','😅',
             '✅','⚡','🌟','💡','😢','🥺','😍','🙌','✨','🎯',
             '🏥','🩺','📚','💊','🧬','😎','🤝','👏','💯','🫡'],
@@ -3012,14 +3013,7 @@ function _formatFileSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function _sanitizeFileName(name) {
-  return (name || 'file')
-    .replace(/[^\w.\-() ]+/g, '_')
-    .replace(/\s+/g, '_')
-    .slice(0, 80) || 'file';
-}
-
-function _chatCompressImage(file, maxPx = 1400, quality = 0.82) {
+function _chatCompressImage(file, maxPx = 900, quality = 0.78) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -3049,6 +3043,35 @@ function _chatCompressImage(file, maxPx = 1400, quality = 0.82) {
     reader.onerror = () => reject(new Error('read failed'));
     reader.readAsDataURL(file);
   });
+}
+
+async function _chatPrepareImage(file) {
+  const steps = [
+    { maxPx: 1000, quality: 0.78 },
+    { maxPx: 800, quality: 0.7 },
+    { maxPx: 640, quality: 0.62 },
+    { maxPx: 480, quality: 0.55 },
+    { maxPx: 360, quality: 0.48 },
+  ];
+  let last = file;
+  for (const step of steps) {
+    last = await _chatCompressImage(file, step.maxPx, step.quality);
+    if (last.size <= CHAT.MAX_IMAGE_STORED) return last;
+  }
+  return last;
+}
+
+function _fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function _estimateDocBytes(payload) {
+  try { return new Blob([JSON.stringify(payload)]).size; } catch { return 0; }
 }
 
 function _renderChatAttachPreview(prefix) {
@@ -3099,9 +3122,12 @@ async function _setChatAttachment(prefix, file, kind) {
   if (!file) return;
 
   const isImage = kind === 'image';
-  const maxSize = isImage ? CHAT.MAX_IMAGE_SIZE : CHAT.MAX_FILE_SIZE;
-  if (file.size > maxSize) {
-    showToast(`${isImage ? 'Image' : 'File'} too large (max ${_formatFileSize(maxSize)})`, 'warning');
+  const maxInput = isImage ? CHAT.MAX_IMAGE_INPUT : CHAT.MAX_FILE_SIZE;
+  if (file.size > maxInput) {
+    showToast(
+      isImage ? 'Image too large. Try a smaller photo.' : `File too large (max ${_formatFileSize(CHAT.MAX_FILE_SIZE)})`,
+      'warning'
+    );
     return;
   }
 
@@ -3118,9 +3144,9 @@ async function _setChatAttachment(prefix, file, kind) {
 
   let uploadFile = file;
   if (isImage) {
-    try { uploadFile = await _chatCompressImage(file); } catch (_) { uploadFile = file; }
-    if (uploadFile.size > CHAT.MAX_IMAGE_SIZE) {
-      showToast(`Image still too large after compression (max ${_formatFileSize(CHAT.MAX_IMAGE_SIZE)})`, 'warning');
+    try { uploadFile = await _chatPrepareImage(file); } catch (_) { uploadFile = file; }
+    if (uploadFile.size > CHAT.MAX_IMAGE_STORED) {
+      showToast(`Image too large after compression (max ${_formatFileSize(CHAT.MAX_IMAGE_STORED)}). Try a smaller photo.`, 'warning');
       return;
     }
   }
@@ -3254,16 +3280,17 @@ function _promptChatName(returnInputId) {
   input?.focus();
 }
 
-async function _uploadChatAttachment(file, kind, uid) {
-  let storage;
-  try { storage = firebase.storage(); } catch { throw new Error('storage unavailable'); }
-
-  const safeName = _sanitizeFileName(file.name);
-  const path = `${CHAT.STORAGE_PATH}/${uid}/${Date.now()}_${safeName}`;
-  const ref = storage.ref(path);
-  const snap = await ref.put(file, { contentType: file.type || undefined });
-  const url = await snap.ref.getDownloadURL();
-  return { url, path, name: file.name || safeName, size: file.size, mime: file.type || '' };
+async function _encodeChatAttachment(pending) {
+  const dataUrl = await _fileToDataUrl(pending.file);
+  if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:')) {
+    throw new Error('encode failed');
+  }
+  return {
+    name: pending.name,
+    size: pending.size,
+    mime: pending.mime,
+    dataUrl,
+  };
 }
 
 function _sendChatMessage(inputId, msgsId, prefix) {
@@ -3302,13 +3329,17 @@ function _sendChatMessage(inputId, msgsId, prefix) {
     };
 
     if (pending) {
-      const uploaded = await _uploadChatAttachment(pending.file, pending.kind, uid);
+      const encoded = await _encodeChatAttachment(pending);
       payload.type = pending.kind;
-      payload.fileName = uploaded.name;
-      payload.fileSize = uploaded.size;
-      payload.mimeType = uploaded.mime;
-      if (pending.kind === 'image') payload.imageUrl = uploaded.url;
-      else payload.fileUrl = uploaded.url;
+      payload.fileName = encoded.name;
+      payload.fileSize = encoded.size;
+      payload.mimeType = encoded.mime;
+      if (pending.kind === 'image') payload.imageData = encoded.dataUrl;
+      else payload.fileData = encoded.dataUrl;
+
+      if (_estimateDocBytes(payload) > CHAT.MAX_DOC_BYTES) {
+        throw new Error('Attachment too large for Firestore. Try a smaller file or shorter caption.');
+      }
     }
 
     await db.collection(CHAT.COLLECTION).add(payload);
@@ -3318,7 +3349,7 @@ function _sendChatMessage(inputId, msgsId, prefix) {
     _clearChatAttachment(key);
     _chatScrollBottom(msgsId);
   })().catch(err => {
-    showToast(err?.message?.includes('storage') ? 'Could not upload attachment.' : 'Could not send message.', 'error');
+    showToast(err?.message || 'Could not send message.', 'error');
     console.error('Chat send error:', err);
   }).finally(() => {
     CHAT.sending = false;
@@ -3405,13 +3436,16 @@ function _chatReactionHtml(msg, uid) {
 function _chatMessageBodyHtml(msg) {
   const parts = [];
   if (msg.text) parts.push(esc(msg.text).replace(/\n/g, '<br>'));
-  if (msg.imageUrl) {
-    parts.push(`<a href="${esc(msg.imageUrl)}" target="_blank" rel="noopener"><img class="chat-msg-image" src="${esc(msg.imageUrl)}" alt="Shared image" loading="lazy" /></a>`);
+  const imageSrc = msg.imageData || msg.imageUrl;
+  if (imageSrc) {
+    parts.push(`<a href="${esc(imageSrc)}" target="_blank" rel="noopener"><img class="chat-msg-image" src="${esc(imageSrc)}" alt="Shared image" loading="lazy" /></a>`);
   }
-  if (msg.fileUrl) {
+  const fileSrc = msg.fileData || msg.fileUrl;
+  if (fileSrc) {
     const label = esc(msg.fileName || 'Download file');
     const size = msg.fileSize ? ` (${_formatFileSize(msg.fileSize)})` : '';
-    parts.push(`<a class="chat-msg-file" href="${esc(msg.fileUrl)}" target="_blank" rel="noopener">&#128206; ${label}${size}</a>`);
+    const download = msg.fileName ? ` download="${esc(msg.fileName)}"` : '';
+    parts.push(`<a class="chat-msg-file" href="${esc(fileSrc)}"${download} target="_blank" rel="noopener">&#128206; ${label}${size}</a>`);
   }
   if (!parts.length) parts.push('<span style="opacity:0.6">(empty message)</span>');
   return parts.join('');

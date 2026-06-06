@@ -122,7 +122,7 @@ service cloud.firestore {
 
     // Community chat messages (Induction 21 simulation page)
     // Publicly readable and creatable; delete allowed (ownership enforced in UI).
-    // Fields: text, name, uid, ts, type, imageUrl, fileUrl, fileName, fileSize, mimeType, reactions
+    // Fields: text, name, uid, ts, type, imageData, fileData, fileName, fileSize, mimeType, reactions
     match /sim21_chat/{msgId} {
       allow read, create, delete: if true;
       allow update: if _sim21ChatReactionOnlyUpdate();

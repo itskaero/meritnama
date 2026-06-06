@@ -9,7 +9,6 @@
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script>firebase.initializeApp(firebaseConfig);</script>
@@ -1795,7 +1794,7 @@
         </div>
         <div class="chat-footer-row">
           <span id="chatTabCharCount" class="chat-char-count">0/500</span>
-          <span style="color:var(--text-muted);font-size:0.72rem">Images up to 5&nbsp;MB, files up to 10&nbsp;MB &middot; stored in Firebase</span>
+          <span style="color:var(--text-muted);font-size:0.72rem">Images auto-compressed; files up to 300&nbsp;KB &middot; stored in Firestore (no Storage needed)</span>
         </div>
       </div>
     </div>
