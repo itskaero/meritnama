@@ -976,6 +976,98 @@
       transition: background 0.2s;
     }
     .mentor-wa-btn:hover { background: rgba(37,211,102,0.16); }
+
+    /* ── Member invites ────────────────────────────────── */
+    .invite-card {
+      border-top: 2px solid rgba(62,207,142,0.45);
+    }
+    .invite-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 1rem; margin-bottom: 1rem;
+    }
+    .invite-header h3 {
+      font-size: 0.95rem; color: var(--neon-cyan); margin: 0 0 0.25rem;
+    }
+    .invite-header p {
+      font-size: 0.78rem; color: var(--text-muted); margin: 0; line-height: 1.6;
+    }
+    .invite-quota-pill {
+      flex-shrink: 0; padding: 0.35rem 0.75rem; border-radius: 999px;
+      border: 1px solid rgba(62,207,142,0.28);
+      background: rgba(62,207,142,0.08); color: var(--neon-green);
+      font-size: 0.78rem; font-weight: 700;
+    }
+    .invite-form {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.85rem;
+    }
+    .invite-form .pf-field.full { grid-column: 1 / -1; }
+    .invite-pin-row {
+      display: flex; gap: 0.5rem;
+    }
+    .invite-pin-row input { flex: 1; }
+    .invite-secondary-btn {
+      padding: 0.65rem 0.85rem; border: 1px solid var(--border);
+      border-radius: var(--radius); background: rgba(77,184,217,0.08);
+      color: var(--neon-cyan); cursor: pointer; font-size: 0.78rem;
+      font-weight: 600; white-space: nowrap;
+    }
+    .invite-secondary-btn:hover { border-color: rgba(77,184,217,0.45); }
+    .invite-submit-btn {
+      grid-column: 1 / -1;
+      padding: 0.75rem 1rem; border: none; border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+      color: #07111d; font-weight: 800; cursor: pointer;
+    }
+    .invite-submit-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .invite-status {
+      grid-column: 1 / -1; font-size: 0.82rem; min-height: 1.2em;
+    }
+    .invite-status.success { color: var(--neon-green); }
+    .invite-status.error { color: var(--danger); }
+    .invite-result {
+      grid-column: 1 / -1; display: none;
+      border: 1px solid rgba(62,207,142,0.22); border-radius: var(--radius);
+      background: rgba(62,207,142,0.055); padding: 0.85rem;
+      font-size: 0.8rem; color: var(--text);
+    }
+    .invite-result.open { display: block; }
+    .invite-result code {
+      background: rgba(255,255,255,0.08); padding: 0.1rem 0.35rem;
+      border-radius: 4px; font-family: Consolas, Monaco, monospace;
+    }
+    .invite-list {
+      margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 0.9rem;
+    }
+    .invite-list h4 {
+      font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase;
+      letter-spacing: 0.5px; margin: 0 0 0.55rem;
+    }
+    .invite-list-row {
+      display: flex; justify-content: space-between; gap: 0.75rem;
+      padding: 0.45rem 0; font-size: 0.8rem; color: var(--text);
+      border-bottom: 1px solid rgba(77,184,217,0.06);
+    }
+    .invite-list-row:last-child { border-bottom: none; }
+    .invite-list-meta {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;
+      color: var(--text-muted); font-size: 0.75rem;
+    }
+    .invite-pin-chip {
+      display: inline-flex; align-items: center; gap: 0.25rem;
+      padding: 0.12rem 0.38rem; border-radius: 6px;
+      background: rgba(77,184,217,0.08); color: var(--neon-cyan);
+      font-family: Consolas, Monaco, monospace; font-size: 0.74rem;
+    }
+    .invite-copy-small {
+      border: 1px solid rgba(77,184,217,0.25); border-radius: 6px;
+      background: rgba(77,184,217,0.06); color: var(--neon-cyan);
+      font-size: 0.68rem; padding: 0.12rem 0.45rem; cursor: pointer;
+    }
+    @media (max-width: 640px) {
+      .invite-header { flex-direction: column; }
+      .invite-form { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -1155,6 +1247,41 @@
     </div>
   </div>
 
+  <!-- ══ Manual Invites ══ -->
+  <div class="profile-card invite-card" id="inviteCard">
+    <div class="invite-header">
+      <div>
+        <h3>&#128233; Invite Members</h3>
+        <p>Invite up to two trusted colleagues without using email credits. A PIN is created here, then you can copy and share the credentials manually.</p>
+      </div>
+      <div class="invite-quota-pill" id="inviteQuotaPill">Loading...</div>
+    </div>
+    <div class="invite-form">
+      <div class="pf-field">
+        <label>Member Name</label>
+        <input type="text" id="inviteName" placeholder="Dr. Jane Smith" maxlength="80" autocomplete="off" />
+      </div>
+      <div class="pf-field">
+        <label>Member Email</label>
+        <input type="email" id="inviteEmail" placeholder="member@example.com" maxlength="120" autocomplete="off" />
+      </div>
+      <div class="pf-field full">
+        <label>Access PIN</label>
+        <div class="invite-pin-row">
+          <input type="text" id="invitePin" placeholder="Generate or enter a PIN" minlength="4" maxlength="20" autocomplete="off" />
+          <button class="invite-secondary-btn" id="inviteGeneratePinBtn" type="button">Generate</button>
+        </div>
+      </div>
+      <button class="invite-submit-btn" id="inviteSubmitBtn" type="button">Create Manual Invite</button>
+      <div class="invite-status" id="inviteStatus"></div>
+      <div class="invite-result" id="inviteResult"></div>
+    </div>
+    <div class="invite-list" id="inviteList">
+      <h4>Invited by you</h4>
+      <div id="inviteListBody" style="font-size:0.8rem;color:var(--text-muted);">Loading...</div>
+    </div>
+  </div>
+
   <!-- ══ Personalized Dashboard ══ -->
   <div class="profile-card dash-section" id="dashboardCard" style="display:none">
     <h3>🎯 Your Dashboard</h3>
@@ -1308,6 +1435,9 @@
 
 const db = firebase.firestore();
 const SESSION_KEY = 'meritnama_auth_session';
+const DEFAULT_INVITE_LIMIT = 2;
+const PORTAL_URL = 'https://itskaero.github.io/meritnama/';
+let inviteSummaryCache = null;
 
 function getSessionEmail() {
   try {
@@ -1323,6 +1453,13 @@ function getInitials(name) {
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
   return name.trim().slice(0, 2).toUpperCase();
+}
+
+async function hashPin(pin) {
+  const encoder = new TextEncoder();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(pin));
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 function setAvatarFromBase64(el, b64, fallbackName) {
@@ -1916,6 +2053,241 @@ async function loadMyContributions() {
   }
 }
 
+function asInviteLimit(value, fallback = DEFAULT_INVITE_LIMIT) {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : fallback;
+}
+
+function inviteDateLabel(ts) {
+  try {
+    return ts ? ts.toDate().toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: 'numeric' }) : 'just now';
+  } catch (_) { return 'just now'; }
+}
+
+function generateInvitePin() {
+  if (window.crypto && crypto.getRandomValues) {
+    const arr = new Uint32Array(1);
+    crypto.getRandomValues(arr);
+    return String(100000 + (arr[0] % 900000));
+  }
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+function setInviteStatus(message, type) {
+  const statusEl = document.getElementById('inviteStatus');
+  if (!statusEl) return;
+  statusEl.textContent = message || '';
+  statusEl.className = 'invite-status' + (type ? ' ' + type : '');
+}
+
+function setInviteControlsDisabled(disabled) {
+  ['inviteName', 'inviteEmail', 'invitePin', 'inviteGeneratePinBtn', 'inviteSubmitBtn'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = disabled;
+  });
+}
+
+function inviteErrorMessage(err) {
+  const code = err?.code || '';
+  const message = err?.message || String(err || 'Could not create invite.');
+  if (code === 'resource-exhausted' || /quota/i.test(message)) {
+    return 'Firebase quota was exceeded while creating the invite. Try again after the quota resets, or check the Firebase project usage/billing.';
+  }
+  return message;
+}
+
+async function getInviteSummary(email) {
+  const [authDoc, profileDoc, invitedSnap] = await Promise.all([
+    db.collection('authorized_users').doc(email).get(),
+    db.collection('user_profiles').doc(email).get(),
+    db.collection('authorized_users').where('invitedBy', '==', email).get(),
+  ]);
+
+  const authData = authDoc.exists ? authDoc.data() : {};
+  const profileData = profileDoc.exists ? profileDoc.data() : {};
+  const inviteLimit = asInviteLimit(profileData.inviteLimit, asInviteLimit(authData.inviteLimit));
+  // Source of truth is the actual invite records. user_profiles.invitesUsed is
+  // only a cached mirror, so stale profile data cannot wrongly block invites.
+  return { inviteLimit, invitesUsed: invitedSnap.size, invitedDocs: invitedSnap.docs, authDoc };
+}
+
+function renderInviteSummary(summary) {
+  const remaining = Math.max(summary.inviteLimit - summary.invitesUsed, 0);
+  const pill = document.getElementById('inviteQuotaPill');
+  if (pill) pill.textContent = `${remaining} of ${summary.inviteLimit} invites left`;
+
+  const submitBtn = document.getElementById('inviteSubmitBtn');
+  if (submitBtn) {
+    submitBtn.disabled = remaining <= 0;
+    submitBtn.textContent = remaining <= 0 ? 'Invite Limit Reached' : 'Create Manual Invite';
+  }
+
+  const rows = (summary.invitedDocs || [])
+    .map(doc => ({ email: doc.id, data: doc.data() }))
+    .sort((a, b) => {
+      const at = a.data.invitedAt?.toMillis?.() || a.data.addedAt?.toMillis?.() || 0;
+      const bt = b.data.invitedAt?.toMillis?.() || b.data.addedAt?.toMillis?.() || 0;
+      return bt - at;
+    });
+
+  const body = document.getElementById('inviteListBody');
+  if (body) {
+    body.innerHTML = rows.length
+      ? rows.map(row => `
+          <div class="invite-list-row">
+            <span>${esc(row.data.name || row.email)}<br><small style="color:var(--text-muted)">${esc(row.email)}</small></span>
+            <span class="invite-list-meta">
+              <span>${inviteDateLabel(row.data.invitedAt || row.data.addedAt)}</span>
+              ${row.data.manualInvitePin
+                ? `<span class="invite-pin-chip">PIN ${esc(row.data.manualInvitePin)}</span><button class="invite-copy-small" type="button" data-email="${esc(row.email)}" data-pin="${esc(row.data.manualInvitePin)}">Copy</button>`
+                : '<span>PIN not saved</span>'}
+            </span>
+          </div>`).join('')
+      : 'No invites used yet.';
+    body.querySelectorAll('.invite-copy-small').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const text = `MeritNama portal access\nURL: ${PORTAL_URL}\nEmail: ${btn.dataset.email}\nPIN: ${btn.dataset.pin}`;
+        try {
+          await navigator.clipboard.writeText(text);
+          setInviteStatus('Saved invite credentials copied.', 'success');
+        } catch (_) {
+          setInviteStatus('Copy failed. Please copy the PIN manually from the invite log.', 'error');
+        }
+      });
+    });
+  }
+
+  return remaining;
+}
+
+async function loadInvitePanel() {
+  const email = getSessionEmail();
+  if (!email) return;
+
+  try {
+    const summary = await getInviteSummary(email);
+    inviteSummaryCache = summary;
+    renderInviteSummary(summary);
+
+    // Best-effort cache for Firebase inspection. The invite docs remain source
+    // of truth so a profile write failure never prevents manual invites.
+    db.collection('user_profiles').doc(email).set({
+      inviteLimit: summary.inviteLimit,
+      invitesUsed: summary.invitesUsed,
+    }, { merge: true }).catch(e => console.warn('Invite cache update failed:', e));
+  } catch (e) {
+    console.warn('Error loading invite quota:', e);
+    const pill = document.getElementById('inviteQuotaPill');
+    if (pill) pill.textContent = 'Invite quota unavailable';
+    setInviteStatus('Could not load invite quota. Please try again later.', 'error');
+  }
+}
+
+async function submitInvite() {
+  const inviterEmail = getSessionEmail();
+  if (!inviterEmail) return;
+
+  const name = document.getElementById('inviteName').value.trim();
+  const inviteeEmail = document.getElementById('inviteEmail').value.trim().toLowerCase();
+  const pin = document.getElementById('invitePin').value.trim();
+  const resultEl = document.getElementById('inviteResult');
+
+  if (resultEl) {
+    resultEl.classList.remove('open');
+    resultEl.innerHTML = '';
+  }
+
+  if (!inviteeEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inviteeEmail)) {
+    setInviteStatus('Enter a valid email address.', 'error');
+    return;
+  }
+  if (!pin || pin.length < 4) {
+    setInviteStatus('PIN must be at least 4 characters.', 'error');
+    return;
+  }
+  if (inviteeEmail === inviterEmail) {
+    setInviteStatus('You cannot invite your own account.', 'error');
+    return;
+  }
+
+  setInviteControlsDisabled(true);
+  setInviteStatus('Creating invite...', '');
+
+  try {
+    const pinHash = await hashPin(pin);
+    const inviteeAuthRef = db.collection('authorized_users').doc(inviteeEmail);
+    const summary = inviteSummaryCache || await getInviteSummary(inviterEmail);
+
+    if (!summary.authDoc.exists) {
+      throw new Error('Your access record could not be verified.');
+    }
+    if (summary.invitesUsed >= summary.inviteLimit) {
+      throw new Error(`Invite limit reached (${summary.invitesUsed}/${summary.inviteLimit}).`);
+    }
+
+    const inviteeDoc = await inviteeAuthRef.get();
+    if (inviteeDoc.exists) throw new Error('That email already has portal access.');
+
+    const inviteData = {
+      pin: pinHash,
+      manualInvitePin: pin,
+      isAdmin: false,
+      name: name || inviteeEmail,
+      addedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      invitedBy: inviterEmail,
+      invitedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      inviteSource: 'manual_profile_invite',
+      inviteLimit: DEFAULT_INVITE_LIMIT,
+    };
+    await inviteeAuthRef.set(inviteData);
+
+    db.collection('user_profiles').doc(inviterEmail).set({
+      inviteLimit: summary.inviteLimit,
+      invitesUsed: summary.invitesUsed + 1,
+      lastInvitedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true }).catch(e => console.warn('Invite cache update failed:', e));
+
+    inviteSummaryCache = {
+      ...summary,
+      invitesUsed: summary.invitesUsed + 1,
+      invitedDocs: [
+        { id: inviteeEmail, data: () => inviteData },
+        ...(summary.invitedDocs || []),
+      ],
+    };
+
+    setInviteStatus('Invite created. Copy the credentials below and share them manually.', 'success');
+    if (resultEl) {
+      const copyText = `MeritNama portal access\nURL: ${PORTAL_URL}\nEmail: ${inviteeEmail}\nPIN: ${pin}`;
+      resultEl.innerHTML = `
+        <strong>Manual credentials</strong><br>
+        URL: <code>${esc(PORTAL_URL)}</code><br>
+        Email: <code>${esc(inviteeEmail)}</code><br>
+        PIN: <code>${esc(pin)}</code><br>
+        <button class="invite-secondary-btn" id="inviteCopyBtn" type="button" style="margin-top:0.7rem;">Copy Credentials</button>`;
+      resultEl.classList.add('open');
+      document.getElementById('inviteCopyBtn')?.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(copyText);
+          setInviteStatus('Credentials copied.', 'success');
+        } catch (_) {
+          setInviteStatus('Copy failed. Please select and copy the credentials manually.', 'error');
+        }
+      });
+    }
+
+    document.getElementById('inviteName').value = '';
+    document.getElementById('inviteEmail').value = '';
+    document.getElementById('invitePin').value = generateInvitePin();
+    renderInviteSummary(inviteSummaryCache);
+  } catch (e) {
+    setInviteStatus(inviteErrorMessage(e), 'error');
+  } finally {
+    setInviteControlsDisabled(false);
+    if (inviteSummaryCache) renderInviteSummary(inviteSummaryCache);
+  }
+}
+
 async function saveProfile() {
   const email = getSessionEmail();
   if (!email) return;
@@ -2032,6 +2404,10 @@ async function saveProfile() {
 }
 
 document.getElementById('profileSaveBtn').addEventListener('click', saveProfile);
+document.getElementById('inviteGeneratePinBtn')?.addEventListener('click', () => {
+  document.getElementById('invitePin').value = generateInvitePin();
+});
+document.getElementById('inviteSubmitBtn')?.addEventListener('click', submitInvite);
 
 // Toggle label update
 document.getElementById('pfPublic')?.addEventListener('change', function() {
@@ -2454,6 +2830,8 @@ document.getElementById('requestMentorBtn')?.addEventListener('click', async () 
 loadDataLists();
 loadProfile();
 loadMyContributions();
+document.getElementById('invitePin').value = generateInvitePin();
+loadInvitePanel();
 </script>
 <script src="auth.js"></script>
 

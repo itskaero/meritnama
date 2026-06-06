@@ -298,6 +298,43 @@
     }
     .score-bk-val { text-align: right; font-variant-numeric: tabular-nums; color: var(--neon-cyan, #4db8d9); }
 
+    .marks-explanation {
+      border: 1px solid rgba(232,166,39,0.22); border-radius: var(--radius, 10px);
+      padding: 10px 14px; margin-bottom: 18px; font-size: 0.82rem;
+      background: rgba(232,166,39,0.04);
+    }
+    .marks-explanation summary {
+      cursor: pointer; color: var(--neon-gold, #e8a627); user-select: none; font-weight: 600;
+    }
+    .marks-exp-body { margin-top: 12px; display: flex; flex-direction: column; gap: 12px; }
+    .marks-exp-grid {
+      display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; font-size: 0.8rem;
+    }
+    .marks-exp-val {
+      text-align: right; font-variant-numeric: tabular-nums; color: var(--neon-cyan, #4db8d9);
+    }
+    .marks-exp-section-title {
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--text-muted); margin: 0 0 6px;
+    }
+    .marks-exp-list { display: flex; flex-direction: column; gap: 8px; }
+    .marks-exp-item {
+      padding: 8px 10px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02);
+    }
+    .marks-exp-item-hdr {
+      display: flex; justify-content: space-between; gap: 10px; align-items: baseline;
+      font-size: 0.8rem; margin-bottom: 4px;
+    }
+    .marks-exp-item-field { font-weight: 700; color: var(--text); }
+    .marks-exp-item-val { font-variant-numeric: tabular-nums; color: var(--neon-cyan, #4db8d9); }
+    .marks-exp-item-reason { font-size: 0.76rem; color: var(--text-muted); line-height: 1.45; }
+    .marks-exp-note {
+      margin: 0; padding: 8px 10px; border-radius: 8px; font-size: 0.76rem;
+      color: var(--text-muted); background: rgba(255,255,255,0.03);
+      border-left: 3px solid rgba(77,184,217,0.35);
+    }
+
     /* -- Preference list -- */
     .pref-section { margin-bottom: 18px; }
     .pref-section h4 { margin: 0 0 10px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
@@ -499,6 +536,54 @@
       opacity: 0.5; transition: opacity 0.15s; line-height: 1;
     }
     .notif-dismiss:hover { opacity: 1; }
+
+    /* -- Live fetch progress (admin-controlled) -- */
+    .fetch-progress-wrap {
+      border-bottom: 1px solid rgba(77,184,217,0.16);
+      background: linear-gradient(180deg, rgba(77,184,217,0.08) 0%, rgba(13,22,38,0.4) 100%);
+      padding: 12px 22px;
+    }
+    .fetch-progress-wrap.hidden { display: none; }
+    .fetch-progress-inner { max-width: 980px; margin: 0 auto; }
+    .fetch-progress-top {
+      display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px;
+    }
+    .fetch-progress-icon { font-size: 1.2rem; line-height: 1.2; flex-shrink: 0; }
+    .fetch-progress-head { flex: 1; min-width: 0; }
+    .fetch-progress-title { font-weight: 700; font-size: 0.88rem; color: var(--text); }
+    .fetch-progress-message { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; line-height: 1.45; }
+    .fetch-progress-status {
+      flex-shrink: 0; font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; padding: 4px 10px; border-radius: 100px;
+      border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04);
+      color: var(--text-muted);
+    }
+    .fetch-progress-status-running { color: var(--neon-cyan, #4db8d9); border-color: rgba(77,184,217,0.35); background: rgba(77,184,217,0.1); }
+    .fetch-progress-status-paused { color: var(--neon-gold, #e8a627); border-color: rgba(232,166,39,0.35); background: rgba(232,166,39,0.1); }
+    .fetch-progress-status-completed { color: var(--neon-green, #3ecf8e); border-color: rgba(62,207,142,0.35); background: rgba(62,207,142,0.1); }
+    .fetch-progress-bar-wrap {
+      height: 8px; border-radius: 100px; overflow: hidden;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(77,184,217,0.15);
+      margin-bottom: 8px;
+    }
+    .fetch-progress-bar {
+      height: 100%; width: 0; border-radius: 100px;
+      background: linear-gradient(90deg, var(--neon-cyan, #4db8d9), var(--neon-purple, #7c65c4));
+      box-shadow: 0 0 12px rgba(77,184,217,0.45);
+      transition: width 0.35s ease;
+    }
+    .fetch-progress-wrap.is-paused .fetch-progress-bar {
+      background: linear-gradient(90deg, rgba(232,166,39,0.85), rgba(232,166,39,0.55));
+      box-shadow: none;
+    }
+    .fetch-progress-wrap.is-completed .fetch-progress-bar {
+      background: linear-gradient(90deg, var(--neon-green, #3ecf8e), rgba(62,207,142,0.7));
+    }
+    .fetch-progress-meta {
+      display: flex; flex-wrap: wrap; gap: 8px 16px;
+      font-size: 0.72rem; color: var(--text-muted);
+    }
+    .fetch-progress-meta strong { color: var(--text); font-weight: 600; }
 
     /* ---------------------------------------------------------------
        GUIDE TAB
@@ -1018,6 +1103,98 @@
       font-size: 0.71rem;
     }
     .chat-char-count { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+    .chat-toolbar {
+      display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+    }
+    .chat-attach-btn {
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      color: var(--text-muted); border-radius: 8px; width: 32px; height: 32px;
+      cursor: pointer; font-size: 1rem; line-height: 1; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .chat-attach-btn:hover {
+      background: rgba(77,184,217,0.1); color: var(--neon-cyan, #4db8d9);
+      border-color: rgba(77,184,217,0.35);
+    }
+    .chat-attach-preview {
+      display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(77,184,217,0.2);
+      border-radius: var(--radius, 10px); font-size: 0.78rem;
+    }
+    .chat-attach-preview.hidden { display: none; }
+    .chat-attach-thumb {
+      width: 52px; height: 52px; border-radius: 8px; object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;
+    }
+    .chat-attach-file-icon {
+      width: 52px; height: 52px; border-radius: 8px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(124,101,196,0.12); border: 1px solid rgba(124,101,196,0.25);
+      font-size: 1.4rem;
+    }
+    .chat-attach-meta { flex: 1; min-width: 0; }
+    .chat-attach-name {
+      color: var(--text); font-weight: 600; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .chat-attach-size { color: var(--text-muted); font-size: 0.72rem; margin-top: 2px; }
+    .chat-attach-remove {
+      background: none; border: none; color: var(--text-muted); cursor: pointer;
+      font-size: 1.1rem; padding: 4px; line-height: 1; opacity: 0.6;
+    }
+    .chat-attach-remove:hover { opacity: 1; color: #e05470; }
+    .chat-msg-image {
+      max-width: 100%; max-height: 280px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08); cursor: pointer;
+      display: block; margin-top: 4px;
+    }
+    .chat-msg-file {
+      display: inline-flex; align-items: center; gap: 8px; margin-top: 4px;
+      padding: 8px 12px; border-radius: 10px;
+      background: rgba(77,184,217,0.08); border: 1px solid rgba(77,184,217,0.2);
+      color: var(--neon-cyan, #4db8d9); text-decoration: none; font-size: 0.82rem;
+      word-break: break-all;
+    }
+    .chat-msg-file:hover { background: rgba(77,184,217,0.14); }
+    .chat-reactions {
+      display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin-top: 4px;
+    }
+    .chat-reaction-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 100px; font-size: 0.78rem;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text-muted); cursor: pointer; line-height: 1.4;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .chat-reaction-btn:hover {
+      background: rgba(255,255,255,0.08); border-color: rgba(77,184,217,0.25);
+    }
+    .chat-reaction-btn-own {
+      background: rgba(124,101,196,0.14); border-color: rgba(124,101,196,0.35);
+      color: var(--text);
+    }
+    .chat-react-add-btn {
+      background: none; border: 1px dashed rgba(255,255,255,0.15);
+      color: var(--text-muted); border-radius: 100px; width: 26px; height: 22px;
+      cursor: pointer; font-size: 0.85rem; line-height: 1; padding: 0;
+    }
+    .chat-react-add-btn:hover {
+      border-color: rgba(77,184,217,0.35); color: var(--neon-cyan, #4db8d9);
+    }
+    .chat-react-picker {
+      position: absolute; bottom: calc(100% + 6px); left: 0; z-index: 210;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg, 16px); padding: 8px;
+      display: flex; gap: 4px; flex-wrap: wrap; max-width: 220px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .chat-react-picker-item {
+      background: none; border: none; font-size: 1.15rem; cursor: pointer;
+      border-radius: 6px; padding: 4px 6px; line-height: 1;
+    }
+    .chat-react-picker-item:hover { background: rgba(255,255,255,0.08); }
+    .chat-msg-body-wrap { position: relative; }
 
     /* ---------------------------------------------------------------
        FLOATING CHAT BUBBLE (FAB)
@@ -1162,6 +1339,29 @@
   <span class="ticker-value">Updated ${CANDIDATE_UPDATED}</span>
   <span class="ticker-sep">&middot;</span>
   <span class="ticker-info">${CANDIDATE_COUNT} candidates &middot; <a href="candidatesChanges.html" style="color:inherit">view changes &#8594;</a></span>
+</div>
+
+<!-- ═══════════ LIVE FETCH PROGRESS (admin-controlled) ═══════════ -->
+<div id="fetchProgressWrap" class="fetch-progress-wrap hidden" role="status" aria-live="polite">
+  <div class="fetch-progress-inner">
+    <div class="fetch-progress-top">
+      <span id="fetchProgressIcon" class="fetch-progress-icon">&#9203;</span>
+      <div class="fetch-progress-head">
+        <div id="fetchProgressTitle" class="fetch-progress-title">Fetching candidate data</div>
+        <div id="fetchProgressMessage" class="fetch-progress-message"></div>
+      </div>
+      <span id="fetchProgressStatus" class="fetch-progress-status fetch-progress-status-running">Running</span>
+    </div>
+    <div class="fetch-progress-bar-wrap">
+      <div id="fetchProgressBar" class="fetch-progress-bar"></div>
+    </div>
+    <div class="fetch-progress-meta">
+      <span id="fetchProgressCounts"></span>
+      <span id="fetchProgressPercent"></span>
+      <span id="fetchProgressStarted"></span>
+      <span id="fetchProgressElapsed"></span>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════ MOTIVATIONAL QUOTE STRIP ═══════════ -->
@@ -1696,7 +1896,14 @@
       <div id="chatTabMessages" class="chat-messages"></div>
       <!-- Input area -->
       <div class="chat-input-area">
+        <div id="chatTabAttachPreview" class="chat-attach-preview hidden"></div>
         <div class="chat-input-row">
+          <div class="chat-toolbar">
+            <input type="file" id="chatTabImageInput" accept="image/jpeg,image/png,image/gif,image/webp" hidden />
+            <input type="file" id="chatTabFileInput" accept=".pdf,.txt,.doc,.docx,.xls,.xlsx,.zip,application/pdf,text/plain" hidden />
+            <button id="chatTabImageBtn" class="chat-attach-btn" title="Upload image" type="button">&#128247;</button>
+            <button id="chatTabFileBtn" class="chat-attach-btn" title="Upload file" type="button">&#128206;</button>
+          </div>
           <div class="chat-input-wrap">
             <textarea id="chatTabInput" class="chat-textarea" rows="2"
               placeholder="Type a message… (Enter to send, Shift+Enter for new line)"></textarea>
@@ -1707,7 +1914,7 @@
         </div>
         <div class="chat-footer-row">
           <span id="chatTabCharCount" class="chat-char-count">0/500</span>
-          <span style="color:var(--text-muted);font-size:0.72rem">Messages are stored publicly in Firebase Firestore</span>
+          <span style="color:var(--text-muted);font-size:0.72rem">Images auto-compressed; files up to 300&nbsp;KB &middot; stored in Firestore (no Storage needed)</span>
         </div>
       </div>
     </div>
@@ -1829,7 +2036,14 @@
   <div id="chatPopupNameBar" class="chat-name-bar" style="padding:6px 12px;border-bottom:1px solid var(--border)"></div>
   <div id="chatPopupMessages" class="chat-messages chat-messages-popup"></div>
   <div class="chat-input-area chat-input-area-popup">
+    <div id="chatPopupAttachPreview" class="chat-attach-preview hidden"></div>
     <div class="chat-input-row">
+      <div class="chat-toolbar">
+        <input type="file" id="chatPopupImageInput" accept="image/jpeg,image/png,image/gif,image/webp" hidden />
+        <input type="file" id="chatPopupFileInput" accept=".pdf,.txt,.doc,.docx,.xls,.xlsx,.zip,application/pdf,text/plain" hidden />
+        <button id="chatPopupImageBtn" class="chat-attach-btn" title="Upload image" type="button">&#128247;</button>
+        <button id="chatPopupFileBtn" class="chat-attach-btn" title="Upload file" type="button">&#128206;</button>
+      </div>
       <div class="chat-input-wrap">
         <textarea id="chatPopupInput" class="chat-textarea" rows="2"
           placeholder="Message… (Enter to send)"></textarea>
