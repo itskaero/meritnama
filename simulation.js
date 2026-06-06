@@ -845,7 +845,19 @@ function _marksFieldLabel(field) {
 
 function _renderMarksExplanationHtml(c) {
   const exp = c?.marksExplanation;
-  if (!exp || typeof exp !== 'object') return '';
+  if (!exp) return '';
+
+  if (typeof exp === 'string') {
+    return `
+    <details class="marks-explanation">
+      <summary>Marks explanation</summary>
+      <div class="marks-exp-body">
+        <p class="marks-exp-note">${esc(exp)}</p>
+      </div>
+    </details>`;
+  }
+
+  if (typeof exp !== 'object') return '';
 
   const included = Array.isArray(exp.includedComponents) ? exp.includedComponents : [];
   const excluded = Array.isArray(exp.excludedComponents) ? exp.excludedComponents : [];
