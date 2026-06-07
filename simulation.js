@@ -62,14 +62,15 @@ const MARKS_COMPONENT_FIELDS = [
   'mdcat', 'experience', 'matric', 'fsc', 'degree', 'houseJob',
   'research', 'position', 'hardAreas', 'attempts',
 ];
-const PROGRAM_DICT_ROOTS = ['programAttempt', 'programAttempts', 'programPercentage', 'uhsAdjustment'];
+const PROGRAM_DICT_ROOTS = ['programAttempt', 'programAttempts', 'programPercentage', 'programMarks', 'adjusted'];
 const PROGRAM_DICT_SPECS = [
-  { field: 'programAttempt',  subkeys: ['FCPS', 'FCPSD'] },
+  { field: 'programAttempt',    subkeys: ['FCPS', 'FCPSD'] },
   { field: 'programPercentage', subkeys: ['MD', 'MS'] },
-  { field: 'uhsAdjustment',   subkeys: ['MD', 'MS'] },
+  { field: 'programMarks',      subkeys: ['FCPS', 'FCPSD', 'MS', 'MD', 'MDS'] },
+  { field: 'adjusted',          subkeys: ['FCPS', 'FCPSD', 'MS', 'MD', 'MDS'] },
 ];
 const PROGRAM_DICT_FIELDS = [
-  'programAttempt', 'programAttempts', 'programPercentage', 'uhsAdjustment',
+  'programAttempt', 'programAttempts', 'programPercentage', 'programMarks', 'adjusted',
 ];
 const MARKS_FORMULA_FIELDS = [...MARKS_COMPONENT_FIELDS, 'marksTotal', ...PROGRAM_DICT_FIELDS];
 
@@ -98,7 +99,8 @@ function getProgramDictSource(c, dictName) {
   const root = normalizeProgramDictRoot(dictName);
   if (root === 'programAttempt') return getProgramAttemptDict(c) || {};
   if (root === 'programPercentage') return c?.programPercentage || {};
-  if (root === 'uhsAdjustment') return c?.uhsAdjustment || {};
+  if (root === 'programMarks') return c?.programMarks || {};
+  if (root === 'adjusted') return c?.adjusted || {};
   return {};
 }
 
@@ -109,42 +111,10 @@ function parseProgramDictNumeric(dictName, raw) {
   const n = parseFloat(raw);
   return isNaN(n) ? 0 : n;
 }
-const DEFAULT_MARKS_OPTIONS = [
-  {
-    id: 'portal',
-    label: 'Portal total (marksTotal)',
-    base: 'marksTotal',
-    adjustments: [],
-  },
-  {
-    id: 'minus-mdcat',
-    label: 'marksTotal − MDCAT',
-    base: 'marksTotal',
-    adjustments: [{ field: 'mdcat', op: 'subtract' }],
-  },
-  {
-    id: 'plus-mdcat',
-    label: 'marksTotal + MDCAT',
-    base: 'marksTotal',
-    adjustments: [{ field: 'mdcat', op: 'add' }],
-  },
-  {
-    id: 'minus-experience',
-    label: 'marksTotal − Experience',
-    base: 'marksTotal',
-    adjustments: [{ field: 'experience', op: 'subtract' }],
-  },
-  {
-    id: 'degree-housejob',
-    label: 'Degree + House Job',
-    base: 'sum',
-    sumFields: ['degree', 'houseJob'],
-    adjustments: [],
-  },
-];
+const MNNotif = window.MNNotifications;
+const DEFAULT_MARKS_OPTIONS = MNNotif.DEFAULT_MARKS_OPTIONS;
 const PAGE_SIZE      = 50;
 const MAX_PASSES     = 200;
-const SIM_NOTIF_DISMISSED_KEY = 'mn_sim_dismissed_notifs';
 const QUOTA_TRACKS = {
   ARMED: 'armed',
   CIVILIAN: 'civilian',
@@ -166,7 +136,7 @@ const CIVILIAN_QUOTA_KEYS = new Set([
 // ═══════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
   SIM.myId      = localStorage.getItem(MY_ID_KEY) || null;
-  SIM.customCand = loadCustomCand();
+  SIM.customCand = ensureCandidateAdjusted(loadCustomCand());
 
   initLiveBanner();
   initFetchProgress();
@@ -229,6 +199,7 @@ async function loadData() {
     SIM.candidates = Array.isArray(d)
       ? d
       : (d.candidates || Object.values(d));
+    SIM.candidates.forEach(ensureCandidateAdjusted);
   } catch (e) {
     setStatus('error', 'No data');
     document.getElementById('noDataBanner')?.classList.remove('hidden');
@@ -476,39 +447,14 @@ function _stopFetchProgressTick() {
 }
 
 async function loadSimulationNotifications() {
-  let loaded = false;
-
-  try {
-    const snap = await firebase.firestore().collection('notifications').doc('simulation_feed').get();
-    const data = snap.exists ? snap.data() : null;
-    if (Array.isArray(data?.items)) {
-      SIM.notifications = data.items;
-      loaded = true;
-    }
-  } catch (_) {}
-
-  if (loaded) return;
-
-  try {
-    const nr = await fetch('data/notifications.json', { cache: 'no-store' });
-    if (nr.ok) {
-      const items = await nr.json();
-      if (Array.isArray(items)) {
-        SIM.notifications = items;
-      }
-    }
-  } catch (_) {}
+  SIM.notifications = await MNNotif.loadFeedItems();
 }
 
 function initSimulationNotificationFeed() {
-  try {
-    firebase.firestore().collection('notifications').doc('simulation_feed').onSnapshot(snap => {
-      const data = snap.exists ? snap.data() : null;
-      if (!Array.isArray(data?.items)) return;
-      SIM.notifications = data.items;
-      renderNotifications();
-    });
-  } catch (_) {}
+  MNNotif.initFeedListener(items => {
+    SIM.notifications = items;
+    renderNotifications();
+  });
 }
 
 function setStatus(type, msg) {
@@ -668,8 +614,8 @@ function loadCustomCand() {
 }
 
 function saveCustomCand(c) {
-  SIM.customCand = c;
-  localStorage.setItem(CUSTOM_KEY, JSON.stringify(c));
+  SIM.customCand = ensureCandidateAdjusted(c);
+  localStorage.setItem(CUSTOM_KEY, JSON.stringify(SIM.customCand));
 }
 
 function openCustomModal() {
@@ -985,8 +931,29 @@ function getProgramPercentageDisplay(c, program) {
   return v == null || v === '' ? null : String(v);
 }
 
-function getUhsAdjustmentDisplay(c, program) {
-  const dict = c?.uhsAdjustment;
+const ADJUSTED_PROGRAM_KEYS = ['FCPS', 'MS', 'MD', 'MDS', 'FCPSD'];
+const UHS_ADJUSTED_PROGRAMS = new Set(['MS', 'MD']);
+
+function ensureCandidateAdjusted(c) {
+  if (!c || typeof c !== 'object') return c;
+  const pm = c.programMarks || {};
+  const legacy = c.uhsAdjusted || c.uhsAdjustment || {};
+  if (!c.adjusted || typeof c.adjusted !== 'object') c.adjusted = {};
+
+  for (const p of ADJUSTED_PROGRAM_KEYS) {
+    if (c.adjusted[p] != null && c.adjusted[p] !== '') continue;
+    if (UHS_ADJUSTED_PROGRAMS.has(p) && legacy[p] != null && legacy[p] !== '') {
+      c.adjusted[p] = legacy[p];
+    } else if (pm[p] != null) {
+      c.adjusted[p] = pm[p];
+    }
+  }
+  return c;
+}
+
+function getAdjustedDisplay(c, program) {
+  ensureCandidateAdjusted(c);
+  const dict = c?.adjusted;
   if (!dict || program == null) return null;
   const v = dict[program];
   return v == null || v === '' ? null : String(v);
@@ -1010,7 +977,7 @@ function parseProgramAttemptNumeric(raw) {
 
 /**
  * Resolve a marks-formula field for a candidate.
- * Per-programme dicts (programAttempt, programPercentage, uhsAdjustment) use the
+ * Per-programme dicts (programAttempt, programPercentage, programMarks, adjusted) use the
  * active simulation programme for bare names, or an explicit dotted subkey.
  * Missing subkeys resolve to 0 — not every programme has every dict entry.
  */
@@ -1044,7 +1011,7 @@ function getCandidateProgrammes(c) {
     ...Object.keys(c.programMarks || {}),
     ...Object.keys(getProgramAttemptDict(c) || {}),
     ...Object.keys(c.programPercentage || {}),
-    ...Object.keys(c.uhsAdjustment || {}),
+    ...Object.keys(c.adjusted || {}),
   ])].sort();
 }
 
@@ -1057,10 +1024,14 @@ function formatProgramPortalMetaLine(c, program) {
     const pn = parseFloat(pct);
     bits.push(`Percentage: ${isNaN(pn) ? pct : `${pn.toFixed(2)}%`}`);
   }
-  const uhs = getUhsAdjustmentDisplay(c, program);
-  if (uhs) {
-    const un = parseFloat(uhs);
-    bits.push(`UHS adj: ${isNaN(un) ? uhs : un.toFixed(2)}`);
+  const adj = getAdjustedDisplay(c, program);
+  const pm  = c.programMarks?.[program];
+  if (adj && isPercentageProgram(program)) {
+    const an = parseFloat(adj);
+    const pn = pm != null ? parseFloat(pm) : NaN;
+    if (isNaN(pn) || an !== pn) {
+      bits.push(`Adjusted: ${isNaN(an) ? adj : an.toFixed(2)}`);
+    }
   }
   return bits.join(' · ');
 }
@@ -1075,6 +1046,69 @@ function formatProgramPortalMetaHtml(c, program) {
   }).join(' · ');
 }
 
+function programMarksDifferFromAdjusted(c, program) {
+  const pm  = c.programMarks?.[program];
+  const adj = c.adjusted?.[program];
+  if (pm == null || adj == null) return false;
+  const pmN = parseFloat(pm);
+  const adjN = parseFloat(adj);
+  return !isNaN(pmN) && !isNaN(adjN) && pmN !== adjN;
+}
+
+function formatProgramBonusLabel(c, program) {
+  const m = c.programMarks?.[program];
+  if (m == null) return '';
+  if (programMarksDifferFromAdjusted(c, program)) {
+    return ` (+${fmtM(m)} → adj ${fmtM(c.adjusted[program])})`;
+  }
+  return ` (+${fmtM(m)})`;
+}
+
+function getAdjustedProgrammeList(c) {
+  ensureCandidateAdjusted(c);
+  return [...new Set([
+    ...ADJUSTED_PROGRAM_KEYS,
+    ...Object.keys(c.programMarks || {}),
+    ...Object.keys(c.adjusted || {}),
+    ...getCandidateProgrammes(c),
+  ])].filter(p => {
+    const pm  = c.programMarks?.[p];
+    const adj = c.adjusted?.[p];
+    return pm != null || adj != null;
+  }).sort();
+}
+
+function renderAdjustedMarksHtml(c) {
+  const progs = getAdjustedProgrammeList(c);
+  if (!progs.length) return '';
+
+  const hasDiff = progs.some(p => programMarksDifferFromAdjusted(c, p));
+
+  return `
+    <div class="cand-adj-marks">
+      <p class="cand-adj-marks-lbl">
+        Programme marks
+        ${hasDiff ? '<span class="cand-adj-note">MS/MD adjusted per UHS policy</span>' : ''}
+      </p>
+      <div class="cand-adj-grid">
+        <div class="cand-adj-hdr">
+          <span>Programme</span>
+          <span>Portal</span>
+          <span>Adjusted</span>
+        </div>
+        ${progs.map(p => {
+          const differs = programMarksDifferFromAdjusted(c, p);
+          return `
+            <div class="cand-adj-row ${differs ? 'cand-adj-diff' : ''}">
+              <span class="linked-prog-tag">${esc(p)}</span>
+              <span class="cand-adj-val">${fmtM(c.programMarks?.[p])}</span>
+              <span class="cand-adj-val ${differs ? 'cand-adj-val-hl' : ''}">${fmtM(c.adjusted?.[p])}</span>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
 function renderProgramScoreCardsHtml(c) {
   const progs = getCandidateProgrammes(c);
   if (!progs.length) return '';
@@ -1083,13 +1117,13 @@ function renderProgramScoreCardsHtml(c) {
     ${progs.map(p => {
       const eff = effectiveMark(c, p);
       const applied = c.applied_in?.[p];
-      const m = c.programMarks?.[p];
+      const bonusLbl = formatProgramBonusLabel(c, p);
       const meta = formatProgramPortalMetaHtml(c, p);
       return `
         <div class="cand-score-card ${applied ? 'applied' : ''}" data-prog="${esc(p)}">
           <span class="cand-score-prog">${esc(p)}</span>
           <span class="cand-score-val">${eff != null ? fmtM(eff) : '—'}</span>
-          <span class="cand-score-lbl">${applied ? `✓ Applied${m != null ? ` (+${fmtM(m)})` : ''}` : (eff != null ? 'Applied' : 'Not applied')}${meta ? `<br><span class="cand-portal-meta-inline">${meta}</span>` : ''}</span>
+          <span class="cand-score-lbl">${applied ? `✓ Applied${bonusLbl}` : (eff != null ? 'Applied' : 'Not applied')}${meta ? `<br><span class="cand-portal-meta-inline">${meta}</span>` : ''}</span>
         </div>`;
     }).join('')}
   </div>`;
@@ -1111,7 +1145,7 @@ function renderProgramPortalMetaHtml(c) {
 }
 
 function openCandidateDetail(idStr) {
-  const c = allCandidates().find(c => String(c.applicantId) === String(idStr));
+  const c = ensureCandidateAdjusted(allCandidates().find(c => String(c.applicantId) === String(idStr)));
   if (!c) return;
 
   const modal = document.getElementById('candidateModal');
@@ -1141,6 +1175,8 @@ function openCandidateDetail(idStr) {
     </div>
 
     ${renderProgramScoreCardsHtml(c)}
+
+    ${renderAdjustedMarksHtml(c)}
 
     ${renderProgramPortalMetaHtml(c)}
 
@@ -1885,6 +1921,7 @@ function renderSbQuickViewContent() {
       <button class="sbqv-close" aria-label="Close">&#10005;</button>
     </div>
     ${portalMetaBlock ? `<div class="sbqv-portal-meta">${portalMetaBlock}</div>` : ''}
+    ${renderAdjustedMarksHtml(c)}
     <div class="sbqv-actions">
       <button class="btn btn-sm sbqv-full-btn" type="button">Open full candidate profile</button>
     </div>
@@ -1933,36 +1970,7 @@ function renderSbQuickViewContent() {
 // NOTIFICATIONS
 // ═══════════════════════════════════════════════════════════════════
 function renderNotifications() {
-  const bar = document.getElementById('notifBar');
-  if (!bar) return;
-  if (!SIM.notifications?.length) {
-    bar.innerHTML = '';
-    return;
-  }
-  const dismissed = JSON.parse(localStorage.getItem(SIM_NOTIF_DISMISSED_KEY) || '[]');
-  const active = SIM.notifications.filter(n => n.active && !dismissed.includes(n.id));
-  if (!active.length) { bar.innerHTML = ''; return; }
-  bar.innerHTML = active.map(n => `
-    <div class="notif-item notif-${esc(n.type || 'info')}" data-notif-id="${esc(n.id)}">
-      ${n.icon ? `<span class="notif-icon">${n.icon}</span>` : ''}
-      <div class="notif-body">
-        ${n.title ? `<div class="notif-title">${esc(n.title)}</div>` : ''}
-        <div class="notif-text">${esc(n.body || '')}${
-          n.link ? ` <a href="${esc(n.link)}" class="notif-link" target="_blank" rel="noopener noreferrer">${esc(n.linkText || 'Learn more')}</a>` : ''
-        }</div>
-      </div>
-      ${n.dismissable ? `<button class="notif-dismiss" data-dismiss-id="${esc(n.id)}" title="Dismiss">&#10005;</button>` : ''}
-    </div>
-  `).join('');
-  bar.querySelectorAll('.notif-dismiss').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.dataset.dismissId;
-      const list = JSON.parse(localStorage.getItem(SIM_NOTIF_DISMISSED_KEY) || '[]');
-      list.push(id);
-      localStorage.setItem(SIM_NOTIF_DISMISSED_KEY, JSON.stringify(list));
-      btn.closest('.notif-item')?.remove();
-    });
-  });
+  MNNotif.renderFeedBar(document.getElementById('notifBar'), SIM.notifications, esc);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2695,7 +2703,9 @@ function openSimCandidateDetail(applicantId, track = null) {
     String(c.applicantId) === String(applicantId) &&
     (!track || c._track === track)
   ) || candidates.find(c => String(c.applicantId) === String(applicantId));
-  const origCand = allCandidates().find(c => String(c.applicantId) === String(applicantId));
+  const origCand = ensureCandidateAdjusted(
+    allCandidates().find(c => String(c.applicantId) === String(applicantId))
+  );
   if (!workCand || !origCand) return;
 
   const history      = computeCandidateHistory(workCand, seatTree);
@@ -2776,6 +2786,7 @@ function openSimCandidateDetail(applicantId, track = null) {
       </p>
     </div>
     ${renderProgramScoreCardsHtml(origCand)}
+    ${renderAdjustedMarksHtml(origCand)}
     ${renderProgramPortalMetaHtml(origCand)}
     ${_renderMarksExplanationHtml(origCand)}
     ${banner}
@@ -2794,28 +2805,7 @@ function openSimCandidateDetail(applicantId, track = null) {
  * Formulas are admin-configurable (Firestore) with local fallback defaults.
  */
 function normalizeMarksOption(raw, idx = 0) {
-  if (!raw || typeof raw !== 'object') return null;
-  const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : `opt-${idx + 1}`;
-  const label = typeof raw.label === 'string' && raw.label.trim()
-    ? raw.label.trim()
-    : id;
-  const base = raw.base === 'sum' ? 'sum' : 'marksTotal';
-  const sumFields = Array.isArray(raw.sumFields)
-    ? raw.sumFields.filter(f => isValidMarksFormulaField(f))
-    : [];
-  const adjustments = Array.isArray(raw.adjustments)
-    ? raw.adjustments
-        .filter(a => a && (a.op === 'add' || a.op === 'subtract') && isValidMarksFormulaField(a.field))
-        .map(a => ({ field: a.field, op: a.op }))
-    : [];
-  return { id, label, base, sumFields, adjustments };
-}
-
-function readMarksConfigBool(value, defaultValue = true) {
-  if (value === true || value === false) return value;
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  return defaultValue;
+  return MNNotif.normalizeMarksOption(raw, idx, isValidMarksFormulaField);
 }
 
 function applyMarksConfig(data) {
@@ -2824,12 +2814,12 @@ function applyMarksConfig(data) {
     : DEFAULT_MARKS_OPTIONS.slice();
 
   SIM.marks.options = options.length ? options : DEFAULT_MARKS_OPTIONS.slice();
-  SIM.marks.showSelector = readMarksConfigBool(data?.showSelector, true);
+  SIM.marks.showSelector = MNNotif.readMarksConfigBool(data?.showSelector, true);
   SIM.marks.noticeTitle = typeof data?.noticeTitle === 'string' && data.noticeTitle.trim()
     ? data.noticeTitle.trim()
     : 'About merit marks';
   SIM.marks.candidateNotice = typeof data?.candidateNotice === 'string' ? data.candidateNotice : '';
-  SIM.marks.showNotice = readMarksConfigBool(data?.showNotice, true);
+  SIM.marks.showNotice = MNNotif.readMarksConfigBool(data?.showNotice, true);
 
   const defaultId = typeof data?.defaultOptionId === 'string' ? data.defaultOptionId : 'portal';
   const storedId = localStorage.getItem(MARKS_OPTION_KEY);
@@ -2859,30 +2849,16 @@ function applyMarksConfig(data) {
 }
 
 async function loadMarksConfig() {
-  try {
-    const snap = await firebase.firestore().collection('notifications').doc('marks_config').get();
-    if (snap.exists) {
-      applyMarksConfig(snap.data());
-    } else {
-      applyMarksConfig({ options: DEFAULT_MARKS_OPTIONS, defaultOptionId: 'portal', showSelector: true });
-    }
-  } catch (_) {
-    applyMarksConfig({ options: DEFAULT_MARKS_OPTIONS, defaultOptionId: 'portal', showSelector: true });
-  }
+  const data = await MNNotif.loadMarksConfigDoc();
+  applyMarksConfig(data || MNNotif.DEFAULT_MARKS_CONFIG);
 }
 
 function initMarksConfig() {
   loadMarksConfig();
-  try {
-    firebase.firestore().collection('notifications').doc('marks_config').onSnapshot(snap => {
-      if (!snap.exists) {
-        applyMarksConfig({ options: DEFAULT_MARKS_OPTIONS, defaultOptionId: 'portal', showSelector: true });
-      } else {
-        applyMarksConfig(snap.data());
-      }
-      onMarksOptionChanged(false);
-    });
-  } catch (_) {}
+  MNNotif.initMarksConfigListener(data => {
+    applyMarksConfig(data || MNNotif.DEFAULT_MARKS_CONFIG);
+    onMarksOptionChanged(false);
+  });
 }
 
 function getMarksOption(id) {
@@ -2947,32 +2923,15 @@ function syncMarksSelectorUI() {
   syncMarksNoticeUI();
 }
 
-function defaultMarksNoticeBody() {
-  if (!SIM.marks.showSelector) {
-    return 'All candidates are ranked using the same merit formula. Administrators have set a fixed formula for everyone — you cannot change it here.';
-  }
-  return 'Use the Merit basis dropdown to choose how base marks are calculated. Rankings and simulation results update when you change it. Portal marksTotal may not match the sum of all components.';
-}
-
 function syncMarksNoticeUI() {
-  const formula = getActiveMarksLabel();
-  document.querySelectorAll('.marks-info-banner').forEach(banner => {
-    const titleEl = banner.querySelector('.marks-info-banner-title');
-    const textEl = banner.querySelector('.marks-info-banner-text');
-    const formulaEl = banner.querySelector('[data-marks-banner-formula]');
-
-    if (!SIM.marks.showNotice) {
-      banner.classList.add('hidden');
-      return;
-    }
-
-    banner.classList.remove('hidden');
-    if (titleEl) titleEl.textContent = SIM.marks.noticeTitle || 'About merit marks';
-    if (textEl) {
-      const custom = SIM.marks.candidateNotice?.trim();
-      textEl.textContent = custom || defaultMarksNoticeBody();
-    }
-    if (formulaEl) formulaEl.textContent = formula;
+  MNNotif.syncMarksNoticeUI({
+    activeOptionId: SIM.marks.activeOptionId || '',
+    showNotice: SIM.marks.showNotice,
+    noticeTitle: SIM.marks.noticeTitle,
+    candidateNotice: SIM.marks.candidateNotice,
+    showSelector: SIM.marks.showSelector,
+    formulaLabel: getActiveMarksLabel(),
+    optionNotice: MNNotif.getNoticeForOption(getMarksOption()),
   });
 }
 

@@ -33,6 +33,17 @@
     "linkText": null
   },
   {
+    "id": "merit-basis-official-adjusted-v1",
+    "active": true,
+    "type": "info",
+    "icon": "📊",
+    "title": "Official vs Adjusted merit",
+    "body": "On the Candidates and Simulation tabs, use the Merit basis dropdown to switch views. Official ranks on portal programme marks as stored (raw MS/MD before UHS adjustment). Adjusted applies the UHS policy to MS/MD only—FCPS is the same in both. Rankings and slot simulations update when you change the view. All results remain unofficial estimates.",
+    "dismissable": true,
+    "link": null,
+    "linkText": null
+  },
+  {
     "id": "induction21-data-refresh-jun2026",
     "active": true,
     "type": "info",

@@ -1119,7 +1119,7 @@
         Configure how base merit marks are calculated on the simulation page (candidate pool, slot browser, and allocation).
         Stored in <code>notifications/marks_config</code>. Users pick from these options unless you hide the selector.
         Use adjustments when portal <code>marksTotal</code> includes or excludes components inconsistently (e.g. MDCAT).
-        Per-programme dict fields: <code>programAttempt</code> (FCPS), <code>programPercentage</code> (MD/MS), and <code>uhsAdjustment</code> (MD/MS).
+        Per-programme dict fields: <code>programAttempt</code> (FCPS), <code>programPercentage</code> (MD/MS), <code>programMarks</code>, and <code>adjusted</code> (all programmes).
         Bare names use the active simulation programme; dotted keys like <code>programPercentage.MD</code> target a specific programme.
         Missing subkeys resolve to 0. Adjustment fields can be typed or picked from suggestions.
       </p>
@@ -1159,7 +1159,7 @@
         </div>
         <div class="modal-field" style="margin:0 0 0.65rem;">
           <label>Notice message</label>
-          <textarea id="marksCfgNotice" rows="4" spellcheck="true" style="width:100%;resize:vertical;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.82rem;line-height:1.45;" placeholder="Example: Rankings use marksTotal minus MDCAT because the portal total sometimes includes MDCAT incorrectly. Contact us if your marks look wrong."></textarea>
+          <textarea id="marksCfgNotice" rows="4" spellcheck="true" style="width:100%;resize:vertical;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.82rem;line-height:1.45;" placeholder="Optional fallback when a formula has no per-option notice. Per-option notices (Official / Adjusted) take priority and update when users switch the Merit basis dropdown."></textarea>
         </div>
         <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:500;cursor:pointer;font-size:0.82rem;">
           <input type="checkbox" id="marksCfgShowNotice" checked style="accent-color:var(--accent);" />
@@ -1196,6 +1196,10 @@
           <label>Adjustments <span style="font-weight:400;">(optional add/subtract on base)</span></label>
           <div id="marksNewAdjRows" style="display:flex;flex-direction:column;gap:6px;margin-top:6px;"></div>
           <button type="button" id="marksNewAdjAddBtn" style="margin-top:8px;padding:6px 12px;background:rgba(77,184,217,0.1);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.25);border-radius:6px;cursor:pointer;font-size:0.78rem;">+ Add adjustment</button>
+        </div>
+        <div class="modal-field" style="margin:0.75rem 0 0;">
+          <label>Option notice <span style="font-weight:400;">(shown when this formula is selected; optional)</span></label>
+          <textarea id="marksNewNotice" rows="3" spellcheck="true" style="width:100%;resize:vertical;padding:8px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;line-height:1.45;" placeholder="Explain what this merit view means for candidates…"></textarea>
         </div>
         <button type="button" id="marksNewAddBtn" style="margin-top:1rem;padding:8px 16px;background:rgba(62,207,142,0.15);color:var(--success);border:1px solid rgba(62,207,142,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Add to list</button>
       </div>
@@ -1305,8 +1309,11 @@
 <!-- EmailJS â€” https://www.emailjs.com/ -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="emailjs-config.js"></script>
+<script src="notifications.js"></script>
 <script>
 'use strict';
+
+const MNNotif = window.MNNotifications;
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -2439,14 +2446,15 @@ const MARKS_COMPONENT_FIELDS = [
   'mdcat', 'experience', 'matric', 'fsc', 'degree', 'houseJob',
   'research', 'position', 'hardAreas', 'attempts',
 ];
-const PROGRAM_DICT_ROOTS = ['programAttempt', 'programAttempts', 'programPercentage', 'uhsAdjustment'];
+const PROGRAM_DICT_ROOTS = ['programAttempt', 'programAttempts', 'programPercentage', 'programMarks', 'adjusted'];
 const PROGRAM_DICT_SPECS = [
   { field: 'programAttempt', subkeys: ['FCPS', 'FCPSD'] },
   { field: 'programPercentage', subkeys: ['MD', 'MS'] },
-  { field: 'uhsAdjustment', subkeys: ['MD', 'MS'] },
+  { field: 'programMarks', subkeys: ['FCPS', 'FCPSD', 'MS', 'MD', 'MDS'] },
+  { field: 'adjusted', subkeys: ['FCPS', 'FCPSD', 'MS', 'MD', 'MDS'] },
 ];
 const PROGRAM_DICT_FIELDS = [
-  'programAttempt', 'programAttempts', 'programPercentage', 'uhsAdjustment',
+  'programAttempt', 'programAttempts', 'programPercentage', 'programMarks', 'adjusted',
 ];
 const MARKS_FORMULA_FIELDS = [...MARKS_COMPONENT_FIELDS, 'marksTotal', ...PROGRAM_DICT_FIELDS];
 
@@ -2474,13 +2482,8 @@ function populateMarksFormulaDatalist() {
     .map(v => `<option value="${escapeHtml(v)}"></option>`)
     .join('');
 }
-const DEFAULT_MARKS_OPTIONS = [
-  { id: 'portal', label: 'Portal total (marksTotal)', base: 'marksTotal', adjustments: [] },
-  { id: 'minus-mdcat', label: 'marksTotal − MDCAT', base: 'marksTotal', adjustments: [{ field: 'mdcat', op: 'subtract' }] },
-  { id: 'plus-mdcat', label: 'marksTotal + MDCAT', base: 'marksTotal', adjustments: [{ field: 'mdcat', op: 'add' }] },
-  { id: 'minus-experience', label: 'marksTotal − Experience', base: 'marksTotal', adjustments: [{ field: 'experience', op: 'subtract' }] },
-  { id: 'degree-housejob', label: 'Degree + House Job', base: 'sum', sumFields: ['degree', 'houseJob'], adjustments: [] },
-];
+const MARKS_OPTION_NOTICES = MNNotif.MARKS_OPTION_NOTICES;
+const DEFAULT_MARKS_OPTIONS = MNNotif.DEFAULT_MARKS_OPTIONS;
 
 let marksCfgDraft = {
   options: [],
@@ -2492,13 +2495,7 @@ let marksCfgDraft = {
 };
 
 function cloneDefaultMarksOptions() {
-  return DEFAULT_MARKS_OPTIONS.map(o => ({
-    id: o.id,
-    label: o.label,
-    base: o.base,
-    adjustments: (o.adjustments || []).slice(),
-    sumFields: o.sumFields ? o.sumFields.slice() : undefined,
-  }));
+  return MNNotif.cloneDefaultMarksOptions();
 }
 
 function ensureMarksCfgDraft() {
@@ -2538,8 +2535,11 @@ function normalizeMarksOptionAdmin(raw, idx = 0) {
         .filter(a => a && (a.op === 'add' || a.op === 'subtract') && isValidMarksFormulaField(a.field))
         .map(a => ({ field: a.field, op: a.op }))
     : [];
+  const notice = typeof raw.notice === 'string' && raw.notice.trim() ? raw.notice.trim() : '';
   const out = { id, label, base, adjustments };
   if (base === 'sum') out.sumFields = sumFields.length ? sumFields : ['degree', 'houseJob'];
+  if (notice) out.notice = notice;
+  else if (MARKS_OPTION_NOTICES[id]) out.notice = MARKS_OPTION_NOTICES[id];
   return out;
 }
 
@@ -2597,14 +2597,14 @@ function addMarksNewAdjRow(field = 'mdcat', op = 'subtract') {
   const wrap = document.getElementById('marksNewAdjRows');
   if (!wrap) return;
   const row = document.createElement('div');
-  row.style.cssText = 'display:flex;gap:8px;align-items:center;';
+  row.style.cssText = 'display:grid;grid-template-columns:auto minmax(240px,1fr) auto;gap:10px;align-items:center;width:100%;';
   row.innerHTML = `
-    <select class="marks-adj-op" style="padding:6px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.8rem;">
+    <select class="marks-adj-op" style="padding:8px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;min-width:7.5rem;">
       <option value="subtract">Subtract</option>
       <option value="add">Add</option>
     </select>
-    <input type="text" class="marks-adj-field" list="marksFormulaFieldList" placeholder="field name" autocomplete="off" style="flex:1;padding:6px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.8rem;">
-    <button type="button" class="marks-adj-rm" style="padding:4px 8px;background:rgba(224,84,112,0.1);color:var(--danger);border:1px solid rgba(224,84,112,0.25);border-radius:6px;cursor:pointer;">✕</button>
+    <input type="text" class="marks-adj-field" list="marksFormulaFieldList" placeholder="field name (e.g. programMarks, adjusted)" autocomplete="off" style="width:100%;min-width:240px;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.95rem;font-family:var(--mono,monospace);">
+    <button type="button" class="marks-adj-rm" style="padding:6px 10px;background:rgba(224,84,112,0.1);color:var(--danger);border:1px solid rgba(224,84,112,0.25);border-radius:6px;cursor:pointer;">✕</button>
   `;
   row.querySelector('.marks-adj-op').value = op;
   row.querySelector('.marks-adj-field').value = field;
@@ -2728,6 +2728,7 @@ function addMarksOptionFromForm() {
   const sumRaw = document.getElementById('marksNewSumFields')?.value || '';
   const sumFields = sumRaw.split(',').map(s => s.trim()).filter(Boolean);
   const adjustments = readMarksNewAdjRows();
+  const notice = document.getElementById('marksNewNotice')?.value.trim() || '';
 
   if (!id || !/^[a-z0-9][a-z0-9-_]*$/i.test(id)) {
     setMarksCfgStatus('Option ID is required (letters, numbers, hyphens, underscores).', 'var(--neon-pink)');
@@ -2742,7 +2743,7 @@ function addMarksOptionFromForm() {
     return;
   }
 
-  const opt = normalizeMarksOptionAdmin({ id, label, base, sumFields, adjustments });
+  const opt = normalizeMarksOptionAdmin({ id, label, base, sumFields, adjustments, notice });
   if (!opt) {
     setMarksCfgStatus('Could not build option.', 'var(--neon-pink)');
     return;
@@ -2752,6 +2753,7 @@ function addMarksOptionFromForm() {
   renderMarksCfgList();
   document.getElementById('marksNewId').value = '';
   document.getElementById('marksNewLabel').value = '';
+  document.getElementById('marksNewNotice').value = '';
   document.getElementById('marksNewAdjRows').innerHTML = '';
   addMarksNewAdjRow();
   setMarksCfgStatus(`Added "${label}". Save to publish.`, 'var(--neon-green)');
@@ -2776,6 +2778,7 @@ async function saveMarksConfigEditor() {
       options: marksCfgDraft.options.map(o => {
         const item = { id: o.id, label: o.label, base: o.base, adjustments: o.adjustments || [] };
         if (o.base === 'sum') item.sumFields = o.sumFields || [];
+        if (o.notice?.trim()) item.notice = o.notice.trim();
         return item;
       }),
       defaultOptionId,
