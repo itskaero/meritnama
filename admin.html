@@ -1119,9 +1119,11 @@
         Configure how base merit marks are calculated on the simulation page (candidate pool, slot browser, and allocation).
         Stored in <code>notifications/marks_config</code>. Users pick from these options unless you hide the selector.
         Use adjustments when portal <code>marksTotal</code> includes or excludes components inconsistently (e.g. MDCAT).
-        Per-programme dict fields are supported: <code>programAttempt</code> (FCPS attempt, e.g. 1st) and <code>programPercentage</code> (MD/MS %).
-        Use bare names for the active simulation programme, or dotted keys like <code>programPercentage.MD</code>.
+        Per-programme dict fields: <code>programAttempt</code> (FCPS), <code>programPercentage</code> (MD/MS), and <code>uhsAdjustment</code> (MD/MS).
+        Bare names use the active simulation programme; dotted keys like <code>programPercentage.MD</code> target a specific programme.
+        Missing subkeys resolve to 0. Adjustment fields can be typed or picked from suggestions.
       </p>
+      <datalist id="marksFormulaFieldList"></datalist>
 
       <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem;">
         <button id="marksCfgLoadBtn" style="padding:8px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Load Config</button>
@@ -2437,21 +2439,40 @@ const MARKS_COMPONENT_FIELDS = [
   'mdcat', 'experience', 'matric', 'fsc', 'degree', 'houseJob',
   'research', 'position', 'hardAreas', 'attempts',
 ];
-const PROGRAM_DICT_FIELDS = ['programAttempt', 'programAttempts', 'programPercentage'];
+const PROGRAM_DICT_ROOTS = ['programAttempt', 'programAttempts', 'programPercentage', 'uhsAdjustment'];
+const PROGRAM_DICT_SPECS = [
+  { field: 'programAttempt', subkeys: ['FCPS', 'FCPSD'] },
+  { field: 'programPercentage', subkeys: ['MD', 'MS'] },
+  { field: 'uhsAdjustment', subkeys: ['MD', 'MS'] },
+];
+const PROGRAM_DICT_FIELDS = [
+  'programAttempt', 'programAttempts', 'programPercentage', 'uhsAdjustment',
+];
 const MARKS_FORMULA_FIELDS = [...MARKS_COMPONENT_FIELDS, 'marksTotal', ...PROGRAM_DICT_FIELDS];
 
-function isValidMarksFormulaField(field) {
-  if (!field || typeof field !== 'string') return false;
-  if (MARKS_FORMULA_FIELDS.includes(field)) return true;
-  return /^(programAttempt|programAttempts|programPercentage)\.[A-Za-z0-9][A-Za-z0-9 .&-]*$/.test(field);
+function marksFormulaFieldSuggestions() {
+  const out = [...MARKS_COMPONENT_FIELDS, 'marksTotal'];
+  for (const spec of PROGRAM_DICT_SPECS) {
+    out.push(spec.field);
+    for (const sk of spec.subkeys) out.push(`${spec.field}.${sk}`);
+  }
+  out.push('programAttempts');
+  return [...new Set(out)];
 }
 
-function marksFormulaFieldOptionsHtml() {
-  const scalar = MARKS_COMPONENT_FIELDS.map(f => `<option value="${f}">${f}</option>`).join('');
-  const dict = PROGRAM_DICT_FIELDS.map(f =>
-    `<option value="${f}">${f} (current programme)</option>`
-  ).join('');
-  return `${scalar}${dict}<option value="programAttempt.FCPS">programAttempt.FCPS</option><option value="programPercentage.MD">programPercentage.MD</option>`;
+function isValidMarksFormulaField(field) {
+  const f = String(field || '').trim();
+  if (!f) return false;
+  if (MARKS_FORMULA_FIELDS.includes(f) || MARKS_COMPONENT_FIELDS.includes(f) || f === 'marksTotal') return true;
+  return PROGRAM_DICT_ROOTS.some(root => f.startsWith(`${root}.`));
+}
+
+function populateMarksFormulaDatalist() {
+  const dl = document.getElementById('marksFormulaFieldList');
+  if (!dl) return;
+  dl.innerHTML = marksFormulaFieldSuggestions()
+    .map(v => `<option value="${escapeHtml(v)}"></option>`)
+    .join('');
 }
 const DEFAULT_MARKS_OPTIONS = [
   { id: 'portal', label: 'Portal total (marksTotal)', base: 'marksTotal', adjustments: [] },
@@ -2582,9 +2603,7 @@ function addMarksNewAdjRow(field = 'mdcat', op = 'subtract') {
       <option value="subtract">Subtract</option>
       <option value="add">Add</option>
     </select>
-    <select class="marks-adj-field" style="flex:1;padding:6px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.8rem;">
-      ${marksFormulaFieldOptionsHtml()}
-    </select>
+    <input type="text" class="marks-adj-field" list="marksFormulaFieldList" placeholder="field name" autocomplete="off" style="flex:1;padding:6px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.8rem;">
     <button type="button" class="marks-adj-rm" style="padding:4px 8px;background:rgba(224,84,112,0.1);color:var(--danger);border:1px solid rgba(224,84,112,0.25);border-radius:6px;cursor:pointer;">✕</button>
   `;
   row.querySelector('.marks-adj-op').value = op;
@@ -2598,7 +2617,7 @@ function readMarksNewAdjRows() {
   if (!wrap) return [];
   return [...wrap.querySelectorAll('div')].map(row => ({
     op: row.querySelector('.marks-adj-op')?.value === 'add' ? 'add' : 'subtract',
-    field: row.querySelector('.marks-adj-field')?.value || 'mdcat',
+    field: (row.querySelector('.marks-adj-field')?.value || 'mdcat').trim(),
   })).filter(a => isValidMarksFormulaField(a.field));
 }
 
@@ -2611,6 +2630,7 @@ function initMarksConfigAdmin() {
     return;
   }
   _marksCfgAdminReady = true;
+  populateMarksFormulaDatalist();
   const baseSel = document.getElementById('marksNewBase');
   const sumWrap = document.getElementById('marksNewSumWrap');
   if (baseSel && sumWrap) {

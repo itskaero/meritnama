@@ -62,21 +62,52 @@ const MARKS_COMPONENT_FIELDS = [
   'mdcat', 'experience', 'matric', 'fsc', 'degree', 'houseJob',
   'research', 'position', 'hardAreas', 'attempts',
 ];
-const PROGRAM_DICT_FIELDS = ['programAttempt', 'programAttempts', 'programPercentage'];
+const PROGRAM_DICT_ROOTS = ['programAttempt', 'programAttempts', 'programPercentage', 'uhsAdjustment'];
+const PROGRAM_DICT_SPECS = [
+  { field: 'programAttempt',  subkeys: ['FCPS', 'FCPSD'] },
+  { field: 'programPercentage', subkeys: ['MD', 'MS'] },
+  { field: 'uhsAdjustment',   subkeys: ['MD', 'MS'] },
+];
+const PROGRAM_DICT_FIELDS = [
+  'programAttempt', 'programAttempts', 'programPercentage', 'uhsAdjustment',
+];
 const MARKS_FORMULA_FIELDS = [...MARKS_COMPONENT_FIELDS, 'marksTotal', ...PROGRAM_DICT_FIELDS];
 
-function isValidMarksFormulaField(field) {
-  if (!field || typeof field !== 'string') return false;
-  if (MARKS_FORMULA_FIELDS.includes(field)) return true;
-  return /^(programAttempt|programAttempts|programPercentage)\.[A-Za-z0-9][A-Za-z0-9 .&-]*$/.test(field);
+function marksFormulaFieldSuggestions() {
+  const out = [...MARKS_COMPONENT_FIELDS, 'marksTotal'];
+  for (const spec of PROGRAM_DICT_SPECS) {
+    out.push(spec.field);
+    for (const sk of spec.subkeys) out.push(`${spec.field}.${sk}`);
+  }
+  out.push('programAttempts');
+  return [...new Set(out)];
 }
 
-function marksFormulaFieldOptionsHtml() {
-  const scalar = MARKS_COMPONENT_FIELDS.map(f => `<option value="${f}">${f}</option>`).join('');
-  const dict = PROGRAM_DICT_FIELDS.map(f =>
-    `<option value="${f}">${f} (current programme)</option>`
-  ).join('');
-  return `${scalar}${dict}<option value="programAttempt.FCPS">programAttempt.FCPS</option><option value="programPercentage.MD">programPercentage.MD</option>`;
+function isValidMarksFormulaField(field) {
+  const f = String(field || '').trim();
+  if (!f) return false;
+  if (MARKS_FORMULA_FIELDS.includes(f) || MARKS_COMPONENT_FIELDS.includes(f) || f === 'marksTotal') return true;
+  return PROGRAM_DICT_ROOTS.some(root => f.startsWith(`${root}.`));
+}
+
+function normalizeProgramDictRoot(name) {
+  return name === 'programAttempts' ? 'programAttempt' : name;
+}
+
+function getProgramDictSource(c, dictName) {
+  const root = normalizeProgramDictRoot(dictName);
+  if (root === 'programAttempt') return getProgramAttemptDict(c) || {};
+  if (root === 'programPercentage') return c?.programPercentage || {};
+  if (root === 'uhsAdjustment') return c?.uhsAdjustment || {};
+  return {};
+}
+
+function parseProgramDictNumeric(dictName, raw) {
+  if (raw == null || raw === '') return 0;
+  const root = normalizeProgramDictRoot(dictName);
+  if (root === 'programAttempt') return parseProgramAttemptNumeric(raw);
+  const n = parseFloat(raw);
+  return isNaN(n) ? 0 : n;
 }
 const DEFAULT_MARKS_OPTIONS = [
   {
@@ -954,6 +985,13 @@ function getProgramPercentageDisplay(c, program) {
   return v == null || v === '' ? null : String(v);
 }
 
+function getUhsAdjustmentDisplay(c, program) {
+  const dict = c?.uhsAdjustment;
+  if (!dict || program == null) return null;
+  const v = dict[program];
+  return v == null || v === '' ? null : String(v);
+}
+
 function isAttemptProgram(program) {
   return /^FCPS/i.test(String(program || ''));
 }
@@ -972,42 +1010,31 @@ function parseProgramAttemptNumeric(raw) {
 
 /**
  * Resolve a marks-formula field for a candidate.
- * Supports scalars, marksTotal, per-program dicts (programAttempt / programPercentage),
- * and explicit dotted refs (programAttempt.FCPS, programPercentage.MD).
- * When program is provided, bare dict field names use that programme as the lookup key.
+ * Per-programme dicts (programAttempt, programPercentage, uhsAdjustment) use the
+ * active simulation programme for bare names, or an explicit dotted subkey.
+ * Missing subkeys resolve to 0 — not every programme has every dict entry.
  */
 function resolveCandidateField(c, field, program) {
   if (!field) return 0;
-  if (field === 'marksTotal') return c.marksTotal ?? 0;
-  if (MARKS_COMPONENT_FIELDS.includes(field)) return c[field] ?? 0;
+  const f = String(field).trim();
+  if (f === 'marksTotal') return c.marksTotal ?? 0;
+  if (MARKS_COMPONENT_FIELDS.includes(f)) return c[f] ?? 0;
 
   let dictName = null;
   let progKey  = null;
-  const dotted = field.match(/^(programAttempt|programAttempts|programPercentage)\.(.+)$/);
-  if (dotted) {
-    dictName = dotted[1] === 'programAttempts' ? 'programAttempt' : dotted[1];
+  const dotted = f.match(/^([a-zA-Z][a-zA-Z0-9]*)\.(.+)$/);
+  if (dotted && PROGRAM_DICT_ROOTS.includes(dotted[1])) {
+    dictName = dotted[1];
     progKey = dotted[2];
-  } else if (field === 'programAttempt' || field === 'programAttempts') {
-    dictName = 'programAttempt';
-    progKey = program;
-  } else if (field === 'programPercentage') {
-    dictName = 'programPercentage';
+  } else if (PROGRAM_DICT_FIELDS.includes(f)) {
+    dictName = f;
     progKey = program;
   }
 
   if (!dictName || !progKey) return 0;
 
-  const source = dictName === 'programAttempt'
-    ? (getProgramAttemptDict(c) || {})
-    : (c.programPercentage || {});
-  const raw = source[progKey];
-  if (raw == null || raw === '') return 0;
-
-  if (dictName === 'programPercentage') {
-    const n = parseFloat(raw);
-    return isNaN(n) ? 0 : n;
-  }
-  return parseProgramAttemptNumeric(raw);
+  const raw = getProgramDictSource(c, dictName)[progKey];
+  return parseProgramDictNumeric(dictName, raw);
 }
 
 function getCandidateProgrammes(c) {
@@ -1017,6 +1044,7 @@ function getCandidateProgrammes(c) {
     ...Object.keys(c.programMarks || {}),
     ...Object.keys(getProgramAttemptDict(c) || {}),
     ...Object.keys(c.programPercentage || {}),
+    ...Object.keys(c.uhsAdjustment || {}),
   ])].sort();
 }
 
@@ -1028,6 +1056,11 @@ function formatProgramPortalMetaLine(c, program) {
   if (pct) {
     const pn = parseFloat(pct);
     bits.push(`Percentage: ${isNaN(pn) ? pct : `${pn.toFixed(2)}%`}`);
+  }
+  const uhs = getUhsAdjustmentDisplay(c, program);
+  if (uhs) {
+    const un = parseFloat(uhs);
+    bits.push(`UHS adj: ${isNaN(un) ? uhs : un.toFixed(2)}`);
   }
   return bits.join(' · ');
 }
