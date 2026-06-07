@@ -1844,6 +1844,7 @@ function renderLinkedProgramPortalMeta(cand) {
     ...Object.keys(cand.programMarks || {}),
     ...Object.keys(getProgramAttemptDict(cand) || {}),
     ...Object.keys(cand.programPercentage || {}),
+    ...Object.keys(cand.uhsAdjustment || {}),
   ])].sort();
 
   const rows = progs.map(p => {
@@ -1851,12 +1852,18 @@ function renderLinkedProgramPortalMeta(cand) {
     const attempt = attemptDict?.[p] != null && attemptDict[p] !== '' ? String(attemptDict[p]) : null;
     const pctRaw = cand.programPercentage?.[p];
     const pct = pctRaw != null && pctRaw !== '' ? String(pctRaw) : null;
-    if (!attempt && !pct) return '';
+    const uhsRaw = cand.uhsAdjustment?.[p];
+    const uhs = uhsRaw != null && uhsRaw !== '' ? String(uhsRaw) : null;
+    if (!attempt && !pct && !uhs) return '';
     const bits = [];
     if (attempt) bits.push(`Attempt: <strong>${esc(attempt)}</strong>`);
     if (pct) {
       const pn = parseFloat(pct);
       bits.push(`Percentage: <strong>${isNaN(pn) ? esc(pct) : pn.toFixed(2)}%</strong>`);
+    }
+    if (uhs) {
+      const un = parseFloat(uhs);
+      bits.push(`UHS adj: <strong>${isNaN(un) ? esc(uhs) : un.toFixed(2)}</strong>`);
     }
     return `<div class="linked-prog-meta-row"><span class="linked-prog-tag">${esc(p)}</span><span>${bits.join(' · ')}</span></div>`;
   }).filter(Boolean);
