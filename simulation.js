@@ -42,6 +42,17 @@ const SIM = {
     candidateNotice:'',
     showNotice:     true,
   },
+
+  schedule: {
+    steps:     [],
+    filter:    'all',
+    search:    '',
+    source:    '',
+    updatedAt: null,
+    loaded:    false,
+    loading:   false,
+    error:     null,
+  },
 };
 
 const MY_ID_KEY           = 'mn_sim_my_id';
@@ -51,6 +62,22 @@ const MARKS_COMPONENT_FIELDS = [
   'mdcat', 'experience', 'matric', 'fsc', 'degree', 'houseJob',
   'research', 'position', 'hardAreas', 'attempts',
 ];
+const PROGRAM_DICT_FIELDS = ['programAttempt', 'programAttempts', 'programPercentage'];
+const MARKS_FORMULA_FIELDS = [...MARKS_COMPONENT_FIELDS, 'marksTotal', ...PROGRAM_DICT_FIELDS];
+
+function isValidMarksFormulaField(field) {
+  if (!field || typeof field !== 'string') return false;
+  if (MARKS_FORMULA_FIELDS.includes(field)) return true;
+  return /^(programAttempt|programAttempts|programPercentage)\.[A-Za-z0-9][A-Za-z0-9 .&-]*$/.test(field);
+}
+
+function marksFormulaFieldOptionsHtml() {
+  const scalar = MARKS_COMPONENT_FIELDS.map(f => `<option value="${f}">${f}</option>`).join('');
+  const dict = PROGRAM_DICT_FIELDS.map(f =>
+    `<option value="${f}">${f} (current programme)</option>`
+  ).join('');
+  return `${scalar}${dict}<option value="programAttempt.FCPS">programAttempt.FCPS</option><option value="programPercentage.MD">programPercentage.MD</option>`;
+}
 const DEFAULT_MARKS_OPTIONS = [
   {
     id: 'portal',
@@ -114,6 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initFetchProgress();
   initSimulationNotificationFeed();
   initMarksConfig();
+  initScheduleTab();
   showLoading(true);
   await loadData();
   showLoading(false);
@@ -480,6 +508,7 @@ function setupTabs() {
       // Lazy-render induction-data tabs on first activation
       if (t === 'seatmatrix')  renderSeatMatrixTab();
       if (t === 'competition') renderCompetitionTab();
+      if (t === 'schedule')    renderScheduleTab();
       if (t === 'hospitals')   renderHospitalsTab();
       if (t === 'profiles')    renderProfilesTab();
       if (t === 'community') {
@@ -907,6 +936,147 @@ function _renderMarksExplanationHtml(c) {
     </details>`;
 }
 
+function getProgramAttemptDict(c) {
+  return c?.programAttempt || c?.programAttempts || null;
+}
+
+function getProgramAttemptDisplay(c, program) {
+  const dict = getProgramAttemptDict(c);
+  if (!dict || program == null) return null;
+  const v = dict[program];
+  return v == null || v === '' ? null : String(v);
+}
+
+function getProgramPercentageDisplay(c, program) {
+  const dict = c?.programPercentage;
+  if (!dict || program == null) return null;
+  const v = dict[program];
+  return v == null || v === '' ? null : String(v);
+}
+
+function isAttemptProgram(program) {
+  return /^FCPS/i.test(String(program || ''));
+}
+
+function isPercentageProgram(program) {
+  return /^(MD|MS|MDS)\b/i.test(String(program || '').trim());
+}
+
+function parseProgramAttemptNumeric(raw) {
+  if (raw == null || raw === '') return 0;
+  const n = parseFloat(raw);
+  if (!isNaN(n)) return n;
+  const ord = { '1st': 1, '2nd': 2, '3rd': 3, '4th': 4, '5th': 5 };
+  return ord[String(raw).toLowerCase()] ?? 0;
+}
+
+/**
+ * Resolve a marks-formula field for a candidate.
+ * Supports scalars, marksTotal, per-program dicts (programAttempt / programPercentage),
+ * and explicit dotted refs (programAttempt.FCPS, programPercentage.MD).
+ * When program is provided, bare dict field names use that programme as the lookup key.
+ */
+function resolveCandidateField(c, field, program) {
+  if (!field) return 0;
+  if (field === 'marksTotal') return c.marksTotal ?? 0;
+  if (MARKS_COMPONENT_FIELDS.includes(field)) return c[field] ?? 0;
+
+  let dictName = null;
+  let progKey  = null;
+  const dotted = field.match(/^(programAttempt|programAttempts|programPercentage)\.(.+)$/);
+  if (dotted) {
+    dictName = dotted[1] === 'programAttempts' ? 'programAttempt' : dotted[1];
+    progKey = dotted[2];
+  } else if (field === 'programAttempt' || field === 'programAttempts') {
+    dictName = 'programAttempt';
+    progKey = program;
+  } else if (field === 'programPercentage') {
+    dictName = 'programPercentage';
+    progKey = program;
+  }
+
+  if (!dictName || !progKey) return 0;
+
+  const source = dictName === 'programAttempt'
+    ? (getProgramAttemptDict(c) || {})
+    : (c.programPercentage || {});
+  const raw = source[progKey];
+  if (raw == null || raw === '') return 0;
+
+  if (dictName === 'programPercentage') {
+    const n = parseFloat(raw);
+    return isNaN(n) ? 0 : n;
+  }
+  return parseProgramAttemptNumeric(raw);
+}
+
+function getCandidateProgrammes(c) {
+  return [...new Set([
+    ...Object.keys(c.preference || {}),
+    ...Object.entries(c.applied_in || {}).filter(([, v]) => !!v).map(([p]) => p),
+    ...Object.keys(c.programMarks || {}),
+    ...Object.keys(getProgramAttemptDict(c) || {}),
+    ...Object.keys(c.programPercentage || {}),
+  ])].sort();
+}
+
+function formatProgramPortalMetaLine(c, program) {
+  const bits = [];
+  const attempt = getProgramAttemptDisplay(c, program);
+  if (attempt) bits.push(`Attempt: ${attempt}`);
+  const pct = getProgramPercentageDisplay(c, program);
+  if (pct) {
+    const pn = parseFloat(pct);
+    bits.push(`Percentage: ${isNaN(pn) ? pct : `${pn.toFixed(2)}%`}`);
+  }
+  return bits.join(' · ');
+}
+
+function formatProgramPortalMetaHtml(c, program) {
+  const line = formatProgramPortalMetaLine(c, program);
+  if (!line) return '';
+  return line.split(' · ').map(part => {
+    const idx = part.indexOf(': ');
+    if (idx === -1) return esc(part);
+    return `${esc(part.slice(0, idx + 1))} <strong>${esc(part.slice(idx + 2))}</strong>`;
+  }).join(' · ');
+}
+
+function renderProgramScoreCardsHtml(c) {
+  const progs = getCandidateProgrammes(c);
+  if (!progs.length) return '';
+
+  return `<div class="cand-scores-grid">
+    ${progs.map(p => {
+      const eff = effectiveMark(c, p);
+      const applied = c.applied_in?.[p];
+      const m = c.programMarks?.[p];
+      const meta = formatProgramPortalMetaHtml(c, p);
+      return `
+        <div class="cand-score-card ${applied ? 'applied' : ''}" data-prog="${esc(p)}">
+          <span class="cand-score-prog">${esc(p)}</span>
+          <span class="cand-score-val">${eff != null ? fmtM(eff) : '—'}</span>
+          <span class="cand-score-lbl">${applied ? `✓ Applied${m != null ? ` (+${fmtM(m)})` : ''}` : (eff != null ? 'Applied' : 'Not applied')}${meta ? `<br><span class="cand-portal-meta-inline">${meta}</span>` : ''}</span>
+        </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderProgramPortalMetaHtml(c) {
+  const rows = getCandidateProgrammes(c).map(p => {
+    const meta = formatProgramPortalMetaHtml(c, p);
+    if (!meta) return '';
+    return `<div class="linked-prog-meta-row"><span class="linked-prog-tag">${esc(p)}</span><span>${meta}</span></div>`;
+  }).filter(Boolean);
+
+  if (!rows.length) return '';
+  return `
+    <div class="cand-portal-meta">
+      <p class="cand-portal-meta-lbl">Programme portal data</p>
+      <div class="linked-prog-meta">${rows.join('')}</div>
+    </div>`;
+}
+
 function openCandidateDetail(idStr) {
   const c = allCandidates().find(c => String(c.applicantId) === String(idStr));
   if (!c) return;
@@ -937,18 +1107,9 @@ function openCandidateDetail(idStr) {
       </div>
     </div>
 
-    <div class="cand-scores-grid">
-      ${Object.entries(c.programMarks || {}).map(([p, m]) => {
-        const eff = effectiveMark(c, p);
-        const applied = c.applied_in?.[p];
-        return `
-        <div class="cand-score-card ${applied ? 'applied' : ''}" data-prog="${esc(p)}">
-          <span class="cand-score-prog">${p}</span>
-          <span class="cand-score-val">${eff != null ? fmtM(eff) : '—'}</span>
-          <span class="cand-score-lbl">${applied ? `✓ Applied${m ? ` (+${fmtM(m)})` : ''}` : 'Not applied'}</span>
-        </div>`;
-      }).join('')}
-    </div>
+    ${renderProgramScoreCardsHtml(c)}
+
+    ${renderProgramPortalMetaHtml(c)}
 
     ${scoreRows.length ? `
     <details class="score-breakdown">
@@ -1570,23 +1731,31 @@ function renderSbCandidatePanel(c) {
   // Highlight in current slot view
   renderSlot();
 
+  const portalMetaLine = formatProgramPortalMetaHtml(c, prog);
+  const portalMetaHtml = portalMetaLine
+    ? `<span class="sb-cand-portal-meta">${portalMetaLine}</span>`
+    : '';
+
   if (!prefs.length) {
     panel.innerHTML = `
       <div class="sb-cand-hdr">
         <span class="sb-cand-name">${esc(c.nameFull)}</span>
-        <span class="sb-cand-meta">ID ${c.applicantId}</span>
+        <span class="sb-cand-meta">ID ${c.applicantId}${portalMetaHtml ? ` &nbsp;·&nbsp; ${portalMetaHtml}` : ''}</span>
+        <button class="btn btn-sm sb-cand-full-btn" type="button">Profile</button>
         <button class="btn btn-sm" style="margin-left:auto" onclick="clearSbCandidatePanel()">✕ Clear</button>
       </div>
       <p style="font-size:0.8rem;color:var(--text-muted)">No ${esc(prog)} preferences found.</p>
     `;
     panel.classList.remove('hidden');
+    panel.querySelector('.sb-cand-full-btn')?.addEventListener('click', () => openCandidateDetail(c.applicantId));
     return;
   }
 
   panel.innerHTML = `
     <div class="sb-cand-hdr">
       <span class="sb-cand-name">${esc(c.nameFull)}</span>
-      <span class="sb-cand-meta">ID ${c.applicantId} &nbsp;·&nbsp; ${esc(prog)} marks: <strong>${fmtM(effectiveMark(c, prog))}</strong></span>
+      <span class="sb-cand-meta">ID ${c.applicantId} &nbsp;·&nbsp; ${esc(prog)} marks: <strong>${fmtM(effectiveMark(c, prog))}</strong>${portalMetaHtml ? ` &nbsp;·&nbsp; ${portalMetaHtml}` : ''}</span>
+      <button class="btn btn-sm sb-cand-full-btn" type="button">Profile</button>
       <button class="btn btn-sm" style="margin-left:auto" id="sbClearPanelBtn">✕ Clear</button>
     </div>
     <p class="sb-cand-prefs-lbl">${prefs.length} ${esc(prog)} preferences — click any to jump to that slot and highlight this candidate:</p>
@@ -1602,6 +1771,8 @@ function renderSbCandidatePanel(c) {
     </div>
   `;
   panel.classList.remove('hidden');
+
+  panel.querySelector('.sb-cand-full-btn')?.addEventListener('click', () => openCandidateDetail(c.applicantId));
 
   panel.querySelector('#sbClearPanelBtn')?.addEventListener('click', () => {
     const input = document.getElementById('sbCandSearch');
@@ -1669,14 +1840,20 @@ function renderSbQuickViewContent() {
         ? `<span class="sbqv-status-placed">&#10003; Pref #${placedPrefNo ?? '?'} &mdash; ${esc(simCand._s)} @ ${esc(simCand._h.split(',')[0].trim())}</span>`
         : `<span class="sbqv-status-unplaced">Not placed</span>`)
     : '';
+  const portalMetaLine = formatProgramPortalMetaHtml(c, program);
+  const portalMetaBlock = renderProgramPortalMetaHtml(c);
 
   inner.innerHTML = `
     <div class="sbqv-header">
       <div class="sbqv-header-main">
         <span class="sbqv-name">${esc(c.nameFull)}</span>
-        <span class="sbqv-meta">${esc(program)} &middot; ${fmtM(marks)}${simSummary ? ` &middot; ${simSummary}` : ''}</span>
+        <span class="sbqv-meta">${esc(program)} &middot; ${fmtM(marks)}${portalMetaLine ? ` &middot; ${portalMetaLine}` : ''}${simSummary ? ` &middot; ${simSummary}` : ''}</span>
       </div>
       <button class="sbqv-close" aria-label="Close">&#10005;</button>
+    </div>
+    ${portalMetaBlock ? `<div class="sbqv-portal-meta">${portalMetaBlock}</div>` : ''}
+    <div class="sbqv-actions">
+      <button class="btn btn-sm sbqv-full-btn" type="button">Open full candidate profile</button>
     </div>
     <div class="sbqv-prefs">
       ${prefs.length ? prefs.map(p => {
@@ -1712,6 +1889,10 @@ function renderSbQuickViewContent() {
   `;
   modal.classList.remove('hidden');
   inner.querySelector('.sbqv-close')?.addEventListener('click', closeSbModal);
+  inner.querySelector('.sbqv-full-btn')?.addEventListener('click', () => {
+    closeSbModal();
+    openCandidateDetail(c.applicantId);
+  });
   modal.onclick = e => { if (e.target === modal) closeSbModal(); };
 }
 
@@ -2561,6 +2742,8 @@ function openSimCandidateDetail(applicantId, track = null) {
         &nbsp;·&nbsp; ${esc(prog)} ${esc(workCand._trackLabel || '')} marks: <strong>${fmtM(workCand.marksTotal)}</strong>
       </p>
     </div>
+    ${renderProgramScoreCardsHtml(origCand)}
+    ${renderProgramPortalMetaHtml(origCand)}
     ${_renderMarksExplanationHtml(origCand)}
     ${banner}
     <p class="sim-hist-section-lbl">Preference-by-preference breakdown (${esc(prog)})</p>
@@ -2585,11 +2768,11 @@ function normalizeMarksOption(raw, idx = 0) {
     : id;
   const base = raw.base === 'sum' ? 'sum' : 'marksTotal';
   const sumFields = Array.isArray(raw.sumFields)
-    ? raw.sumFields.filter(f => MARKS_COMPONENT_FIELDS.includes(f) || f === 'marksTotal')
+    ? raw.sumFields.filter(f => isValidMarksFormulaField(f))
     : [];
   const adjustments = Array.isArray(raw.adjustments)
     ? raw.adjustments
-        .filter(a => a && (a.op === 'add' || a.op === 'subtract') && MARKS_COMPONENT_FIELDS.includes(a.field))
+        .filter(a => a && (a.op === 'add' || a.op === 'subtract') && isValidMarksFormulaField(a.field))
         .map(a => ({ field: a.field, op: a.op }))
     : [];
   return { id, label, base, sumFields, adjustments };
@@ -2676,16 +2859,16 @@ function getMarksOption(id) {
     || DEFAULT_MARKS_OPTIONS[0];
 }
 
-function resolveBaseMarks(c, option) {
+function resolveBaseMarks(c, option, program) {
   const opt = option || getMarksOption();
   let total = 0;
   if (opt.base === 'sum') {
-    total = (opt.sumFields || []).reduce((s, f) => s + (c[f] ?? 0), 0);
+    total = (opt.sumFields || []).reduce((s, f) => s + resolveCandidateField(c, f, program), 0);
   } else {
-    total = c.marksTotal ?? 0;
+    total = resolveCandidateField(c, 'marksTotal', program);
   }
   for (const adj of (opt.adjustments || [])) {
-    const val = c[adj.field] ?? 0;
+    const val = resolveCandidateField(c, adj.field, program);
     if (adj.op === 'add') total += val;
     else if (adj.op === 'subtract') total -= val;
   }
@@ -2809,7 +2992,7 @@ function effectiveMark(c, program) {
   const hasExplicitFlag = Object.prototype.hasOwnProperty.call(appliedIn, program);
   const hasProgramPrefs = (c.preference?.[program] || []).length > 0;
   if (!appliedIn[program] && (hasExplicitFlag || !hasProgramPrefs)) return null;
-  return baseMarks(c) + (c.programMarks?.[program] ?? 0);
+  return resolveBaseMarks(c, undefined, program) + (c.programMarks?.[program] ?? 0);
 }
 
 function esc(s) {
@@ -2865,6 +3048,7 @@ function handleSimURLParams() {
   // Trigger lazy renderers so URL-directed tabs aren't stuck on placeholders
   if (tab === 'seatmatrix')  renderSeatMatrixTab();
   if (tab === 'competition') renderCompetitionTab();
+  if (tab === 'schedule')    renderScheduleTab();
   if (tab === 'hospitals')   renderHospitalsTab();
   if (tab === 'profiles')    renderProfilesTab();
 }
@@ -4137,4 +4321,265 @@ function _updateBadge() {
   } else {
     badge.classList.add('hidden');
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INDUCTION SCHEDULE TAB (Firestore / static JSON — no direct portal API)
+// ═══════════════════════════════════════════════════════════════════
+const SCHEDULE = {
+  unsubscribe: null,
+  tickTimer:   null,
+};
+
+function normalizeScheduleSteps(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (raw?.Table && Array.isArray(raw.Table)) return raw.Table;
+  if (raw?.steps && Array.isArray(raw.steps)) return raw.steps;
+  return null;
+}
+
+function isSchedulePlaceholder(step) {
+  const sid = step.statusId ?? 0;
+  const sidd = step.statusIdd ?? 0;
+  if (sid !== 0 || sidd !== 0) return false;
+  const startMs = Date.parse(step.startDate);
+  const endMs = Date.parse(step.endDate || step.endDated);
+  return Number.isFinite(startMs) && startMs === endMs;
+}
+
+function parseScheduleBoundary(step, which) {
+  const dateStr = which === 'start'
+    ? step.startDate
+    : (step.endDated || step.endDate);
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return null;
+  const h = which === 'start' ? step.startH : step.endH;
+  const m = which === 'start' ? step.startM : step.endM;
+  if (Number.isFinite(Number(h))) d.setHours(Number(h), Number.isFinite(Number(m)) ? Number(m) : 0, 0, 0);
+  return d;
+}
+
+function getScheduleStepPhase(step, now = new Date()) {
+  if (isSchedulePlaceholder(step)) return 'pending';
+  const sid = step.statusId ?? step.statusIdd ?? 0;
+  const start = parseScheduleBoundary(step, 'start');
+  const end = parseScheduleBoundary(step, 'end');
+
+  if (sid === 21) return end && now > end ? 'closed' : 'closed';
+  if (sid === 11) {
+    if (end && now > end) return 'closed';
+    if (start && now < start) return 'upcoming';
+    return 'active';
+  }
+  if (sid === 0) return 'pending';
+
+  if (end && now > end) return 'closed';
+  if (start && now < start) return 'upcoming';
+  if (start && end && now >= start && now <= end) return 'active';
+  return 'pending';
+}
+
+function schedulePhaseLabel(phase) {
+  return {
+    active:   'Open now',
+    upcoming: 'Upcoming',
+    closed:   'Closed',
+    pending:  'Not scheduled',
+  }[phase] || phase;
+}
+
+function fmtScheduleWhen(step) {
+  if (isSchedulePlaceholder(step)) return 'Dates not published yet';
+  const start = parseScheduleBoundary(step, 'start');
+  const end = parseScheduleBoundary(step, 'end');
+  const fmt = d => d.toLocaleString('en-PK', {
+    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+  if (start && end) return `${fmt(start)} → ${fmt(end)}`;
+  if (step.endTimer) return String(step.endTimer);
+  return '—';
+}
+
+function fmtScheduleCountdown(endDate, now = new Date()) {
+  if (!endDate) return '';
+  const ms = endDate.getTime() - now.getTime();
+  if (ms <= 0) return 'Ended';
+  const d = Math.floor(ms / 86400000);
+  const h = Math.floor((ms % 86400000) / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  if (d > 0) return `${d}d ${h}h remaining`;
+  if (h > 0) return `${h}h ${m}m remaining`;
+  return `${m}m remaining`;
+}
+
+function applySchedulePayload(payload, sourceLabel) {
+  const steps = normalizeScheduleSteps(payload);
+  if (!steps?.length) return false;
+  SIM.schedule.steps = steps.slice().sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+  SIM.schedule.source = sourceLabel || 'unknown';
+  SIM.schedule.updatedAt = payload?.updated || payload?.updatedAt || null;
+  SIM.schedule.loaded = true;
+  SIM.schedule.error = null;
+  return true;
+}
+
+async function loadScheduleData() {
+  if (SIM.schedule.loading) return;
+  SIM.schedule.loading = true;
+
+  try {
+    const snap = await firebase.firestore().collection('notifications').doc('induction_schedule').get();
+    if (snap.exists && applySchedulePayload(snap.data(), 'live')) {
+      SIM.schedule.loading = false;
+      if (SIM.activeTab === 'schedule') renderScheduleTab();
+      return;
+    }
+  } catch (e) {
+    console.warn('[Schedule] Firestore load failed:', e);
+  }
+
+  try {
+    const res = await fetch('data/induction21_schedule.json', { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (applySchedulePayload(data, data.source || 'static_snapshot')) {
+        SIM.schedule.loading = false;
+        if (SIM.activeTab === 'schedule') renderScheduleTab();
+        return;
+      }
+    }
+  } catch (e) {
+    console.warn('[Schedule] Static JSON load failed:', e);
+  }
+
+  SIM.schedule.error = 'Schedule data unavailable.';
+  SIM.schedule.loaded = true;
+  SIM.schedule.loading = false;
+  if (SIM.activeTab === 'schedule') renderScheduleTab();
+}
+
+function initScheduleTab() {
+  loadScheduleData();
+  try {
+    if (SCHEDULE.unsubscribe) SCHEDULE.unsubscribe();
+    SCHEDULE.unsubscribe = firebase.firestore()
+      .collection('notifications').doc('induction_schedule')
+      .onSnapshot(snap => {
+        if (!snap.exists) return;
+        if (applySchedulePayload(snap.data(), 'live')) {
+          if (SIM.activeTab === 'schedule') renderScheduleTab();
+        }
+      });
+  } catch (_) {}
+
+  document.getElementById('schedFilter')?.addEventListener('change', e => {
+    SIM.schedule.filter = e.target.value;
+    renderScheduleTab();
+  });
+  document.getElementById('schedSearch')?.addEventListener('input', e => {
+    SIM.schedule.search = e.target.value.trim().toLowerCase();
+    renderScheduleTab();
+  });
+  document.getElementById('schedRefreshBtn')?.addEventListener('click', () => {
+    SIM.schedule.loaded = false;
+    loadScheduleData();
+  });
+}
+
+function _startScheduleTick() {
+  _stopScheduleTick();
+  SCHEDULE.tickTimer = setInterval(() => {
+    if (SIM.activeTab === 'schedule') renderScheduleTab();
+  }, 60000);
+}
+
+function _stopScheduleTick() {
+  if (SCHEDULE.tickTimer) {
+    clearInterval(SCHEDULE.tickTimer);
+    SCHEDULE.tickTimer = null;
+  }
+}
+
+function renderScheduleTab() {
+  const root = document.getElementById('schedResults');
+  if (!root) return;
+
+  if (!SIM.schedule.loaded || SIM.schedule.loading) {
+    root.innerHTML = '<p class="sched-empty">Loading induction schedule…</p>';
+    _stopScheduleTick();
+    return;
+  }
+
+  if (SIM.schedule.error || !SIM.schedule.steps.length) {
+    root.innerHTML = `<p class="sched-empty">${esc(SIM.schedule.error || 'No schedule steps found.')}</p>`;
+    _stopScheduleTick();
+    return;
+  }
+
+  const now = new Date();
+  const filter = SIM.schedule.filter || 'all';
+  const q = SIM.schedule.search;
+
+  const enriched = SIM.schedule.steps.map(step => ({
+    step,
+    phase: getScheduleStepPhase(step, now),
+  }));
+
+  const filtered = enriched.filter(({ step, phase }) => {
+    if (filter !== 'all' && phase !== filter) return false;
+    if (!q) return true;
+    const hay = `${step.title || ''} ${step.detail || ''}`.toLowerCase();
+    return hay.includes(q);
+  });
+
+  const activeNow = enriched.filter(x => x.phase === 'active');
+
+  const updatedLabel = SIM.schedule.updatedAt
+    ? (typeof SIM.schedule.updatedAt === 'string'
+        ? SIM.schedule.updatedAt
+        : SIM.schedule.updatedAt.toDate?.().toLocaleString?.('en-PK') || '')
+    : '';
+  const sourceLabel = SIM.schedule.source === 'live' ? 'Live update' : 'Snapshot';
+
+  root.innerHTML = `
+    <div class="sched-meta-bar">
+      <span>${filtered.length} step${filtered.length !== 1 ? 's' : ''} shown</span>
+      <span>${esc(sourceLabel)}${updatedLabel ? ` · Updated ${esc(updatedLabel)}` : ''}</span>
+    </div>
+    ${activeNow.length ? `
+      <div class="sched-hero">
+        <div class="sched-hero-title">Open now</div>
+        ${activeNow.slice(0, 4).map(({ step }) => {
+          const end = parseScheduleBoundary(step, 'end');
+          return `<div class="sched-hero-item">
+            <strong>${esc(step.title)}</strong>
+            <span>${fmtScheduleCountdown(end, now)}</span>
+          </div>`;
+        }).join('')}
+      </div>` : ''}
+    <div class="sched-list">
+      ${filtered.length ? filtered.map(({ step, phase }) => {
+        const end = parseScheduleBoundary(step, 'end');
+        const countdown = phase === 'active' ? fmtScheduleCountdown(end, now) : '';
+        return `<article class="sched-row sched-${phase}">
+          <div class="sched-row-main">
+            <div class="sched-row-head">
+              <h3>${esc(step.title || 'Untitled step')}</h3>
+              <span class="sched-badge sched-badge-${phase}">${schedulePhaseLabel(phase)}</span>
+            </div>
+            ${step.detail ? `<p class="sched-detail">${esc(step.detail)}</p>` : ''}
+            <p class="sched-when">${esc(fmtScheduleWhen(step))}</p>
+          </div>
+          <div class="sched-row-side">
+            ${countdown ? `<span class="sched-countdown">${esc(countdown)}</span>` : ''}
+            <span class="sched-order">#${step.sortOrder ?? '—'}</span>
+          </div>
+        </article>`;
+      }).join('') : '<p class="sched-empty">No steps match this filter.</p>'}
+    </div>
+    <p class="sched-footnote">Status codes from the portal: <strong>11</strong> open/active · <strong>21</strong> closed · <strong>0</strong> not scheduled yet. Data is synced via MeritNama admin — the public site does not call the portal API directly.</p>
+  `;
+
+  _startScheduleTick();
 }

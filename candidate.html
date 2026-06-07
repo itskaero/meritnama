@@ -550,6 +550,16 @@
       background: rgba(77,184,217,0.1); border: 1px solid rgba(77,184,217,0.2);
       font-size: 0.75rem; color: var(--neon-cyan);
     }
+    .linked-prog-meta { display: flex; flex-direction: column; gap: 0.45rem; margin-top: 0.65rem; }
+    .linked-prog-meta-row {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+      font-size: 0.82rem; color: var(--text);
+    }
+    .linked-prog-meta-row .linked-prog-tag { margin: 0; }
+    .linked-prog-meta-lbl {
+      font-size: 0.72rem; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.85rem;
+    }
     .linked-verify-icon { color: #4db8d9; font-size: 0.85rem; margin-left: 0.3rem; }
 
     /* ── Preference merit analysis card ───────────────────────────── */
@@ -1816,6 +1826,47 @@ async function fetchCandidates() {
   return _candidateCache;
 }
 
+function getProgramAttemptDict(c) {
+  return c?.programAttempt || c?.programAttempts || null;
+}
+
+function isAttemptProgram(program) {
+  return /^FCPS/i.test(String(program || ''));
+}
+
+function isPercentageProgram(program) {
+  return /^(MD|MS|MDS)\b/i.test(String(program || '').trim());
+}
+
+function renderLinkedProgramPortalMeta(cand) {
+  const progs = [...new Set([
+    ...Object.keys(cand.preference || {}),
+    ...Object.keys(cand.programMarks || {}),
+    ...Object.keys(getProgramAttemptDict(cand) || {}),
+    ...Object.keys(cand.programPercentage || {}),
+  ])].sort();
+
+  const rows = progs.map(p => {
+    const attemptDict = getProgramAttemptDict(cand);
+    const attempt = attemptDict?.[p] != null && attemptDict[p] !== '' ? String(attemptDict[p]) : null;
+    const pctRaw = cand.programPercentage?.[p];
+    const pct = pctRaw != null && pctRaw !== '' ? String(pctRaw) : null;
+    if (!attempt && !pct) return '';
+    const bits = [];
+    if (attempt) bits.push(`Attempt: <strong>${esc(attempt)}</strong>`);
+    if (pct) {
+      const pn = parseFloat(pct);
+      bits.push(`Percentage: <strong>${isNaN(pn) ? esc(pct) : pn.toFixed(2)}%</strong>`);
+    }
+    return `<div class="linked-prog-meta-row"><span class="linked-prog-tag">${esc(p)}</span><span>${bits.join(' · ')}</span></div>`;
+  }).filter(Boolean);
+
+  if (!rows.length) return '';
+  return `
+    <div class="linked-prog-meta-lbl">Programme portal data</div>
+    <div class="linked-prog-meta">${rows.join('')}</div>`;
+}
+
 async function loadLinkedApplicant(id) {
   const card = document.getElementById('linkedApplicantCard');
   const metricsCard = document.getElementById('prefMetricsCard');
@@ -1836,10 +1887,11 @@ async function loadLinkedApplicant(id) {
     card.style.display = '';
     card.innerHTML = `
       <h4>&#10003; Linked Induction Portal Record</h4>
-      <div class="linked-field"><span>Name </span> ${cand.nameFull || '—'}</div>
-      <div class="linked-field"><span>PMDC No. </span> ${cand.pmdcNo || '—'}</div>
+      <div class="linked-field"><span>Name </span> ${esc(cand.nameFull || '—')}</div>
+      <div class="linked-field"><span>PMDC No. </span> ${esc(cand.pmdcNo || '—')}</div>
       <div class="linked-field"><span>Programmes applied </span></div>
-      <div class="linked-progs">${progs.map(p => `<span class="linked-prog-tag">${p}</span>`).join('')}</div>`;
+      <div class="linked-progs">${progs.map(p => `<span class="linked-prog-tag">${esc(p)}</span>`).join('')}</div>
+      ${renderLinkedProgramPortalMeta(cand)}`;
 
     loadPrefMetrics(cand);
     loadDashboard(cand);

@@ -1074,6 +1074,26 @@
 
       <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
 
+      <h3 style="font-size:0.9rem;color:var(--accent);margin:0 0 0.5rem;">&#128197; Induction Schedule</h3>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
+        Publishes portal step windows to the <strong>Schedule</strong> tab on <code>simulation.html</code> via
+        <code>notifications/induction_schedule</code> in Firestore.
+        <strong>Do not fetch the portal API from this public site</strong> — requests from GitHub Pages are blocked and would expose the private endpoint.
+        Fetch the schedule locally (browser on the portal while logged in, Postman, etc.), paste the JSON <code>Table</code> array or full response below, then save.
+      </p>
+      <div class="modal-field" style="max-width:760px;">
+        <label>Schedule JSON <span style="text-transform:none;font-weight:400;">(array of steps, or <code>{"Table":[...]}</code>)</span></label>
+        <textarea id="schedAdminJson" rows="12" spellcheck="false" style="width:100%;resize:vertical;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.78rem;font-family:Consolas,Monaco,monospace;" placeholder='{"Table":[{"stepId":20,"title":"Login",...}]}'></textarea>
+      </div>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem;">
+        <button id="schedAdminLoadBtn" style="padding:8px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Load from Firestore</button>
+        <button id="schedAdminStaticBtn" style="padding:8px 16px;background:rgba(245,200,66,0.12);color:#f5c842;border:1px solid rgba(245,200,66,0.28);border-radius:8px;cursor:pointer;font-weight:600;">Load Static Snapshot</button>
+        <button id="schedAdminSaveBtn" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save to Firestore</button>
+      </div>
+      <div id="schedAdminStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+
       <h3 style="font-size:0.9rem;color:var(--accent);margin:0 0 0.5rem;">&#128221; Simulation Notifications Feed</h3>
       <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
         Edits the simulation page notification feed using the same schema as <code>data/notifications.json</code>.
@@ -1099,6 +1119,8 @@
         Configure how base merit marks are calculated on the simulation page (candidate pool, slot browser, and allocation).
         Stored in <code>notifications/marks_config</code>. Users pick from these options unless you hide the selector.
         Use adjustments when portal <code>marksTotal</code> includes or excludes components inconsistently (e.g. MDCAT).
+        Per-programme dict fields are supported: <code>programAttempt</code> (FCPS attempt, e.g. 1st) and <code>programPercentage</code> (MD/MS %).
+        Use bare names for the active simulation programme, or dotted keys like <code>programPercentage.MD</code>.
       </p>
 
       <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem;">
@@ -1165,7 +1187,7 @@
           </div>
           <div class="modal-field" style="margin:0;" id="marksNewSumWrap">
             <label>Sum fields <span style="font-weight:400;">(comma-separated)</span></label>
-            <input type="text" id="marksNewSumFields" placeholder="degree, houseJob" />
+            <input type="text" id="marksNewSumFields" placeholder="degree, houseJob, programPercentage" />
           </div>
         </div>
         <div class="modal-field" style="margin:0.75rem 0 0;">
@@ -2068,9 +2090,92 @@ function loadBroadcast() {
   };
   document.getElementById('fpSaveBtn').onclick = saveFetchProgressEditor;
   document.getElementById('fpClearBtn').onclick = clearFetchProgressEditor;
+  document.getElementById('schedAdminLoadBtn')?.addEventListener('click', loadScheduleAdminEditor);
+  document.getElementById('schedAdminStaticBtn')?.addEventListener('click', loadScheduleAdminStatic);
+  document.getElementById('schedAdminSaveBtn')?.addEventListener('click', saveScheduleAdminEditor);
   initMarksConfigAdmin();
   loadSimulationNotificationsEditor();
   loadFetchProgressEditor();
+  loadScheduleAdminEditor();
+}
+
+function setScheduleAdminStatus(message, color = 'var(--text-muted)') {
+  const el = document.getElementById('schedAdminStatus');
+  if (!el) return;
+  el.textContent = message;
+  el.style.color = color;
+}
+
+function normalizeScheduleAdminSteps(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (raw?.Table && Array.isArray(raw.Table)) return raw.Table;
+  if (raw?.steps && Array.isArray(raw.steps)) return raw.steps;
+  return null;
+}
+
+async function loadScheduleAdminEditor() {
+  setScheduleAdminStatus('Loading schedule from Firestore…');
+  try {
+    const snap = await db.collection('notifications').doc('induction_schedule').get();
+    if (!snap.exists) {
+      setScheduleAdminStatus('No live schedule in Firestore yet. Load static snapshot or paste JSON.', 'var(--neon-gold)');
+      return;
+    }
+    const data = snap.data();
+    const steps = normalizeScheduleAdminSteps(data);
+    const ta = document.getElementById('schedAdminJson');
+    if (ta && steps) ta.value = JSON.stringify({ Table: steps }, null, 2);
+    setScheduleAdminStatus(`Loaded ${steps?.length || 0} steps from Firestore.`, 'var(--neon-green)');
+  } catch (e) {
+    setScheduleAdminStatus('Error loading schedule: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
+async function loadScheduleAdminStatic() {
+  setScheduleAdminStatus('Loading static snapshot…');
+  try {
+    const res = await fetch('data/induction21_schedule.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const steps = normalizeScheduleAdminSteps(data);
+    const ta = document.getElementById('schedAdminJson');
+    if (ta && steps) ta.value = JSON.stringify({ Table: steps }, null, 2);
+    setScheduleAdminStatus(`Loaded ${steps?.length || 0} steps from static snapshot (not saved yet).`, 'var(--neon-green)');
+  } catch (e) {
+    setScheduleAdminStatus('Error loading static snapshot: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
+async function saveScheduleAdminEditor() {
+  const ta = document.getElementById('schedAdminJson');
+  if (!ta?.value.trim()) {
+    setScheduleAdminStatus('Paste schedule JSON first.', 'var(--neon-pink)');
+    return;
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(ta.value);
+  } catch (e) {
+    setScheduleAdminStatus('Invalid JSON: ' + e.message, 'var(--neon-pink)');
+    return;
+  }
+  const steps = normalizeScheduleAdminSteps(parsed);
+  if (!steps?.length) {
+    setScheduleAdminStatus('JSON must contain a Table/steps array with at least one step.', 'var(--neon-pink)');
+    return;
+  }
+  setScheduleAdminStatus('Saving…');
+  try {
+    await db.collection('notifications').doc('induction_schedule').set({
+      induction: 21,
+      source: 'admin_paste',
+      steps,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    setScheduleAdminStatus(`Saved ${steps.length} steps. Schedule tab will update live.`, 'var(--neon-green)');
+  } catch (e) {
+    setScheduleAdminStatus('Error saving schedule: ' + e.message, 'var(--neon-pink)');
+  }
 }
 
 async function loadSubCount() {
@@ -2332,6 +2437,22 @@ const MARKS_COMPONENT_FIELDS = [
   'mdcat', 'experience', 'matric', 'fsc', 'degree', 'houseJob',
   'research', 'position', 'hardAreas', 'attempts',
 ];
+const PROGRAM_DICT_FIELDS = ['programAttempt', 'programAttempts', 'programPercentage'];
+const MARKS_FORMULA_FIELDS = [...MARKS_COMPONENT_FIELDS, 'marksTotal', ...PROGRAM_DICT_FIELDS];
+
+function isValidMarksFormulaField(field) {
+  if (!field || typeof field !== 'string') return false;
+  if (MARKS_FORMULA_FIELDS.includes(field)) return true;
+  return /^(programAttempt|programAttempts|programPercentage)\.[A-Za-z0-9][A-Za-z0-9 .&-]*$/.test(field);
+}
+
+function marksFormulaFieldOptionsHtml() {
+  const scalar = MARKS_COMPONENT_FIELDS.map(f => `<option value="${f}">${f}</option>`).join('');
+  const dict = PROGRAM_DICT_FIELDS.map(f =>
+    `<option value="${f}">${f} (current programme)</option>`
+  ).join('');
+  return `${scalar}${dict}<option value="programAttempt.FCPS">programAttempt.FCPS</option><option value="programPercentage.MD">programPercentage.MD</option>`;
+}
 const DEFAULT_MARKS_OPTIONS = [
   { id: 'portal', label: 'Portal total (marksTotal)', base: 'marksTotal', adjustments: [] },
   { id: 'minus-mdcat', label: 'marksTotal − MDCAT', base: 'marksTotal', adjustments: [{ field: 'mdcat', op: 'subtract' }] },
@@ -2389,11 +2510,11 @@ function normalizeMarksOptionAdmin(raw, idx = 0) {
   const label = typeof raw.label === 'string' && raw.label.trim() ? raw.label.trim() : id;
   const base = raw.base === 'sum' ? 'sum' : 'marksTotal';
   const sumFields = Array.isArray(raw.sumFields)
-    ? raw.sumFields.filter(f => MARKS_COMPONENT_FIELDS.includes(f) || f === 'marksTotal')
+    ? raw.sumFields.filter(f => isValidMarksFormulaField(f))
     : [];
   const adjustments = Array.isArray(raw.adjustments)
     ? raw.adjustments
-        .filter(a => a && (a.op === 'add' || a.op === 'subtract') && MARKS_COMPONENT_FIELDS.includes(a.field))
+        .filter(a => a && (a.op === 'add' || a.op === 'subtract') && isValidMarksFormulaField(a.field))
         .map(a => ({ field: a.field, op: a.op }))
     : [];
   const out = { id, label, base, adjustments };
@@ -2462,7 +2583,7 @@ function addMarksNewAdjRow(field = 'mdcat', op = 'subtract') {
       <option value="add">Add</option>
     </select>
     <select class="marks-adj-field" style="flex:1;padding:6px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.8rem;">
-      ${MARKS_COMPONENT_FIELDS.map(f => `<option value="${f}">${f}</option>`).join('')}
+      ${marksFormulaFieldOptionsHtml()}
     </select>
     <button type="button" class="marks-adj-rm" style="padding:4px 8px;background:rgba(224,84,112,0.1);color:var(--danger);border:1px solid rgba(224,84,112,0.25);border-radius:6px;cursor:pointer;">✕</button>
   `;
@@ -2478,7 +2599,7 @@ function readMarksNewAdjRows() {
   return [...wrap.querySelectorAll('div')].map(row => ({
     op: row.querySelector('.marks-adj-op')?.value === 'add' ? 'add' : 'subtract',
     field: row.querySelector('.marks-adj-field')?.value || 'mdcat',
-  })).filter(a => MARKS_COMPONENT_FIELDS.includes(a.field));
+  })).filter(a => isValidMarksFormulaField(a.field));
 }
 
 let _marksCfgAdminReady = false;
