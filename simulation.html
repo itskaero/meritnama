@@ -801,6 +801,101 @@
     .portal-flow-step h3 {
       color: var(--text); font-size: 0.92rem; margin: 0 0 6px;
     }
+    .portal-guide-goals {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .portal-goal-card {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid var(--border, rgba(77,184,217,0.1));
+      border-radius: var(--radius-lg, 16px);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 185px;
+    }
+    .portal-goal-card h3 {
+      color: var(--text);
+      font-size: 0.95rem;
+      margin: 0;
+    }
+    .portal-goal-card p {
+      color: var(--text-light, #8ba4c0);
+      font-size: 0.82rem;
+      line-height: 1.55;
+      margin: 0;
+    }
+    .portal-goal-card .btn {
+      align-self: flex-start;
+      margin-top: auto;
+    }
+    .portal-guide-mini {
+      background: rgba(77,184,217,0.04);
+      border: 1px solid rgba(77,184,217,0.15);
+      border-radius: var(--radius-lg, 16px);
+      padding: 18px;
+      margin-bottom: 22px;
+    }
+    .portal-guide-mini h3 {
+      color: var(--neon-cyan, #4db8d9);
+      margin: 0 0 10px;
+      font-size: 0.98rem;
+    }
+    .portal-guide-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .portal-mini-item {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid var(--border, rgba(77,184,217,0.1));
+      border-radius: var(--radius, 10px);
+      padding: 12px;
+    }
+    .portal-mini-item strong {
+      display: block;
+      color: var(--text);
+      font-size: 0.82rem;
+      margin-bottom: 4px;
+    }
+    .portal-mini-item span {
+      display: block;
+      color: var(--text-light, #8ba4c0);
+      font-size: 0.76rem;
+      line-height: 1.45;
+    }
+    .portal-guide-reference {
+      margin-top: 4px;
+    }
+    .portal-guide-reference > summary {
+      cursor: pointer;
+      list-style: none;
+      background: var(--bg-card, rgba(255,255,255,0.03));
+      border: 1px solid var(--border, rgba(77,184,217,0.1));
+      border-radius: var(--radius-lg, 16px);
+      padding: 16px 18px;
+      color: var(--neon-cyan, #4db8d9);
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .portal-guide-reference > summary::-webkit-details-marker { display: none; }
+    .portal-guide-reference > summary::after {
+      content: '+';
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+    .portal-guide-reference[open] > summary {
+      margin-bottom: 18px;
+      border-color: rgba(77,184,217,0.24);
+    }
+    .portal-guide-reference[open] > summary::after { content: '-'; }
     .guide-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -1172,7 +1267,9 @@
     --------------------------------------------------------------- */
     @media (max-width: 720px) {
       .portal-guide-hero,
-      .portal-guide-flow {
+      .portal-guide-flow,
+      .portal-guide-goals,
+      .portal-guide-mini-grid {
         grid-template-columns: 1fr;
       }
       .sim-summary-grid { grid-template-columns: 1fr 1fr; }
@@ -1850,60 +1947,84 @@
 
     <div class="portal-guide-hero">
       <div class="portal-guide-copy">
-        <span class="portal-guide-kicker">Default onboarding tab</span>
-        <h3>If you recently joined, follow this path first.</h3>
-        <p>The portal combines live candidate data, preference lists, training seats, schedule tracking, hospital context, community profiles, and a predicted seat allocation engine. Work through the steps below before reading individual result tables.</p>
+        <span class="portal-guide-kicker">Start simple</span>
+        <h3>This page is a planning helper, not the official portal.</h3>
+        <p>Use it to understand candidate data, seat competition, and possible placements before you act on the official portal. The safest path is: identify yourself, review your record, check seats and schedule, then run the allocation simulation.</p>
         <div class="portal-guide-actions">
-          <button class="btn btn-primary portal-guide-action" data-tab="candidates">Find my candidate record</button>
+          <button class="btn btn-primary portal-guide-action" data-tab="candidates">Start with Candidate Pool</button>
+          <button class="btn portal-guide-action" data-tab="seatmatrix">View seats</button>
           <button class="btn portal-guide-action" data-tab="schedule">Check schedule</button>
-          <button class="btn portal-guide-action" data-tab="simulation">Run allocation</button>
         </div>
       </div>
       <div class="portal-guide-side">
-        <strong>Best first use</strong>
+        <strong>3-minute setup</strong>
         <ol>
-          <li>Enter your Applicant ID in the Find my position bar.</li>
-          <li>Review your marks and preference list in Candidate Pool.</li>
-          <li>Open Schedule and Training Seats to confirm what is currently active.</li>
-          <li>Run Seat Allocation, then return to Where Merit Falls for realistic slot competition.</li>
+          <li>Enter your Applicant ID in the <strong>Find my position</strong> bar.</li>
+          <li>Open <strong>Candidate Pool</strong> and confirm your marks, programs, and preferences.</li>
+          <li>Open <strong>Training Seats</strong> and <strong>Schedule</strong> so you know what is available and what is currently open.</li>
+          <li>Run <strong>Seat Allocation</strong> only after the first three checks.</li>
         </ol>
       </div>
     </div>
 
-    <div class="portal-guide-flow">
-      <article class="portal-flow-step">
-        <span>1</span>
-        <h3>Identify yourself</h3>
-        <p>Use your Applicant ID to highlight your rows across the portal. If you are missing from the dataset, add yourself manually in your browser.</p>
+    <div class="portal-guide-goals">
+      <article class="portal-goal-card">
+        <h3>I want to find myself</h3>
+        <p>Use Candidate Pool to search by Applicant ID or name, confirm your marks, and inspect your full preference list.</p>
+        <button class="btn btn-sm portal-guide-action" data-tab="candidates">Open Candidate Pool</button>
       </article>
-      <article class="portal-flow-step">
-        <span>2</span>
-        <h3>Understand the pool</h3>
-        <p>Candidate Pool shows marks, applied programmes, and complete preference lists. Click any row to inspect details.</p>
+      <article class="portal-goal-card">
+        <h3>I want to know who competes for a seat</h3>
+        <p>Use Where Merit Falls after selecting program, quota, specialty, and hospital. Run Seat Allocation first for de-duplicated results.</p>
+        <button class="btn btn-sm portal-guide-action" data-tab="slotbrowser">Open Where Merit Falls</button>
       </article>
-      <article class="portal-flow-step">
-        <span>3</span>
-        <h3>Check supply and timing</h3>
-        <p>Use Training Seats, Hospitals, Accreditation, and Schedule to validate seat availability, recognition, and active portal windows.</p>
+      <article class="portal-goal-card">
+        <h3>I want my predicted placement</h3>
+        <p>Use Seat Allocation to run the full preference-based simulation. Then read the result card for cutoff, selected candidates, and next in line.</p>
+        <button class="btn btn-sm portal-guide-action" data-tab="simulation">Open Seat Allocation</button>
       </article>
-      <article class="portal-flow-step">
-        <span>4</span>
-        <h3>Browse competition</h3>
-        <p>Where Merit Falls ranks applicants for each programme, quota, specialty, and hospital slot.</p>
+      <article class="portal-goal-card">
+        <h3>I want seats and official timing</h3>
+        <p>Use Training Seats for seat counts and Schedule for portal windows. Recheck official sources before changing preferences.</p>
+        <button class="btn btn-sm portal-guide-action" data-tab="seatmatrix">Open Training Seats</button>
       </article>
-      <article class="portal-flow-step">
-        <span>5</span>
-        <h3>Run allocation</h3>
-        <p>Seat Allocation predicts placements with the deferred-acceptance algorithm so candidates are not counted in multiple lower preferences.</p>
+      <article class="portal-goal-card">
+        <h3>I want hospital context</h3>
+        <p>Use Hospitals and Accreditation before shortlisting. A seat is only useful if the hospital and program fit your training goals.</p>
+        <button class="btn btn-sm portal-guide-action" data-tab="hospitals">Open Hospitals</button>
       </article>
-      <article class="portal-flow-step">
-        <span>6</span>
-        <h3>Discuss and recheck</h3>
-        <p>Use Community Chat and Data Changes for context, but always verify official portal notices before making decisions.</p>
+      <article class="portal-goal-card">
+        <h3>I want help from others</h3>
+        <p>Use Community Chat for discussion and Data Changes for updates. Treat community input as context, not official confirmation.</p>
+        <button class="btn btn-sm portal-guide-action" data-tab="community">Open Community Chat</button>
       </article>
     </div>
 
-    <div class="guide-grid">
+    <div class="portal-guide-mini">
+      <h3>How to read the portal without getting confused</h3>
+      <div class="portal-guide-mini-grid">
+        <div class="portal-mini-item">
+          <strong>Candidate Pool = raw record</strong>
+          <span>Who applied, their marks, and their preference order.</span>
+        </div>
+        <div class="portal-mini-item">
+          <strong>Where Merit Falls = slot demand</strong>
+          <span>Who listed a particular seat and how they rank there.</span>
+        </div>
+        <div class="portal-mini-item">
+          <strong>Seat Allocation = predicted final match</strong>
+          <span>One candidate can occupy only their best available preference.</span>
+        </div>
+        <div class="portal-mini-item">
+          <strong>Schedule / Seats = reality check</strong>
+          <span>Use these before trusting any prediction or preference strategy.</span>
+        </div>
+      </div>
+    </div>
+
+    <details class="portal-guide-reference">
+      <summary>Detailed reference: algorithm, marks, tab-by-tab usage, result cards, and glossary</summary>
+      <div class="guide-grid">
 
       <!-- ── Overview ── -->
       <div class="guide-card">
@@ -2046,7 +2167,8 @@
         </div>
       </div>
 
-    </div>
+      </div>
+    </details>
   </section>
 
   <!-- ══════════════════════════════════════════
