@@ -14,6 +14,7 @@
     '/index.html':      'Main Dashboard',
     '/reviews.html':    'Reviews & Forum',
     '/simulation.html': 'Merit Simulation',
+    '/request-access.html': 'Request Access',
     '/donate.html':     'Donate',
   };
 

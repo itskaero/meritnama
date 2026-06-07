@@ -215,21 +215,57 @@
     gate.innerHTML =
       '<div class="auth-card">' +
         '<img src="logo.svg" class="auth-logo" alt="MeritNama" />' +
-        '<h2>Private Access</h2>' +
-        '<p class="auth-subtitle">Enter your registered email and PIN to continue</p>' +
-        '<div class="auth-field">' +
-          '<label for="authEmail">Email Address</label>' +
-          '<input type="email" id="authEmail" placeholder="your@email.com" autocomplete="email" />' +
+        '<div class="auth-tabs">' +
+          '<button type="button" class="auth-tab active" data-auth-tab="login">Sign In</button>' +
+          '<button type="button" class="auth-tab" data-auth-tab="request">Request Access</button>' +
         '</div>' +
-        '<div class="auth-field">' +
-          '<label for="authPin">PIN</label>' +
-          '<input type="password" id="authPin" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022" autocomplete="current-password" />' +
+        '<div class="auth-panel active" id="authPanelLogin">' +
+          '<h2>Private Access</h2>' +
+          '<p class="auth-subtitle">Enter your registered email and PIN to continue</p>' +
+          '<div class="auth-field">' +
+            '<label for="authEmail">Email Address</label>' +
+            '<input type="email" id="authEmail" placeholder="your@email.com" autocomplete="email" />' +
+          '</div>' +
+          '<div class="auth-field">' +
+            '<label for="authPin">PIN</label>' +
+            '<input type="password" id="authPin" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022" autocomplete="current-password" />' +
+          '</div>' +
+          '<button class="auth-btn" id="authSubmit">Unlock</button>' +
+          '<p class="auth-error" id="authError"></p>' +
         '</div>' +
-        '<button class="auth-btn" id="authSubmit">Unlock</button>' +
-        '<p class="auth-error" id="authError"></p>' +
-        '<p class="auth-footer">Access is invite-only. Contact admin for credentials.</p>' +
+        '<div class="auth-panel" id="authPanelRequest">' +
+          '<h2>Request Access</h2>' +
+          '<p class="auth-subtitle">Induction 21 candidates — verify with portal email &amp; Applicant ID</p>' +
+          '<div class="auth-field">' +
+            '<label for="reqEmail">Portal Email</label>' +
+            '<input type="email" id="reqEmail" placeholder="same as induction portal" autocomplete="email" />' +
+          '</div>' +
+          '<div class="auth-field">' +
+            '<label for="reqApplicantId">Applicant ID</label>' +
+            '<input type="text" id="reqApplicantId" placeholder="e.g. 39244" inputmode="numeric" autocomplete="off" />' +
+          '</div>' +
+          '<div class="auth-candidate-preview" id="reqPreview"></div>' +
+          '<div id="reqPaymentWrap"></div>' +
+          '<button class="auth-btn" id="reqSubmit">Submit Request</button>' +
+          '<p class="auth-error" id="reqError"></p>' +
+          '<p class="auth-success" id="reqSuccess" style="display:none;"></p>' +
+        '</div>' +
+        '<p class="auth-footer">Access is invite-only. Approved requests receive credentials by email.</p>' +
+        '<p class="auth-link-row"><a href="request-access.html">Open full request page</a> · <a href="donate.html">Support MeritNama</a></p>' +
       '</div>';
     document.body.prepend(gate);
+
+    gate.querySelectorAll('.auth-tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var name = tab.getAttribute('data-auth-tab');
+        gate.querySelectorAll('.auth-tab').forEach(function (t) {
+          t.classList.toggle('active', t.getAttribute('data-auth-tab') === name);
+        });
+        gate.querySelectorAll('.auth-panel').forEach(function (p) { p.classList.remove('active'); });
+        var panel = document.getElementById(name === 'login' ? 'authPanelLogin' : 'authPanelRequest');
+        if (panel) panel.classList.add('active');
+      });
+    });
 
     waitForFirebase(function () {
       var db = firebase.firestore();
@@ -238,6 +274,8 @@
       var pinInput   = document.getElementById('authPin');
       var submitBtn  = document.getElementById('authSubmit');
       var errorEl    = document.getElementById('authError');
+
+      initRequestPanel(db, gate);
 
       async function getUserIP() {
         try {
@@ -331,6 +369,109 @@
         if (e.key === 'Enter') pinInput.focus();
       });
     });
+  }
+
+  function initRequestPanel(db, gate) {
+    if (!window.MNAccessRequest) return;
+
+    var AR = window.MNAccessRequest;
+    var reqEmail = document.getElementById('reqEmail');
+    var reqId    = document.getElementById('reqApplicantId');
+    var reqPrev  = document.getElementById('reqPreview');
+    var reqPay   = document.getElementById('reqPaymentWrap');
+    var reqBtn   = document.getElementById('reqSubmit');
+    var reqErr   = document.getElementById('reqError');
+    var reqOk    = document.getElementById('reqSuccess');
+    var accessConfig = null;
+    var verifiedCandidate = null;
+    var verifyTimer = null;
+
+    AR.loadAccessConfig(db).then(function (cfg) {
+      accessConfig = cfg;
+      if (reqPay) reqPay.innerHTML = AR.renderPaymentBlock(cfg, '');
+      wireCopyHandlers(gate);
+    }).catch(function () { /* optional payment block */ });
+
+    function wireCopyHandlers(root) {
+      root.querySelectorAll('[data-copy]').forEach(function (el) {
+        el.addEventListener('click', function () {
+          var text = el.getAttribute('data-copy') || el.textContent;
+          navigator.clipboard.writeText(text).catch(function () {});
+        });
+      });
+    }
+
+    async function runVerify() {
+      verifiedCandidate = null;
+      if (reqPrev) { reqPrev.classList.remove('visible'); reqPrev.textContent = ''; }
+      if (!reqEmail.value.trim() || !reqId.value.trim()) return;
+
+      try {
+        var result = await AR.verifyCandidate(reqEmail.value, reqId.value);
+        if (result.ok) {
+          verifiedCandidate = result;
+          if (reqPrev) {
+            reqPrev.classList.add('visible');
+            reqPrev.innerHTML = '\u2713 Matched: <strong>' + escReq(result.nameFull || result.email) + '</strong><br>Applicant ID: <strong>' + escReq(result.applicantId) + '</strong>';
+          }
+          if (reqPay && accessConfig) {
+            reqPay.innerHTML = AR.renderPaymentBlock(accessConfig, result.applicantId);
+            wireCopyHandlers(gate);
+          }
+        }
+      } catch (e) { /* silent */ }
+    }
+
+    function escReq(s) {
+      return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function scheduleVerify() {
+      if (verifyTimer) clearTimeout(verifyTimer);
+      verifyTimer = setTimeout(runVerify, 400);
+    }
+
+    if (reqEmail) reqEmail.addEventListener('input', scheduleVerify);
+    if (reqId) reqId.addEventListener('input', scheduleVerify);
+
+    if (reqBtn) {
+      reqBtn.addEventListener('click', async function () {
+        reqErr.textContent = '';
+        if (reqOk) { reqOk.style.display = 'none'; reqOk.textContent = ''; }
+        reqBtn.disabled = true;
+        reqBtn.textContent = 'Submitting\u2026';
+
+        try {
+          var payDeclared = !!document.getElementById('authPayDeclared')?.checked;
+          var payRef = document.getElementById('authPayRef')?.value || '';
+          var result = await AR.submitAccessRequest(db, {
+            email: reqEmail.value,
+            applicantId: reqId.value,
+            paymentDeclared: payDeclared,
+            paymentReference: payRef,
+          });
+
+          if (!result.ok) {
+            reqErr.textContent = result.error || 'Request failed.';
+            return;
+          }
+
+          if (reqOk) {
+            reqOk.style.display = 'block';
+            reqOk.innerHTML = 'Request submitted for <strong>' + escReq(result.email) + '</strong> (ID ' + escReq(result.applicantId) + '). You will receive an email once approved.';
+          }
+          reqBtn.textContent = 'Submitted';
+        } catch (err) {
+          reqErr.textContent = 'Could not submit request. Try again.';
+          console.error(err);
+        } finally {
+          if (reqBtn.textContent === 'Submitting\u2026') {
+            reqBtn.disabled = false;
+            reqBtn.textContent = 'Submit Request';
+          }
+        }
+      });
+    }
   }
 
 })();

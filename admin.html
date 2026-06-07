@@ -690,6 +690,7 @@
       <button class="sidebar-link" data-tab="logs"><span class="nav-icon">📋</span> Access Logs</button>
       <div class="sidebar-section">People</div>
       <button class="sidebar-link" data-tab="users"><span class="nav-icon">👥</span> Users <span class="nav-badge" id="navBadgeUsers">—</span></button>
+      <button class="sidebar-link" data-tab="access-requests"><span class="nav-icon">📥</span> Access Requests <span class="nav-badge" id="navBadgeRequests">—</span></button>
       <button class="sidebar-link" data-tab="profiles"><span class="nav-icon">🪪</span> Profiles <span class="nav-badge" id="navBadgeProfiles">—</span></button>
       <button class="sidebar-link" data-tab="mentorship"><span class="nav-icon">🎓</span> Mentorship <span class="nav-badge" id="navBadgeMentors">—</span></button>
       <div class="sidebar-section">Finance</div>
@@ -723,7 +724,7 @@
     <div id="tab-overview">
       <div class="quick-actions">
         <button class="qa-btn" onclick="openAddUserModal('')">+ Grant access</button>
-        <button class="qa-btn secondary" onclick="switchTab('broadcast')">Send live banner</button>
+        <button class="qa-btn secondary" onclick="switchTab('access-requests')">Review access requests</button>
         <button class="qa-btn secondary" onclick="window.open('simulation.html','_blank')">Open simulation</button>
       </div>
 
@@ -929,6 +930,40 @@
           </thead>
           <tbody id="mreqBody">
             <tr><td colspan="6" class="empty-state">Loading&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Tab: Access Requests ─────────────────────── -->
+    <div id="tab-access-requests" style="display:none;">
+      <div class="controls" style="align-items:center;flex-wrap:wrap;gap:0.5rem;">
+        <select id="filterRequestStatus" style="padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;">
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+          <option value="all">All</option>
+        </select>
+        <input type="text" id="filterRequests" placeholder="Search email, name, applicant ID…" style="min-width:220px;" />
+        <button id="refreshRequestsBtn">&#x21BB; Refresh</button>
+        <span id="requestsCount" style="font-size:0.78rem;color:var(--text-muted);">Loading…</span>
+      </div>
+      <div class="table-wrap">
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>App ID</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Requested</th>
+              <th>Email</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="requestsBody">
+            <tr><td colspan="8" class="empty-state">Loading requests…</td></tr>
           </tbody>
         </table>
       </div>
@@ -1209,6 +1244,64 @@
       </details>
 
       <details class="broadcast-section">
+        <summary>🔐 Access Request &amp; Payment Config</summary>
+        <div class="broadcast-section-body">
+      <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
+        Controls the <a href="request-access.html" target="_blank" rel="noopener" style="color:var(--neon-cyan);">request access</a> page and auth gate payment block.
+        Stored in <code>notifications/access_config</code>. Account title is never shown to candidates.
+      </p>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem;">
+        <button id="accessCfgLoadBtn" style="padding:8px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Load Config</button>
+        <button id="accessCfgDefaultsBtn" style="padding:8px 16px;background:rgba(245,200,66,0.12);color:#f5c842;border:1px solid rgba(245,200,66,0.28);border-radius:8px;cursor:pointer;font-weight:600;">Reset Defaults</button>
+        <button id="accessCfgSaveBtn" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save Config</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.75rem;max-width:760px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
+          <input type="checkbox" id="accessCfgShow" checked style="accent-color:var(--accent);" /> Show payment block on request page
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
+          <input type="checkbox" id="accessCfgOptional" checked style="accent-color:var(--accent);" /> Payment optional (not required for approval)
+        </label>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;max-width:760px;margin-top:0.75rem;">
+        <div class="modal-field" style="margin:0;">
+          <label>Min price (PKR)</label>
+          <input type="number" id="accessCfgPriceMinPKR" min="0" step="1" value="250" />
+        </div>
+        <div class="modal-field" style="margin:0;">
+          <label>Max price (PKR)</label>
+          <input type="number" id="accessCfgPriceMaxPKR" min="0" step="1" value="670" />
+        </div>
+        <div class="modal-field" style="margin:0;">
+          <label>Min price (USD)</label>
+          <input type="number" id="accessCfgPriceMinUSD" min="0" step="0.01" value="0.9" />
+        </div>
+        <div class="modal-field" style="margin:0;">
+          <label>Max price (USD)</label>
+          <input type="number" id="accessCfgPriceMaxUSD" min="0" step="0.01" value="2.4" />
+        </div>
+        <div class="modal-field" style="margin:0;">
+          <label>Account / IBAN number</label>
+          <input type="text" id="accessCfgAccount" placeholder="0891-2007-4774" />
+        </div>
+        <div class="modal-field" style="margin:0;">
+          <label>Raast ID</label>
+          <input type="text" id="accessCfgRaast" placeholder="089120074774" />
+        </div>
+        <div class="modal-field" style="margin:0;grid-column:1/-1;">
+          <label>Bank name</label>
+          <input type="text" id="accessCfgBank" placeholder="Mashreq Pakistan" />
+        </div>
+        <div class="modal-field" style="margin:0;grid-column:1/-1;">
+          <label>Payment note (shown to candidates)</label>
+          <textarea id="accessCfgNote" rows="3" style="width:100%;resize:vertical;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;"></textarea>
+        </div>
+      </div>
+      <div id="accessCfgStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
+        </div>
+      </details>
+
+      <details class="broadcast-section">
         <summary>📱 Web Push Subscribers</summary>
         <div class="broadcast-section-body">
       <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;">
@@ -1310,6 +1403,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="emailjs-config.js"></script>
 <script src="notifications.js"></script>
+<script src="access-request.js"></script>
 <script>
 'use strict';
 
@@ -1327,6 +1421,7 @@ const TAB_META = {
   overview:      { title: 'Overview',           sub: 'Platform metrics and live activity' },
   logs:          { title: 'Access Logs',        sub: 'Login attempts and portal access history' },
   users:         { title: 'Authorized Users',   sub: 'Manage portal access and credentials' },
+  'access-requests': { title: 'Access Requests', sub: 'Candidate self-service requests — approve to grant access' },
   profiles:      { title: 'User Profiles',      sub: 'Applicant and trainee profile data' },
   mentorship:    { title: 'Mentorship',         sub: 'Mentors and mentorship requests' },
   contributions: { title: 'Contributions',      sub: 'Financial contribution records' },
@@ -1470,6 +1565,68 @@ async function sendWelcomeEmail(name, email, pin, accessLevel) {
     to_name:      name || email,
     html_content: buildEmailHtml(name || email, email, pin, accessLevel),
   });
+}
+
+function generateAccessPin() {
+  if (window.crypto && crypto.getRandomValues) {
+    const arr = new Uint32Array(1);
+    crypto.getRandomValues(arr);
+    return String(100000 + (arr[0] % 900000));
+  }
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+function getAdminSessionEmail() {
+  try {
+    const raw = localStorage.getItem(ADMIN_SESSION_KEY);
+    if (!raw) return '';
+    const s = JSON.parse(raw);
+    return (s && typeof s.email === 'string') ? s.email : '';
+  } catch (_) { return ''; }
+}
+
+async function grantPortalAccess(opts) {
+  const email = (opts.email || '').toLowerCase().trim();
+  const name = (opts.name || email).trim();
+  const pin = String(opts.pin || '').trim();
+  const level = opts.level || 'Standard User';
+  const inviteLimit = asInviteLimit(opts.inviteLimit, 2);
+  const sendEmail = opts.sendEmail !== false;
+  const applicantId = opts.applicantId ? String(opts.applicantId) : '';
+
+  if (!email) throw new Error('Email is required.');
+  if (!pin || pin.length < 4) throw new Error('PIN must be at least 4 characters.');
+
+  const pinHash = await hashPin(pin);
+  const userData = {
+    pin: pinHash,
+    isAdmin: level === 'Admin',
+    name: name || email,
+    inviteLimit,
+    addedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+  if (opts.invitedBy) userData.invitedBy = opts.invitedBy;
+  if (opts.inviteSource) userData.inviteSource = opts.inviteSource;
+
+  await db.collection('authorized_users').doc(email).set(userData, { merge: true });
+
+  const profileData = { inviteLimit, email };
+  if (name) profileData.name = name;
+  if (applicantId) profileData.applicantId = applicantId;
+  await db.collection('user_profiles').doc(email).set(profileData, { merge: true });
+
+  let emailSent = false;
+  let emailError = null;
+  if (sendEmail) {
+    try {
+      await sendWelcomeEmail(name || email, email, pin, level);
+      emailSent = true;
+    } catch (err) {
+      emailError = err?.text || err?.message || String(err);
+    }
+  }
+
+  return { pin, emailSent, emailError };
 }
 
 // --- Admin Auth ---
@@ -1860,31 +2017,20 @@ async function submitAddUser() {
   statusEl.className = 'modal-status';
 
   try {
-    const pinHash = await hashPin(pin);
-    await db.collection('authorized_users').doc(email).set({
-      pin:     pinHash,
-      isAdmin: level === 'Admin',
-      name:    name || email,
-      inviteLimit,
-      addedAt: firebase.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
-    await db.collection('user_profiles').doc(email).set({ inviteLimit }, { merge: true });
+    const result = await grantPortalAccess({
+      name, email, pin, level, inviteLimit, sendEmail: doEmail,
+    });
 
-    if (doEmail) {
-      try {
-        await sendWelcomeEmail(name || email, email, pin, level);
-        statusEl.textContent = '\u2713 User added and welcome email sent!';
-        statusEl.className = 'modal-status success';
-        setTimeout(closeAddUserModal, 3000);
-      } catch (emailErr) {
-        console.warn('Email send error:', emailErr);
-        const errMsg = emailErr?.text || emailErr?.message || (emailErr?.status ? `Status ${emailErr.status}` : String(emailErr));
-        statusEl.innerHTML =
-          `\u2713 User added. <strong>Email failed</strong> \u2014 ${escapeHtml(errMsg)}<br>` +
-          `<small style="opacity:0.85">Share credentials manually &mdash; PIN: <code style="background:rgba(77,184,217,0.1);padding:0.1rem 0.35rem;border-radius:4px;font-family:var(--mono)">${escapeHtml(pin)}</code></small>`;
-        statusEl.className = 'modal-status error';
-        // Do NOT auto-close — let admin copy the PIN
-      }
+    if (doEmail && result.emailSent) {
+      statusEl.textContent = '\u2713 User added and welcome email sent!';
+      statusEl.className = 'modal-status success';
+      setTimeout(closeAddUserModal, 3000);
+    } else if (doEmail && result.emailError) {
+      console.warn('Email send error:', result.emailError);
+      statusEl.innerHTML =
+        `\u2713 User added. <strong>Email failed</strong> \u2014 ${escapeHtml(result.emailError)}<br>` +
+        `<small style="opacity:0.85">Share credentials manually &mdash; PIN: <code style="background:rgba(77,184,217,0.1);padding:0.1rem 0.35rem;border-radius:4px;font-family:var(--mono)">${escapeHtml(result.pin)}</code></small>`;
+      statusEl.className = 'modal-status error';
     } else {
       statusEl.textContent = '\u2713 User added successfully.';
       statusEl.className = 'modal-status success';
@@ -2059,8 +2205,285 @@ async function confirmRemoveUser(email) {
   }
 }
 
+// ── ACCESS REQUESTS ───────────────────────────────────────────────────────────
+let allAccessRequests = [];
+
+const ACCESS_CFG_DEFAULTS = {
+  showOnRequestPage: true,
+  paymentOptional: true,
+  accessPriceMinPKR: 250,
+  accessPriceMaxPKR: 670,
+  accessPriceMinUSD: 0.9,
+  accessPriceMaxUSD: 2.4,
+  accountNumber: '0891-2007-4774',
+  raastId: '089120074774',
+  bankName: 'Mashreq Pakistan',
+  showAccountTitle: false,
+  paymentNote: 'Optional — minimum PKR 250. Include your Applicant ID in the transfer reference.',
+};
+
+function formatRequestDate(ts) {
+  if (!ts?.toDate) return '—';
+  return ts.toDate().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function requestStatusBadge(status) {
+  const map = {
+    pending: 'badge-muted',
+    approved: 'badge-success',
+    rejected: 'badge-danger',
+  };
+  return `<span class="badge ${map[status] || 'badge-muted'}">${escapeHtml(status || '—')}</span>`;
+}
+
+async function loadAccessRequests() {
+  const tbody = document.getElementById('requestsBody');
+  const countEl = document.getElementById('requestsCount');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading requests…</td></tr>';
+
+  try {
+    const snap = await db.collection('access_requests').get();
+    allAccessRequests = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort((a, b) => {
+        const ta = a.requestedAt?.toDate?.()?.getTime() || 0;
+        const tb = b.requestedAt?.toDate?.()?.getTime() || 0;
+        return tb - ta;
+      });
+    renderAccessRequests();
+    updateAccessRequestBadge();
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Failed to load: ${escapeHtml(err.message)}</td></tr>`;
+    if (countEl) countEl.textContent = 'Error';
+  }
+}
+
+function renderAccessRequests() {
+  const tbody = document.getElementById('requestsBody');
+  const countEl = document.getElementById('requestsCount');
+  const statusFilter = document.getElementById('filterRequestStatus')?.value || 'pending';
+  const q = (document.getElementById('filterRequests')?.value || '').trim().toLowerCase();
+
+  let rows = allAccessRequests.slice();
+  if (statusFilter !== 'all') rows = rows.filter(r => r.status === statusFilter);
+  if (q) {
+    rows = rows.filter(r =>
+      (r.email || '').includes(q) ||
+      (r.nameFull || '').toLowerCase().includes(q) ||
+      String(r.applicantId || '').includes(q)
+    );
+  }
+
+  if (countEl) countEl.textContent = `${rows.length} shown · ${allAccessRequests.filter(r => r.status === 'pending').length} pending`;
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No matching requests.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => {
+    const pay = r.paymentDeclared
+      ? `Yes${r.paymentReference ? `<div class="invite-meta-sub">${escapeHtml(r.paymentReference)}</div>` : ''}`
+      : '<span style="opacity:0.55">—</span>';
+    const emailCol = r.emailSent
+      ? '<span class="badge badge-success">Sent</span>'
+      : (r.status === 'approved' && r.approvedPin
+        ? `<span class="badge badge-danger" title="${escapeHtml(r.emailError || 'Not sent')}">Failed</span>`
+        : '—');
+    let actions = '';
+    if (r.status === 'pending') {
+      actions = `
+        <button class="action-btn" data-action="approve-req" data-email="${escapeHtml(r.email)}">Approve</button>
+        <button class="action-btn" data-action="reject-req" data-email="${escapeHtml(r.email)}">Reject</button>`;
+    } else if (r.status === 'approved') {
+      actions = `<button class="action-btn" data-action="copy-req-pin" data-email="${escapeHtml(r.email)}">Copy PIN</button>`;
+      if (!r.emailSent && r.approvedPin) {
+        actions += ` <button class="action-btn" data-action="resend-req" data-email="${escapeHtml(r.email)}">Send email</button>`;
+      }
+    }
+    return `<tr>
+      <td>${escapeHtml(r.nameFull || '—')}</td>
+      <td>${escapeHtml(r.email)}</td>
+      <td><code>${escapeHtml(String(r.applicantId || '—'))}</code></td>
+      <td>${pay}</td>
+      <td>${requestStatusBadge(r.status)}</td>
+      <td>${formatRequestDate(r.requestedAt)}</td>
+      <td>${emailCol}</td>
+      <td class="action-cell">${actions || '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function updateAccessRequestBadge() {
+  const pending = allAccessRequests.filter(r => r.status === 'pending').length;
+  const el = document.getElementById('navBadgeRequests');
+  if (el) el.textContent = pending ? String(pending) : '—';
+}
+
+async function approveAccessRequest(email) {
+  const req = allAccessRequests.find(r => r.email === email);
+  if (!req || req.status !== 'pending') return;
+  if (!confirm(`Approve access for ${email}?\n\nA PIN will be generated and a welcome email attempted.`)) return;
+
+  const pin = generateAccessPin();
+  try {
+    const result = await grantPortalAccess({
+      name: req.nameFull || email,
+      email,
+      pin,
+      level: 'Standard User',
+      inviteLimit: 2,
+      sendEmail: true,
+      applicantId: req.applicantId,
+      inviteSource: 'access_request',
+    });
+
+    await db.collection('access_requests').doc(email).update({
+      status: 'approved',
+      reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      reviewedBy: getAdminSessionEmail() || null,
+      approvedPin: pin,
+      emailSent: !!result.emailSent,
+      emailError: result.emailError || null,
+    });
+
+    if (result.emailSent) {
+      showAdminToast(`Approved ${email} — welcome email sent.`, 'success');
+    } else {
+      showAdminToast(`Approved ${email} — email failed. PIN: ${pin}`, 'error');
+    }
+    await loadAccessRequests();
+    await loadUsers();
+  } catch (err) {
+    alert('Approve failed: ' + err.message);
+  }
+}
+
+async function rejectAccessRequest(email) {
+  if (!confirm(`Reject request from ${email}?`)) return;
+  try {
+    await db.collection('access_requests').doc(email).update({
+      status: 'rejected',
+      reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      reviewedBy: getAdminSessionEmail() || null,
+    });
+    showAdminToast(`Rejected ${email}`, 'info');
+    await loadAccessRequests();
+  } catch (err) {
+    alert('Reject failed: ' + err.message);
+  }
+}
+
+async function resendAccessRequestEmail(email) {
+  const req = allAccessRequests.find(r => r.email === email);
+  if (!req?.approvedPin) {
+    alert('No stored PIN for this request.');
+    return;
+  }
+  try {
+    await sendWelcomeEmail(req.nameFull || email, email, req.approvedPin, 'Standard User');
+    await db.collection('access_requests').doc(email).update({
+      emailSent: true,
+      emailError: null,
+    });
+    showAdminToast(`Email sent to ${email}`, 'success');
+    await loadAccessRequests();
+  } catch (err) {
+    const msg = err?.text || err?.message || String(err);
+    await db.collection('access_requests').doc(email).update({
+      emailSent: false,
+      emailError: msg,
+    }).catch(() => {});
+    showAdminToast(`Email failed: ${msg}`, 'error');
+    await loadAccessRequests();
+  }
+}
+
+function copyAccessRequestPin(email) {
+  const req = allAccessRequests.find(r => r.email === email);
+  if (!req?.approvedPin) {
+    showAdminToast('No PIN stored for this request.', 'error');
+    return;
+  }
+  const text = `MeritNama Portal Access\nEmail: ${email}\nPIN: ${req.approvedPin}\nURL: ${PORTAL_URL}`;
+  navigator.clipboard.writeText(text).then(() => {
+    showAdminToast('Credentials copied to clipboard.', 'success');
+  }).catch(() => {
+    prompt('Copy credentials:', text);
+  });
+}
+
+function initAccessConfigAdmin() {
+  const loadBtn = document.getElementById('accessCfgLoadBtn');
+  const defBtn = document.getElementById('accessCfgDefaultsBtn');
+  const saveBtn = document.getElementById('accessCfgSaveBtn');
+  if (loadBtn) loadBtn.onclick = loadAccessConfigEditor;
+  if (defBtn) defBtn.onclick = () => fillAccessConfigForm(ACCESS_CFG_DEFAULTS);
+  if (saveBtn) saveBtn.onclick = saveAccessConfigEditor;
+  loadAccessConfigEditor();
+}
+
+function fillAccessConfigForm(cfg) {
+  const normalized = window.MNAccessRequest
+    ? MNAccessRequest.normalizePaymentConfig({ ...ACCESS_CFG_DEFAULTS, ...cfg })
+    : { ...ACCESS_CFG_DEFAULTS, ...cfg };
+  document.getElementById('accessCfgShow').checked = normalized.showOnRequestPage !== false;
+  document.getElementById('accessCfgOptional').checked = normalized.paymentOptional !== false;
+  document.getElementById('accessCfgPriceMinPKR').value = normalized.accessPriceMinPKR ?? 250;
+  document.getElementById('accessCfgPriceMaxPKR').value = normalized.accessPriceMaxPKR ?? 670;
+  document.getElementById('accessCfgPriceMinUSD').value = normalized.accessPriceMinUSD ?? 0.9;
+  document.getElementById('accessCfgPriceMaxUSD').value = normalized.accessPriceMaxUSD ?? 2.4;
+  document.getElementById('accessCfgAccount').value = normalized.accountNumber || '';
+  document.getElementById('accessCfgRaast').value = normalized.raastId || '';
+  document.getElementById('accessCfgBank').value = normalized.bankName || '';
+  document.getElementById('accessCfgNote').value = normalized.paymentNote || '';
+}
+
+async function loadAccessConfigEditor() {
+  const statusEl = document.getElementById('accessCfgStatus');
+  try {
+    const snap = await db.collection('notifications').doc('access_config').get();
+    fillAccessConfigForm(snap.exists ? { ...ACCESS_CFG_DEFAULTS, ...snap.data() } : ACCESS_CFG_DEFAULTS);
+    if (statusEl) { statusEl.textContent = 'Config loaded.'; statusEl.style.color = 'var(--success)'; }
+  } catch (err) {
+    fillAccessConfigForm(ACCESS_CFG_DEFAULTS);
+    if (statusEl) { statusEl.textContent = 'Using defaults — ' + err.message; statusEl.style.color = 'var(--neon-pink)'; }
+  }
+}
+
+async function saveAccessConfigEditor() {
+  const statusEl = document.getElementById('accessCfgStatus');
+  let minPkr = Number(document.getElementById('accessCfgPriceMinPKR').value) || 0;
+  let maxPkr = Number(document.getElementById('accessCfgPriceMaxPKR').value) || 0;
+  let minUsd = Number(document.getElementById('accessCfgPriceMinUSD').value) || 0;
+  let maxUsd = Number(document.getElementById('accessCfgPriceMaxUSD').value) || 0;
+  if (minPkr > maxPkr && maxPkr > 0) { const t = minPkr; minPkr = maxPkr; maxPkr = t; }
+  if (minUsd > maxUsd && maxUsd > 0) { const t = minUsd; minUsd = maxUsd; maxUsd = t; }
+  const data = {
+    showOnRequestPage: document.getElementById('accessCfgShow').checked,
+    paymentOptional: document.getElementById('accessCfgOptional').checked,
+    showAccountTitle: false,
+    accessPriceMinPKR: minPkr,
+    accessPriceMaxPKR: maxPkr,
+    accessPriceMinUSD: minUsd,
+    accessPriceMaxUSD: maxUsd,
+    accountNumber: document.getElementById('accessCfgAccount').value.trim(),
+    raastId: document.getElementById('accessCfgRaast').value.trim(),
+    bankName: document.getElementById('accessCfgBank').value.trim(),
+    paymentNote: document.getElementById('accessCfgNote').value.trim(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+  try {
+    await db.collection('notifications').doc('access_config').set(data, { merge: true });
+    if (statusEl) { statusEl.textContent = 'Saved to notifications/access_config'; statusEl.style.color = 'var(--success)'; }
+    showAdminToast('Access request config saved.', 'success');
+  } catch (err) {
+    if (statusEl) { statusEl.textContent = 'Save failed: ' + err.message; statusEl.style.color = 'var(--neon-pink)'; }
+  }
+}
+
 function switchTab(tab) {
-  const tabs = ['overview', 'logs', 'users', 'contributions', 'mentorship', 'broadcast', 'profiles'];
+  const tabs = ['overview', 'logs', 'users', 'access-requests', 'contributions', 'mentorship', 'broadcast', 'profiles'];
   for (const t of tabs) {
     const el = document.getElementById('tab-' + t);
     if (el) el.style.display = tab === t ? '' : 'none';
@@ -2077,6 +2500,7 @@ function switchTab(tab) {
 
   if (tab === 'overview')     { loadOverviewMetrics(); renderAccessTrendChart(); renderRecentActivity(); }
   if (tab === 'users')         loadUsers();
+  if (tab === 'access-requests') loadAccessRequests();
   if (tab === 'contributions') loadContributions();
   if (tab === 'mentorship')    loadMentorship();
   if (tab === 'broadcast')     loadBroadcast();
@@ -2103,6 +2527,7 @@ function loadBroadcast() {
   document.getElementById('schedAdminStaticBtn')?.addEventListener('click', loadScheduleAdminStatic);
   document.getElementById('schedAdminSaveBtn')?.addEventListener('click', saveScheduleAdminEditor);
   initMarksConfigAdmin();
+  initAccessConfigAdmin();
   loadSimulationNotificationsEditor();
   loadFetchProgressEditor();
   loadScheduleAdminEditor();
@@ -2812,6 +3237,7 @@ function showDashboard() {
   startSessionTimer();
   loadLogs();
   loadOverviewMetrics();
+  refreshAccessRequestBadge();
   subscribePresence();
   const savedTab = localStorage.getItem(ADMIN_TAB_KEY) || 'overview';
   switchTab(Object.prototype.hasOwnProperty.call(TAB_META, savedTab) ? savedTab : 'overview');
@@ -2825,6 +3251,7 @@ async function refreshAllAdminData() {
     await loadOverviewMetrics();
     const tab = localStorage.getItem(ADMIN_TAB_KEY) || 'overview';
     if (tab === 'users') await loadUsers();
+    if (tab === 'access-requests') await loadAccessRequests();
     if (tab === 'contributions') await loadContributions();
     if (tab === 'profiles') await loadProfiles();
     if (tab === 'mentorship') await loadMentorship();
@@ -3226,6 +3653,28 @@ function renderMentorRequests() {
 }
 
 // Auto-login if session valid
+async function refreshAccessRequestBadge() {
+  try {
+    const snap = await db.collection('access_requests').get();
+    allAccessRequests = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    updateAccessRequestBadge();
+  } catch (_) { /* ignore */ }
+}
+
+document.getElementById('refreshRequestsBtn')?.addEventListener('click', loadAccessRequests);
+document.getElementById('filterRequestStatus')?.addEventListener('change', renderAccessRequests);
+document.getElementById('filterRequests')?.addEventListener('input', renderAccessRequests);
+document.getElementById('requestsBody')?.addEventListener('click', function (e) {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const email = btn.getAttribute('data-email');
+  const action = btn.getAttribute('data-action');
+  if (action === 'approve-req') approveAccessRequest(email);
+  else if (action === 'reject-req') rejectAccessRequest(email);
+  else if (action === 'resend-req') resendAccessRequestEmail(email);
+  else if (action === 'copy-req-pin') copyAccessRequestPin(email);
+});
+
 if (getAdminSession()) {
   showDashboard();
 }

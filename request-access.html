@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Request Portal Access — MeritNama</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="auth.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>firebase.initializeApp(firebaseConfig);</script>
+  <script>
+    (function () {
+      var t = localStorage.getItem('mn_bg_theme') || 'bg-default';
+      document.documentElement.classList.add('req-page-ready');
+      document.addEventListener('DOMContentLoaded', function () {
+        if (['bg-default','bg-grid','bg-aurora','bg-dots','bg-lines','bg-void','bg-rose','bg-northern','bg-nebula','bg-solar','bg-dusk','bg-midnight'].indexOf(t) !== -1) {
+          document.body.classList.add(t);
+        } else {
+          document.body.classList.add('bg-default');
+        }
+      });
+    })();
+  </script>
+  <style>
+    .req-hero {
+      text-align: center;
+      padding: 2rem 1rem 1.25rem;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .req-hero h1 {
+      font-size: clamp(1.45rem, 4vw, 1.85rem);
+      color: var(--neon-cyan);
+      margin-bottom: 0.45rem;
+      font-weight: 700;
+    }
+    .req-hero p {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+      margin: 0;
+    }
+    .req-layout {
+      display: grid;
+      grid-template-columns: minmax(240px, 320px) minmax(0, 480px);
+      gap: 1.5rem;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 0 1rem 3.5rem;
+      align-items: start;
+      justify-content: center;
+    }
+    @media (max-width: 820px) {
+      .req-layout { grid-template-columns: 1fr; max-width: 520px; }
+    }
+    .req-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .req-step {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.1rem;
+      display: flex;
+      gap: 0.85rem;
+      align-items: flex-start;
+    }
+    .req-step-num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(77, 184, 217, 0.12);
+      border: 1px solid rgba(77, 184, 217, 0.28);
+      color: var(--neon-cyan);
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .req-step-body strong {
+      display: block;
+      font-size: 0.88rem;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+    .req-step-body span {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    .req-info-card {
+      background: rgba(77, 184, 217, 0.05);
+      border: 1px solid rgba(77, 184, 217, 0.18);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.1rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .req-info-card a { color: var(--neon-cyan); text-decoration: none; }
+    .req-info-card a:hover { text-decoration: underline; }
+    .req-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .req-panel-head {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 1.1rem 1.35rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(77, 184, 217, 0.04);
+    }
+    .req-panel-head h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--neon-cyan);
+      margin: 0;
+    }
+    .req-panel-head .req-panel-badge {
+      margin-left: auto;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(124, 101, 196, 0.12);
+      border: 1px solid rgba(124, 101, 196, 0.25);
+      color: var(--neon-purple);
+    }
+    .req-panel-body {
+      padding: 1.35rem 1.35rem 1.5rem;
+    }
+    .req-panel-intro {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 1.15rem;
+      line-height: 1.45;
+    }
+    .req-signin-link {
+      display: block;
+      text-align: center;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    .req-signin-link a {
+      color: var(--neon-cyan);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .req-signin-link a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body class="bg-default req-access-page">
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <a href="index.html"><img src="logo.svg" class="logo-img" alt="MeritNama" /></a>
+    </div>
+    <div class="header-meta">
+      <span class="badge badge-info">Request Access</span>
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<nav class="tab-nav" id="mainNav">
+  <a href="index.html" class="tab-btn" style="text-decoration:none;">&#128202; Merit Table</a>
+  <a href="simulation.html" class="tab-btn" style="text-decoration:none;">&#127973; Induction 21</a>
+  <a href="request-access.html" class="tab-btn active" style="text-decoration:none;">&#128274; Request Access</a>
+  <a href="index.html" class="tab-btn" style="text-decoration:none;">&#128275; Sign In</a>
+  <a href="reviews.html" class="tab-btn" style="text-decoration:none;">&#128172; Discussion</a>
+  <a href="donate.html" class="tab-btn donate-btn" style="text-decoration:none;">&#9829; Support</a>
+</nav>
+
+<div class="author-bar">
+  Independent, community-built tool by
+  <a href="https://github.com/itskaero" target="_blank" rel="noopener">@itskaero</a>
+  &middot;
+  <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a>
+</div>
+
+<main class="main-content" style="padding-top:0.5rem;">
+
+  <div class="req-hero">
+    <h1>&#128274; Request Portal Access</h1>
+    <p>Induction 21 candidates can request access using the same email and Applicant ID from the official portal. An admin will review your request and email your login PIN.</p>
+  </div>
+
+  <div class="req-layout">
+
+    <aside class="req-steps">
+      <div class="req-step">
+        <div class="req-step-num">1</div>
+        <div class="req-step-body">
+          <strong>Verify your identity</strong>
+          <span>Enter the email and Applicant ID from your induction portal record. We match these against Induction 21 candidate data.</span>
+        </div>
+      </div>
+      <div class="req-step">
+        <div class="req-step-num">2</div>
+        <div class="req-step-body">
+          <strong>Optional support</strong>
+          <span>Contributions help cover data-fetch costs. Payment is optional and not required for approval.</span>
+        </div>
+      </div>
+      <div class="req-step">
+        <div class="req-step-num">3</div>
+        <div class="req-step-body">
+          <strong>Wait for approval</strong>
+          <span>You will receive a welcome email with your PIN once an admin approves the request.</span>
+        </div>
+      </div>
+      <div class="req-info-card">
+        Already have credentials? <a href="index.html">Sign in on the main site</a>.
+        Questions or payment issues? <a href="donate.html">Support page</a> or email
+        <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a>.
+      </div>
+    </aside>
+
+    <section class="req-panel">
+      <div class="req-panel-head">
+        <span aria-hidden="true">&#128221;</span>
+        <h2>Access request form</h2>
+        <span class="req-panel-badge">Induction 21</span>
+      </div>
+      <div class="req-panel-body req-access-form">
+        <p class="req-panel-intro">Fields must match your portal registration exactly.</p>
+
+        <div class="auth-field">
+          <label for="reqEmail">Portal Email</label>
+          <input type="email" id="reqEmail" placeholder="same as induction portal" autocomplete="email" />
+        </div>
+        <div class="auth-field">
+          <label for="reqApplicantId">Applicant ID</label>
+          <input type="text" id="reqApplicantId" placeholder="e.g. 39244" inputmode="numeric" autocomplete="off" />
+        </div>
+        <div class="auth-candidate-preview" id="reqPreview"></div>
+        <div id="reqPaymentWrap"></div>
+        <button class="auth-btn" id="reqSubmit" type="button">Submit Request</button>
+        <p class="auth-error" id="reqError"></p>
+        <p class="auth-success" id="reqSuccess" style="display:none;"></p>
+
+        <p class="req-signin-link">Approved already? <a href="index.html">Unlock the portal &rarr;</a></p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p>MeritNama &middot; Community-built induction analytics</p>
+  <p style="margin-top:4px;font-size:0.73rem;opacity:0.65">Access requests are reviewed manually. Never share your PIN with anyone.</p>
+</footer>
+
+<script src="access-request.js"></script>
+<script>
+'use strict';
+(function () {
+  var hamburgerBtn = document.getElementById('hamburgerBtn');
+  var mainNav = document.getElementById('mainNav');
+  if (hamburgerBtn && mainNav) {
+    hamburgerBtn.addEventListener('click', function () {
+      mainNav.classList.toggle('nav-open');
+      hamburgerBtn.classList.toggle('open');
+    });
+  }
+
+  var db = firebase.firestore();
+  var AR = window.MNAccessRequest;
+  var reqEmail = document.getElementById('reqEmail');
+  var reqId = document.getElementById('reqApplicantId');
+  var reqPrev = document.getElementById('reqPreview');
+  var reqPay = document.getElementById('reqPaymentWrap');
+  var reqBtn = document.getElementById('reqSubmit');
+  var reqErr = document.getElementById('reqError');
+  var reqOk = document.getElementById('reqSuccess');
+  var accessConfig = null;
+  var verifyTimer = null;
+
+  function esc(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function wireCopy(root) {
+    root.querySelectorAll('[data-copy]').forEach(function (el) {
+      el.title = 'Click to copy';
+      el.addEventListener('click', function () {
+        navigator.clipboard.writeText(el.getAttribute('data-copy') || el.textContent).catch(function () {});
+      });
+    });
+  }
+
+  AR.loadAccessConfig(db).then(function (cfg) {
+    accessConfig = cfg;
+    reqPay.innerHTML = AR.renderPaymentBlock(cfg, '');
+    wireCopy(document.body);
+  });
+
+  async function runVerify() {
+    if (reqPrev) { reqPrev.classList.remove('visible'); reqPrev.textContent = ''; }
+    if (!reqEmail.value.trim() || !reqId.value.trim()) return;
+    try {
+      var result = await AR.verifyCandidate(reqEmail.value, reqId.value);
+      if (result.ok) {
+        reqPrev.classList.add('visible');
+        reqPrev.innerHTML = '&#10003; Matched: <strong>' + esc(result.nameFull || result.email) + '</strong><br>Applicant ID: <strong>' + esc(result.applicantId) + '</strong>';
+        if (accessConfig) {
+          reqPay.innerHTML = AR.renderPaymentBlock(accessConfig, result.applicantId);
+          wireCopy(document.body);
+        }
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  function scheduleVerify() {
+    if (verifyTimer) clearTimeout(verifyTimer);
+    verifyTimer = setTimeout(runVerify, 400);
+  }
+
+  reqEmail.addEventListener('input', scheduleVerify);
+  reqId.addEventListener('input', scheduleVerify);
+
+  reqBtn.addEventListener('click', async function () {
+    reqErr.textContent = '';
+    reqOk.style.display = 'none';
+    reqBtn.disabled = true;
+    reqBtn.textContent = 'Submitting\u2026';
+    try {
+      var result = await AR.submitAccessRequest(db, {
+        email: reqEmail.value,
+        applicantId: reqId.value,
+        paymentDeclared: !!document.getElementById('authPayDeclared')?.checked,
+        paymentReference: document.getElementById('authPayRef')?.value || '',
+      });
+      if (!result.ok) {
+        reqErr.textContent = result.error || 'Request failed.';
+        reqBtn.disabled = false;
+        reqBtn.textContent = 'Submit Request';
+        return;
+      }
+      reqOk.style.display = 'block';
+      reqOk.innerHTML = 'Request submitted for <strong>' + esc(result.email) + '</strong> (ID ' + esc(result.applicantId) + '). You will receive an email once approved.';
+      reqBtn.textContent = 'Submitted';
+    } catch (err) {
+      reqErr.textContent = 'Could not submit. Try again.';
+      reqBtn.disabled = false;
+      reqBtn.textContent = 'Submit Request';
+    }
+  });
+})();
+</script>
+</body>
+</html>

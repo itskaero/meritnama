@@ -64,6 +64,9 @@ jobs:
             < emailjs-config.template.js > emailjs-config.js
           echo "emailjs-config.js created successfully."
 
+      - name: Sanitize candidate JSON and build auth index
+        run: python3 build_candidate_auth_index.py
+
       - name: Stamp candidate data info into simulation.html
         run: |
           JSON_FILE="data/induction21_candidates.json"

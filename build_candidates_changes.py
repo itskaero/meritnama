@@ -15,7 +15,6 @@ OUT_PATH = ROOT / "data" / "candidates_changes.json"
 # Excluded from diffs: emailId, pmdcNo, contactNumber (private contact / registration data)
 SCALAR_KEYS = [
     "nameFull",
-    "cnic",
     "programMarks",
     "applied_in",
     "degree",

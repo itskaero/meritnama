@@ -115,6 +115,15 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Access requests — candidates submit; admin reads/updates via admin portal
+    // Doc ID = email. Fields: applicantId, nameFull, status, paymentDeclared, paymentReference, …
+    match /access_requests/{email} {
+      allow create: if true;
+      allow read:   if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
     // Deny everything else
     match /{document=**} {
       allow read, write: if false;
@@ -138,7 +147,7 @@ service cloud.firestore {
     }
 
     // Live update notifications — admin writes, everyone reads
-    // Doc IDs: latest (banner), simulation_feed (feed items), fetch_progress (live fetch bar)
+    // Doc IDs: latest (banner), simulation_feed, marks_config, access_config (request page payment)
     // fetch_progress fields: active, status, percent, fetched, total, title, message, icon,
     //                        startedAt, pausedAt, updatedAt
     // induction_schedule fields: induction, source, steps[], updatedAt
