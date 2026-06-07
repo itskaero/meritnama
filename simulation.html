@@ -725,6 +725,177 @@
     /* ---------------------------------------------------------------
        GUIDE TAB
     --------------------------------------------------------------- */
+    .portal-guide-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr);
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+    .portal-guide-copy,
+    .portal-guide-side,
+    .portal-flow-step {
+      background: var(--bg-card, rgba(255,255,255,0.03));
+      border: 1px solid var(--border, rgba(77,184,217,0.1));
+      border-radius: var(--radius-lg, 16px);
+      padding: 20px;
+      backdrop-filter: blur(8px);
+    }
+    .portal-guide-copy {
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(77,184,217,0.07), rgba(124,101,196,0.04)),
+        var(--bg-card, rgba(255,255,255,0.03));
+    }
+    .portal-guide-copy::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, #4db8d9, #7c65c4, #3ecf8e);
+    }
+    .portal-guide-kicker {
+      display: inline-flex; margin-bottom: 10px; padding: 3px 10px;
+      border-radius: 100px; border: 1px solid rgba(62,207,142,0.24);
+      background: rgba(62,207,142,0.08); color: var(--neon-green, #3ecf8e);
+      font-size: 0.7rem; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase;
+    }
+    .portal-guide-copy h3 {
+      color: var(--neon-cyan, #4db8d9);
+      font-size: 1.25rem;
+      margin: 0 0 8px;
+      text-shadow: 0 0 18px rgba(77,184,217,0.28);
+    }
+    .portal-guide-copy p,
+    .portal-guide-side li,
+    .portal-flow-step p {
+      color: var(--text-light, #8ba4c0);
+      font-size: 0.84rem;
+      line-height: 1.6;
+    }
+    .portal-guide-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .portal-guide-side {
+      border-color: rgba(124,101,196,0.22);
+      background: linear-gradient(135deg, rgba(124,101,196,0.06), rgba(77,184,217,0.03));
+    }
+    .portal-guide-side strong {
+      display: block; color: var(--neon-purple, #7c65c4);
+      font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 9px;
+    }
+    .portal-guide-side ol { margin: 0; padding-left: 18px; }
+    .portal-guide-side li { margin-bottom: 7px; }
+    .portal-guide-side li::marker { color: var(--neon-cyan, #4db8d9); font-weight: 800; }
+    .portal-guide-flow {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .portal-flow-step {
+      padding: 16px;
+      min-height: 150px;
+    }
+    .portal-flow-step span {
+      width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; background: rgba(77,184,217,0.1);
+      border: 1px solid rgba(77,184,217,0.24);
+      color: var(--neon-cyan, #4db8d9); font-weight: 900; margin-bottom: 10px;
+    }
+    .portal-flow-step h3 {
+      color: var(--text); font-size: 0.92rem; margin: 0 0 6px;
+    }
+    .portal-guide-goals {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .portal-goal-card {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid var(--border, rgba(77,184,217,0.1));
+      border-radius: var(--radius-lg, 16px);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 185px;
+    }
+    .portal-goal-card h3 {
+      color: var(--text);
+      font-size: 0.95rem;
+      margin: 0;
+    }
+    .portal-goal-card p {
+      color: var(--text-light, #8ba4c0);
+      font-size: 0.82rem;
+      line-height: 1.55;
+      margin: 0;
+    }
+    .portal-goal-card .btn {
+      align-self: flex-start;
+      margin-top: auto;
+    }
+    .portal-guide-mini {
+      background: rgba(77,184,217,0.04);
+      border: 1px solid rgba(77,184,217,0.15);
+      border-radius: var(--radius-lg, 16px);
+      padding: 18px;
+      margin-bottom: 22px;
+    }
+    .portal-guide-mini h3 {
+      color: var(--neon-cyan, #4db8d9);
+      margin: 0 0 10px;
+      font-size: 0.98rem;
+    }
+    .portal-guide-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .portal-mini-item {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid var(--border, rgba(77,184,217,0.1));
+      border-radius: var(--radius, 10px);
+      padding: 12px;
+    }
+    .portal-mini-item strong {
+      display: block;
+      color: var(--text);
+      font-size: 0.82rem;
+      margin-bottom: 4px;
+    }
+    .portal-mini-item span {
+      display: block;
+      color: var(--text-light, #8ba4c0);
+      font-size: 0.76rem;
+      line-height: 1.45;
+    }
+    .portal-guide-reference {
+      margin-top: 4px;
+    }
+    .portal-guide-reference > summary {
+      cursor: pointer;
+      list-style: none;
+      background: var(--bg-card, rgba(255,255,255,0.03));
+      border: 1px solid var(--border, rgba(77,184,217,0.1));
+      border-radius: var(--radius-lg, 16px);
+      padding: 16px 18px;
+      color: var(--neon-cyan, #4db8d9);
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .portal-guide-reference > summary::-webkit-details-marker { display: none; }
+    .portal-guide-reference > summary::after {
+      content: '+';
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+    .portal-guide-reference[open] > summary {
+      margin-bottom: 18px;
+      border-color: rgba(77,184,217,0.24);
+    }
+    .portal-guide-reference[open] > summary::after { content: '-'; }
     .guide-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -1095,6 +1266,12 @@
        RESPONSIVE
     --------------------------------------------------------------- */
     @media (max-width: 720px) {
+      .portal-guide-hero,
+      .portal-guide-flow,
+      .portal-guide-goals,
+      .portal-guide-mini-grid {
+        grid-template-columns: 1fr;
+      }
       .sim-summary-grid { grid-template-columns: 1fr 1fr; }
       .sim-summary-grid > div:nth-child(2) { border-right: none; }
       .sim-summary-grid > div:nth-child(3) { border-top: 1px solid var(--border); }
@@ -1519,7 +1696,8 @@
 <!-- ═══════════ NAV ═══════════ -->
 <nav class="tab-nav" id="mainNav">
   <a href="index.html" class="tab-btn back-btn">&#8592; Historical Data</a>
-  <button class="tab-btn active" data-tab="candidates">&#128100; Candidate Pool</button>
+  <button class="tab-btn active" data-tab="guide">&#10067; Guide</button>
+  <button class="tab-btn" data-tab="candidates">&#128100; Candidate Pool</button>
   <button class="tab-btn" data-tab="slotbrowser">&#127919; Where Merit Falls</button>
   <button class="tab-btn" data-tab="simulation">&#9889; Seat Allocation</button>
   <button class="tab-btn" data-tab="schedule">&#128197; Schedule</button>
@@ -1529,7 +1707,6 @@
   <button class="tab-btn" data-tab="seatmatrix">&#127979; Training Seats</button>
   <button class="tab-btn" data-tab="hospitals">&#127968; Hospitals</button>
   <a href="accreditation.html" class="tab-btn" style="text-decoration:none;">&#9989; Accreditation</a>
-  <button class="tab-btn" data-tab="guide">&#10067; Guide</button>
   <a href="candidatesChanges.html" class="tab-btn" style="text-decoration:none;opacity:0.6;">&#128202; Data Changes</a>
   <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
 </nav>
@@ -1610,7 +1787,7 @@
   <!-- ══════════════════════════════════════════
        TAB 1 : CANDIDATES
   ══════════════════════════════════════════ -->
-  <section class="tab-content active" id="tab-candidates">
+  <section class="tab-content" id="tab-candidates">
     <div class="section-header">
       <h2>Induction Portal &mdash; Candidate Pool</h2>
       <p>All applicants with marks and applied programmes. Click any row to view their full preference list.</p>
@@ -1762,13 +1939,92 @@
   <!-- ══════════════════════════════════════════
        TAB 4 : GUIDE
   ══════════════════════════════════════════ -->
-  <section class="tab-content" id="tab-guide">
+  <section class="tab-content active" id="tab-guide">
     <div class="section-header">
-      <h2>How to Use This Simulation</h2>
-      <p>A complete guide to understanding the placement algorithm and all features of this tool.</p>
+      <h2>How to Use the Induction Portal</h2>
+      <p>Start here for the full portal workflow: find yourself, understand preferences, browse seats, read schedules, and run the placement simulation.</p>
     </div>
 
-    <div class="guide-grid">
+    <div class="portal-guide-hero">
+      <div class="portal-guide-copy">
+        <span class="portal-guide-kicker">Start simple</span>
+        <h3>This page is a planning helper, not the official portal.</h3>
+        <p>Use it to understand candidate data, seat competition, and possible placements before you act on the official portal. The safest path is: identify yourself, review your record, check seats and schedule, then run the allocation simulation.</p>
+        <div class="portal-guide-actions">
+          <button class="btn btn-primary portal-guide-action" data-tab="candidates">Start with Candidate Pool</button>
+          <button class="btn portal-guide-action" data-tab="seatmatrix">View seats</button>
+          <button class="btn portal-guide-action" data-tab="schedule">Check schedule</button>
+        </div>
+      </div>
+      <div class="portal-guide-side">
+        <strong>3-minute setup</strong>
+        <ol>
+          <li>Enter your Applicant ID in the <strong>Find my position</strong> bar.</li>
+          <li>Open <strong>Candidate Pool</strong> and confirm your marks, programs, and preferences.</li>
+          <li>Open <strong>Training Seats</strong> and <strong>Schedule</strong> so you know what is available and what is currently open.</li>
+          <li>Run <strong>Seat Allocation</strong> only after the first three checks.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="portal-guide-goals">
+      <article class="portal-goal-card">
+        <h3>I want to find myself</h3>
+        <p>Use Candidate Pool to search by Applicant ID or name, confirm your marks, and inspect your full preference list.</p>
+        <button class="btn btn-sm portal-guide-action" data-tab="candidates">Open Candidate Pool</button>
+      </article>
+      <article class="portal-goal-card">
+        <h3>I want to know who competes for a seat</h3>
+        <p>Use Where Merit Falls after selecting program, quota, specialty, and hospital. Run Seat Allocation first for de-duplicated results.</p>
+        <button class="btn btn-sm portal-guide-action" data-tab="slotbrowser">Open Where Merit Falls</button>
+      </article>
+      <article class="portal-goal-card">
+        <h3>I want my predicted placement</h3>
+        <p>Use Seat Allocation to run the full preference-based simulation. Then read the result card for cutoff, selected candidates, and next in line.</p>
+        <button class="btn btn-sm portal-guide-action" data-tab="simulation">Open Seat Allocation</button>
+      </article>
+      <article class="portal-goal-card">
+        <h3>I want seats and official timing</h3>
+        <p>Use Training Seats for seat counts and Schedule for portal windows. Recheck official sources before changing preferences.</p>
+        <button class="btn btn-sm portal-guide-action" data-tab="seatmatrix">Open Training Seats</button>
+      </article>
+      <article class="portal-goal-card">
+        <h3>I want hospital context</h3>
+        <p>Use Hospitals and Accreditation before shortlisting. A seat is only useful if the hospital and program fit your training goals.</p>
+        <button class="btn btn-sm portal-guide-action" data-tab="hospitals">Open Hospitals</button>
+      </article>
+      <article class="portal-goal-card">
+        <h3>I want help from others</h3>
+        <p>Use Community Chat for discussion and Data Changes for updates. Treat community input as context, not official confirmation.</p>
+        <button class="btn btn-sm portal-guide-action" data-tab="community">Open Community Chat</button>
+      </article>
+    </div>
+
+    <div class="portal-guide-mini">
+      <h3>How to read the portal without getting confused</h3>
+      <div class="portal-guide-mini-grid">
+        <div class="portal-mini-item">
+          <strong>Candidate Pool = raw record</strong>
+          <span>Who applied, their marks, and their preference order.</span>
+        </div>
+        <div class="portal-mini-item">
+          <strong>Where Merit Falls = slot demand</strong>
+          <span>Who listed a particular seat and how they rank there.</span>
+        </div>
+        <div class="portal-mini-item">
+          <strong>Seat Allocation = predicted final match</strong>
+          <span>One candidate can occupy only their best available preference.</span>
+        </div>
+        <div class="portal-mini-item">
+          <strong>Schedule / Seats = reality check</strong>
+          <span>Use these before trusting any prediction or preference strategy.</span>
+        </div>
+      </div>
+    </div>
+
+    <details class="portal-guide-reference">
+      <summary>Detailed reference: algorithm, marks, tab-by-tab usage, result cards, and glossary</summary>
+      <div class="guide-grid">
 
       <!-- ── Overview ── -->
       <div class="guide-card">
@@ -1911,7 +2167,8 @@
         </div>
       </div>
 
-    </div>
+      </div>
+    </details>
   </section>
 
   <!-- ══════════════════════════════════════════

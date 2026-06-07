@@ -46,7 +46,8 @@
 
 <!-- ======= NAV ======= -->
 <nav class="tab-nav" id="mainNav">
-  <button class="tab-btn active" data-tab="merit">&#128202; Merit Table</button>
+  <button class="tab-btn active" data-tab="start">&#127891; Start Here</button>
+  <button class="tab-btn" data-tab="merit">&#128202; Merit Table</button>
   <button class="tab-btn" data-tab="predictor">&#127919; My Prediction</button>
   <button class="tab-btn" data-tab="reverse">&#128269; What Do I Need?</button>
   <button class="tab-btn" data-tab="calculator">&#129518; Calculator</button>
@@ -98,9 +99,80 @@
 <main class="main-content">
 
   <!-- ============================================================
+       TAB 0 : START HERE
+  ============================================================ -->
+  <section class="tab-content active" id="tab-start">
+    <div class="start-hero">
+      <div class="start-hero-copy">
+        <span class="start-kicker">New to MeritNama?</span>
+        <h2>Start here to understand the portal, your merit, and your options.</h2>
+        <p>Use this dashboard as a step-by-step companion: calculate your score, compare it with historical closing merits, explore current induction data, and then move into the live Induction Portal tools.</p>
+        <div class="start-actions">
+          <button class="btn btn-primary btn-large" data-tab="calculator">Calculate my merit</button>
+          <button class="btn btn-large" data-tab="guide">Read the full guide</button>
+          <a class="btn btn-large" href="simulation.html">Open Induction Portal</a>
+        </div>
+      </div>
+      <div class="start-hero-panel">
+        <div class="start-panel-label">Recommended first session</div>
+        <ol class="start-checklist">
+          <li>Calculate or enter your merit score.</li>
+          <li>Run My Prediction for Safe, Target, and Reach options.</li>
+          <li>Use What Do I Need? for specific specialty goals.</li>
+          <li>Open the Induction Portal guide before using live simulation tools.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="start-grid">
+      <article class="start-card">
+        <div class="start-card-icon">&#129518;</div>
+        <h3>1. Calculate your merit</h3>
+        <p>Use the active policy calculator to estimate your score from marks, experience, publications, and other components.</p>
+        <button class="start-link" data-tab="calculator">Go to Calculator &rarr;</button>
+      </article>
+      <article class="start-card">
+        <div class="start-card-icon">&#127919;</div>
+        <h3>2. Get a personal prediction</h3>
+        <p>Compare your score against historical cutoffs and get Safe, Target, and Reach options with trend confidence.</p>
+        <button class="start-link" data-tab="predictor">Analyze my score &rarr;</button>
+      </article>
+      <article class="start-card">
+        <div class="start-card-icon">&#128269;</div>
+        <h3>3. Check a target seat</h3>
+        <p>Pick a program, quota, specialty, and hospital to see what score has historically been required.</p>
+        <button class="start-link" data-tab="reverse">Use What Do I Need? &rarr;</button>
+      </article>
+      <article class="start-card">
+        <div class="start-card-icon">&#127973;</div>
+        <h3>4. Learn the induction portal</h3>
+        <p>Open the portal guide to understand candidate pool, preferences, seat allocation, schedules, hospitals, and chat.</p>
+        <a class="start-link" href="simulation.html">Open portal guide &rarr;</a>
+      </article>
+    </div>
+
+    <div class="start-path card">
+      <div>
+        <h3>What each main area is for</h3>
+        <p>Follow this map if you recently joined and are unsure where to begin.</p>
+      </div>
+      <div class="start-path-list">
+        <div class="start-path-item"><strong>Merit Table</strong><span>Browse historical cutoffs by specialty, hospital, program, and quota.</span></div>
+        <div class="start-path-item"><strong>Current Merit</strong><span>Track opening and closing merits from the current induction cycle.</span></div>
+        <div class="start-path-item"><strong>Accreditation</strong><span>Check training recognition before shortlisting hospitals.</span></div>
+        <div class="start-path-item"><strong>Discussion</strong><span>Ask the community about hospitals, preferences, and updates.</span></div>
+      </div>
+    </div>
+
+    <div class="guide-warning start-disclaimer">
+      <strong>&#9888;&#65039; Important:</strong> MeritNama is an independent community tool. Use it for orientation and planning, then verify eligibility, schedule, seat counts, and official merit lists directly with PHF / PMDC / PGMI sources.
+    </div>
+  </section>
+
+  <!-- ============================================================
        TAB 1 : MERIT TABLE
   ============================================================ -->
-  <section class="tab-content active" id="tab-merit">
+  <section class="tab-content" id="tab-merit">
 
     <!-- Toolbar row -->
     <div class="mt-toolbar">
