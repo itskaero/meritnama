@@ -12,7 +12,7 @@ const SIM = {
   seatsLoaded:  false,
   myId:         null,   // applicantId string | null
   customCand:   null,   // manually-added candidate | null
-  activeTab:    'candidates',
+  activeTab:    'guide',
 
   cand: {
     filter:   '',
@@ -499,6 +499,11 @@ function setupTabs() {
       // close hamburger menu after tab selection on mobile
       nav?.classList.remove('nav-open');
       document.getElementById('hamburgerBtn')?.setAttribute('aria-expanded', 'false');
+    });
+  });
+  document.querySelectorAll('.portal-guide-action[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelector(`.tab-btn[data-tab="${btn.dataset.tab}"]`)?.click();
     });
   });
 }
