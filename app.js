@@ -60,7 +60,7 @@ const App = {
     currentMerit:  null,
   },
   ui: {
-    activeTab: 'merit',
+    activeTab: 'start',
     predResults: [],
     yearMeritCache: null,
   },
@@ -308,6 +308,12 @@ function switchToTab(tab) {
 function setupTabNavigation() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => switchToTab(btn.dataset.tab));
+  });
+  document.querySelectorAll('.start-actions [data-tab], .start-link[data-tab]').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      switchToTab(link.dataset.tab);
+    });
   });
   const urlTab  = new URLSearchParams(window.location.search).get('tab');
   const lastTab = localStorage.getItem('mn_last_tab');
