@@ -1108,6 +1108,73 @@ function jumpToSlot(prog, quota, spec, hosp) {
   renderSlot();
 }
 
+function buildSimCandidateMap(program) {
+  if (!SIM.sim.result || SIM.sim.program !== program) return null;
+  const simMap = {};
+  for (const sc of SIM.sim.result.candidates) {
+    simMap[simRecordKey(sc.applicantId, sc._track)] = sc;
+  }
+  return simMap;
+}
+
+function annotateApplicantWithSim(a, quota, spec, hosp, simMap) {
+  if (!simMap) return;
+  const slotTrack = quotaTrack(quota);
+  const sc = simMap[simRecordKey(a.applicantId, slotTrack)];
+  if (!sc) { a._simStatus = null; return; }
+  if (sc.placed && sc._q === quota && sc._s === spec && sc._h === hosp) {
+    a._simStatus = 'selected';
+  } else if (sc.placed) {
+    const placedPref = sc._prefs?.find(
+      p => p.quotaName === sc._q && p.specialityName === sc._s && p.hospitalName === sc._h
+    );
+    a._simStatus = (placedPref && placedPref.preferenceNo < a.preferenceNo)
+      ? 'higher-pref' : 'elsewhere';
+    a._placedAt = `${sc._s} @ ${sc._h.split(',')[0].trim()}`;
+  } else {
+    a._simStatus = 'unplaced';
+  }
+}
+
+function getSimSlotData(quota, spec, hosp) {
+  const sl = SIM.sim.result?.seatTree?.[quota]?.[spec]?.[hosp];
+  if (!sl) return { selected: [], cutoff: null };
+  const selected = sl.candidates || [];
+  const cutoff = selected.length ? Math.min(...selected.map(c => c.marksTotal)) : null;
+  return { selected, cutoff };
+}
+
+function buildSimDisplayList(applicants, useSimData) {
+  if (!useSimData) return applicants;
+  const selectedGroup = applicants.filter(a => a._simStatus === 'selected');
+  const restGroup     = applicants.filter(a => a._simStatus !== 'selected');
+  return selectedGroup.length ? [...selectedGroup, ...restGroup] : applicants;
+}
+
+function renderSbSimTag(a) {
+  if (a._simStatus === 'higher-pref') {
+    return `<span class="sb-sim-tag sb-sim-elsewhere" title="Placed at higher-preference: ${esc(a._placedAt || '')}">↑ higher pref</span>`;
+  }
+  if (a._simStatus === 'elsewhere') {
+    return `<span class="sb-sim-tag sb-sim-elsewhere" title="Placed elsewhere: ${esc(a._placedAt || '')}">placed elsewhere</span>`;
+  }
+  if (a._simStatus === 'selected') {
+    return `<span class="sb-sim-tag sb-sim-selected">✓ selected</span>`;
+  }
+  return '';
+}
+
+function formatGroupCutoffBadge(slots, quota) {
+  const cutoffs = slots
+    .map(sl => getSimSlotData(quota, sl.spec, sl.hosp).cutoff)
+    .filter(c => c != null);
+  if (!cutoffs.length) return '';
+  const min = Math.min(...cutoffs);
+  const max = Math.max(...cutoffs);
+  const label = min === max ? fmtM(min) : `${fmtM(min)}–${fmtM(max)}`;
+  return `<span class="sim-badge badge-cutoff sb-partial-cutoff">Cutoff: ${label}</span>`;
+}
+
 function renderSlot() {
   const { program, quota, spec, hosp } = SIM.sb;
   const container = document.getElementById('sbResult');
@@ -1146,38 +1213,15 @@ function renderSlot() {
   applicants.forEach((a, i) => { a._meritRank = i + 1; });
 
   // ── Simulation overlay ─────────────────────────────────────────
-  // If the simulation has been run for this program, annotate each
-  // applicant so candidates placed at a higher-preference slot are
-  // clearly marked — they won't actually compete at this slot.
   const useSimData = !!(SIM.sim.result && SIM.sim.program === program);
-  if (useSimData) {
-    const simMap = {};
-    for (const sc of SIM.sim.result.candidates) {
-      simMap[simRecordKey(sc.applicantId, sc._track)] = sc;
-    }
-    const slotTrack = quotaTrack(quota);
-    for (const a of applicants) {
-      const sc = simMap[simRecordKey(a.applicantId, slotTrack)];
-      if (!sc) { a._simStatus = null; continue; }
-      if (sc.placed && sc._q === quota && sc._s === spec && sc._h === hosp) {
-        a._simStatus = 'selected';
-      } else if (sc.placed) {
-        const placedPref = sc._prefs?.find(
-          p => p.quotaName === sc._q && p.specialityName === sc._s && p.hospitalName === sc._h
-        );
-        a._simStatus = (placedPref && placedPref.preferenceNo < a.preferenceNo)
-          ? 'higher-pref' : 'elsewhere';
-        a._placedAt = `${sc._s} @ ${sc._h.split(',')[0].trim()}`;
-      } else {
-        a._simStatus = 'unplaced';
-      }
-    }
+  const simMap     = useSimData ? buildSimCandidateMap(program) : null;
+  if (simMap) {
+    for (const a of applicants) annotateApplicantWithSim(a, quota, spec, hosp, simMap);
   }
 
-  // Float simulation-selected candidates to top of the display list
   const selectedGroup = useSimData ? applicants.filter(a => a._simStatus === 'selected') : [];
-  const restGroup     = useSimData ? applicants.filter(a => a._simStatus !== 'selected') : applicants;
-  const displayList   = selectedGroup.length ? [...selectedGroup, ...restGroup] : applicants;
+  const displayList   = buildSimDisplayList(applicants, useSimData);
+  const simCutoff     = useSimData ? getSimSlotData(quota, spec, hosp).cutoff : null;
 
   const seats   = SIM.seats?.[program]?.[quota]?.[spec]?.[hosp] ?? null;
   const isMe    = id => String(id) === SIM.myId;
@@ -1205,11 +1249,12 @@ function renderSlot() {
           <span class="sb-stat-l">Seats</span>
         </div>
         ${ratio ? `<div class="sb-stat"><span class="sb-stat-v">${ratio}:1</span><span class="sb-stat-l">Competition</span></div>` : ''}
+        ${simCutoff != null ? `<div class="sb-stat"><span class="sb-stat-v">${fmtM(simCutoff)}</span><span class="sb-stat-l">Sim. cutoff</span></div>` : ''}
         ${myPos ? `<div class="sb-stat sb-stat-me"><span class="sb-stat-v">#${myPos}</span><span class="sb-stat-l">Your rank</span></div>` : ''}
       </div>
     </div>
     ${useSimData
-      ? `<p class="sb-sim-note">Simulation active &mdash; &#10003; selected pinned to top. Dimmed = placed at a higher-preference slot.</p>`
+      ? `<p class="sb-sim-note">Simulation active &mdash; &#10003; selected candidates and merit cutoff shown. Dimmed = placed at a higher-preference slot.</p>`
       : `<p class="sb-sim-note sb-merit-hint">&#9432; Sorted by marks only &mdash; run the <strong>Simulation</strong> tab for merit-accurate predictions.</p>`}
     ${!SIM.seatsLoaded ? '<p class="sb-no-seats">⚠️ Seat count not loaded — cutoff line unavailable.</p>' : ''}
     <div class="sb-list">
@@ -1222,23 +1267,23 @@ function renderSlot() {
             rows.push(`<div class="sb-section-hdr sb-section-sel"><span>&#10003; Selected by simulation</span></div>`);
           if (di === selectedGroup.length && selectedGroup.length)
             rows.push(`<div class="sb-section-hdr"><span>All applicants by merit</span></div>`);
-          if (!cutoffShown && seats && a._meritRank > seats) {
-            cutoffShown = true;
-            rows.push(`<div class="sb-cutoff"><span>─── Merit closes here (estimated) ───</span></div>`);
+          if (!cutoffShown) {
+            if (useSimData && selectedGroup.length && di === selectedGroup.length) {
+              cutoffShown = true;
+              const cutoffLabel = simCutoff != null ? fmtM(simCutoff) : 'simulation cutoff';
+              rows.push(`<div class="sb-cutoff"><span>─── Merit closes here (${cutoffLabel}) ───</span></div>`);
+            } else if (!useSimData && seats && a._meritRank > seats) {
+              cutoffShown = true;
+              rows.push(`<div class="sb-cutoff"><span>─── Merit closes here (estimated) ───</span></div>`);
+            }
           }
           const topN      = seats != null;
           const elsewhere = a._simStatus === 'higher-pref' || a._simStatus === 'elsewhere';
           const selected  = a._simStatus === 'selected';
-          const above     = topN && a._meritRank <= seats && !elsewhere;
+          const above     = useSimData ? selected : (topN && a._meritRank <= seats && !elsewhere);
           const me        = isMe(a.applicantId);
           const searched  = SIM.sb.candidateId && String(a.applicantId) === SIM.sb.candidateId;
-          const simTag = a._simStatus === 'higher-pref'
-            ? `<span class="sb-sim-tag sb-sim-elsewhere" title="Placed at higher-preference: ${esc(a._placedAt || '')}">↑ higher pref</span>`
-            : a._simStatus === 'elsewhere'
-            ? `<span class="sb-sim-tag sb-sim-elsewhere" title="Placed elsewhere: ${esc(a._placedAt || '')}">placed elsewhere</span>`
-            : a._simStatus === 'selected'
-            ? `<span class="sb-sim-tag sb-sim-selected">✓ selected</span>`
-            : '';
+          const simTag    = renderSbSimTag(a);
           rows.push(`<div class="sb-row ${above ? 'sb-above' : topN && !elsewhere ? 'sb-below' : ''} ${me ? 'sb-row-me' : ''} ${searched ? 'sb-row-search' : ''} ${elsewhere ? 'sb-row-elsewhere' : ''} ${selected ? 'sb-row-selected' : ''}" data-cand-id="${a.applicantId}">
             <span class="sb-rank">#${a._meritRank}</span>
             <span class="sb-pref-no">Pref ${a.preferenceNo}</span>
@@ -1329,11 +1374,21 @@ function renderPartialSlot() {
       }
     });
     applicants.sort((a, b) => b.marksTotal - a.marksTotal);
+    applicants.forEach((a, i) => { a._meritRank = i + 1; });
     grp.applicants = applicants;
   }
 
-  const groups = [...groupMap.values()].sort((a, b) => a.key.localeCompare(b.key));
-  const isMe   = id => String(id) === SIM.myId;
+  const groups   = [...groupMap.values()].sort((a, b) => a.key.localeCompare(b.key));
+  const isMe     = id => String(id) === SIM.myId;
+  const simMap   = useSimData ? buildSimCandidateMap(program) : null;
+
+  if (simMap) {
+    for (const grp of groups) {
+      for (const a of grp.applicants) {
+        annotateApplicantWithSim(a, quota, a.slotSpec, a.slotHosp, simMap);
+      }
+    }
+  }
 
   const totalSeats = groups.reduce((s, g) => s + g.seats, 0);
 
@@ -1351,7 +1406,7 @@ function renderPartialSlot() {
     </div>
     ${!useSimData
       ? `<div class="sb-partial-warn">&#9888;&#65039; Without running the <strong>Simulation</strong> first, the same candidate may appear in multiple slots below. Run the Simulation tab for a de-duplicated, merit-accurate view.</div>`
-      : `<p class="sb-sim-note">Simulation active &mdash; showing predicted standings per slot.</p>`}
+      : `<p class="sb-sim-note">Simulation active &mdash; showing selected candidates and merit cutoffs per slot.</p>`}
     <div style="padding:12px;display:flex;flex-direction:column;gap:12px;">
   `;
 
@@ -1359,9 +1414,12 @@ function renderPartialSlot() {
     html += '<p class="sb-empty">No slots or applicants found for this filter.</p>';
   } else {
     for (const grp of groups) {
-      const top5   = grp.applicants.slice(0, 5);
-      const extra  = grp.applicants.length - 5;
-      const myIdx  = SIM.myId ? grp.applicants.findIndex(a => isMe(a.applicantId)) : -1;
+      const displayList = buildSimDisplayList(grp.applicants, useSimData);
+      const top5        = displayList.slice(0, 5);
+      const extra       = grp.applicants.length - 5;
+      const myIdx       = SIM.myId ? grp.applicants.findIndex(a => isMe(a.applicantId)) : -1;
+      const cutoffBadge = useSimData ? formatGroupCutoffBadge(grp.slots, quota) : '';
+      const selectedCount = useSimData ? grp.applicants.filter(a => a._simStatus === 'selected').length : 0;
       // Jump button(s): link directly into the full slot view
       const canSingleJump = grp.slots.length === 1 && grp.slots[0].spec && grp.slots[0].hosp;
       const jumpBtns = canSingleJump
@@ -1376,26 +1434,41 @@ function renderPartialSlot() {
             <div>
               <span class="sb-spec" style="font-size:0.95rem">${esc(grp.key)}</span>
               <span class="sb-meta" style="display:block;margin-top:2px">
-                ${grp.slots.length > 1 ? grp.slots.length + ' slots · ' : ''}${grp.seats || '?'} seat${grp.seats !== 1 ? 's' : ''} &nbsp;&middot;&nbsp; ${grp.applicants.length} applicant${grp.applicants.length !== 1 ? 's' : ''}
+                ${grp.slots.length > 1 ? grp.slots.length + ' slots · ' : ''}${grp.seats || '?'} seat${grp.seats !== 1 ? 's' : ''} &nbsp;&middot;&nbsp; ${grp.applicants.length} applicant${grp.applicants.length !== 1 ? 's' : ''}${useSimData && selectedCount ? ` &nbsp;&middot;&nbsp; ${selectedCount} selected` : ''}
               </span>
             </div>
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              ${cutoffBadge}
               ${myIdx >= 0 ? `<span class="sim-me-badge" style="font-size:0.72rem">YOU #${myIdx + 1}</span>` : ''}
               ${jumpBtns}
             </div>
           </div>
           <div class="sb-list" style="padding:6px 12px">
-            ${top5.length ? top5.map((a, i) => {
-              const above = grp.seats > 0 && (i + 1) <= grp.seats;
-              const showSlot = grp.slots.length > 1;
-              return `<div class="sb-row ${above ? 'sb-above' : 'sb-below'} ${isMe(a.applicantId) ? 'sb-row-me' : ''}">
-                <span class="sb-rank">#${i + 1}</span>
-                <span class="sb-marks">${fmtM(a.marksTotal)}</span>
-                <span class="sb-pref-no sb-parent">${a.parentInstitute ? '\u2605' : ''}</span>
-                <span class="sb-name">${esc(a.nameFull)}${isMe(a.applicantId) ? ' <span class="me-tag">YOU</span>' : ''}${showSlot ? `<span style="font-size:0.7rem;color:var(--text-muted);margin-left:5px">${esc(spec ? a.slotHosp.split(',')[0].trim() : a.slotSpec)}</span>` : ''}</span>
-                <span></span>
-              </div>`;
-            }).join('') : '<p class="sb-empty">No applicants listed this slot.</p>'}
+            ${top5.length ? (() => {
+              const rows = [];
+              let sectionSelShown = false;
+              top5.forEach((a, i) => {
+                if (useSimData && a._simStatus === 'selected' && !sectionSelShown) {
+                  sectionSelShown = true;
+                  rows.push(`<div class="sb-section-hdr sb-section-sel"><span>&#10003; Selected by simulation</span></div>`);
+                }
+                if (useSimData && sectionSelShown && i > 0 && top5[i - 1]._simStatus === 'selected' && a._simStatus !== 'selected') {
+                  rows.push(`<div class="sb-section-hdr"><span>Next in line</span></div>`);
+                }
+                const elsewhere = a._simStatus === 'higher-pref' || a._simStatus === 'elsewhere';
+                const selected  = a._simStatus === 'selected';
+                const above     = useSimData ? selected : (grp.seats > 0 && a._meritRank <= grp.seats);
+                const showSlot  = grp.slots.length > 1;
+                rows.push(`<div class="sb-row ${above ? 'sb-above' : useSimData ? '' : 'sb-below'} ${isMe(a.applicantId) ? 'sb-row-me' : ''} ${elsewhere ? 'sb-row-elsewhere' : ''} ${selected ? 'sb-row-selected' : ''}">
+                  <span class="sb-rank">#${a._meritRank}</span>
+                  <span class="sb-marks">${fmtM(a.marksTotal)}</span>
+                  <span class="sb-pref-no sb-parent">${a.parentInstitute ? '\u2605' : ''}</span>
+                  <span class="sb-name">${esc(a.nameFull)}${isMe(a.applicantId) ? ' <span class="me-tag">YOU</span>' : ''}${showSlot ? `<span style="font-size:0.7rem;color:var(--text-muted);margin-left:5px">${esc(spec ? a.slotHosp.split(',')[0].trim() : a.slotSpec)}</span>` : ''}${useSimData ? renderSbSimTag(a) : ''}</span>
+                  <span></span>
+                </div>`);
+              });
+              return rows.join('');
+            })() : '<p class="sb-empty">No applicants listed this slot.</p>'}
             ${extra > 0 ? `<p style="text-align:center;font-size:0.74rem;color:var(--text-muted);padding:4px 0 8px">+${extra} more &mdash; view the full slot for complete list</p>` : ''}
           </div>
         </div>
@@ -1927,6 +2000,7 @@ function runSimulation() {
     try {
       SIM.sim.result = runSimulationForProgram(prog);
       renderSimResults();
+      if (SIM.sb.program === prog) renderSlot();
     } catch (e) {
       showToast(`Simulation error: ${e.message}`, 'error');
       console.error(e);
