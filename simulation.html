@@ -211,6 +211,29 @@
       border: 1px solid rgba(124,101,196,0.32);
     }
 
+    /* -- Profile verification status tags -- */
+    .profile-status-tag {
+      display: inline-block; font-size: 0.58rem; font-weight: 700;
+      padding: 1px 6px; border-radius: 100px; margin-left: 4px;
+      vertical-align: middle; letter-spacing: 0.02em;
+    }
+    .profile-status-tag.ps-accepted {
+      background: rgba(62,207,142,0.14); color: var(--neon-green, #3ecf8e);
+      border: 1px solid rgba(62,207,142,0.32);
+    }
+    .profile-status-tag.ps-pending {
+      background: rgba(232,166,39,0.14); color: var(--neon-gold, #e8a627);
+      border: 1px solid rgba(232,166,39,0.32);
+    }
+    .profile-status-tag.ps-rejected {
+      background: rgba(224,84,112,0.12); color: #e05470;
+      border: 1px solid rgba(224,84,112,0.28);
+    }
+    .profile-status-tag.ps-other {
+      background: rgba(255,255,255,0.06); color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
     /* -- "ME" table row -- */
     .row-me { background: rgba(77,184,217,0.07) !important; }
     .row-me td:first-child { border-left: 3px solid var(--neon-cyan, #4db8d9); }
@@ -1583,6 +1606,85 @@
     }
     .chat-react-picker-item:hover { background: rgba(255,255,255,0.08); }
     .chat-msg-body-wrap { position: relative; }
+    .chat-reply-btn {
+      background: none; border: none; color: var(--text-muted); cursor: pointer;
+      font-size: 0.85rem; padding: 0 2px; opacity: 0.55; line-height: 1;
+    }
+    .chat-reply-btn:hover { opacity: 1; color: var(--neon-cyan); }
+    .chat-reply-quote {
+      border-left: 2px solid rgba(77,184,217,0.45); padding: 4px 8px; margin-bottom: 6px;
+      background: rgba(255,255,255,0.03); border-radius: 0 6px 6px 0; cursor: pointer;
+      font-size: 0.72rem; line-height: 1.35;
+    }
+    .chat-reply-name { display: block; font-weight: 700; color: var(--neon-cyan); margin-bottom: 2px; }
+    .chat-reply-snippet { color: var(--text-muted); }
+    .chat-reply-bar {
+      display: flex; align-items: stretch; margin-bottom: 6px;
+      background: rgba(77,184,217,0.06); border: 1px solid rgba(77,184,217,0.2);
+      border-radius: 8px; overflow: hidden;
+    }
+    .chat-reply-bar.hidden { display: none; }
+    .chat-reply-bar-inner { display: flex; align-items: center; width: 100%; gap: 8px; padding: 6px 10px; }
+    .chat-reply-bar-text { flex: 1; min-width: 0; font-size: 0.74rem; }
+    .chat-reply-bar-label { display: block; color: var(--text-muted); }
+    .chat-reply-bar-snippet { display: block; color: var(--text); opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chat-reply-cancel {
+      background: none; border: none; color: var(--text-muted); cursor: pointer;
+      font-size: 1.1rem; padding: 0 4px; line-height: 1;
+    }
+    .chat-reply-cancel:hover { color: #e05470; }
+    .chat-everyone-bar { margin-bottom: 8px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .chat-everyone-btn {
+      font-size: 0.72rem; padding: 4px 12px; border-radius: 100px; cursor: pointer;
+      background: rgba(224,84,112,0.1); color: #e05470;
+      border: 1px solid rgba(224,84,112,0.28); font-weight: 700;
+    }
+    .chat-everyone-btn:hover { background: rgba(224,84,112,0.18); }
+    .chat-mute-everyone-btn {
+      font-size: 0.68rem; padding: 4px 10px; border-radius: 100px; cursor: pointer;
+      background: rgba(255,255,255,0.04); color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .chat-mute-everyone-btn.chat-mute-active {
+      background: rgba(232,166,39,0.12); color: var(--neon-gold); border-color: rgba(232,166,39,0.3);
+    }
+    .chat-mention-everyone {
+      color: #e05470; font-weight: 700; background: rgba(224,84,112,0.1);
+      padding: 0 3px; border-radius: 4px;
+    }
+    .chat-mention-user {
+      color: var(--neon-cyan, #4db8d9); font-weight: 600;
+    }
+    .chat-mention-me {
+      color: var(--neon-green, #3ecf8e); font-weight: 700; background: rgba(62,207,142,0.1);
+      padding: 0 3px; border-radius: 4px;
+    }
+    .chat-mention-btn {
+      background: none; border: none; color: var(--text-muted); cursor: pointer;
+      font-size: 0.78rem; font-weight: 700; padding: 0 2px; opacity: 0.55;
+    }
+    .chat-mention-btn:hover { opacity: 1; color: var(--neon-cyan); }
+    .chat-typing {
+      font-size: 0.72rem; color: var(--text-muted); font-style: italic;
+      padding: 4px 2px 6px; min-height: 1.2em;
+    }
+    .chat-typing.hidden { display: none; }
+    .chat-pin-banner {
+      margin-bottom: 8px; padding: 10px 12px;
+      background: rgba(245,200,66,0.08); border: 1px solid rgba(245,200,66,0.28);
+      border-left: 3px solid var(--neon-gold, #e8a627); border-radius: 8px;
+    }
+    .chat-pin-banner.hidden { display: none; }
+    .chat-pin-label { font-size: 0.68rem; font-weight: 700; color: var(--neon-gold); display: block; margin-bottom: 4px; }
+    .chat-pin-text { font-size: 0.8rem; line-height: 1.4; }
+    .chat-pin-by { display: block; font-size: 0.68rem; color: var(--text-muted); margin-top: 4px; }
+    .chat-msg-highlight {
+      animation: chatHighlight 1.6s ease;
+    }
+    @keyframes chatHighlight {
+      0%, 30% { background: rgba(77,184,217,0.12); border-radius: 8px; }
+      100% { background: transparent; }
+    }
 
     /* ---------------------------------------------------------------
        FLOATING CHAT BUBBLE (FAB)
@@ -1816,6 +1918,15 @@
             <option value="MD">MD</option>
           </select>
         </div>
+        <div class="form-group">
+          <label for="candProfileStatus">Verification status</label>
+          <select id="candProfileStatus" class="mt-filter-sel" title="Portal profile verification status (when loaded)">
+            <option value="">All statuses</option>
+            <option value="11">Pending</option>
+            <option value="1">Accepted</option>
+            <option value="2">Rejected</option>
+          </select>
+        </div>
         <div class="form-group marks-basis-wrap">
           <label for="candMarksBasis">Merit basis</label>
           <select id="candMarksBasis" class="mt-filter-sel" title="Formula used for base marks in this table and allocation"></select>
@@ -1854,6 +1965,22 @@
         <span class="cstats-item cstats-warn" id="cstats-lowmarks-item" title="Base marks below 5 — data likely needs re-updating">
           <span class="cstats-label">Marks &lt;5 &#9888;</span>
           <span class="cstats-val" id="cstat-lowmarks">—</span>
+        </span>
+      </div>
+      <div id="candProfileStats" class="cand-stats-bar hidden" style="margin-top:6px">
+        <span class="cstats-item" title="Verification accepted (status 1)">
+          <span class="cstats-label">Accepted</span>
+          <span class="cstats-val cstats-fcps" id="cstat-ps-accepted">—</span>
+        </span>
+        <span class="cstats-sep">&middot;</span>
+        <span class="cstats-item" title="Verification pending (status 11)">
+          <span class="cstats-label">Pending</span>
+          <span class="cstats-val" style="color:var(--neon-gold)" id="cstat-ps-pending">—</span>
+        </span>
+        <span class="cstats-sep">&middot;</span>
+        <span class="cstats-item" title="Verification rejected (status 2)">
+          <span class="cstats-label">Rejected</span>
+          <span class="cstats-val" style="color:#e05470" id="cstat-ps-rejected">—</span>
         </span>
       </div>
     </div>
@@ -2406,22 +2533,23 @@
   <section class="tab-content" id="tab-community">
     <div class="section-header">
       <h2>&#128172; Community Chat</h2>
-      <p>A live chat room for Induction Portal applicants. Messages are public and visible to everyone. Be respectful and helpful.</p>
+      <p>Reply, mention <strong>@username</strong> or <strong>@everyone</strong>, share images, and be respectful. Mute @everyone if it gets noisy.</p>
     </div>
     <div class="chat-tab-wrap">
       <!-- Name bar -->
       <div id="chatTabNameBar" class="chat-name-bar"></div>
-      <!-- Messages area -->
+      <div id="chatTabPin" class="chat-pin-banner hidden"></div>
+      <div id="chatTabTyping" class="chat-typing hidden"></div>
       <div id="chatTabMessages" class="chat-messages"></div>
       <!-- Input area -->
       <div class="chat-input-area">
+        <div id="chatTabEveryoneBar" class="chat-everyone-bar"></div>
+        <div id="chatTabReplyBar" class="chat-reply-bar hidden"></div>
         <div id="chatTabAttachPreview" class="chat-attach-preview hidden"></div>
         <div class="chat-input-row">
           <div class="chat-toolbar">
             <input type="file" id="chatTabImageInput" accept="image/jpeg,image/png,image/gif,image/webp" hidden />
-            <input type="file" id="chatTabFileInput" accept=".pdf,.txt,.doc,.docx,.xls,.xlsx,.zip,application/pdf,text/plain" hidden />
             <button id="chatTabImageBtn" class="chat-attach-btn" title="Upload image" type="button">&#128247;</button>
-            <button id="chatTabFileBtn" class="chat-attach-btn" title="Upload file" type="button">&#128206;</button>
           </div>
           <div class="chat-input-wrap">
             <textarea id="chatTabInput" class="chat-textarea" rows="2"
@@ -2433,7 +2561,7 @@
         </div>
         <div class="chat-footer-row">
           <span id="chatTabCharCount" class="chat-char-count">0/500</span>
-          <span style="color:var(--text-muted);font-size:0.72rem">Images auto-compressed; files up to 300&nbsp;KB &middot; stored in Firestore (no Storage needed)</span>
+          <span style="color:var(--text-muted);font-size:0.72rem">@username mentions you &middot; mute @everyone if needed &middot; &#8617; reply</span>
         </div>
       </div>
     </div>
@@ -2553,15 +2681,17 @@
     <button id="chatPopupCloseBtn" class="chat-popup-close" title="Close" type="button">&times;</button>
   </div>
   <div id="chatPopupNameBar" class="chat-name-bar" style="padding:6px 12px;border-bottom:1px solid var(--border)"></div>
+  <div id="chatPopupPin" class="chat-pin-banner hidden" style="margin:8px 10px 0"></div>
+  <div id="chatPopupTyping" class="chat-typing hidden" style="padding:0 10px"></div>
   <div id="chatPopupMessages" class="chat-messages chat-messages-popup"></div>
   <div class="chat-input-area chat-input-area-popup">
-    <div id="chatPopupAttachPreview" class="chat-attach-preview hidden"></div>
+    <div id="chatPopupEveryoneBar" class="chat-everyone-bar" style="padding:0 10px"></div>
+    <div id="chatPopupReplyBar" class="chat-reply-bar hidden" style="margin:0 10px 6px"></div>
+    <div id="chatPopupAttachPreview" class="chat-attach-preview hidden" style="margin:0 10px"></div>
     <div class="chat-input-row">
       <div class="chat-toolbar">
         <input type="file" id="chatPopupImageInput" accept="image/jpeg,image/png,image/gif,image/webp" hidden />
-        <input type="file" id="chatPopupFileInput" accept=".pdf,.txt,.doc,.docx,.xls,.xlsx,.zip,application/pdf,text/plain" hidden />
         <button id="chatPopupImageBtn" class="chat-attach-btn" title="Upload image" type="button">&#128247;</button>
-        <button id="chatPopupFileBtn" class="chat-attach-btn" title="Upload file" type="button">&#128206;</button>
       </div>
       <div class="chat-input-wrap">
         <textarea id="chatPopupInput" class="chat-textarea" rows="2"

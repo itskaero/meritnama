@@ -1135,6 +1135,54 @@
 
       <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
 
+      <h3 style="font-size:0.9rem;color:var(--accent);margin:0 0 0.5rem;">&#9989; Profile Verification Status</h3>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
+        Publishes per-applicant verification status to the <strong>Candidates</strong> tab on <code>simulation.html</code> via
+        <code>notifications/profile_status</code> in Firestore.
+        Paste the portal <code>ProfileStatus</code> array (or full response with <code>entries</code>) — same workflow as schedule: fetch locally, paste JSON, save.
+        Status codes: <strong>11</strong> pending · <strong>1</strong> accepted · <strong>2</strong> rejected.
+      </p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.75rem;max-width:760px;margin-bottom:0.75rem;">
+        <div class="modal-field" style="margin:0;">
+          <label>Status type label</label>
+          <input type="text" id="psAdminTypeLabel" value="Verification : Round 01" placeholder="Verification : Round 01" />
+        </div>
+        <div class="modal-field" style="margin:0;">
+          <label>Status type ID</label>
+          <input type="number" id="psAdminTypeId" value="131" min="0" />
+        </div>
+      </div>
+      <div class="modal-field" style="max-width:760px;">
+        <label>Profile status JSON <span style="text-transform:none;font-weight:400;">(array of <code>{applicantId, statusId, statusTypeId}</code> or wrapped object)</span></label>
+        <textarea id="psAdminJson" rows="10" spellcheck="false" style="width:100%;resize:vertical;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.78rem;font-family:Consolas,Monaco,monospace;" placeholder='[{"applicantId":36747,"statusId":11,"statusTypeId":131},...]'></textarea>
+      </div>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem;">
+        <button id="psAdminLoadBtn" style="padding:8px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Load from Firestore</button>
+        <button id="psAdminStaticBtn" style="padding:8px 16px;background:rgba(245,200,66,0.12);color:#f5c842;border:1px solid rgba(245,200,66,0.28);border-radius:8px;cursor:pointer;font-weight:600;">Load Static Snapshot</button>
+        <button id="psAdminSaveBtn" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save to Firestore</button>
+      </div>
+      <div id="psAdminStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+
+      <h3 style="font-size:0.9rem;color:var(--accent);margin:0 0 0.5rem;">&#128204; Community Chat — Pinned Announcement</h3>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
+        Shows a pinned banner at the top of community chat on <code>simulation.html</code> via
+        <code>notifications/chat_pin</code>. Only one announcement at a time — use for rules, deadlines, or important updates.
+      </p>
+      <div class="modal-field" style="max-width:760px;">
+        <label>Pinned message</label>
+        <textarea id="chatPinText" rows="4" spellcheck="true" style="width:100%;resize:vertical;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.82rem;" placeholder="e.g. Be respectful — no sharing personal contact info in chat."></textarea>
+      </div>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem;">
+        <button id="chatPinLoadBtn" style="padding:8px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Load Current</button>
+        <button id="chatPinSaveBtn" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Pin Message</button>
+        <button id="chatPinClearBtn" style="padding:8px 16px;background:rgba(224,84,112,0.15);color:var(--neon-pink);border:1px solid rgba(224,84,112,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Clear Pin</button>
+      </div>
+      <div id="chatPinStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+
       <h3 style="font-size:0.9rem;color:var(--accent);margin:0 0 0.5rem;">&#128221; Simulation Notifications Feed</h3>
       <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
         Edits the simulation page notification feed using the same schema as <code>data/notifications.json</code>.
@@ -2559,11 +2607,19 @@ function loadBroadcast() {
   document.getElementById('schedAdminLoadBtn')?.addEventListener('click', loadScheduleAdminEditor);
   document.getElementById('schedAdminStaticBtn')?.addEventListener('click', loadScheduleAdminStatic);
   document.getElementById('schedAdminSaveBtn')?.addEventListener('click', saveScheduleAdminEditor);
+  document.getElementById('psAdminLoadBtn')?.addEventListener('click', loadProfileStatusAdminEditor);
+  document.getElementById('psAdminStaticBtn')?.addEventListener('click', loadProfileStatusAdminStatic);
+  document.getElementById('psAdminSaveBtn')?.addEventListener('click', saveProfileStatusAdminEditor);
+  document.getElementById('chatPinLoadBtn')?.addEventListener('click', loadChatPinEditor);
+  document.getElementById('chatPinSaveBtn')?.addEventListener('click', saveChatPinEditor);
+  document.getElementById('chatPinClearBtn')?.addEventListener('click', clearChatPinEditor);
   initMarksConfigAdmin();
   initAccessConfigAdmin();
   loadSimulationNotificationsEditor();
   loadFetchProgressEditor();
   loadScheduleAdminEditor();
+  loadProfileStatusAdminEditor();
+  loadChatPinEditor();
 }
 
 function setScheduleAdminStatus(message, color = 'var(--text-muted)') {
@@ -2642,6 +2698,153 @@ async function saveScheduleAdminEditor() {
     setScheduleAdminStatus(`Saved ${steps.length} steps. Schedule tab will update live.`, 'var(--neon-green)');
   } catch (e) {
     setScheduleAdminStatus('Error saving schedule: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
+function setProfileStatusAdminStatus(message, color = 'var(--text-muted)') {
+  const el = document.getElementById('psAdminStatus');
+  if (!el) return;
+  el.textContent = message;
+  el.style.color = color;
+}
+
+function normalizeProfileStatusAdminEntries(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (raw?.entries && Array.isArray(raw.entries)) return raw.entries;
+  if (raw?.Table && Array.isArray(raw.Table)) return raw.Table;
+  return null;
+}
+
+async function loadProfileStatusAdminEditor() {
+  setProfileStatusAdminStatus('Loading profile status from Firestore…');
+  try {
+    const snap = await db.collection('notifications').doc('profile_status').get();
+    if (!snap.exists) {
+      setProfileStatusAdminStatus('No live profile status in Firestore yet. Load static snapshot or paste JSON.', 'var(--neon-gold)');
+      return;
+    }
+    const data = snap.data();
+    const entries = normalizeProfileStatusAdminEntries(data);
+    const ta = document.getElementById('psAdminJson');
+    if (ta && entries) ta.value = JSON.stringify(entries, null, 2);
+    const typeLabel = document.getElementById('psAdminTypeLabel');
+    const typeId = document.getElementById('psAdminTypeId');
+    if (typeLabel && data.statusTypeLabel) typeLabel.value = data.statusTypeLabel;
+    if (typeId && data.statusTypeId != null) typeId.value = data.statusTypeId;
+    setProfileStatusAdminStatus(`Loaded ${entries?.length || 0} entries from Firestore.`, 'var(--neon-green)');
+  } catch (e) {
+    setProfileStatusAdminStatus('Error loading profile status: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
+async function loadProfileStatusAdminStatic() {
+  setProfileStatusAdminStatus('Loading static snapshot…');
+  try {
+    const res = await fetch('data/ProfileStatus.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const ta = document.getElementById('psAdminJson');
+    if (ta && Array.isArray(data)) ta.value = JSON.stringify(data, null, 2);
+    setProfileStatusAdminStatus(`Loaded ${data.length} entries from static snapshot (not saved yet).`, 'var(--neon-green)');
+  } catch (e) {
+    setProfileStatusAdminStatus('Error loading static snapshot: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
+async function saveProfileStatusAdminEditor() {
+  const ta = document.getElementById('psAdminJson');
+  if (!ta?.value.trim()) {
+    setProfileStatusAdminStatus('Paste profile status JSON first.', 'var(--neon-pink)');
+    return;
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(ta.value);
+  } catch (e) {
+    setProfileStatusAdminStatus('Invalid JSON: ' + e.message, 'var(--neon-pink)');
+    return;
+  }
+  const entries = normalizeProfileStatusAdminEntries(parsed);
+  if (!entries?.length) {
+    setProfileStatusAdminStatus('JSON must be an array (or object with entries/Table) with at least one row.', 'var(--neon-pink)');
+    return;
+  }
+  const typeLabel = document.getElementById('psAdminTypeLabel')?.value?.trim() || 'Profile status';
+  const typeId = parseInt(document.getElementById('psAdminTypeId')?.value, 10);
+  setProfileStatusAdminStatus('Saving…');
+  try {
+    await db.collection('notifications').doc('profile_status').set({
+      source: 'admin_paste',
+      statusTypeId: Number.isFinite(typeId) ? typeId : null,
+      statusTypeLabel: typeLabel,
+      statusLabels: { '1': 'Accepted', '2': 'Rejected', '11': 'Pending' },
+      entries,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    setProfileStatusAdminStatus(`Saved ${entries.length} entries. Candidate pool will update live.`, 'var(--neon-green)');
+  } catch (e) {
+    setProfileStatusAdminStatus('Error saving profile status: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
+function setChatPinAdminStatus(message, color = 'var(--text-muted)') {
+  const el = document.getElementById('chatPinStatus');
+  if (!el) return;
+  el.textContent = message;
+  el.style.color = color;
+}
+
+async function loadChatPinEditor() {
+  setChatPinAdminStatus('Loading…');
+  try {
+    const snap = await db.collection('notifications').doc('chat_pin').get();
+    const ta = document.getElementById('chatPinText');
+    if (!snap.exists || !snap.data()?.active) {
+      if (ta) ta.value = '';
+      setChatPinAdminStatus('No pinned message active.', 'var(--neon-gold)');
+      return;
+    }
+    if (ta) ta.value = snap.data().text || '';
+    setChatPinAdminStatus('Loaded current pin.', 'var(--neon-green)');
+  } catch (e) {
+    setChatPinAdminStatus('Error: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
+async function saveChatPinEditor() {
+  const text = document.getElementById('chatPinText')?.value?.trim();
+  if (!text) {
+    setChatPinAdminStatus('Enter a message to pin.', 'var(--neon-pink)');
+    return;
+  }
+  setChatPinAdminStatus('Saving…');
+  try {
+    const adminEmail = getAdminSessionEmail() || 'admin';
+    await db.collection('notifications').doc('chat_pin').set({
+      active: true,
+      text,
+      pinnedBy: adminEmail,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    setChatPinAdminStatus('Pinned — chat will update live.', 'var(--neon-green)');
+  } catch (e) {
+    setChatPinAdminStatus('Error: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
+async function clearChatPinEditor() {
+  setChatPinAdminStatus('Clearing…');
+  try {
+    await db.collection('notifications').doc('chat_pin').set({
+      active: false,
+      text: '',
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    const ta = document.getElementById('chatPinText');
+    if (ta) ta.value = '';
+    setChatPinAdminStatus('Pin cleared.', 'var(--neon-green)');
+  } catch (e) {
+    setChatPinAdminStatus('Error: ' + e.message, 'var(--neon-pink)');
   }
 }
 

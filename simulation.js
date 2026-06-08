@@ -53,6 +53,17 @@ const SIM = {
     loading:   false,
     error:     null,
   },
+
+  profileStatus: {
+    byId:        {},
+    labels:      { '1': 'Accepted', '2': 'Rejected', '11': 'Pending' },
+    typeLabel:   'Verification : Round 01',
+    source:      '',
+    updatedAt:   null,
+    loaded:      false,
+    loading:     false,
+    filter:      '',
+  },
 };
 
 const MY_ID_KEY           = 'mn_sim_my_id';
@@ -143,6 +154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSimulationNotificationFeed();
   initMarksConfig();
   initScheduleTab();
+  initProfileStatus();
   showLoading(true);
   await loadData();
   showLoading(false);
@@ -708,6 +720,7 @@ function renderCandStats() {
   if (!all.length) return;
 
   let fcps = 0, ms = 0, md = 0, multi = 0, noPrefs = 0, lowMarks = 0;
+  let psAccepted = 0, psPending = 0, psRejected = 0;
   for (const c of all) {
     const ai    = c.applied_in || {};
     const progs = (ai.FCPS ? 1 : 0) + (ai.MS ? 1 : 0) + (ai.MD ? 1 : 0);
@@ -717,6 +730,12 @@ function renderCandStats() {
     if (progs >= 2) multi++;
     if (progs === 0) noPrefs++;
     if ((c.marksTotal || 0) < 5) lowMarks++;
+    const ps = getProfileStatusForCandidate(c);
+    if (ps) {
+      if (Number(ps.statusId) === 11) psPending++;
+      else if (Number(ps.statusId) === 1) psAccepted++;
+      else if (Number(ps.statusId) === 2) psRejected++;
+    }
   }
 
   const bar = document.getElementById('candStats');
@@ -735,11 +754,20 @@ function renderCandStats() {
   document.getElementById('cstat-lowmarks').textContent = lowMarks.toLocaleString();
   document.getElementById('cstats-lowmarks-item')
     ?.classList.toggle('cstats-ok', lowMarks === 0);
+
+  const psBar = document.getElementById('candProfileStats');
+  if (psBar && SIM.profileStatus.loaded && Object.keys(SIM.profileStatus.byId).length) {
+    psBar.classList.remove('hidden');
+    document.getElementById('cstat-ps-accepted')?.replaceChildren(document.createTextNode(psAccepted.toLocaleString()));
+    document.getElementById('cstat-ps-pending')?.replaceChildren(document.createTextNode(psPending.toLocaleString()));
+    document.getElementById('cstat-ps-rejected')?.replaceChildren(document.createTextNode(psRejected.toLocaleString()));
+  }
 }
 
 function setupCandidateFilters() {
   const search  = document.getElementById('candSearch');
   const progSel = document.getElementById('candProgram');
+  const statusSel = document.getElementById('candProfileStatus');
 
   search?.addEventListener('input', () => {
     SIM.cand.filter = search.value.trim().toLowerCase();
@@ -750,6 +778,12 @@ function setupCandidateFilters() {
   progSel?.addEventListener('change', () => {
     SIM.cand.program = progSel.value;
     SIM.cand.page    = 0;
+    applyAndRenderCandidates();
+  });
+
+  statusSel?.addEventListener('change', () => {
+    SIM.profileStatus.filter = statusSel.value;
+    SIM.cand.page = 0;
     applyAndRenderCandidates();
   });
 
@@ -773,6 +807,13 @@ function applyAndRenderCandidates() {
   }
   if (SIM.cand.program) {
     list = list.filter(c => effectiveMark(c, SIM.cand.program) != null);
+  }
+  if (SIM.profileStatus.filter) {
+    const want = Number(SIM.profileStatus.filter);
+    list = list.filter(c => {
+      const st = getProfileStatusForCandidate(c);
+      return st && Number(st.statusId) === want;
+    });
   }
 
   const { sortKey: key, sortDir: dir } = SIM.cand;
@@ -809,9 +850,10 @@ function renderCandidateTable(slice, total) {
     const tags   = PROGS.filter(p => effectiveMark(c, p) != null)
                         .map(p => `<span class="prog-tag prog-${p.toLowerCase()}">${p}</span>`).join('');
     const custom = c._custom ? '<span class="custom-tag">manual</span>' : '';
+    const psTag  = profileStatusTagHtml(getProfileStatusForCandidate(c));
     return `<tr class="${isMe ? 'row-me' : ''}" data-id="${c.applicantId}" style="cursor:pointer">
       <td class="td-num">${rank}</td>
-      <td>${esc(c.nameFull)} ${custom}${isMe ? '<span class="me-tag">YOU</span>' : ''}</td>
+      <td>${esc(c.nameFull)} ${psTag}${custom}${isMe ? '<span class="me-tag">YOU</span>' : ''}</td>
       <td class="td-num">${fmtM(baseMarks(c))}</td>
       <td class="td-num">${fmtM(effectiveMark(c, 'FCPS'))}</td>
       <td class="td-num">${fmtM(effectiveMark(c, 'MS'))}</td>
@@ -1176,6 +1218,11 @@ function openCandidateDetail(idStr) {
         <h3>${esc(c.nameFull)} ${isMe ? '<span class="me-tag">YOU</span>' : ''}
           ${c._custom ? '<span class="custom-tag">manual</span>' : ''}</h3>
         <p class="cand-detail-meta">ID: ${c.applicantId} &nbsp;·&nbsp; ${esc(getActiveMarksLabel())}: <strong>${fmtM(baseMarks(c))}</strong> &nbsp;·&nbsp; Portal marksTotal: ${fmtM(c.marksTotal)}</p>
+        ${(() => {
+          const st = getProfileStatusForCandidate(c);
+          if (!st) return '';
+          return `<p class="cand-detail-meta" style="margin-top:6px">${profileStatusTagHtml(st)} <span style="color:var(--text-muted)">${esc(SIM.profileStatus.typeLabel)}</span></p>`;
+        })()}
       </div>
     </div>
 
@@ -3620,17 +3667,31 @@ function _showProfileModal(p) {
 // ═══════════════════════════════════════════════════════════════════
 
 const CHAT = {
-  unsubscribe:    null,   // Firestore listener teardown
-  messages:       [],     // cached messages
-  _legacy:        [],     // legacy applicant_chat messages
-  unreadCount:    0,
-  popupOpen:      false,
-  tabActive:      false,
-  uid:            null,   // anonymous user ID (localStorage)
-  displayName:    null,   // display name (localStorage)
-  pendingAttach:  {},     // keyed by chat UI prefix (Tab / Popup)
-  sending:        false,
-  COLLECTION:     'sim21_chat',
+  unsubscribe:        null,
+  typingUnsubscribe:  null,
+  pinUnsubscribe:     null,
+  messages:           [],
+  _legacy:            [],
+  typingUsers:        [],
+  pinned:             null,
+  unreadCount:        0,
+  popupOpen:          false,
+  tabActive:          false,
+  uid:                null,
+  displayName:        null,
+  pendingAttach:      {},
+  replyingTo:         {},
+  sending:            false,
+  typingDebounce:     null,
+  typingClearTimer:   null,
+  COLLECTION:         'sim21_chat',
+  TYPING_COLLECTION:  'sim21_chat_typing',
+  PIN_DOC:            'chat_pin',
+  EVERYONE_TOKEN:     '@everyone',
+  MUTE_EVERYONE_KEY:  'mn_chat_mute_everyone',
+  _chatInitialized:   false,
+  TYPING_TTL_MS:      4500,
+  TYPING_DEBOUNCE_MS: 400,
   CHAR_LIMIT:     500,
   MAX_MESSAGES:   80,
   MAX_IMAGE_INPUT: 12 * 1024 * 1024,
@@ -3742,10 +3803,10 @@ function setupChat() {
     emojiBtnId: 'chatTabEmojiBtn',
     emojiPickerId: 'chatTabEmojiPicker',
     nameBarId: 'chatTabNameBar',
+    replyBarId: 'chatTabReplyBar',
+    everyoneBarId: 'chatTabEveryoneBar',
     imageBtnId: 'chatTabImageBtn',
     imageInputId: 'chatTabImageInput',
-    fileBtnId: 'chatTabFileBtn',
-    fileInputId: 'chatTabFileInput',
     attachPreviewId: 'chatTabAttachPreview',
   });
   _wireChatInput({
@@ -3757,15 +3818,16 @@ function setupChat() {
     emojiBtnId: 'chatPopupEmojiBtn',
     emojiPickerId: 'chatPopupEmojiPicker',
     nameBarId: 'chatPopupNameBar',
+    replyBarId: 'chatPopupReplyBar',
+    everyoneBarId: 'chatPopupEveryoneBar',
     imageBtnId: 'chatPopupImageBtn',
     imageInputId: 'chatPopupImageInput',
-    fileBtnId: 'chatPopupFileBtn',
-    fileInputId: 'chatPopupFileInput',
     attachPreviewId: 'chatPopupAttachPreview',
   });
 
-  // Start Firestore listener
   _startChatListener();
+  _startTypingListener();
+  _startChatPinListener();
 }
 
 function _chatPrefixKey(prefix) {
@@ -3939,7 +4001,7 @@ function _wireChatInput(cfg) {
 
   if (!input || !sendBtn) return;
 
-  // Character counter
+  // Character counter + typing signal
   input.addEventListener('input', () => {
     const len = input.value.length;
     if (charCount) {
@@ -3947,7 +4009,9 @@ function _wireChatInput(cfg) {
       charCount.style.color = len > CHAT.CHAR_LIMIT * 0.9 ? 'var(--neon-gold)' : '';
       charCount.style.fontWeight = len > CHAT.CHAR_LIMIT * 0.9 ? '700' : '';
     }
+    _chatSignalTyping();
   });
+  input.addEventListener('blur', () => _chatClearTyping());
 
   // Send on Enter (Shift+Enter = newline)
   input.addEventListener('keydown', e => {
@@ -3959,24 +4023,40 @@ function _wireChatInput(cfg) {
 
   sendBtn.addEventListener('click', () => _sendChatMessage(cfg.inputId, cfg.msgsId, prefix));
 
-  // Image / file upload buttons
-  const imageBtn  = document.getElementById(cfg.imageBtnId);
+  // Image upload (files disabled)
+  const imageBtn   = document.getElementById(cfg.imageBtnId);
   const imageInput = document.getElementById(cfg.imageInputId);
-  const fileBtn   = document.getElementById(cfg.fileBtnId);
-  const fileInput = document.getElementById(cfg.fileInputId);
-
   imageBtn?.addEventListener('click', () => imageInput?.click());
-  fileBtn?.addEventListener('click', () => fileInput?.click());
   imageInput?.addEventListener('change', () => {
     const file = imageInput.files?.[0];
     if (file) _setChatAttachment(prefix, file, 'image');
     imageInput.value = '';
   });
-  fileInput?.addEventListener('change', () => {
-    const file = fileInput.files?.[0];
-    if (file) _setChatAttachment(prefix, file, 'file');
-    fileInput.value = '';
-  });
+
+  // @everyone + mute toolbar (built once on Tab bar only)
+  const everyoneBar = document.getElementById(cfg.everyoneBarId);
+  if (everyoneBar && !everyoneBar.dataset.built) {
+    everyoneBar.innerHTML = `
+      <button type="button" class="chat-everyone-btn" data-input="${cfg.inputId}" title="Notify everyone in chat">@everyone</button>
+      <button type="button" class="chat-mute-everyone-btn" title="Mute @everyone notifications">&#128263; @everyone</button>`;
+    everyoneBar.dataset.built = '1';
+    everyoneBar.querySelector('.chat-everyone-btn')?.addEventListener('click', () => {
+      const inp = document.getElementById(cfg.inputId);
+      if (!inp) return;
+      const token = CHAT.EVERYONE_TOKEN;
+      if (!new RegExp(`${token}\\b`, 'i').test(inp.value)) {
+        const sep = inp.value.length && !/\s$/.test(inp.value) ? ' ' : '';
+        inp.value = inp.value + sep + token + ' ';
+      }
+      inp.focus();
+      inp.dispatchEvent(new Event('input'));
+    });
+    everyoneBar.querySelector('.chat-mute-everyone-btn')?.addEventListener('click', () => {
+      _toggleEveryoneMute();
+      _syncEveryoneMuteButtons();
+    });
+    _syncEveryoneMuteButtons();
+  }
 
   // Emoji picker
   if (emojiBtn && emojiPkr) {
@@ -4009,6 +4089,26 @@ function _wireChatInput(cfg) {
 
   // Display name bar
   if (namBar) _renderChatNameBar(namBar, cfg.inputId);
+}
+
+function _isEveryoneMuted() {
+  return localStorage.getItem(CHAT.MUTE_EVERYONE_KEY) === '1';
+}
+
+function _toggleEveryoneMute() {
+  const next = !_isEveryoneMuted();
+  if (next) localStorage.setItem(CHAT.MUTE_EVERYONE_KEY, '1');
+  else localStorage.removeItem(CHAT.MUTE_EVERYONE_KEY);
+  showToast(next ? '@everyone notifications muted' : '@everyone notifications enabled', 'info');
+}
+
+function _syncEveryoneMuteButtons() {
+  const muted = _isEveryoneMuted();
+  document.querySelectorAll('.chat-mute-everyone-btn').forEach(btn => {
+    btn.classList.toggle('chat-mute-active', muted);
+    btn.title = muted ? 'Unmute @everyone notifications' : 'Mute @everyone notifications';
+    btn.textContent = muted ? '\u{1F507} muted' : '\u{1F50A} @everyone';
+  });
 }
 
 function _renderChatNameBar(container, inputId) {
@@ -4076,6 +4176,10 @@ function _sendChatMessage(inputId, msgsId, prefix) {
     _promptChatName(inputId);
     return;
   }
+  if (_chatHasEveryoneMention(text)) {
+    const ok = window.confirm('Send @everyone? Others in chat will get a notification.');
+    if (!ok) return;
+  }
 
   let db;
   try { db = firebase.firestore(); } catch { showToast('Chat unavailable.', 'error'); return; }
@@ -4093,6 +4197,18 @@ function _sendChatMessage(inputId, msgsId, prefix) {
       ts: firebase.firestore.FieldValue.serverTimestamp(),
     };
 
+    const reply = CHAT.replyingTo[key];
+    if (reply) {
+      payload.replyTo = {
+        id: reply.id,
+        name: reply.name,
+        text: (reply.text || '').slice(0, 140),
+      };
+    }
+    if (_chatHasEveryoneMention(text)) payload.mentionsEveryone = true;
+    const mentions = _chatExtractMentions(text);
+    if (mentions.length) payload.mentions = mentions;
+
     if (pending) {
       const encoded = await _encodeChatAttachment(pending);
       payload.type = pending.kind;
@@ -4108,10 +4224,12 @@ function _sendChatMessage(inputId, msgsId, prefix) {
     }
 
     await db.collection(CHAT.COLLECTION).add(payload);
+    _chatClearTyping();
     input.value = '';
     const cc = document.getElementById(inputId.replace('Input', 'CharCount'));
     if (cc) cc.textContent = `0/${CHAT.CHAR_LIMIT}`;
     _clearChatAttachment(key);
+    _clearChatReply(key);
     _chatScrollBottom(msgsId);
   })().catch(err => {
     showToast(err?.message || 'Could not send message.', 'error');
@@ -4150,6 +4268,8 @@ function _startChatListener() {
     .limitToLast(CHAT.MAX_MESSAGES)
     .onSnapshot(snap => {
       const fresh = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const prevIds = new Set(CHAT.messages.map(m => m.id));
+      const uid = _chatUID();
       // Merge legacy + new, dedup by id, keep sorted by ts
       const legacy = (CHAT._legacy || []).filter(l =>
         !fresh.some(f => f.text === l.text && f.name === l.name)
@@ -4159,6 +4279,15 @@ function _startChatListener() {
         const tb = b.ts?.toMillis?.() ?? b.ts ?? 0;
         return ta - tb;
       });
+      if (CHAT._chatInitialized) {
+        for (const msg of CHAT.messages) {
+          if (prevIds.has(msg.id)) continue;
+          if (msg.uid === uid) continue;
+          if (_chatHasEveryoneMention(msg)) _notifyEveryoneMention(msg);
+          if (_chatMentionsCurrentUser(msg)) _notifyUserMention(msg);
+        }
+      }
+      CHAT._chatInitialized = true;
       const isVisible = CHAT.popupOpen || CHAT.tabActive;
       if (!isVisible) {
         CHAT.unreadCount++;
@@ -4198,9 +4327,216 @@ function _chatReactionHtml(msg, uid) {
   </div>`;
 }
 
+function _chatHasEveryoneMention(msgOrText) {
+  const text = typeof msgOrText === 'string' ? msgOrText : (msgOrText?.text || '');
+  if (/@everyone\b/i.test(text)) return true;
+  return !!(typeof msgOrText === 'object' && msgOrText?.mentionsEveryone);
+}
+
+function _notifyEveryoneMention(msg) {
+  if (_isEveryoneMuted()) return;
+  const who = msg.name || 'Someone';
+  const body = (msg.text || '').replace(/@everyone/gi, '').trim().slice(0, 140) || 'New community chat message';
+  const title = `${who} mentioned @everyone`;
+  showToast(`${title}${body ? ': ' + body : ''}`, 'info');
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    try {
+      new Notification(title, { body, tag: 'mn_chat_everyone_' + msg.id });
+    } catch (_) {}
+  }
+}
+
+function _chatMentionToken(name) {
+  const n = String(name || '').trim();
+  if (!n) return '';
+  return n.includes(' ') ? `@"${n}"` : `@${n.replace(/\s+/g, '')}`;
+}
+
+function _chatExtractMentions(text) {
+  const found = new Set();
+  const t = String(text || '');
+  const re = /@everyone\b|@"([^"]{1,40})"|@([\w][\w.-]{0,38})/gi;
+  let m;
+  while ((m = re.exec(t)) !== null) {
+    if (/everyone/i.test(m[0])) continue;
+    const name = (m[1] || m[2] || '').trim();
+    if (name) found.add(name);
+  }
+  return [...found];
+}
+
+function _chatNameMatchesMention(myName, mention) {
+  if (!myName || !mention) return false;
+  const a = myName.toLowerCase().trim();
+  const b = mention.toLowerCase().trim();
+  if (a === b) return true;
+  if (a.startsWith(b + ' ')) return true;
+  if (a.split(/\s+/)[0] === b) return true;
+  return false;
+}
+
+function _chatMentionsCurrentUser(msg) {
+  const myName = _chatName();
+  if (!myName) return false;
+  const list = msg.mentions || _chatExtractMentions(msg.text);
+  return list.some(m => _chatNameMatchesMention(myName, m));
+}
+
+function _notifyUserMention(msg) {
+  const who = msg.name || 'Someone';
+  const body = (msg.text || '').trim().slice(0, 140) || 'New community chat message';
+  const title = `${who} mentioned you`;
+  showToast(`${title}${body ? ': ' + body : ''}`, 'info');
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    try {
+      new Notification(title, { body, tag: 'mn_chat_mention_' + msg.id });
+    } catch (_) {}
+  }
+}
+
+function _chatFormatMessageText(text) {
+  const myName = _chatName();
+  const parts = [];
+  const re = /@everyone\b|@"([^"]{1,40})"|@([\w][\w.-]{0,38})/gi;
+  let last = 0;
+  let m;
+  while ((m = re.exec(text || '')) !== null) {
+    if (m.index > last) {
+      parts.push(esc(text.slice(last, m.index)).replace(/\n/g, '<br>'));
+    }
+    if (/everyone/i.test(m[0])) {
+      parts.push('<span class="chat-mention-everyone">@everyone</span>');
+    } else {
+      const mentionName = m[1] || m[2] || '';
+      const isMe = _chatNameMatchesMention(myName, mentionName);
+      parts.push(`<span class="${isMe ? 'chat-mention-me' : 'chat-mention-user'}">@${esc(mentionName)}</span>`);
+    }
+    last = m.index + m[0].length;
+  }
+  if (last < (text || '').length) {
+    parts.push(esc(text.slice(last)).replace(/\n/g, '<br>'));
+  }
+  return parts.join('') || '';
+}
+
+function _chatSignalTyping() {
+  if (!_chatName()) return;
+  clearTimeout(CHAT.typingDebounce);
+  CHAT.typingDebounce = setTimeout(_chatWriteTyping, CHAT.TYPING_DEBOUNCE_MS);
+}
+
+async function _chatWriteTyping() {
+  let db;
+  try { db = firebase.firestore(); } catch { return; }
+  const uid = _chatUID();
+  const name = _chatName();
+  if (!name) return;
+  try {
+    await db.collection(CHAT.TYPING_COLLECTION).doc(uid).set({
+      uid, name,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+  } catch (_) {}
+  clearTimeout(CHAT.typingClearTimer);
+  CHAT.typingClearTimer = setTimeout(_chatClearTyping, CHAT.TYPING_TTL_MS);
+}
+
+async function _chatClearTyping() {
+  clearTimeout(CHAT.typingDebounce);
+  clearTimeout(CHAT.typingClearTimer);
+  let db;
+  try { db = firebase.firestore(); } catch { return; }
+  try {
+    await db.collection(CHAT.TYPING_COLLECTION).doc(_chatUID()).delete();
+  } catch (_) {}
+}
+
+function _startTypingListener() {
+  let db;
+  try { db = firebase.firestore(); } catch { return; }
+  if (CHAT.typingUnsubscribe) CHAT.typingUnsubscribe();
+  const uid = _chatUID();
+  const cutoff = () => Date.now() - CHAT.TYPING_TTL_MS;
+
+  CHAT.typingUnsubscribe = db.collection(CHAT.TYPING_COLLECTION)
+    .onSnapshot(snap => {
+      const users = [];
+      for (const doc of snap.docs) {
+        const d = doc.data();
+        if (!d.name || d.uid === uid) continue;
+        const ts = d.updatedAt?.toMillis?.() ?? 0;
+        if (ts && ts < cutoff()) continue;
+        users.push(d.name);
+      }
+      CHAT.typingUsers = users.slice(0, 4);
+      _renderTypingIndicators();
+    }, err => console.warn('Typing listener error:', err));
+}
+
+function _renderTypingIndicators() {
+  const text = CHAT.typingUsers.length
+    ? (CHAT.typingUsers.length === 1
+        ? `${CHAT.typingUsers[0]} is typing…`
+        : `${CHAT.typingUsers.slice(0, 2).join(', ')}${CHAT.typingUsers.length > 2 ? ' +' + (CHAT.typingUsers.length - 2) : ''} typing…`)
+    : '';
+  ['chatTabTyping', 'chatPopupTyping'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (text) {
+      el.textContent = text;
+      el.classList.remove('hidden');
+    } else {
+      el.textContent = '';
+      el.classList.add('hidden');
+    }
+  });
+}
+
+function _startChatPinListener() {
+  let db;
+  try { db = firebase.firestore(); } catch { return; }
+  if (CHAT.pinUnsubscribe) CHAT.pinUnsubscribe();
+  CHAT.pinUnsubscribe = db.collection('notifications').doc(CHAT.PIN_DOC)
+    .onSnapshot(snap => {
+      CHAT.pinned = snap.exists && snap.data()?.active ? snap.data() : null;
+      _renderChatPinBanners();
+    }, err => console.warn('Chat pin listener error:', err));
+}
+
+function _renderChatPinBanners() {
+  const pin = CHAT.pinned;
+  ['chatTabPin', 'chatPopupPin'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!pin?.text) {
+      el.classList.add('hidden');
+      el.innerHTML = '';
+      return;
+    }
+    const by = pin.pinnedBy ? ` — ${esc(pin.pinnedBy)}` : '';
+    el.innerHTML = `
+      <div class="chat-pin-inner">
+        <span class="chat-pin-label">&#128204; Pinned</span>
+        <span class="chat-pin-text">${esc(pin.text).replace(/\n/g, '<br>')}</span>
+        ${by ? `<span class="chat-pin-by">${by}</span>` : ''}
+      </div>`;
+    el.classList.remove('hidden');
+  });
+}
+
+function _chatReplyQuoteHtml(replyTo) {
+  if (!replyTo) return '';
+  const snippet = (replyTo.text || '').slice(0, 100);
+  return `<div class="chat-reply-quote" data-reply-id="${esc(replyTo.id || '')}">
+    <span class="chat-reply-name">${esc(replyTo.name || 'Anonymous')}</span>
+    <span class="chat-reply-snippet">${esc(snippet)}${(replyTo.text || '').length > 100 ? '…' : ''}</span>
+  </div>`;
+}
+
 function _chatMessageBodyHtml(msg) {
   const parts = [];
-  if (msg.text) parts.push(esc(msg.text).replace(/\n/g, '<br>'));
+  if (msg.replyTo) parts.push(_chatReplyQuoteHtml(msg.replyTo));
+  if (msg.text) parts.push(_chatFormatMessageText(msg.text));
   const imageSrc = msg.imageData || msg.imageUrl;
   if (imageSrc) {
     parts.push(`<a href="${esc(imageSrc)}" target="_blank" rel="noopener"><img class="chat-msg-image" src="${esc(imageSrc)}" alt="Shared image" loading="lazy" /></a>`);
@@ -4228,10 +4564,12 @@ function _renderChatMessages(containerId) {
     const isOwn  = msg.uid === uid;
     const relTm  = _relTime(msg.ts);
     const canReact = !String(msg.id).startsWith('_legacy_');
-    return `<div class="chat-msg ${isOwn ? 'chat-msg-own' : ''}">
+    return `<div class="chat-msg ${isOwn ? 'chat-msg-own' : ''}" data-msg-id="${msg.id}">
       <div class="chat-msg-meta">
         <span class="chat-msg-name ${isOwn ? 'chat-msg-name-own' : ''}">${esc(msg.name || 'Anonymous')}</span>
         <span class="chat-msg-time">${relTm}</span>
+        ${canReact ? `<button class="chat-mention-btn" data-id="${msg.id}" data-prefix="${containerId.includes('Popup') ? 'Popup' : 'Tab'}" title="Mention @${esc(msg.name || 'user')}">@</button>` : ''}
+        ${canReact ? `<button class="chat-reply-btn" data-id="${msg.id}" title="Reply">&#8617;</button>` : ''}
         ${isOwn && canReact ? `<button class="chat-del-btn" data-id="${msg.id}" title="Delete message">&times;</button>` : ''}
       </div>
       <div class="chat-msg-bubble ${isOwn ? 'chat-msg-bubble-own' : ''}">${_chatMessageBodyHtml(msg)}</div>
@@ -4241,6 +4579,32 @@ function _renderChatMessages(containerId) {
 
   container.querySelectorAll('.chat-del-btn').forEach(btn => {
     btn.addEventListener('click', () => _deleteChatMessage(btn.dataset.id));
+  });
+  container.querySelectorAll('.chat-mention-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const msg = CHAT.messages.find(m => m.id === btn.dataset.id);
+      if (msg?.name) _insertChatMention(msg.name, btn.dataset.prefix);
+    });
+  });
+  container.querySelectorAll('.chat-reply-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const msg = CHAT.messages.find(m => m.id === btn.dataset.id);
+      if (!msg) return;
+      const prefix = containerId.includes('Popup') ? 'Popup' : 'Tab';
+      _setChatReply(prefix, msg);
+    });
+  });
+  container.querySelectorAll('.chat-reply-quote').forEach(quote => {
+    quote.addEventListener('click', () => {
+      const id = quote.dataset.replyId;
+      if (!id) return;
+      const el = container.querySelector(`[data-msg-id="${id}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('chat-msg-highlight');
+        setTimeout(() => el.classList.remove('chat-msg-highlight'), 1600);
+      }
+    });
   });
   container.querySelectorAll('.chat-reaction-btn, .chat-react-picker-item').forEach(btn => {
     btn.addEventListener('click', e => {
@@ -4289,6 +4653,62 @@ async function _toggleChatReaction(msgId, emoji) {
   }
 }
 
+function _insertChatMention(name, prefix) {
+  const inputId = _chatPrefixKey(prefix) === 'Tab' ? 'chatTabInput' : 'chatPopupInput';
+  const inp = document.getElementById(inputId);
+  const token = _chatMentionToken(name);
+  if (!inp || !token) return;
+  if (!new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(inp.value)) {
+    const sep = inp.value.length && !/\s$/.test(inp.value) ? ' ' : '';
+    inp.value = inp.value + sep + token + ' ';
+  }
+  inp.focus();
+  inp.dispatchEvent(new Event('input'));
+}
+
+function _setChatReply(prefix, msg) {
+  const key = _chatPrefixKey(prefix);
+  CHAT.replyingTo[key] = {
+    id: msg.id,
+    name: msg.name || 'Anonymous',
+    text: msg.text || '',
+  };
+  _renderChatReplyBar(key);
+  if (msg.name) _insertChatMention(msg.name, prefix);
+  const inputId = key === 'Tab' ? 'chatTabInput' : 'chatPopupInput';
+  document.getElementById(inputId)?.focus();
+}
+
+function _clearChatReply(prefix) {
+  const key = _chatPrefixKey(prefix);
+  delete CHAT.replyingTo[key];
+  _renderChatReplyBar(key);
+}
+
+function _renderChatReplyBar(prefix) {
+  const key = _chatPrefixKey(prefix);
+  const barId = key === 'Tab' ? 'chatTabReplyBar' : 'chatPopupReplyBar';
+  const bar = document.getElementById(barId);
+  if (!bar) return;
+  const reply = CHAT.replyingTo[key];
+  if (!reply) {
+    bar.classList.add('hidden');
+    bar.innerHTML = '';
+    return;
+  }
+  const snippet = (reply.text || '').slice(0, 80);
+  bar.innerHTML = `
+    <div class="chat-reply-bar-inner">
+      <div class="chat-reply-bar-text">
+        <span class="chat-reply-bar-label">Replying to <strong>${esc(reply.name)}</strong></span>
+        <span class="chat-reply-bar-snippet">${esc(snippet)}${(reply.text || '').length > 80 ? '…' : ''}</span>
+      </div>
+      <button type="button" class="chat-reply-cancel" data-prefix="${key}" title="Cancel reply">&times;</button>
+    </div>`;
+  bar.classList.remove('hidden');
+  bar.querySelector('.chat-reply-cancel')?.addEventListener('click', () => _clearChatReply(key));
+}
+
 function _deleteChatMessage(msgId) {
   if (!window.confirm('Delete this message?')) return;
   let db;
@@ -4318,6 +4738,204 @@ function _updateBadge() {
   } else {
     badge.classList.add('hidden');
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PROFILE STATUS (portal verification — Firestore / static JSON)
+// ═══════════════════════════════════════════════════════════════════
+const PROFILE_STATUS = {
+  unsubscribe:     null,
+  ready:             false,
+  lastFingerprint:   null,
+};
+
+function normalizeProfileStatusEntries(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (raw?.entries && Array.isArray(raw.entries)) return raw.entries;
+  if (raw?.Table && Array.isArray(raw.Table)) return raw.Table;
+  return null;
+}
+
+function _profileStatusUpdatedKey(payload) {
+  const u = payload?.updatedAt ?? payload?.updated;
+  if (u?.seconds != null) return String(u.seconds);
+  if (u?.toMillis) return String(u.toMillis());
+  return String(u || '');
+}
+
+function _profileStatusFingerprint(byId, payload) {
+  let accepted = 0, pending = 0, rejected = 0, other = 0;
+  for (const st of Object.values(byId || {})) {
+    const sid = Number(st.statusId);
+    if (sid === 1) accepted++;
+    else if (sid === 11) pending++;
+    else if (sid === 2) rejected++;
+    else other++;
+  }
+  return [
+    Object.keys(byId || {}).length,
+    accepted, pending, rejected, other,
+    _profileStatusUpdatedKey(payload),
+  ].join(':');
+}
+
+function _profileStatusCounts(byId) {
+  let accepted = 0, pending = 0, rejected = 0;
+  for (const st of Object.values(byId || {})) {
+    const sid = Number(st.statusId);
+    if (sid === 1) accepted++;
+    else if (sid === 11) pending++;
+    else if (sid === 2) rejected++;
+  }
+  return { accepted, pending, rejected };
+}
+
+function _notifyProfileStatusUpdated(prevMyStatus) {
+  const total = Object.keys(SIM.profileStatus.byId).length;
+  const typeLabel = SIM.profileStatus.typeLabel || 'Profile verification';
+  const counts = _profileStatusCounts(SIM.profileStatus.byId);
+  let msg = `${typeLabel} updated — ${total.toLocaleString()} applicants (${counts.accepted} accepted, ${counts.pending} pending, ${counts.rejected} rejected).`;
+  let toastType = 'info';
+
+  if (SIM.myId) {
+    const myNew = SIM.profileStatus.byId[String(SIM.myId)];
+    const prevSid = prevMyStatus?.statusId;
+    const newSid = myNew?.statusId;
+    if (myNew && prevSid != null && Number(prevSid) !== Number(newSid)) {
+      msg = `Your verification status changed: ${profileStatusLabel(prevSid)} → ${profileStatusLabel(newSid)}`;
+      toastType = 'success';
+    } else if (myNew && prevMyStatus == null) {
+      msg = `Your verification status is now: ${profileStatusLabel(newSid)}`;
+      toastType = 'success';
+    }
+  }
+
+  showToast(msg, toastType);
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    try {
+      new Notification('MeritNama — Verification status update', {
+        body: msg,
+        tag: 'mn_profile_status_update',
+      });
+    } catch (_) {}
+  }
+}
+
+function applyProfileStatusPayload(payload, sourceLabel, opts = {}) {
+  const entries = normalizeProfileStatusEntries(payload);
+  if (!entries?.length) return false;
+
+  const prevMyStatus = SIM.myId ? SIM.profileStatus.byId[String(SIM.myId)] : null;
+  const prevFp = PROFILE_STATUS.lastFingerprint;
+  const wasReady = PROFILE_STATUS.ready;
+  const notifyLive = opts.notify !== false && sourceLabel === 'live';
+
+  const byId = {};
+  for (const e of entries) {
+    if (e.applicantId == null) continue;
+    byId[String(e.applicantId)] = {
+      statusId:     e.statusId ?? 0,
+      statusTypeId: e.statusTypeId ?? payload?.statusTypeId ?? null,
+    };
+  }
+
+  SIM.profileStatus.byId = byId;
+  if (payload?.statusLabels && typeof payload.statusLabels === 'object') {
+    SIM.profileStatus.labels = { ...payload.statusLabels };
+  }
+  if (payload?.statusTypeLabel) SIM.profileStatus.typeLabel = payload.statusTypeLabel;
+  SIM.profileStatus.source = sourceLabel || 'unknown';
+  SIM.profileStatus.updatedAt = payload?.updated || payload?.updatedAt || null;
+  SIM.profileStatus.loaded = true;
+
+  const fp = _profileStatusFingerprint(byId, payload);
+  PROFILE_STATUS.lastFingerprint = fp;
+  PROFILE_STATUS.ready = true;
+
+  if (notifyLive && wasReady && prevFp && fp !== prevFp) {
+    _notifyProfileStatusUpdated(prevMyStatus);
+  }
+
+  return true;
+}
+
+function getProfileStatusForCandidate(c) {
+  if (!c || c.applicantId == null) return null;
+  return SIM.profileStatus.byId[String(c.applicantId)] || null;
+}
+
+function profileStatusLabel(statusId) {
+  const key = String(statusId);
+  return SIM.profileStatus.labels[key]
+    || SIM.profileStatus.labels[statusId]
+    || `Status ${statusId}`;
+}
+
+function profileStatusTagHtml(st) {
+  if (!st) return '';
+  const sid = Number(st.statusId);
+  const cls = sid === 11 ? 'ps-pending' : sid === 1 ? 'ps-accepted' : sid === 2 ? 'ps-rejected' : 'ps-other';
+  const label = profileStatusLabel(sid);
+  const tip = `${SIM.profileStatus.typeLabel}${st.statusTypeId ? ` (type ${st.statusTypeId})` : ''}`;
+  return `<span class="profile-status-tag ${cls}" title="${esc(tip)}">${esc(label)}</span>`;
+}
+
+async function loadProfileStatusData() {
+  if (SIM.profileStatus.loading) return;
+  SIM.profileStatus.loading = true;
+
+  try {
+    const snap = await firebase.firestore().collection('notifications').doc('profile_status').get();
+    if (snap.exists && applyProfileStatusPayload(snap.data(), 'live', { notify: false })) {
+      SIM.profileStatus.loading = false;
+      _onProfileStatusReady();
+      return;
+    }
+  } catch (e) {
+    console.warn('[ProfileStatus] Firestore load failed:', e);
+  }
+
+  try {
+    const res = await fetch('data/ProfileStatus.json', { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (applyProfileStatusPayload({
+        entries: data,
+        statusTypeId: 131,
+        statusTypeLabel: 'Verification : Round 01',
+        statusLabels: { '1': 'Accepted', '2': 'Rejected', '11': 'Pending' },
+      }, 'static_snapshot', { notify: false })) {
+        SIM.profileStatus.loading = false;
+        _onProfileStatusReady();
+        return;
+      }
+    }
+  } catch (e) {
+    console.warn('[ProfileStatus] Static load failed:', e);
+  }
+
+  SIM.profileStatus.loaded = true;
+  SIM.profileStatus.loading = false;
+}
+
+function _onProfileStatusReady() {
+  renderCandStats();
+  applyAndRenderCandidates();
+}
+
+function initProfileStatus() {
+  loadProfileStatusData();
+
+  try {
+    if (PROFILE_STATUS.unsubscribe) PROFILE_STATUS.unsubscribe();
+    PROFILE_STATUS.unsubscribe = firebase.firestore()
+      .collection('notifications').doc('profile_status')
+      .onSnapshot(snap => {
+        if (snap.exists && applyProfileStatusPayload(snap.data(), 'live')) {
+          _onProfileStatusReady();
+        }
+      }, err => console.warn('[ProfileStatus] listener error:', err));
+  } catch (_) {}
 }
 
 // ═══════════════════════════════════════════════════════════════════

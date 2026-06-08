@@ -124,17 +124,23 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Deny everything else
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
     // Community chat messages (Induction 21 simulation page)
     // Publicly readable and creatable; delete allowed (ownership enforced in UI).
-    // Fields: text, name, uid, ts, type, imageData, fileData, fileName, fileSize, mimeType, reactions
+    // Fields: text, name, uid, ts, type, imageData, fileData, fileName, fileSize, mimeType, reactions, replyTo, mentionsEveryone, mentions
     match /sim21_chat/{msgId} {
       allow read, create, delete: if true;
       allow update: if _sim21ChatReactionOnlyUpdate();
+    }
+
+    // Ephemeral typing indicators — doc ID = chat uid
+    // Fields: uid, name, updatedAt
+    match /sim21_chat_typing/{uid} {
+      allow read, create, update, delete: if true;
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
     }
 
     function _sim21ChatReactionOnlyUpdate() {
@@ -151,6 +157,8 @@ service cloud.firestore {
     // fetch_progress fields: active, status, percent, fetched, total, title, message, icon,
     //                        startedAt, pausedAt, updatedAt
     // induction_schedule fields: induction, source, steps[], updatedAt
+    // profile_status fields: source, statusTypeId, statusTypeLabel, statusLabels, entries[], updatedAt
+    // chat_pin fields: active, text, pinnedBy, updatedAt
     match /notifications/{docId} {
       allow read: if true;
       allow create, update: if true;   // admin dashboard writes; gated by PIN-based auth in client
