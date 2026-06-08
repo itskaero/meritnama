@@ -2247,6 +2247,13 @@ function requestStatusBadge(status) {
   return `<span class="badge ${map[status] || 'badge-muted'}">${escapeHtml(status || '—')}</span>`;
 }
 
+function formatPaymentAmountPKR(amount) {
+  if (amount === null || amount === undefined || amount === '') return '';
+  const num = Number(amount);
+  if (!Number.isFinite(num) || num <= 0) return '';
+  return `PKR ${num.toLocaleString('en-PK', { maximumFractionDigits: 2 })}`;
+}
+
 async function loadAccessRequests() {
   const tbody = document.getElementById('requestsBody');
   const countEl = document.getElementById('requestsCount');
@@ -2282,6 +2289,7 @@ function renderAccessRequests() {
       (r.email || '').includes(q) ||
       (r.nameFull || '').toLowerCase().includes(q) ||
       String(r.applicantId || '').includes(q) ||
+      String(r.paymentAmountPKR || '').includes(q) ||
       (r.paymentReference || '').toLowerCase().includes(q) ||
       (r.message || '').toLowerCase().includes(q)
     );
@@ -2295,8 +2303,13 @@ function renderAccessRequests() {
   }
 
   tbody.innerHTML = rows.map(r => {
-    const pay = r.paymentDeclared
-      ? `Yes${r.paymentReference ? `<div class="invite-meta-sub">${escapeHtml(r.paymentReference)}</div>` : ''}`
+    const paymentAmount = formatPaymentAmountPKR(r.paymentAmountPKR);
+    const paymentMeta = [
+      paymentAmount ? `Amount: ${escapeHtml(paymentAmount)}` : '',
+      r.paymentReference ? `Ref: ${escapeHtml(r.paymentReference)}` : '',
+    ].filter(Boolean);
+    const pay = (r.paymentDeclared || paymentMeta.length)
+      ? `${r.paymentDeclared ? 'Yes' : '<span style="opacity:0.75">Not declared</span>'}${paymentMeta.length ? `<div class="invite-meta-sub">${paymentMeta.join('<br>')}</div>` : ''}`
       : '<span style="opacity:0.55">—</span>';
     const adminMessage = r.message
       ? `<div class="request-message-cell">${escapeHtml(r.message)}</div>`

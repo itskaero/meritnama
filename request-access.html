@@ -398,6 +398,7 @@
         email: reqEmail.value,
         applicantId: reqId.value,
         paymentDeclared: !!document.getElementById('authPayDeclared')?.checked,
+        paymentAmountPKR: document.getElementById('authPayAmountPKR')?.value || '',
         paymentReference: document.getElementById('authPayRef')?.value || '',
         message: reqMsg?.value || '',
       });

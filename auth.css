@@ -359,6 +359,17 @@
   cursor: pointer;
 }
 
+#authGate .auth-pay-input-label,
+.req-access-form .auth-pay-input-label {
+  display: block;
+  margin: 0.45rem 0 0.25rem;
+  font-size: 0.68rem;
+  color: #6b84a8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: left;
+}
+
 #authGate .auth-pay-ref-input {
   width: 100%;
   padding: 0.55rem 0.75rem;

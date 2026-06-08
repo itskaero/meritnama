@@ -124,6 +124,7 @@
       nameFull: verified.nameFull || payload.name || email,
       status: 'pending',
       paymentDeclared: !!payload.paymentDeclared,
+      paymentAmountPKR: normalizePaymentAmount(payload.paymentAmountPKR),
       paymentReference: (payload.paymentReference || '').trim(),
       message: (payload.message || '').trim(),
       requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -136,6 +137,14 @@
     }, { merge: false });
 
     return { ok: true, email: email, applicantId: verified.applicantId, nameFull: verified.nameFull };
+  }
+
+  function normalizePaymentAmount(value) {
+    var raw = String(value || '').replace(/,/g, '').trim();
+    if (!raw) return null;
+    var amount = Number(raw);
+    if (!Number.isFinite(amount) || amount < 0) return null;
+    return Math.round(amount * 100) / 100;
   }
 
   function formatAccountNumber(num) {
@@ -218,6 +227,9 @@
         '<p class="auth-pay-ref"><strong>Transaction reference:</strong> ' + refHint + '</p>' +
         '<p class="auth-pay-ref-help">Use this only for a real payment transaction/reference number. For access issues, complaints, or other queries, use the Message to admin box below.</p>' +
         '<label class="auth-pay-check"><input type="checkbox" id="authPayDeclared" /> I have sent payment (or will send soon)</label>' +
+        '<label class="auth-pay-input-label" for="authPayAmountPKR">Amount being sent (PKR, optional)</label>' +
+        '<input type="number" id="authPayAmountPKR" class="auth-pay-ref-input" placeholder="e.g. 250" min="0" step="1" inputmode="numeric" />' +
+        '<label class="auth-pay-input-label" for="authPayRef">Transaction/reference number (optional)</label>' +
         '<input type="text" id="authPayRef" class="auth-pay-ref-input" placeholder="Payment transaction/reference number only (optional)" maxlength="120" />' +
       '</div>'
     );
@@ -242,6 +254,7 @@
     invalidateAccessConfigCache: invalidateAccessConfigCache,
     verifyCandidate: verifyCandidate,
     submitAccessRequest: submitAccessRequest,
+    normalizePaymentAmount: normalizePaymentAmount,
     renderPaymentBlock: renderPaymentBlock,
     formatPriceRange: formatPriceRange,
     normalizePaymentConfig: normalizePaymentConfig,

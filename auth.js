@@ -490,11 +490,13 @@
 
         try {
           var payDeclared = !!document.getElementById('authPayDeclared')?.checked;
+          var payAmount = document.getElementById('authPayAmountPKR')?.value || '';
           var payRef = document.getElementById('authPayRef')?.value || '';
           var result = await AR.submitAccessRequest(db, {
             email: reqEmail.value,
             applicantId: reqId.value,
             paymentDeclared: payDeclared,
+            paymentAmountPKR: payAmount,
             paymentReference: payRef,
             message: reqMsg?.value || '',
           });
