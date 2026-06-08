@@ -755,12 +755,66 @@ function renderCandStats() {
   document.getElementById('cstats-lowmarks-item')
     ?.classList.toggle('cstats-ok', lowMarks === 0);
 
-  const psBar = document.getElementById('candProfileStats');
-  if (psBar && SIM.profileStatus.loaded && Object.keys(SIM.profileStatus.byId).length) {
-    psBar.classList.remove('hidden');
-    document.getElementById('cstat-ps-accepted')?.replaceChildren(document.createTextNode(psAccepted.toLocaleString()));
-    document.getElementById('cstat-ps-pending')?.replaceChildren(document.createTextNode(psPending.toLocaleString()));
-    document.getElementById('cstat-ps-rejected')?.replaceChildren(document.createTextNode(psRejected.toLocaleString()));
+  renderProfileStatusPanel(psAccepted, psPending, psRejected);
+}
+
+function fmtProfileStatusUpdatedAt(raw) {
+  if (!raw) return null;
+  const d = raw.toDate ? raw.toDate() : (typeof raw === 'string' || typeof raw === 'number' ? new Date(raw) : null);
+  if (!d || Number.isNaN(d.getTime())) return null;
+  return d.toLocaleString('en-PK', {
+    day: 'numeric', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+}
+
+function renderProfileStatusPanel(accepted, pending, rejected) {
+  const panel = document.getElementById('candProfileStats');
+  if (!panel) return;
+
+  const total = Object.keys(SIM.profileStatus.byId || {}).length;
+  if (!SIM.profileStatus.loaded || !total) {
+    panel.classList.add('hidden');
+    return;
+  }
+
+  panel.classList.remove('hidden');
+
+  const setCount = (id, n) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = Number(n).toLocaleString();
+  };
+  setCount('cstat-ps-accepted', accepted);
+  setCount('cstat-ps-pending', pending);
+  setCount('cstat-ps-rejected', rejected);
+
+  const roundEl = document.getElementById('psStatusRoundLabel');
+  if (roundEl) roundEl.textContent = SIM.profileStatus.typeLabel || 'Profile verification';
+
+  const isLive = SIM.profileStatus.source === 'live';
+  const badgeEl = document.getElementById('psStatusSourceBadge');
+  if (badgeEl) {
+    badgeEl.textContent = isLive ? 'Live' : 'Snapshot';
+    badgeEl.className = 'ps-source-badge ' + (isLive ? 'ps-source-live' : 'ps-source-snapshot');
+    badgeEl.title = isLive
+      ? 'Synced from Firestore — updates automatically when admin publishes'
+      : 'Loaded from bundled snapshot until a live publish is available';
+  }
+
+  const updatedEl = document.getElementById('psStatusUpdatedAt');
+  const formatted = fmtProfileStatusUpdatedAt(SIM.profileStatus.updatedAt);
+  if (updatedEl) {
+    if (formatted) {
+      updatedEl.textContent = formatted;
+      const iso = SIM.profileStatus.updatedAt?.toDate?.()?.toISOString?.()
+        || (typeof SIM.profileStatus.updatedAt === 'string' ? SIM.profileStatus.updatedAt : '');
+      if (iso) updatedEl.setAttribute('datetime', iso);
+      updatedEl.title = `${isLive ? 'Live' : 'Snapshot'} verification data as of ${formatted}`;
+    } else {
+      updatedEl.textContent = 'Timing not published';
+      updatedEl.removeAttribute('datetime');
+      updatedEl.title = 'Publish via admin portal to set an updated timestamp';
+    }
   }
 }
 

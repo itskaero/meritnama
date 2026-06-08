@@ -71,6 +71,91 @@
       border-color: rgba(62,207,142,0.2);
     }
 
+    /* -- Profile verification status panel (prominent) -- */
+    .ps-status-panel {
+      margin-top: 12px;
+      padding: 12px 14px 14px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(77,184,217,0.06) 0%, rgba(124,101,196,0.04) 100%);
+      border: 1px solid rgba(77,184,217,0.22);
+      box-shadow: 0 0 24px rgba(77,184,217,0.06);
+    }
+    .ps-status-panel.hidden { display: none; }
+    .ps-status-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap; margin-bottom: 10px;
+      padding-bottom: 10px; border-bottom: 1px solid rgba(77,184,217,0.14);
+    }
+    .ps-status-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.82rem; font-weight: 700; color: var(--text);
+    }
+    .ps-status-title-icon {
+      width: 22px; height: 22px; border-radius: 6px;
+      background: rgba(62,207,142,0.15); color: var(--neon-green, #3ecf8e);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; flex-shrink: 0;
+    }
+    .ps-status-update {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .ps-source-badge {
+      font-size: 0.62rem; font-weight: 800; letter-spacing: 0.08em;
+      padding: 3px 8px; border-radius: 100px; text-transform: uppercase;
+    }
+    .ps-source-live {
+      background: rgba(62,207,142,0.18); color: var(--neon-green, #3ecf8e);
+      border: 1px solid rgba(62,207,142,0.35);
+      box-shadow: 0 0 10px rgba(62,207,142,0.2);
+    }
+    .ps-source-snapshot {
+      background: rgba(232,166,39,0.12); color: var(--neon-gold, #e8a627);
+      border: 1px solid rgba(232,166,39,0.28);
+    }
+    .ps-updated-wrap {
+      display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;
+    }
+    .ps-updated-label {
+      font-size: 0.62rem; font-weight: 800; letter-spacing: 0.07em;
+      text-transform: uppercase; color: var(--text-muted, #6b84a8);
+    }
+    .ps-updated-time {
+      font-size: 0.8rem; font-weight: 700; color: var(--neon-cyan, #4db8d9);
+      font-variant-numeric: tabular-nums;
+    }
+    .ps-status-counts {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px;
+    }
+    .ps-count-item {
+      display: flex; align-items: center; gap: 7px;
+    }
+    .ps-count-label {
+      font-size: 0.66rem; font-weight: 800; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--text-muted, #6b84a8);
+    }
+    .ps-count-pill {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 2.8em; padding: 3px 12px; border-radius: 100px;
+      font-size: 0.88rem; font-weight: 800; font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+    }
+    .ps-pill-accepted {
+      background: rgba(124,101,196,0.14); color: var(--neon-purple, #7c65c4);
+      border: 1px solid rgba(124,101,196,0.38);
+      box-shadow: 0 0 12px rgba(124,101,196,0.12);
+    }
+    .ps-pill-pending {
+      background: rgba(232,166,39,0.12); color: var(--neon-gold, #e8a627);
+      border: 1px solid rgba(232,166,39,0.35);
+      box-shadow: 0 0 12px rgba(232,166,39,0.1);
+    }
+    .ps-pill-rejected {
+      background: rgba(224,84,112,0.12); color: #e05470;
+      border: 1px solid rgba(224,84,112,0.32);
+      box-shadow: 0 0 12px rgba(224,84,112,0.1);
+    }
+    .ps-count-sep { color: var(--text-light, #3a506e); font-size: 0.9rem; user-select: none; }
+
     /* -- Data Update Ticker -- */
     .update-ticker {
       background: linear-gradient(135deg, rgba(62,207,142,0.05) 0%, rgba(77,184,217,0.03) 100%);
@@ -1967,21 +2052,36 @@
           <span class="cstats-val" id="cstat-lowmarks">—</span>
         </span>
       </div>
-      <div id="candProfileStats" class="cand-stats-bar hidden" style="margin-top:6px">
-        <span class="cstats-item" title="Verification accepted (status 1)">
-          <span class="cstats-label">Accepted</span>
-          <span class="cstats-val cstats-fcps" id="cstat-ps-accepted">—</span>
-        </span>
-        <span class="cstats-sep">&middot;</span>
-        <span class="cstats-item" title="Verification pending (status 11)">
-          <span class="cstats-label">Pending</span>
-          <span class="cstats-val" style="color:var(--neon-gold)" id="cstat-ps-pending">—</span>
-        </span>
-        <span class="cstats-sep">&middot;</span>
-        <span class="cstats-item" title="Verification rejected (status 2)">
-          <span class="cstats-label">Rejected</span>
-          <span class="cstats-val" style="color:#e05470" id="cstat-ps-rejected">—</span>
-        </span>
+      <div id="candProfileStats" class="ps-status-panel hidden" role="status" aria-live="polite">
+        <div class="ps-status-head">
+          <div class="ps-status-title">
+            <span class="ps-status-title-icon" aria-hidden="true">&#9989;</span>
+            <span id="psStatusRoundLabel">Profile verification</span>
+          </div>
+          <div class="ps-status-update">
+            <span id="psStatusSourceBadge" class="ps-source-badge ps-source-snapshot">Snapshot</span>
+            <div class="ps-updated-wrap">
+              <span class="ps-updated-label">Updated</span>
+              <time id="psStatusUpdatedAt" class="ps-updated-time" datetime="">—</time>
+            </div>
+          </div>
+        </div>
+        <div class="ps-status-counts">
+          <div class="ps-count-item" title="Portal status 1 — accepted">
+            <span class="ps-count-label">Accepted</span>
+            <span class="ps-count-pill ps-pill-accepted" id="cstat-ps-accepted">—</span>
+          </div>
+          <span class="ps-count-sep" aria-hidden="true">&middot;</span>
+          <div class="ps-count-item" title="Portal status 11 — pending">
+            <span class="ps-count-label">Pending</span>
+            <span class="ps-count-pill ps-pill-pending" id="cstat-ps-pending">—</span>
+          </div>
+          <span class="ps-count-sep" aria-hidden="true">&middot;</span>
+          <div class="ps-count-item" title="Portal status 2 — rejected">
+            <span class="ps-count-label">Rejected</span>
+            <span class="ps-count-pill ps-pill-rejected" id="cstat-ps-rejected">—</span>
+          </div>
+        </div>
       </div>
     </div>
 
