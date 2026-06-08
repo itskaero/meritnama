@@ -123,7 +123,8 @@
   letter-spacing: 0.5px;
 }
 
-#authGate .auth-field input {
+#authGate .auth-field input,
+#authGate .auth-field textarea {
   width: 100%;
   padding: 0.7rem 1rem;
   border: 1px solid rgba(77, 184, 217, 0.2);
@@ -135,9 +136,25 @@
   transition: border-color 0.2s;
 }
 
-#authGate .auth-field input:focus {
+#authGate .auth-field textarea {
+  min-height: 82px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+#authGate .auth-field input:focus,
+#authGate .auth-field textarea:focus {
   border-color: #4db8d9;
   box-shadow: 0 0 8px rgba(77, 184, 217, 0.15);
+}
+
+#authGate .auth-field-hint,
+.req-access-form .auth-field-hint {
+  margin: 0.35rem 0 0;
+  color: #6b84a8;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  text-align: left;
 }
 
 #authGate .auth-btn {
@@ -311,6 +328,19 @@
   margin: 0.55rem 0 0.65rem;
   font-size: 0.72rem;
   color: #6b84a8;
+}
+
+#authGate .auth-pay-ref strong,
+.req-access-form .auth-pay-ref strong {
+  color: #94a8c4;
+}
+
+#authGate .auth-pay-ref-help,
+.req-access-form .auth-pay-ref-help {
+  margin: -0.35rem 0 0.65rem;
+  font-size: 0.71rem;
+  color: #7f93b0;
+  line-height: 1.4;
 }
 
 #authGate .auth-pay-ref code {
@@ -515,13 +545,20 @@ body.auth-locked > *:not(#authGate):not(#authVerifying):not(script):not(link):no
   display: block; font-size: 0.78rem; color: #6b84a8; margin-bottom: 0.3rem;
   text-align: left; text-transform: uppercase; letter-spacing: 0.5px;
 }
-.req-access-form .auth-field input {
+.req-access-form .auth-field input,
+.req-access-form .auth-field textarea {
   width: 100%; padding: 0.7rem 1rem;
   border: 1px solid rgba(77, 184, 217, 0.2); border-radius: 8px;
   background: rgba(255, 255, 255, 0.04); color: #c8daf0; font-size: 1rem;
   outline: none; transition: border-color 0.2s;
 }
-.req-access-form .auth-field input:focus {
+.req-access-form .auth-field textarea {
+  min-height: 92px;
+  resize: vertical;
+  line-height: 1.45;
+}
+.req-access-form .auth-field input:focus,
+.req-access-form .auth-field textarea:focus {
   border-color: #4db8d9; box-shadow: 0 0 8px rgba(77, 184, 217, 0.15);
 }
 .req-access-form .auth-btn {

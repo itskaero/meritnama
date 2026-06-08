@@ -432,6 +432,11 @@
       border-color: rgba(224,84,112,0.28);
     }
     .invite-meta-sub { display: block; font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
+    .request-message-cell {
+      max-width: 260px;
+      white-space: normal;
+      line-height: 1.35;
+    }
     .invitees-cell {
       display: inline-block; max-width: 220px; white-space: nowrap; overflow: hidden;
       text-overflow: ellipsis; font-size: 0.78rem; color: var(--text-muted);
@@ -956,6 +961,7 @@
               <th>Email</th>
               <th>App ID</th>
               <th>Payment</th>
+              <th>Message</th>
               <th>Status</th>
               <th>Requested</th>
               <th>Email</th>
@@ -963,7 +969,7 @@
             </tr>
           </thead>
           <tbody id="requestsBody">
-            <tr><td colspan="8" class="empty-state">Loading requests…</td></tr>
+            <tr><td colspan="9" class="empty-state">Loading requests…</td></tr>
           </tbody>
         </table>
       </div>
@@ -1247,8 +1253,8 @@
         <summary>🔐 Access Request &amp; Payment Config</summary>
         <div class="broadcast-section-body">
       <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
-        Controls the <a href="request-access.html" target="_blank" rel="noopener" style="color:var(--neon-cyan);">request access</a> page and auth gate payment block.
-        Stored in <code>notifications/access_config</code>. Account title is never shown to candidates.
+        Controls the <a href="request-access.html" target="_blank" rel="noopener" style="color:var(--neon-cyan);">request access</a> page, auth gate request tab, and payment/support block.
+        Stored in <code>notifications/access_config</code>. Account title and extra payment IDs are not shown to candidates.
       </p>
       <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem;">
         <button id="accessCfgLoadBtn" style="padding:8px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Load Config</button>
@@ -1257,7 +1263,10 @@
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.75rem;max-width:760px;">
         <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
-          <input type="checkbox" id="accessCfgShow" checked style="accent-color:var(--accent);" /> Show payment block on request page
+          <input type="checkbox" id="accessCfgEnabled" checked style="accent-color:var(--accent);" /> Enable request access form
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
+          <input type="checkbox" id="accessCfgShow" checked style="accent-color:var(--accent);" /> Show payment/support block
         </label>
         <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
           <input type="checkbox" id="accessCfgOptional" checked style="accent-color:var(--accent);" /> Payment optional (not required for approval)
@@ -1284,13 +1293,13 @@
           <label>Account / IBAN number</label>
           <input type="text" id="accessCfgAccount" placeholder="0891-2007-4774" />
         </div>
-        <div class="modal-field" style="margin:0;">
-          <label>Raast ID</label>
-          <input type="text" id="accessCfgRaast" placeholder="089120074774" />
-        </div>
         <div class="modal-field" style="margin:0;grid-column:1/-1;">
           <label>Bank name</label>
           <input type="text" id="accessCfgBank" placeholder="Mashreq Pakistan" />
+        </div>
+        <div class="modal-field" style="margin:0;grid-column:1/-1;">
+          <label>Closed message <span style="text-transform:none;font-weight:400;">(shown when request access is disabled)</span></label>
+          <textarea id="accessCfgClosedMessage" rows="2" style="width:100%;resize:vertical;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;"></textarea>
         </div>
         <div class="modal-field" style="margin:0;grid-column:1/-1;">
           <label>Payment note (shown to candidates)</label>
@@ -2209,6 +2218,8 @@ async function confirmRemoveUser(email) {
 let allAccessRequests = [];
 
 const ACCESS_CFG_DEFAULTS = {
+  requestAccessEnabled: true,
+  requestClosedMessage: 'Access requests are currently closed by admin. Please sign in if you already have credentials or check back later.',
   showOnRequestPage: true,
   paymentOptional: true,
   accessPriceMinPKR: 250,
@@ -2216,10 +2227,10 @@ const ACCESS_CFG_DEFAULTS = {
   accessPriceMinUSD: 0.9,
   accessPriceMaxUSD: 2.4,
   accountNumber: '0891-2007-4774',
-  raastId: '089120074774',
+  raastId: '',
   bankName: 'Mashreq Pakistan',
   showAccountTitle: false,
-  paymentNote: 'Optional — minimum PKR 250. Include your Applicant ID in the transfer reference.',
+  paymentNote: 'Optional support contribution. If you pay, paste the actual transaction/reference number from your banking app below. Use Message to admin for access questions or complaints.',
 };
 
 function formatRequestDate(ts) {
@@ -2240,7 +2251,7 @@ async function loadAccessRequests() {
   const tbody = document.getElementById('requestsBody');
   const countEl = document.getElementById('requestsCount');
   if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading requests…</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Loading requests…</td></tr>';
 
   try {
     const snap = await db.collection('access_requests').get();
@@ -2253,7 +2264,7 @@ async function loadAccessRequests() {
     renderAccessRequests();
     updateAccessRequestBadge();
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Failed to load: ${escapeHtml(err.message)}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Failed to load: ${escapeHtml(err.message)}</td></tr>`;
     if (countEl) countEl.textContent = 'Error';
   }
 }
@@ -2270,20 +2281,25 @@ function renderAccessRequests() {
     rows = rows.filter(r =>
       (r.email || '').includes(q) ||
       (r.nameFull || '').toLowerCase().includes(q) ||
-      String(r.applicantId || '').includes(q)
+      String(r.applicantId || '').includes(q) ||
+      (r.paymentReference || '').toLowerCase().includes(q) ||
+      (r.message || '').toLowerCase().includes(q)
     );
   }
 
   if (countEl) countEl.textContent = `${rows.length} shown · ${allAccessRequests.filter(r => r.status === 'pending').length} pending`;
 
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No matching requests.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No matching requests.</td></tr>';
     return;
   }
 
   tbody.innerHTML = rows.map(r => {
     const pay = r.paymentDeclared
       ? `Yes${r.paymentReference ? `<div class="invite-meta-sub">${escapeHtml(r.paymentReference)}</div>` : ''}`
+      : '<span style="opacity:0.55">—</span>';
+    const adminMessage = r.message
+      ? `<div class="request-message-cell">${escapeHtml(r.message)}</div>`
       : '<span style="opacity:0.55">—</span>';
     const emailCol = r.emailSent
       ? '<span class="badge badge-success">Sent</span>'
@@ -2306,6 +2322,7 @@ function renderAccessRequests() {
       <td>${escapeHtml(r.email)}</td>
       <td><code>${escapeHtml(String(r.applicantId || '—'))}</code></td>
       <td>${pay}</td>
+      <td>${adminMessage}</td>
       <td>${requestStatusBadge(r.status)}</td>
       <td>${formatRequestDate(r.requestedAt)}</td>
       <td>${emailCol}</td>
@@ -2427,6 +2444,7 @@ function fillAccessConfigForm(cfg) {
   const normalized = window.MNAccessRequest
     ? MNAccessRequest.normalizePaymentConfig({ ...ACCESS_CFG_DEFAULTS, ...cfg })
     : { ...ACCESS_CFG_DEFAULTS, ...cfg };
+  document.getElementById('accessCfgEnabled').checked = normalized.requestAccessEnabled !== false;
   document.getElementById('accessCfgShow').checked = normalized.showOnRequestPage !== false;
   document.getElementById('accessCfgOptional').checked = normalized.paymentOptional !== false;
   document.getElementById('accessCfgPriceMinPKR').value = normalized.accessPriceMinPKR ?? 250;
@@ -2434,8 +2452,8 @@ function fillAccessConfigForm(cfg) {
   document.getElementById('accessCfgPriceMinUSD').value = normalized.accessPriceMinUSD ?? 0.9;
   document.getElementById('accessCfgPriceMaxUSD').value = normalized.accessPriceMaxUSD ?? 2.4;
   document.getElementById('accessCfgAccount').value = normalized.accountNumber || '';
-  document.getElementById('accessCfgRaast').value = normalized.raastId || '';
   document.getElementById('accessCfgBank').value = normalized.bankName || '';
+  document.getElementById('accessCfgClosedMessage').value = normalized.requestClosedMessage || '';
   document.getElementById('accessCfgNote').value = normalized.paymentNote || '';
 }
 
@@ -2460,6 +2478,8 @@ async function saveAccessConfigEditor() {
   if (minPkr > maxPkr && maxPkr > 0) { const t = minPkr; minPkr = maxPkr; maxPkr = t; }
   if (minUsd > maxUsd && maxUsd > 0) { const t = minUsd; minUsd = maxUsd; maxUsd = t; }
   const data = {
+    requestAccessEnabled: document.getElementById('accessCfgEnabled').checked,
+    requestClosedMessage: document.getElementById('accessCfgClosedMessage').value.trim(),
     showOnRequestPage: document.getElementById('accessCfgShow').checked,
     paymentOptional: document.getElementById('accessCfgOptional').checked,
     showAccountTitle: false,
@@ -2468,7 +2488,7 @@ async function saveAccessConfigEditor() {
     accessPriceMinUSD: minUsd,
     accessPriceMaxUSD: maxUsd,
     accountNumber: document.getElementById('accessCfgAccount').value.trim(),
-    raastId: document.getElementById('accessCfgRaast').value.trim(),
+    raastId: '',
     bankName: document.getElementById('accessCfgBank').value.trim(),
     paymentNote: document.getElementById('accessCfgNote').value.trim(),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),

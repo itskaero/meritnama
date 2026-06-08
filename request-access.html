@@ -162,6 +162,29 @@
       text-decoration: none;
     }
     .req-signin-link a:hover { text-decoration: underline; }
+    .req-closed-card {
+      display: none;
+      max-width: 620px;
+      margin: 0 auto 3.5rem;
+      padding: 1.35rem 1.5rem;
+      background: rgba(16, 26, 52, 0.85);
+      border: 1px solid rgba(224, 84, 112, 0.22);
+      border-radius: var(--radius-lg);
+      color: var(--text-muted);
+      line-height: 1.55;
+      box-shadow: var(--shadow-sm);
+    }
+    .req-closed-card h2 {
+      margin: 0 0 0.45rem;
+      color: var(--neon-pink);
+      font-size: 1.05rem;
+    }
+    .req-closed-card a {
+      color: var(--neon-cyan);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .req-closed-card a:hover { text-decoration: underline; }
   </style>
 </head>
 <body class="bg-default req-access-page">
@@ -203,7 +226,13 @@
     <p>Induction 21 candidates can request access using the same email and Applicant ID from the official portal. An admin will review your request and email your login PIN.</p>
   </div>
 
-  <div class="req-layout">
+  <div class="req-closed-card" id="reqClosed" role="status" aria-live="polite">
+    <h2>Access requests are currently closed</h2>
+    <p id="reqClosedMessage">Please sign in if you already have credentials, or check back later.</p>
+    <p style="margin-top:0.75rem;">Already approved? <a href="index.html">Open the sign-in page</a>.</p>
+  </div>
+
+  <div class="req-layout" id="reqLayout">
 
     <aside class="req-steps">
       <div class="req-step">
@@ -253,6 +282,11 @@
         </div>
         <div class="auth-candidate-preview" id="reqPreview"></div>
         <div id="reqPaymentWrap"></div>
+        <div class="auth-field auth-admin-message">
+          <label for="reqAdminMessage">Message to admin <span style="text-transform:none;font-weight:400;">(optional)</span></label>
+          <textarea id="reqAdminMessage" maxlength="600" placeholder="Use this for access issues, complaints, or questions. If you paid, put only the payment transaction/reference number in the Transaction Reference field above."></textarea>
+          <p class="auth-field-hint">This message is reviewed with your access request. Do not put random text in Transaction Reference.</p>
+        </div>
         <button class="auth-btn" id="reqSubmit" type="button">Submit Request</button>
         <p class="auth-error" id="reqError"></p>
         <p class="auth-success" id="reqSuccess" style="display:none;"></p>
@@ -288,9 +322,13 @@
   var reqId = document.getElementById('reqApplicantId');
   var reqPrev = document.getElementById('reqPreview');
   var reqPay = document.getElementById('reqPaymentWrap');
+  var reqMsg = document.getElementById('reqAdminMessage');
   var reqBtn = document.getElementById('reqSubmit');
   var reqErr = document.getElementById('reqError');
   var reqOk = document.getElementById('reqSuccess');
+  var reqLayout = document.getElementById('reqLayout');
+  var reqClosed = document.getElementById('reqClosed');
+  var reqClosedMessage = document.getElementById('reqClosedMessage');
   var accessConfig = null;
   var verifyTimer = null;
 
@@ -307,8 +345,21 @@
     });
   }
 
+  function closeRequestForm(cfg) {
+    if (reqLayout) reqLayout.style.display = 'none';
+    if (reqClosed) reqClosed.style.display = 'block';
+    if (reqClosedMessage) {
+      reqClosedMessage.textContent = cfg.requestClosedMessage || AR.DEFAULT_ACCESS_CONFIG.requestClosedMessage;
+    }
+    if (reqBtn) reqBtn.disabled = true;
+  }
+
   AR.loadAccessConfig(db).then(function (cfg) {
     accessConfig = cfg;
+    if (cfg.requestAccessEnabled === false) {
+      closeRequestForm(cfg);
+      return;
+    }
     reqPay.innerHTML = AR.renderPaymentBlock(cfg, '');
     wireCopy(document.body);
   });
@@ -348,6 +399,7 @@
         applicantId: reqId.value,
         paymentDeclared: !!document.getElementById('authPayDeclared')?.checked,
         paymentReference: document.getElementById('authPayRef')?.value || '',
+        message: reqMsg?.value || '',
       });
       if (!result.ok) {
         reqErr.textContent = result.error || 'Request failed.';

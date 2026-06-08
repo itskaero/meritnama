@@ -116,7 +116,7 @@ service cloud.firestore {
     }
 
     // Access requests — candidates submit; admin reads/updates via admin portal
-    // Doc ID = email. Fields: applicantId, nameFull, status, paymentDeclared, paymentReference, …
+    // Doc ID = email. Fields: applicantId, nameFull, status, paymentDeclared, paymentReference, message, …
     match /access_requests/{email} {
       allow create: if true;
       allow read:   if true;

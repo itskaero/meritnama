@@ -215,9 +215,9 @@
     gate.innerHTML =
       '<div class="auth-card">' +
         '<img src="logo.svg" class="auth-logo" alt="MeritNama" />' +
-        '<div class="auth-tabs">' +
+        '<div class="auth-tabs" id="authTabs">' +
           '<button type="button" class="auth-tab active" data-auth-tab="login">Sign In</button>' +
-          '<button type="button" class="auth-tab" data-auth-tab="request">Request Access</button>' +
+          '<button type="button" class="auth-tab" data-auth-tab="request" id="authRequestTab" style="display:none;">Request Access</button>' +
         '</div>' +
         '<div class="auth-panel active" id="authPanelLogin">' +
           '<h2>Private Access</h2>' +
@@ -246,12 +246,17 @@
           '</div>' +
           '<div class="auth-candidate-preview" id="reqPreview"></div>' +
           '<div id="reqPaymentWrap"></div>' +
+          '<div class="auth-field auth-admin-message">' +
+            '<label for="reqAdminMessage">Message to admin <span style="text-transform:none;font-weight:400;">(optional)</span></label>' +
+            '<textarea id="reqAdminMessage" maxlength="600" placeholder="Use this for access issues, complaints, or questions. If you paid, put only the payment transaction/reference number in the Transaction Reference field above."></textarea>' +
+            '<p class="auth-field-hint">This message is reviewed with your access request. Do not put random text in Transaction Reference.</p>' +
+          '</div>' +
           '<button class="auth-btn" id="reqSubmit">Submit Request</button>' +
           '<p class="auth-error" id="reqError"></p>' +
           '<p class="auth-success" id="reqSuccess" style="display:none;"></p>' +
         '</div>' +
         '<p class="auth-footer">Access is invite-only. Approved requests receive credentials by email.</p>' +
-        '<p class="auth-link-row"><a href="request-access.html">Open full request page</a> · <a href="donate.html">Support MeritNama</a></p>' +
+        '<p class="auth-link-row"><a href="request-access.html" id="authRequestFullLink" style="display:none;">Open full request page</a><span id="authRequestLinkSep" style="display:none;"> &middot; </span><a href="donate.html">Support MeritNama</a></p>' +
       '</div>';
     document.body.prepend(gate);
 
@@ -275,7 +280,7 @@
       var submitBtn  = document.getElementById('authSubmit');
       var errorEl    = document.getElementById('authError');
 
-      initRequestPanel(db, gate);
+      configureRequestAccess(db, gate);
 
       async function getUserIP() {
         try {
@@ -371,7 +376,42 @@
     });
   }
 
-  function initRequestPanel(db, gate) {
+  function setRequestAccessVisible(gate, enabled) {
+    var tab = document.getElementById('authRequestTab');
+    var panel = document.getElementById('authPanelRequest');
+    var loginPanel = document.getElementById('authPanelLogin');
+    var fullLink = document.getElementById('authRequestFullLink');
+    var linkSep = document.getElementById('authRequestLinkSep');
+    if (tab) tab.style.display = enabled ? '' : 'none';
+    if (fullLink) fullLink.style.display = enabled ? '' : 'none';
+    if (linkSep) linkSep.style.display = enabled ? '' : 'none';
+    if (!enabled) {
+      if (tab) tab.classList.remove('active');
+      if (panel) panel.classList.remove('active');
+      gate.querySelector('[data-auth-tab="login"]')?.classList.add('active');
+      if (loginPanel) loginPanel.classList.add('active');
+    }
+  }
+
+  function configureRequestAccess(db, gate) {
+    if (!window.MNAccessRequest) {
+      setRequestAccessVisible(gate, false);
+      return;
+    }
+
+    var AR = window.MNAccessRequest;
+    AR.loadAccessConfig(db).then(function (cfg) {
+      var enabled = cfg.requestAccessEnabled !== false;
+      setRequestAccessVisible(gate, enabled);
+      if (enabled) initRequestPanel(db, gate, cfg);
+    }).catch(function () {
+      var cfg = AR.DEFAULT_ACCESS_CONFIG || { requestAccessEnabled: true };
+      setRequestAccessVisible(gate, cfg.requestAccessEnabled !== false);
+      if (cfg.requestAccessEnabled !== false) initRequestPanel(db, gate, cfg);
+    });
+  }
+
+  function initRequestPanel(db, gate, initialConfig) {
     if (!window.MNAccessRequest) return;
 
     var AR = window.MNAccessRequest;
@@ -379,6 +419,7 @@
     var reqId    = document.getElementById('reqApplicantId');
     var reqPrev  = document.getElementById('reqPreview');
     var reqPay   = document.getElementById('reqPaymentWrap');
+    var reqMsg   = document.getElementById('reqAdminMessage');
     var reqBtn   = document.getElementById('reqSubmit');
     var reqErr   = document.getElementById('reqError');
     var reqOk    = document.getElementById('reqSuccess');
@@ -386,11 +427,17 @@
     var verifiedCandidate = null;
     var verifyTimer = null;
 
-    AR.loadAccessConfig(db).then(function (cfg) {
+    function applyAccessConfig(cfg) {
       accessConfig = cfg;
       if (reqPay) reqPay.innerHTML = AR.renderPaymentBlock(cfg, '');
       wireCopyHandlers(gate);
-    }).catch(function () { /* optional payment block */ });
+    }
+
+    if (initialConfig) {
+      applyAccessConfig(initialConfig);
+    } else {
+      AR.loadAccessConfig(db).then(applyAccessConfig).catch(function () { /* optional payment block */ });
+    }
 
     function wireCopyHandlers(root) {
       root.querySelectorAll('[data-copy]').forEach(function (el) {
@@ -449,6 +496,7 @@
             applicantId: reqId.value,
             paymentDeclared: payDeclared,
             paymentReference: payRef,
+            message: reqMsg?.value || '',
           });
 
           if (!result.ok) {
