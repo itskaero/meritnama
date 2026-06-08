@@ -5,6 +5,8 @@
   const CONFIG_DOC = 'access_config';
 
   const DEFAULT_ACCESS_CONFIG = {
+    requestAccessEnabled: true,
+    requestClosedMessage: 'Access requests are currently closed by admin. Please sign in if you already have credentials or check back later.',
     showOnRequestPage: true,
     paymentOptional: true,
     accessPriceMinPKR: 250,
@@ -12,10 +14,10 @@
     accessPriceMinUSD: 0.9,
     accessPriceMaxUSD: 2.4,
     accountNumber: '0891-2007-4774',
-    raastId: '089120074774',
+    raastId: '',
     bankName: 'Mashreq Pakistan',
     showAccountTitle: false,
-    paymentNote: 'Optional — minimum PKR 250. Include your Applicant ID in the transfer reference.',
+    paymentNote: 'Optional support contribution. If you pay, paste the actual transaction/reference number from your banking app below. Use Message to admin for access questions or complaints.',
   };
 
   let _authIndex = null;
@@ -86,6 +88,15 @@
   }
 
   async function submitAccessRequest(db, payload) {
+    invalidateAccessConfigCache();
+    var config = await loadAccessConfig(db);
+    if (config && config.requestAccessEnabled === false) {
+      return {
+        ok: false,
+        error: config.requestClosedMessage || DEFAULT_ACCESS_CONFIG.requestClosedMessage,
+      };
+    }
+
     var verified = await verifyCandidate(payload.email, payload.applicantId);
     if (!verified.ok) return verified;
 
@@ -113,6 +124,7 @@
       nameFull: verified.nameFull || payload.name || email,
       status: 'pending',
       paymentDeclared: !!payload.paymentDeclared,
+      paymentAmountPKR: normalizePaymentAmount(payload.paymentAmountPKR),
       paymentReference: (payload.paymentReference || '').trim(),
       message: (payload.message || '').trim(),
       requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -125,6 +137,14 @@
     }, { merge: false });
 
     return { ok: true, email: email, applicantId: verified.applicantId, nameFull: verified.nameFull };
+  }
+
+  function normalizePaymentAmount(value) {
+    var raw = String(value || '').replace(/,/g, '').trim();
+    if (!raw) return null;
+    var amount = Number(raw);
+    if (!Number.isFinite(amount) || amount < 0) return null;
+    return Math.round(amount * 100) / 100;
   }
 
   function formatAccountNumber(num) {
@@ -195,19 +215,22 @@
       ? '<span class="auth-pay-badge">Optional</span>'
       : '<span class="auth-pay-badge required">Required before approval</span>';
     var refHint = applicantId
-      ? 'Use reference: <code>ID ' + escHtml(applicantId) + '</code>'
-      : 'Include your Applicant ID in the reference.';
+      ? 'If you pay, include Applicant ID <code>' + escHtml(applicantId) + '</code> in the payment note when possible, then paste the banking app transaction/reference number below.'
+      : 'If you pay, paste the transaction/reference number from your banking app below after verification.';
     return (
       '<div class="auth-pay-box">' +
         '<div class="auth-pay-head">' + optional + ' Support / access fee</div>' +
         priceLine +
         '<p class="auth-pay-note">' + escHtml(config.paymentNote || '') + '</p>' +
         '<div class="auth-pay-row"><span>Account</span><code class="auth-pay-val" data-copy="' + escAttr(formatAccountNumber(config.accountNumber)) + '">' + escHtml(config.accountNumber || '—') + '</code></div>' +
-        (config.raastId ? '<div class="auth-pay-row"><span>Raast</span><code class="auth-pay-val" data-copy="' + escAttr(formatAccountNumber(config.raastId)) + '">' + escHtml(config.raastId) + '</code></div>' : '') +
         (config.bankName ? '<div class="auth-pay-row"><span>Bank</span><span>' + escHtml(config.bankName) + '</span></div>' : '') +
-        '<p class="auth-pay-ref">' + refHint + '</p>' +
+        '<p class="auth-pay-ref"><strong>Transaction reference:</strong> ' + refHint + '</p>' +
+        '<p class="auth-pay-ref-help">Use this only for a real payment transaction/reference number. For access issues, complaints, or other queries, use the Message to admin box below.</p>' +
         '<label class="auth-pay-check"><input type="checkbox" id="authPayDeclared" /> I have sent payment (or will send soon)</label>' +
-        '<input type="text" id="authPayRef" class="auth-pay-ref-input" placeholder="Transaction reference (optional)" maxlength="120" />' +
+        '<label class="auth-pay-input-label" for="authPayAmountPKR">Amount being sent (PKR, optional)</label>' +
+        '<input type="number" id="authPayAmountPKR" class="auth-pay-ref-input" placeholder="e.g. 250" min="0" step="1" inputmode="numeric" />' +
+        '<label class="auth-pay-input-label" for="authPayRef">Transaction/reference number (optional)</label>' +
+        '<input type="text" id="authPayRef" class="auth-pay-ref-input" placeholder="Payment transaction/reference number only (optional)" maxlength="120" />' +
       '</div>'
     );
   }
@@ -231,6 +254,7 @@
     invalidateAccessConfigCache: invalidateAccessConfigCache,
     verifyCandidate: verifyCandidate,
     submitAccessRequest: submitAccessRequest,
+    normalizePaymentAmount: normalizePaymentAmount,
     renderPaymentBlock: renderPaymentBlock,
     formatPriceRange: formatPriceRange,
     normalizePaymentConfig: normalizePaymentConfig,
