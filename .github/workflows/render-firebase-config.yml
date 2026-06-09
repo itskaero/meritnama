@@ -51,19 +51,6 @@ jobs:
             < firebase-messaging-sw.template.js > firebase-messaging-sw.js
           echo "firebase-messaging-sw.js created successfully."
 
-      - name: Create emailjs-config.js from secrets
-        env:
-          EMAILJS_PUBLIC_KEY:  ${{ secrets.EMAILJS_PUBLIC_KEY }}
-          EMAILJS_SERVICE_ID:  ${{ secrets.EMAILJS_SERVICE_ID }}
-          EMAILJS_TEMPLATE_ID: ${{ secrets.EMAILJS_TEMPLATE_ID }}
-        run: |
-          : "${EMAILJS_PUBLIC_KEY:?secret EMAILJS_PUBLIC_KEY is not set}"
-          : "${EMAILJS_SERVICE_ID:?secret EMAILJS_SERVICE_ID is not set}"
-          : "${EMAILJS_TEMPLATE_ID:?secret EMAILJS_TEMPLATE_ID is not set}"
-          envsubst '$EMAILJS_PUBLIC_KEY $EMAILJS_SERVICE_ID $EMAILJS_TEMPLATE_ID' \
-            < emailjs-config.template.js > emailjs-config.js
-          echo "emailjs-config.js created successfully."
-
       - name: Sanitize candidate JSON and build auth index
         run: python3 build_candidate_auth_index.py
 
@@ -100,7 +87,6 @@ jobs:
             --exclude='scripts/' \
             --exclude='*.md' \
             --exclude='firebase-config.template.js' \
-            --exclude='emailjs-config.template.js' \
             --exclude='firebase-messaging-sw.template.js' \
             --exclude='firestore.rules' \
             . _site/

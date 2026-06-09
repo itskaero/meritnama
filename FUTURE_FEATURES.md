@@ -136,7 +136,7 @@
 ]
 ```
 
-**How to implement:** Use Firebase Cloud Messaging for push; EmailJS or Firebase Functions for email dispatch. Admin panel already exists for content management.
+**How to implement:** Use Firebase Cloud Messaging for push; Firebase Trigger Email or Firebase Functions for email dispatch. Admin panel already exists for content management.
 
 ---
 

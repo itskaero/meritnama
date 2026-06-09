@@ -88,7 +88,112 @@ Each document ID = email address (lowercase). Fields:
 
 ---
 
-## 5. Admin Dashboard
+## 5. Set Up Portal Access Emails
+
+MeritNama sends portal access emails through the Firebase **Trigger Email from Firestore** extension. The admin dashboard writes a document to the `mail` collection with this shape:
+
+```javascript
+{
+  to: ["user@example.com"],
+  template: {
+    name: "welcome_access",
+    data: {
+      name: "Dr Ahmed",
+      email: "user@example.com",
+      pin: "123456",
+      accessLevel: "Standard User",
+      portalUrl: "https://itskaero.github.io/meritnama/",
+      logoUrl: "https://itskaero.github.io/meritnama/logo.svg"
+    }
+  },
+  createdAt: serverTimestamp(),
+  source: "admin_portal_access"
+}
+```
+
+### Install the extension
+
+1. Firebase Console → Extensions → **Trigger Email from Firestore**
+2. Use:
+   - Email documents collection: `mail`
+   - Templates collection: `email_templates`
+   - Default FROM email/name: your verified sender, for example `MeritNama <namamerit@gmail.com>`
+3. Configure SMTP credentials from your mail provider.
+   - For Gmail, use a Google **App Password** if available; do not use the normal Gmail account password.
+   - If Gmail App Passwords are unavailable, use a transactional provider such as SendGrid, Mailgun, Postmark, or Mailtrap.
+
+### Create the welcome template
+
+Create this Firestore document:
+
+- Collection: `email_templates`
+- Document ID: `welcome_access`
+
+Fields:
+
+- `subject`:
+
+```text
+MeritNama - Your Portal Access
+```
+
+- `html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MeritNama Portal Access</title></head>
+<body style="margin:0;padding:0;background-color:#f4f7fb;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f7fb;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+      <tr>
+        <td align="center" style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:40px 30px;">
+          <img src="{{logoUrl}}" alt="MeritNama" style="max-width:170px;height:auto;margin-bottom:20px;" />
+          <h1 style="color:#ffffff;margin:0;font-size:28px;font-weight:700;letter-spacing:0.5px;">Access Granted</h1>
+          <p style="color:#cbd5e1;margin-top:10px;font-size:15px;line-height:24px;">Your MeritNama portal access has been successfully activated.</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:40px 35px;color:#334155;">
+          <p style="font-size:16px;line-height:28px;margin-top:0;">Dear <strong>{{name}}</strong>,</p>
+          <p style="font-size:15px;line-height:28px;color:#475569;">We are pleased to inform you that your access to the <strong>MeritNama Portal</strong> has been approved.</p>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:30px 0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
+            <tr><td style="padding:24px;">
+              <p style="margin:0 0 14px;font-size:14px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;">Your Credentials</p>
+              <p style="margin:8px 0;font-size:15px;color:#0f172a;"><strong>Email:</strong> {{email}}</p>
+              <p style="margin:8px 0;font-size:15px;color:#0f172a;"><strong>Access PIN:</strong>
+                <code style="background:#f1f5f9;padding:2px 10px;border-radius:4px;font-family:monospace;font-size:15px;letter-spacing:2px;">{{pin}}</code></p>
+              <p style="margin:8px 0;font-size:15px;color:#0f172a;"><strong>Access Level:</strong> {{accessLevel}}</p>
+              <p style="margin:8px 0;font-size:15px;color:#0f172a;"><strong>Portal URL:</strong>
+                <a href="{{portalUrl}}" style="color:#2563eb;text-decoration:none;">{{portalUrl}}</a></p>
+              <p style="margin:16px 0 0;font-size:13px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px;">
+                &#128274; Keep your PIN confidential. Do not share your credentials with anyone.</p>
+            </td></tr>
+          </table>
+          <div style="text-align:center;margin:35px 0;">
+            <a href="{{portalUrl}}" style="background:#2563eb;color:#ffffff;text-decoration:none;padding:15px 34px;border-radius:10px;display:inline-block;font-size:15px;font-weight:600;letter-spacing:0.3px;">Access Portal</a>
+          </div>
+          <p style="font-size:15px;line-height:28px;color:#475569;">For security, please keep your login credentials confidential and do not share access with unauthorized individuals.</p>
+          <p style="font-size:15px;line-height:28px;color:#475569;margin-bottom:0;">If you encounter any issues accessing the portal, feel free to contact the admin.</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="background:#f8fafc;padding:28px 35px;border-top:1px solid #e2e8f0;text-align:center;">
+          <p style="margin:0;font-size:14px;color:#64748b;line-height:24px;">&copy; 2026 MeritNama. All rights reserved.</p>
+          <p style="margin:10px 0 0;font-size:13px;color:#94a3b8;line-height:22px;">This is an automated notification regarding your portal access.</p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>
+```
+
+---
+
+## 6. Admin Dashboard
 
 - Access at: `your-site.com/admin.html`
 - Requires an `authorized_users` document with `isAdmin: true`
@@ -98,7 +203,7 @@ Each document ID = email address (lowercase). Fields:
 
 ---
 
-## 6. Security Notes
+## 7. Security Notes
 
 - **Access gating**: The page content is hidden via CSS `body.auth-locked` class which hides ALL elements. The auth gate runs before any content renders. This provides effective access control for normal users. Note: Since this is a client-side static site, a technically sophisticated user could potentially view the HTML source. For sensitive data, store it in Firestore with security rules that require proper authentication tokens.
   
@@ -112,7 +217,7 @@ Each document ID = email address (lowercase). Fields:
 
 ---
 
-## 7. Generating SHA-256 PIN Hash (Optional)
+## 8. Generating SHA-256 PIN Hash (Optional)
 
 If you prefer to store hashed PINs, generate them with:
 
