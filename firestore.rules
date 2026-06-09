@@ -124,6 +124,17 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Firebase Trigger Email extension queue.
+    // Admin dashboard creates documents like:
+    //   { to: [email], template: { name: 'welcome_access', data: {...} } }
+    // Security note: this follows the current PIN-gated admin-dashboard model.
+    // For a hardened deployment, create these documents from a Cloud Function
+    // and set client writes here to false.
+    match /mail/{mailId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+
     // Community chat messages (Induction 21 simulation page)
     // Publicly readable and creatable; delete allowed (ownership enforced in UI).
     // Fields: text, name, uid, ts, type, imageData, fileData, fileName, fileSize, mimeType, reactions, replyTo, mentionsEveryone, mentions
