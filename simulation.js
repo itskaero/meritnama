@@ -1411,11 +1411,7 @@ function openCandidateDetail(idStr) {
         <h3>${esc(c.nameFull)} ${isMe ? '<span class="me-tag">YOU</span>' : ''}
           ${c._custom ? '<span class="custom-tag">manual</span>' : ''}</h3>
         <p class="cand-detail-meta">ID: ${c.applicantId} &nbsp;·&nbsp; ${esc(getActiveMarksLabel())}: <strong>${fmtM(baseMarks(c))}</strong> &nbsp;·&nbsp; Portal marksTotal: ${fmtM(c.marksTotal)}</p>
-        ${(() => {
-          const st = getProfileStatusForCandidate(c);
-          if (!st) return '';
-          return `<p class="cand-detail-meta" style="margin-top:6px">${profileStatusTagHtml(st)} <span style="color:var(--text-muted)">${esc(SIM.profileStatus.typeLabel)}</span></p>`;
-        })()}
+        ${profileStatusDetailHtml(getProfileStatusForCandidate(c))}
       </div>
     </div>
 
@@ -5584,6 +5580,7 @@ function applyProfileStatusPayload(payload, sourceLabel, opts = {}) {
     byId[String(e.applicantId)] = {
       statusId:     e.statusId ?? 0,
       statusTypeId: e.statusTypeId ?? payload?.statusTypeId ?? null,
+      remarks:      e.remarks ?? null,
     };
   }
 
@@ -5619,13 +5616,101 @@ function profileStatusLabel(statusId) {
     || `Status ${statusId}`;
 }
 
+function _normalizeRemarkRaw(raw) {
+  return String(raw)
+    .trim()
+    .replace(/^,+\s*/, '')
+    .replace(/\s*,+$/, '')
+    .replace(/\.\s*,+\s*/g, ', ')
+    .replace(/,+/g, ',')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function _remarkDedupeKey(category, message) {
+  const fold = (s) => String(s || '')
+    .toLowerCase()
+    .replace(/\b(is|are|the|a|an)\b/g, ' ')
+    .replace(/\./g, ' ')
+    .replace(/[^a-z0-9]+/g, '');
+  const cat = category ? fold(category).replace(/^mdcar$/, 'mdcat') : '';
+  const msg = fold(message);
+  return cat ? `${cat}|${msg}` : msg;
+}
+
+function _parseRemarkPart(part) {
+  const cleaned = part.replace(/^,+\s*/, '').replace(/\.\s*$/, '').trim();
+  if (!cleaned) return null;
+
+  const colonIdx = cleaned.indexOf(':');
+  if (colonIdx > 0) {
+    return {
+      category: cleaned.slice(0, colonIdx).trim(),
+      message: cleaned.slice(colonIdx + 1).trim() || cleaned,
+    };
+  }
+  return { category: null, message: cleaned };
+}
+
+function parseProfileStatusRemarks(raw) {
+  if (raw == null) return [];
+  const s = _normalizeRemarkRaw(raw);
+  if (!s) return [];
+
+  const parts = s.split(/,\s*/).map(p => p.trim()).filter(Boolean);
+  const seen = new Set();
+  const items = [];
+
+  for (const part of parts) {
+    const item = _parseRemarkPart(part);
+    if (!item) continue;
+
+    const key = _remarkDedupeKey(item.category, item.message);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    items.push(item);
+  }
+  return items;
+}
+
+function formatProfileStatusRemarks(raw) {
+  return parseProfileStatusRemarks(raw)
+    .map(({ category, message }) => (category ? `${category}: ${message}` : message))
+    .join('; ');
+}
+
+function profileStatusRemarksHtml(raw) {
+  const items = parseProfileStatusRemarks(raw);
+  if (!items.length) return '';
+  const lis = items.map(({ category, message }) => {
+    const cat = category
+      ? `<span class="cand-ps-remark-cat">${esc(category)}</span>`
+      : '';
+    return `<li class="cand-ps-remark-item">${cat}<span class="cand-ps-remark-msg">${esc(message)}</span></li>`;
+  }).join('');
+  return `<div class="cand-ps-remarks">
+    <p class="cand-ps-remarks-lbl">Remarks</p>
+    <ul class="cand-ps-remarks-list">${lis}</ul>
+  </div>`;
+}
+
 function profileStatusTagHtml(st) {
   if (!st) return '';
   const sid = Number(st.statusId);
   const cls = sid === 11 ? 'ps-pending' : sid === 1 ? 'ps-accepted' : sid === 2 ? 'ps-rejected' : 'ps-other';
   const label = profileStatusLabel(sid);
-  const tip = `${SIM.profileStatus.typeLabel}${st.statusTypeId ? ` (type ${st.statusTypeId})` : ''}`;
+  const remarks = formatProfileStatusRemarks(st.remarks);
+  const tip = [
+    SIM.profileStatus.typeLabel,
+    st.statusTypeId ? `(type ${st.statusTypeId})` : '',
+    remarks ? `Remarks: ${remarks}` : '',
+  ].filter(Boolean).join(' · ');
   return `<span class="profile-status-tag ${cls}" title="${esc(tip)}">${esc(label)}</span>`;
+}
+
+function profileStatusDetailHtml(st) {
+  if (!st) return '';
+  return `<p class="cand-detail-meta" style="margin-top:6px">${profileStatusTagHtml(st)} <span style="color:var(--text-muted)">${esc(SIM.profileStatus.typeLabel)}</span></p>${profileStatusRemarksHtml(st.remarks)}`;
 }
 
 async function loadProfileStatusData() {

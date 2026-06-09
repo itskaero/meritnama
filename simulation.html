@@ -435,6 +435,30 @@
       text-shadow: 0 0 16px rgba(77,184,217,0.28);
     }
     .cand-detail-meta { font-size: 0.82rem; color: var(--text-muted); }
+    .cand-ps-remarks {
+      margin-top: 8px; padding: 10px 12px;
+      background: rgba(224,84,112,0.08);
+      border: 1px solid rgba(224,84,112,0.28);
+      border-left: 3px solid #e05470;
+      border-radius: var(--radius, 10px);
+      word-break: break-word;
+    }
+    .cand-ps-remarks-lbl {
+      margin: 0 0 6px; font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.04em; color: #e05470;
+    }
+    .cand-ps-remarks-list {
+      margin: 0; padding-left: 1.15rem; list-style: disc;
+    }
+    .cand-ps-remark-item {
+      margin-bottom: 4px; line-height: 1.45; color: #e05470;
+    }
+    .cand-ps-remark-item:last-child { margin-bottom: 0; }
+    .cand-ps-remark-cat {
+      font-weight: 700; color: #ff6b85; margin-right: 2px;
+    }
+    .cand-ps-remark-cat::after { content: ':'; }
+    .cand-ps-remark-msg { color: #f5a8b8; }
 
     .cand-scores-grid {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
