@@ -12,6 +12,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script>firebase.initializeApp(firebaseConfig);</script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <style>
     /* ---------------------------------------------------------------
        SIMULATION PAGE � harmonised with MeritNama design system
@@ -261,6 +262,72 @@
     a.tab-btn.back-btn { text-decoration: none; opacity: 0.6; font-size: 0.82rem; }
     a.tab-btn.back-btn:hover { opacity: 1; color: var(--neon-cyan); }
 
+    /* -- Grouped simulation navigation -- */
+    .sim-tab-nav {
+      align-items: stretch;
+      gap: 0;
+    }
+    .sim-nav-section {
+      display: flex;
+      align-items: center;
+      min-width: max-content;
+    }
+    .sim-nav-section + .sim-nav-section {
+      border-left: 1px solid rgba(77,184,217,0.12);
+      margin-left: 4px;
+      padding-left: 4px;
+    }
+    .sim-nav-label {
+      align-self: center;
+      padding: 0 8px 0 14px;
+      color: var(--text-light, #3a506e);
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .sim-nav-primary .tab-btn[data-tab="guide"],
+    .sim-nav-primary .tab-btn[data-tab="slotbrowser"],
+    .sim-nav-primary .tab-btn[data-tab="simulation"] {
+      color: var(--text);
+    }
+    .sim-nav-secondary .tab-btn {
+      opacity: 0.82;
+    }
+    .sim-nav-more .tab-btn {
+      opacity: 0.66;
+    }
+    .sim-nav-support {
+      margin-left: auto;
+    }
+    .sim-nav-support .donate-btn {
+      margin-left: 0;
+    }
+    @media (max-width: 768px) {
+      .sim-tab-nav.nav-open {
+        max-height: 720px;
+      }
+      .sim-nav-section {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .sim-nav-section + .sim-nav-section {
+        border-left: 0;
+        border-top: 1px solid rgba(77,184,217,0.12);
+        margin-left: 0;
+        padding-left: 0;
+        padding-top: 4px;
+      }
+      .sim-nav-support {
+        margin-left: 0;
+      }
+      .sim-nav-label {
+        padding: 9px 18px 2px;
+      }
+    }
+
     /* -- "YOU" badge -- */
     .me-tag {
       display: inline-block;
@@ -317,6 +384,19 @@
     .profile-status-tag.ps-other {
       background: rgba(255,255,255,0.06); color: var(--text-muted);
       border: 1px solid var(--border);
+    }
+    .supporter-tag {
+      display: inline-block;
+      background: linear-gradient(135deg, rgba(232,166,39,0.2), rgba(244,114,182,0.1));
+      color: var(--neon-gold, #e8a627);
+      border: 1px solid rgba(232,166,39,0.42);
+      font-size: 0.58rem;
+      font-weight: 900;
+      padding: 1px 7px;
+      border-radius: 100px;
+      margin-left: 5px;
+      vertical-align: middle;
+      letter-spacing: 0.03em;
     }
 
     /* -- "ME" table row -- */
@@ -1837,6 +1917,175 @@
       .chat-tab-wrap { height: auto; min-height: unset; }
       .chat-messages { height: 340px; flex: unset; }
     }
+
+    /* -- Profiles tab improvements -- */
+    .profiles-self-card {
+      max-width: 1200px;
+      margin: 0 auto 1rem;
+      padding: 0 1rem;
+    }
+    .profiles-self-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 1.1rem;
+      border-radius: var(--radius-lg, 16px);
+      border: 1px solid rgba(77,184,217,0.22);
+      background:
+        linear-gradient(135deg, rgba(77,184,217,0.09), rgba(124,101,196,0.05)),
+        var(--bg-card);
+      box-shadow: 0 0 24px rgba(77,184,217,0.06);
+    }
+    .profiles-self-main {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      min-width: 0;
+    }
+    .profiles-self-avatar {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 2px solid rgba(77,184,217,0.35);
+      background: linear-gradient(135deg, rgba(77,184,217,0.18), rgba(124,101,196,0.14));
+      color: var(--neon-cyan, #4db8d9);
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+    .profiles-self-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .profiles-self-kicker {
+      color: var(--neon-cyan, #4db8d9);
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.15rem;
+    }
+    .profiles-self-title {
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .profiles-self-meta {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      line-height: 1.45;
+      margin-top: 0.25rem;
+    }
+    .profiles-self-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-top: 0.55rem;
+    }
+    .profiles-self-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 2px 8px;
+      border-radius: 100px;
+      border: 1px solid rgba(77,184,217,0.2);
+      background: rgba(77,184,217,0.07);
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+    .profiles-self-chip.good {
+      color: var(--neon-green, #3ecf8e);
+      background: rgba(62,207,142,0.08);
+      border-color: rgba(62,207,142,0.25);
+    }
+    .profiles-self-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      flex-shrink: 0;
+    }
+    .profiles-action-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      padding: 0.62rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid rgba(77,184,217,0.24);
+      background: rgba(77,184,217,0.08);
+      color: var(--neon-cyan, #4db8d9);
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 800;
+      white-space: nowrap;
+      transition: background 0.18s, border-color 0.18s, transform 0.12s;
+    }
+    .profiles-action-link.primary {
+      background: linear-gradient(135deg, rgba(77,184,217,0.9), rgba(124,101,196,0.85));
+      border-color: transparent;
+      color: #fff;
+    }
+    .profiles-action-link:hover {
+      transform: translateY(-1px);
+      border-color: rgba(77,184,217,0.48);
+      background: rgba(77,184,217,0.16);
+    }
+    .profiles-action-link.primary:hover {
+      background: linear-gradient(135deg, rgba(77,184,217,1), rgba(124,101,196,0.95));
+    }
+    .download-gate {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(232,166,39,0.18);
+      background: linear-gradient(135deg, rgba(232,166,39,0.07), rgba(77,184,217,0.035));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+    }
+    .download-gate-title {
+      color: var(--text);
+      font-weight: 800;
+      font-size: 0.86rem;
+    }
+    .download-gate-note {
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      line-height: 1.45;
+      margin-top: 0.15rem;
+    }
+    .download-gate-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .download-gate .btn[disabled] {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    @media (max-width: 720px) {
+      .profiles-self-inner {
+        align-items: stretch;
+        flex-direction: column;
+      }
+      .profiles-self-actions {
+        justify-content: flex-start;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1881,21 +2130,34 @@
 </div>
 
 <!-- ═══════════ NAV ═══════════ -->
-<nav class="tab-nav" id="mainNav">
-  <a href="index.html" class="tab-btn back-btn">&#8592; Historical Data</a>
-  <button class="tab-btn active" data-tab="guide">&#10067; Guide</button>
-  <button class="tab-btn" data-tab="candidates">&#128100; Candidate Pool</button>
-  <button class="tab-btn" data-tab="slotbrowser">&#127919; Where Merit Falls</button>
-  <button class="tab-btn" data-tab="simulation">&#9889; Seat Allocation</button>
-  <button class="tab-btn" data-tab="schedule">&#128197; Schedule</button>
-  <button class="tab-btn" data-tab="community">&#128172; Community Chat</button>
-  <button class="tab-btn" data-tab="profiles">&#128100; Profiles</button>
-  <button class="tab-btn" data-tab="competition">&#128200; Competition</button>
-  <button class="tab-btn" data-tab="seatmatrix">&#127979; Training Seats</button>
-  <button class="tab-btn" data-tab="hospitals">&#127968; Hospitals</button>
-  <a href="accreditation.html" class="tab-btn" style="text-decoration:none;">&#9989; Accreditation</a>
-  <a href="candidatesChanges.html" class="tab-btn" style="text-decoration:none;opacity:0.6;">&#128202; Data Changes</a>
-  <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
+<nav class="tab-nav sim-tab-nav" id="mainNav">
+  <div class="sim-nav-section sim-nav-back">
+    <a href="index.html" class="tab-btn back-btn">&#8592; Historical Data</a>
+  </div>
+  <div class="sim-nav-section sim-nav-primary" aria-label="Primary induction tools">
+    <span class="sim-nav-label">Start</span>
+    <button class="tab-btn active" data-tab="guide">&#10067; Guide</button>
+    <button class="tab-btn" data-tab="candidates">&#128100; Candidate Pool</button>
+    <button class="tab-btn" data-tab="slotbrowser">&#127919; Where Merit Falls</button>
+    <button class="tab-btn" data-tab="simulation">&#9889; Seat Allocation</button>
+  </div>
+  <div class="sim-nav-section sim-nav-secondary" aria-label="Planning and community">
+    <span class="sim-nav-label">Plan</span>
+    <button class="tab-btn" data-tab="schedule">&#128197; Schedule</button>
+    <button class="tab-btn" data-tab="hospitals">&#127968; Hospitals</button>
+    <button class="tab-btn" data-tab="profiles">&#128100; Profiles</button>
+    <button class="tab-btn" data-tab="community">&#128172; Chat</button>
+  </div>
+  <div class="sim-nav-section sim-nav-more" aria-label="More data">
+    <span class="sim-nav-label">More</span>
+    <button class="tab-btn" data-tab="competition">&#128200; Competition</button>
+    <button class="tab-btn" data-tab="seatmatrix">&#127979; Training Seats</button>
+    <a href="accreditation.html" class="tab-btn" style="text-decoration:none;">&#9989; Accreditation</a>
+    <a href="candidatesChanges.html" class="tab-btn" style="text-decoration:none;">&#128202; Data Changes</a>
+  </div>
+  <div class="sim-nav-section sim-nav-support">
+    <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
+  </div>
 </nav>
 
 <!-- ═══════════ AUTHOR BAR ═══════════ -->
@@ -2020,6 +2282,8 @@
       <p id="marksBasisNote" class="marks-basis-note hidden" style="margin-top:10px"></p>
       <div style="margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <span id="candCount" class="mt-count"></span>
+        <button id="candDownloadPdfBtn" class="btn btn-sm" disabled>Download filtered PDF</button>
+        <span id="candDownloadNote" style="font-size:0.74rem;color:var(--text-muted);">Supporter-only export</span>
       </div>
       <div id="candStats" class="cand-stats-bar hidden">
         <span class="cstats-item" title="Applied to FCPS">
@@ -2150,6 +2414,16 @@
         <button id="sbCandClearBtn" class="btn btn-sm hidden">&#10005; Clear</button>
       </div>
       <div id="sbCandPanel" class="hidden"></div>
+      <div class="download-gate" id="sbDownloadGate">
+        <div>
+          <div class="download-gate-title">Donor PDF export</div>
+          <div class="download-gate-note" id="sbDownloadNote">Supporters can download a watermarked Where Merit Falls report after choosing programme and quota.</div>
+        </div>
+        <div class="download-gate-actions">
+          <a href="donate.html" class="btn btn-sm" id="sbDonateLink">Become supporter</a>
+          <button id="sbDownloadPdfBtn" class="btn btn-sm btn-primary" disabled>Download PDF</button>
+        </div>
+      </div>
     </div>
 
     <div id="sbResult" class="card" style="padding:0;overflow:hidden">
@@ -2441,6 +2715,8 @@
 
       <div style="margin-top:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
         <button id="runSimBtn" class="btn btn-primary btn-large">&#9889; Run Simulation</button>
+        <button id="simDownloadPdfBtn" class="btn btn-large" disabled>Download simulation PDF</button>
+        <span id="simDownloadNote" style="font-size:0.74rem;color:var(--text-muted);">Supporter-only export</span>
         <label class="sim-bonus-label">
           <input type="checkbox" id="simParentBonus" />
           Parent Institute Bonus (+5&nbsp;marks within slot)
@@ -2580,6 +2856,24 @@
     <div class="section-header">
       <h2>&#128100; Community Profiles</h2>
       <p>Browse registered members who have shared their profile. Data is self-reported and shown publicly by the user.</p>
+    </div>
+
+    <div class="profiles-self-card">
+      <div class="profiles-self-inner">
+        <div class="profiles-self-main">
+          <div class="profiles-self-avatar" id="profilesSelfAvatar">?</div>
+          <div>
+            <div class="profiles-self-kicker">My Profile</div>
+            <div class="profiles-self-title" id="profilesSelfTitle">Complete your public profile</div>
+            <div class="profiles-self-meta" id="profilesSelfMeta">Add your specialty, hospital, status, and visibility settings so the community directory is useful.</div>
+            <div class="profiles-self-chips" id="profilesSelfChips"></div>
+          </div>
+        </div>
+        <div class="profiles-self-actions">
+          <a class="profiles-action-link primary" href="candidate.html">&#9998; Edit Profile</a>
+          <a class="profiles-action-link" href="candidate.html#dashboardCard">&#127919; My Dashboard</a>
+        </div>
+      </div>
     </div>
 
     <div class="card filter-card">

@@ -106,6 +106,56 @@
       max-width: 480px;
       margin: 0 auto;
     }
+    .supporter-hero {
+      background:
+        linear-gradient(135deg, rgba(232,166,39,.1), rgba(129,140,248,.07)),
+        var(--card);
+      border: 1px solid rgba(232,166,39,.22);
+      border-radius: 20px;
+      padding: 1.35rem 1.45rem;
+      margin: 0 0 1.5rem;
+      box-shadow: 0 0 34px rgba(232,166,39,.08);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      align-items: center;
+    }
+    .supporter-hero h2 {
+      font-size: 1.15rem;
+      color: var(--text);
+      margin-bottom: .25rem;
+    }
+    .supporter-hero p {
+      color: #94a3b8;
+      font-size: .86rem;
+      line-height: 1.6;
+    }
+    .supporter-cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .55rem;
+      justify-content: flex-end;
+    }
+    .supporter-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .35rem;
+      padding: .65rem .9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(56,189,248,.24);
+      background: rgba(56,189,248,.08);
+      color: var(--accent1);
+      text-decoration: none;
+      font-size: .78rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .supporter-cta.primary {
+      background: linear-gradient(135deg, rgba(232,166,39,.95), rgba(244,114,182,.82));
+      color: #0b1020;
+      border-color: transparent;
+    }
 
     /* ── why it costs section ── */
     .why-card {
@@ -203,7 +253,13 @@
 
     /* ── contributors wall ── */
     .contributors-section {
-      margin-top: 2.5rem;
+      margin: 1.25rem 0 2rem;
+    }
+    .contributors-section.is-featured {
+      padding: 1.25rem;
+      border-radius: 18px;
+      background: rgba(255,255,255,.025);
+      border: 1px solid rgba(232,166,39,.16);
     }
     .contributors-grid {
       display: grid;
@@ -551,6 +607,8 @@
       .cost-strip { flex-direction: row; }
       .cost-item { flex: 1 1 100px; }
       .tabs { flex-direction: column; }
+      .supporter-hero { grid-template-columns: 1fr; }
+      .supporter-cta-row { justify-content: flex-start; }
     }
   </style>
 </head>
@@ -562,7 +620,30 @@
   <div class="header">
     <div class="badge"><span class="dot"></span> Open Source · No Ads · Community-Funded</div>
     <h1>Keep MeritNama Running</h1>
-    <p>Your donation keeps the unofficial merit list data, simulations, and live tracking alive — free for every candidate.</p>
+    <p>Supporters keep live merit data, simulations, and candidate tools online for everyone.</p>
+  </div>
+
+  <div class="supporter-hero">
+    <div>
+      <h2>Supporters get a visible MeritNama badge</h2>
+      <p>Verified contributions appear on public profiles and help unlock donor-only downloads as export tools are added.</p>
+    </div>
+    <div class="supporter-cta-row">
+      <a class="supporter-cta primary" href="#payment">Support now</a>
+      <a class="supporter-cta" href="#contributors">View contributors</a>
+    </div>
+  </div>
+
+  <!-- Contributors Wall -->
+  <div class="contributors-section is-featured" id="contributors">
+    <p class="section-title">★ MeritNama Supporters</p>
+    <div class="contributors-total" id="contributorsTotal" style="display:none;">
+      <div class="total-label">Total Contributed</div>
+      <div class="total-val" id="totalContributed">—</div>
+    </div>
+    <div class="contributors-grid" id="contributorsGrid">
+      <div class="contributors-empty">Loading contributors…</div>
+    </div>
   </div>
 
   <!-- Why it costs -->
@@ -629,6 +710,11 @@
   </div>
 
   <!-- Payment tabs -->
+  <div id="payment"></div>
+  <p class="section-title">Payment details</p>
+  <p style="font-size:.82rem;color:var(--muted);margin:-.35rem 0 1rem;line-height:1.6;">
+    Donation details are kept compact here. After transfer, request access with the transaction reference so admin can verify it and link your supporter badge.
+  </p>
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('bank', this)">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -719,18 +805,6 @@
 
   <!-- Footer -->
   <div class="divider"></div>
-
-  <!-- Contributors Wall -->
-  <div class="contributors-section">
-    <p class="section-title">🙏 Our Contributors</p>
-    <div class="contributors-total" id="contributorsTotal" style="display:none;">
-      <div class="total-label">Total Contributed</div>
-      <div class="total-val" id="totalContributed">—</div>
-    </div>
-    <div class="contributors-grid" id="contributorsGrid">
-      <div class="contributors-empty">Loading contributors…</div>
-    </div>
-  </div>
 
   <div class="divider"></div>
   <div class="footer-note">
