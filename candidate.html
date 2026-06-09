@@ -367,6 +367,12 @@
     .profile-hero-chip.inducted {
       color: var(--neon-green); background: rgba(62,207,142,0.08); border-color: rgba(62,207,142,0.2);
     }
+    .profile-hero-chip.supporter {
+      color: var(--neon-gold);
+      background: linear-gradient(135deg, rgba(232,166,39,0.16), rgba(212,79,126,0.08));
+      border-color: rgba(232,166,39,0.38);
+      font-weight: 800;
+    }
     .profile-avatar-hint {
       font-size: 0.68rem; color: var(--text-muted); margin-top: 0.5rem; text-align: center;
     }
@@ -2086,6 +2092,11 @@ async function loadMyContributions() {
     if (snapshot.empty) {
       list.innerHTML = '<div class="contrib-empty">No contributions linked to your account yet.</div>';
       return;
+    }
+
+    const chips = document.getElementById('profileHeroChips');
+    if (chips && !chips.querySelector('[data-supporter-chip]')) {
+      chips.innerHTML += '<span class="profile-hero-chip supporter" data-supporter-chip>★ MeritNama Supporter</span>';
     }
 
     // Sort client-side by date descending (avoids requiring a composite Firestore index)

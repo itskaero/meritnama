@@ -32,6 +32,7 @@ const SIM = {
     running:     false,
     parentBonus: false,
     filter:      '',
+    applicantReport: null,
   },
 
   marks: {
@@ -63,6 +64,12 @@ const SIM = {
     loaded:      false,
     loading:     false,
     filter:      '',
+  },
+
+  donor: {
+    byEmail: new Map(),
+    current: null,
+    loaded: false,
   },
 };
 
@@ -157,6 +164,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initProfileStatus();
   showLoading(true);
   await loadData();
+  initDonorEntitlements();
   showLoading(false);
   renderNotifications();
 
@@ -622,6 +630,61 @@ function allCandidates() {
   return SIM.candidates;
 }
 
+function candidateEmail(c) {
+  return String(c?.emailId || c?.email || c?.emailID || c?.email_id || '').toLowerCase().trim();
+}
+
+function supporterBadgeForCandidate(c) {
+  const email = candidateEmail(c);
+  return email && SIM.donor.byEmail.has(email)
+    ? '<span class="supporter-tag" title="Verified MeritNama supporter">★ Supporter</span>'
+    : '';
+}
+
+function getSessionEmail() {
+  try {
+    const raw = localStorage.getItem('meritnama_auth_session');
+    const session = raw ? JSON.parse(raw) : null;
+    return (session && typeof session.email === 'string') ? session.email.toLowerCase().trim() : '';
+  } catch (_) {
+    return '';
+  }
+}
+
+async function initDonorEntitlements() {
+  try {
+    const db = firebase.firestore();
+    const snap = await db.collection('contributions').get();
+    SIM.donor.byEmail.clear();
+    snap.docs.forEach(doc => {
+      const d = doc.data();
+      const email = String(d.email || '').toLowerCase().trim();
+      if (!email) return;
+      const prev = SIM.donor.byEmail.get(email) || { count: 0, amountPKR: 0, amountUSD: 0 };
+      prev.count += 1;
+      prev.amountPKR += Number(d.amountPKR) || 0;
+      prev.amountUSD += Number(d.amountUSD) || 0;
+      SIM.donor.byEmail.set(email, prev);
+    });
+    const sessionEmail = getSessionEmail();
+    SIM.donor.current = sessionEmail ? SIM.donor.byEmail.get(sessionEmail) || null : null;
+    SIM.donor.loaded = true;
+    updateSbDownloadGate();
+    updateCandidateDownloadGate();
+    updateSimulationDownloadGate();
+    if (SIM.cand.filtered?.length) renderCandidateTable(
+      SIM.cand.filtered.slice(SIM.cand.page * PAGE_SIZE, (SIM.cand.page + 1) * PAGE_SIZE),
+      SIM.cand.filtered.length
+    );
+  } catch (e) {
+    console.warn('Donor entitlement load failed:', e);
+    SIM.donor.loaded = true;
+    updateSbDownloadGate();
+    updateCandidateDownloadGate();
+    updateSimulationDownloadGate();
+  }
+}
+
 // ── Custom candidate (manual add) ─────────────────────────────────
 function loadCustomCand() {
   try {
@@ -851,6 +914,8 @@ function setupCandidateFilters() {
       SIM.cand.page = 0;
       applyAndRenderCandidates();
     });
+  document.getElementById('candDownloadPdfBtn')?.addEventListener('click', downloadCandidatePoolPdf);
+  updateCandidateDownloadGate();
 }
 
 function applyAndRenderCandidates() {
@@ -891,6 +956,80 @@ function applyAndRenderCandidates() {
   const total = list.length;
   const slice = list.slice(SIM.cand.page * PAGE_SIZE, (SIM.cand.page + 1) * PAGE_SIZE);
   renderCandidateTable(slice, total);
+  updateCandidateDownloadGate();
+}
+
+function updateCandidateDownloadGate() {
+  const btn = document.getElementById('candDownloadPdfBtn');
+  const note = document.getElementById('candDownloadNote');
+  if (!btn || !note) return;
+  const isDonor = !!SIM.donor.current;
+  const hasRows = !!SIM.cand.filtered?.length;
+  btn.disabled = !(isDonor && hasRows);
+  note.textContent = isDonor
+    ? (hasRows ? 'Watermarked to your login' : 'No candidates in current filter')
+    : 'Supporter-only export';
+}
+
+async function downloadCandidatePoolPdf() {
+  if (!SIM.donor.current) {
+    showToast('PDF downloads are available for verified supporters only.', 'error');
+    return;
+  }
+  const jsPDF = window.jspdf?.jsPDF;
+  if (!jsPDF) {
+    showToast('PDF library did not load. Check internet connection and retry.', 'error');
+    return;
+  }
+  const rows = (SIM.cand.filtered || []).slice(0, 500);
+  if (!rows.length) {
+    showToast('No candidates match the current filter.', 'error');
+    return;
+  }
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  const email = getSessionEmail() || 'registered user';
+  let y = 48;
+  const left = 42;
+  const maxY = 760;
+  const addFooter = () => {
+    doc.setFontSize(8);
+    doc.setTextColor(150, 65, 80);
+    doc.text(`Generated for ${email}. If this report is found circulating, access may be revoked.`, left, 810);
+    doc.setTextColor(20, 35, 55);
+  };
+  const addPageIfNeeded = () => {
+    if (y <= maxY) return;
+    addFooter();
+    doc.addPage();
+    y = 48;
+  };
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.text('MeritNama Candidate Pool Export', left, y);
+  y += 20;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text(`Generated: ${new Date().toLocaleString('en-PK')} · Owner: ${email}`, left, y);
+  y += 14;
+  doc.setTextColor(150, 65, 80);
+  doc.text('Private donor export. Unauthorized circulation may result in access revocation.', left, y);
+  doc.setTextColor(20, 35, 55);
+  y += 22;
+  y = drawPdfTable(doc, [
+    { label: '#', w: 28, value: (_, i) => i + 1 },
+    { label: 'Name', w: 190, value: c => c.nameFull },
+    { label: 'ID', w: 58, value: c => c.applicantId },
+    { label: 'Base', w: 52, value: c => fmtM(baseMarks(c)) },
+    { label: 'Programs', w: 88, value: c => ['FCPS', 'MS', 'MD'].filter(p => effectiveMark(c, p) != null).join('/') || '—' },
+    { label: 'Support', w: 76, value: c => supporterBadgeForCandidate(c) ? 'Supporter' : '' },
+  ], rows, y, { title: 'MeritNama Candidate Pool Export', reportType: 'candidate_pool' });
+  if ((SIM.cand.filtered || []).length > rows.length) {
+    y += 8;
+    doc.text(`Note: Export limited to first ${rows.length} rows of current filtered result.`, left, y);
+  }
+  addFooter();
+  await logPdfDownload('candidate_pool');
+  doc.save('meritnama-candidate-pool.pdf');
 }
 
 function renderCandidateTable(slice, total) {
@@ -907,7 +1046,7 @@ function renderCandidateTable(slice, total) {
     const psTag  = profileStatusTagHtml(getProfileStatusForCandidate(c));
     return `<tr class="${isMe ? 'row-me' : ''}" data-id="${c.applicantId}" style="cursor:pointer">
       <td class="td-num">${rank}</td>
-      <td>${esc(c.nameFull)} ${psTag}${custom}${isMe ? '<span class="me-tag">YOU</span>' : ''}</td>
+      <td>${esc(c.nameFull)} ${psTag}${supporterBadgeForCandidate(c)}${custom}${isMe ? '<span class="me-tag">YOU</span>' : ''}</td>
       <td class="td-num">${fmtM(baseMarks(c))}</td>
       <td class="td-num">${fmtM(effectiveMark(c, 'FCPS'))}</td>
       <td class="td-num">${fmtM(effectiveMark(c, 'MS'))}</td>
@@ -1388,6 +1527,8 @@ function setupSlotBrowser() {
   }
 
   setupSbCandSearch();
+  setupSbPdfExport();
+  updateSbDownloadGate();
 }
 
 function refreshSbDropdowns(from) {
@@ -1511,10 +1652,223 @@ function formatGroupCutoffBadge(slots, quota) {
   return `<span class="sim-badge badge-cutoff sb-partial-cutoff">Cutoff: ${label}</span>`;
 }
 
+function setupSbPdfExport() {
+  document.getElementById('sbDownloadPdfBtn')?.addEventListener('click', downloadWhereMeritFallsPdf);
+}
+
+function updateSbDownloadGate() {
+  const btn = document.getElementById('sbDownloadPdfBtn');
+  const note = document.getElementById('sbDownloadNote');
+  const donate = document.getElementById('sbDonateLink');
+  if (!btn || !note) return;
+  const hasFilters = !!(SIM.sb.program && SIM.sb.quota);
+  const isDonor = !!SIM.donor.current;
+  btn.disabled = !(hasFilters && isDonor);
+  if (!hasFilters) {
+    note.textContent = 'Choose programme and quota to prepare a PDF report.';
+  } else if (!isDonor) {
+    note.textContent = 'PDF downloads are available for verified supporters only. Your report will be watermarked to your login.';
+  } else {
+    const donor = SIM.donor.current;
+    note.textContent = `Supporter access active (${donor.count} contribution${donor.count !== 1 ? 's' : ''}). PDF will be watermarked to your login.`;
+  }
+  if (donate) donate.style.display = isDonor ? 'none' : '';
+}
+
+function sbCurrentTitle() {
+  const { program, quota, spec, hosp } = SIM.sb;
+  return [program, quota, spec, hosp].filter(Boolean).join(' / ');
+}
+
+function getSlotReportRows() {
+  const { program, quota, spec, hosp } = SIM.sb;
+  if (!program || !quota) return [];
+  const useSimData = !!(SIM.sim.result && SIM.sim.program === program);
+
+  if (spec && hosp) {
+    const applicants = [];
+    allCandidates().forEach(c => {
+      const em = effectiveMark(c, program);
+      if (em == null) return;
+      const pref = (c.preference?.[program] || []).find(
+        p => p.quotaName === quota && p.specialityName === spec && p.hospitalName === hosp
+      );
+      if (!pref) return;
+      applicants.push({
+        applicantId: c.applicantId,
+        nameFull: c.nameFull,
+        emailId: candidateEmail(c),
+        marksTotal: em,
+        preferenceNo: pref.preferenceNo,
+      });
+    });
+    applicants.sort((a, b) => b.marksTotal - a.marksTotal);
+    applicants.forEach((a, i) => { a._meritRank = i + 1; });
+    const simMap = useSimData ? buildSimCandidateMap(program) : null;
+    if (simMap) applicants.forEach(a => annotateApplicantWithSim(a, quota, spec, hosp, simMap));
+    return applicants.map(a => ({
+      rank: a._meritRank,
+      name: a.nameFull,
+      marks: fmtM(a.marksTotal),
+      pref: a.preferenceNo,
+      status: a._simStatus === 'selected' ? 'Selected' : a._simStatus === 'higher-pref' ? 'Higher pref' : a._simStatus === 'elsewhere' ? 'Placed elsewhere' : '',
+      note: a._simStatus === 'higher-pref'
+        ? 'Do not count here; selected at higher preference'
+        : a._simStatus === 'elsewhere'
+          ? 'Do not count here; selected elsewhere'
+          : a._simStatus === 'selected'
+            ? 'Counts in this slot'
+            : '',
+      supporter: candidateEmail(a) && SIM.donor.byEmail.has(candidateEmail(a)) ? 'Supporter' : '',
+    }));
+  }
+
+  const rows = [];
+  const groups = new Map();
+  allCandidates().forEach(c => {
+    const em = effectiveMark(c, program);
+    if (em == null) return;
+    (c.preference?.[program] || []).forEach(p => {
+      if (p.quotaName !== quota) return;
+      if (spec && p.specialityName !== spec) return;
+      if (hosp && p.hospitalName !== hosp) return;
+      const key = spec ? p.hospitalName : p.specialityName;
+      if (!groups.has(key)) groups.set(key, { key, applicants: [], selected: 0, cutoff: null });
+      groups.get(key).applicants.push({ candidate: c, pref: p, marksTotal: em });
+    });
+  });
+  const useSim = useSimData ? buildSimCandidateMap(program) : null;
+  for (const grp of groups.values()) {
+    grp.applicants.sort((a, b) => b.marksTotal - a.marksTotal);
+    if (useSim) {
+      const selected = grp.applicants.filter(row => {
+        const a = { applicantId: row.candidate.applicantId };
+        annotateApplicantWithSim(a, quota, row.pref.specialityName, row.pref.hospitalName, useSim);
+        return a._simStatus === 'selected';
+      });
+      grp.selected = selected.length;
+      grp.cutoff = selected.length ? Math.min(...selected.map(s => s.marksTotal)) : null;
+    }
+    rows.push({
+      group: grp.key,
+      applicants: grp.applicants.length,
+      selected: grp.selected || '',
+      cutoff: grp.cutoff != null ? fmtM(grp.cutoff) : '',
+      top: grp.applicants.slice(0, 3).map(a => `• ${a.candidate.nameFull} (${fmtM(a.marksTotal)})`).join('\n'),
+    });
+  }
+  return rows.sort((a, b) => String(a.group).localeCompare(String(b.group)));
+}
+
+async function logPdfDownload(reportType) {
+  try {
+    await firebase.firestore().collection('download_logs').add({
+      email: getSessionEmail() || '',
+      reportType,
+      filters: { ...SIM.sb },
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      userAgent: navigator.userAgent.substring(0, 200),
+    });
+  } catch (_) {}
+}
+
+async function downloadWhereMeritFallsPdf() {
+  if (!SIM.donor.current) {
+    showToast('PDF downloads are available for verified supporters only.', 'error');
+    return;
+  }
+  if (!SIM.sb.program || !SIM.sb.quota) {
+    showToast('Select programme and quota first.', 'error');
+    return;
+  }
+  const jsPDF = window.jspdf?.jsPDF;
+  if (!jsPDF) {
+    showToast('PDF library did not load. Check internet connection and retry.', 'error');
+    return;
+  }
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  const email = getSessionEmail() || 'registered user';
+  const rows = getSlotReportRows();
+  const title = `Where Merit Falls: ${sbCurrentTitle()}`;
+  const generated = new Date().toLocaleString('en-PK');
+  let y = 48;
+  const left = 42;
+  const maxY = 760;
+
+  const addFooter = () => {
+    doc.setFontSize(8);
+    doc.setTextColor(150, 65, 80);
+    doc.text(`Generated for ${email}. If this report is found circulating, access may be revoked.`, left, 810);
+    doc.setTextColor(205, 215, 230);
+  };
+  const addPageIfNeeded = (need = 24) => {
+    if (y + need <= maxY) return;
+    addFooter();
+    doc.addPage();
+    y = 48;
+  };
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(20, 35, 55);
+  doc.text('MeritNama', left, y);
+  y += 22;
+  doc.setFontSize(13);
+  doc.text(title, left, y);
+  y += 18;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(80, 90, 105);
+  doc.text(`Generated: ${generated}`, left, y);
+  y += 14;
+  doc.text(`Report owner: ${email}`, left, y);
+  y += 18;
+  doc.setTextColor(150, 65, 80);
+  doc.text('Private donor export. Unauthorized circulation may result in access revocation.', left, y);
+  y += 24;
+
+  doc.setTextColor(20, 35, 55);
+  doc.setFont('helvetica', 'bold');
+  doc.text(SIM.sb.spec && SIM.sb.hosp ? 'Applicants' : 'Grouped cutoff summary', left, y);
+  y += 16;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(90, 100, 115);
+  doc.text(doc.splitTextToSize('Status guide: Selected = predicted to occupy this slot. Higher pref / Placed elsewhere candidates should not be counted as active competitors here after simulation de-duplication.', 510), left, y);
+  y += 26;
+  doc.setTextColor(20, 35, 55);
+  if (!rows.length) {
+    doc.text('No rows match this filter.', left, y);
+  } else if (SIM.sb.spec && SIM.sb.hosp) {
+    y = drawPdfTable(doc, [
+      { label: '#', w: 28, key: 'rank' },
+      { label: 'Name', w: 150, key: 'name' },
+      { label: 'Marks', w: 46, key: 'marks' },
+      { label: 'Pref', w: 36, key: 'pref' },
+      { label: 'Status', w: 82, key: 'status' },
+      { label: 'How to count', w: 155, key: 'note' },
+      { label: 'Support', w: 55, key: 'supporter' },
+    ], rows, y, { title, reportType: 'where_merit_falls' });
+  } else {
+    y = drawPdfTable(doc, [
+      { label: 'Group', w: 150, key: 'group' },
+      { label: 'Applicants', w: 58, key: 'applicants' },
+      { label: 'Selected', w: 54, value: r => r.selected || 'Run sim' },
+      { label: 'Cutoff', w: 52, value: r => r.cutoff || '—' },
+      { label: 'Top applicants', w: 238, key: 'top' },
+    ], rows, y, { title, reportType: 'where_merit_falls' });
+  }
+  addFooter();
+  await logPdfDownload('where_merit_falls');
+  const slug = sbCurrentTitle().replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase();
+  doc.save(`meritnama-${slug || 'where-merit-falls'}.pdf`);
+}
+
 function renderSlot() {
   const { program, quota, spec, hosp } = SIM.sb;
   const container = document.getElementById('sbResult');
   if (!container) return;
+  updateSbDownloadGate();
 
   if (!program || !quota) {
     container.innerHTML = '<p class="sb-placeholder">Select a programme and quota above (specialty and hospital are optional) to see applicants.</p>';
@@ -1537,6 +1891,7 @@ function renderSlot() {
       applicants.push({
         applicantId:     c.applicantId,
         nameFull:        c.nameFull,
+        emailId:         candidateEmail(c),
         marksTotal:      em,
         preferenceNo:    pref.preferenceNo,
         parentInstitute: pref.parentInstitute,
@@ -1624,7 +1979,7 @@ function renderSlot() {
             <span class="sb-rank">#${a._meritRank}</span>
             <span class="sb-pref-no">Pref ${a.preferenceNo}</span>
             ${a.parentInstitute ? '<span class="sb-parent">⭐</span>' : '<span></span>'}
-            <span class="sb-name">${esc(a.nameFull)}${me ? ' <span class="me-tag">YOU</span>' : ''}${a._custom ? ' <span class="custom-tag">manual</span>' : ''}${searched && !me ? ' <span class="custom-tag">↑ found</span>' : ''}${simTag}</span>
+            <span class="sb-name">${esc(a.nameFull)}${supporterBadgeForCandidate(a)}${me ? ' <span class="me-tag">YOU</span>' : ''}${a._custom ? ' <span class="custom-tag">manual</span>' : ''}${searched && !me ? ' <span class="custom-tag">↑ found</span>' : ''}${simTag}</span>
             <span class="sb-marks">${fmtM(a.marksTotal)}</span>
           </div>`);
         });
@@ -1701,6 +2056,7 @@ function renderPartialSlot() {
         applicants.push({
           applicantId:     c.applicantId,
           nameFull:        c.nameFull,
+          emailId:         candidateEmail(c),
           marksTotal:      em,
           preferenceNo:    matched.preferenceNo,
           slotSpec:        matched.specialityName,
@@ -1799,7 +2155,7 @@ function renderPartialSlot() {
                   <span class="sb-rank">#${a._meritRank}</span>
                   <span class="sb-marks">${fmtM(a.marksTotal)}</span>
                   <span class="sb-pref-no sb-parent">${a.parentInstitute ? '\u2605' : ''}</span>
-                  <span class="sb-name">${esc(a.nameFull)}${isMe(a.applicantId) ? ' <span class="me-tag">YOU</span>' : ''}${showSlot ? `<span style="font-size:0.7rem;color:var(--text-muted);margin-left:5px">${esc(spec ? a.slotHosp.split(',')[0].trim() : a.slotSpec)}</span>` : ''}${useSimData ? renderSbSimTag(a) : ''}</span>
+                  <span class="sb-name">${esc(a.nameFull)}${supporterBadgeForCandidate(a)}${isMe(a.applicantId) ? ' <span class="me-tag">YOU</span>' : ''}${showSlot ? `<span style="font-size:0.7rem;color:var(--text-muted);margin-left:5px">${esc(spec ? a.slotHosp.split(',')[0].trim() : a.slotSpec)}</span>` : ''}${useSimData ? renderSbSimTag(a) : ''}</span>
                   <span></span>
                 </div>`);
               });
@@ -2289,12 +2645,14 @@ function setupSimulationTab() {
     SIM.sim.program = e.target.value;
     SIM.sim.result  = null;
     document.getElementById('simResults').innerHTML = '';
+    updateSimulationDownloadGate();
   });
 
   document.getElementById('simParentBonus')?.addEventListener('change', e => {
     SIM.sim.parentBonus = e.target.checked;
     SIM.sim.result = null;
     document.getElementById('simResults').innerHTML = '';
+    updateSimulationDownloadGate();
   });
 
   document.getElementById('simFilter')?.addEventListener('input', e => {
@@ -2303,6 +2661,8 @@ function setupSimulationTab() {
   });
 
   document.getElementById('runSimBtn')?.addEventListener('click', runSimulation);
+  document.getElementById('simDownloadPdfBtn')?.addEventListener('click', downloadSimulationPdf);
+  updateSimulationDownloadGate();
 
   const appInput = document.getElementById('appSimIdInput');
   const appBtn   = document.getElementById('runApplicantSimBtn');
@@ -2431,6 +2791,171 @@ function renderSimResults() {
     const el = e.target.closest('[data-sim-cand]');
     if (el) openSimCandidateDetail(el.dataset.simCand, el.dataset.simTrack);
   });
+  updateSimulationDownloadGate();
+}
+
+function updateSimulationDownloadGate() {
+  const btn = document.getElementById('simDownloadPdfBtn');
+  const note = document.getElementById('simDownloadNote');
+  if (!btn || !note) return;
+  const isDonor = !!SIM.donor.current;
+  const hasResult = !!SIM.sim.result;
+  btn.disabled = !(isDonor && hasResult);
+  note.textContent = isDonor
+    ? (hasResult ? 'Watermarked to your login' : 'Run simulation first')
+    : 'Supporter-only export';
+}
+
+function addPdfHeader(doc, title, reportType) {
+  const email = getSessionEmail() || 'registered user';
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(20, 35, 55);
+  doc.text('MeritNama', 42, 48);
+  doc.setFontSize(13);
+  doc.text(title, 42, 70);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(80, 90, 105);
+  doc.text(`Generated: ${new Date().toLocaleString('en-PK')} · Owner: ${email}`, 42, 88);
+  doc.text(`Report: ${reportType}`, 42, 102);
+  doc.setTextColor(150, 65, 80);
+  doc.text('Private donor export. Unauthorized circulation may result in access revocation.', 42, 118);
+}
+
+function addPdfFooter(doc) {
+  const email = getSessionEmail() || 'registered user';
+  doc.setFontSize(8);
+  doc.setTextColor(150, 65, 80);
+  doc.text(`Generated for ${email}. If this report is found circulating, access may be revoked.`, 42, 810);
+  doc.setTextColor(20, 35, 55);
+}
+
+function pdfText(doc, value, x, y, width) {
+  const lines = doc.splitTextToSize(String(value ?? ''), width);
+  doc.text(lines, x, y);
+  return lines.length;
+}
+
+function drawPdfTable(doc, columns, rows, yStart, opts = {}) {
+  let y = yStart;
+  const left = opts.left || 42;
+  const rowH = opts.rowH || 18;
+  const headerH = opts.headerH || 20;
+  const maxY = opts.maxY || 760;
+  const title = opts.title || '';
+  const reportType = opts.reportType || '';
+  const tableW = columns.reduce((s, c) => s + c.w, 0);
+  const repeatHeader = () => {
+    doc.setFillColor(20, 35, 55);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.rect(left, y, tableW, headerH, 'F');
+    let x = left + 4;
+    columns.forEach(c => {
+      doc.text(c.label, x, y + 13);
+      x += c.w;
+    });
+    y += headerH;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(20, 35, 55);
+  };
+  const newPage = () => {
+    addPdfFooter(doc);
+    doc.addPage();
+    if (title) addPdfHeader(doc, title, reportType);
+    y = opts.pageStart || 145;
+    repeatHeader();
+  };
+  repeatHeader();
+  rows.forEach((row, idx) => {
+    const lineCounts = columns.map(c => {
+      const raw = typeof c.value === 'function' ? c.value(row, idx) : row[c.key];
+      return doc.splitTextToSize(String(raw ?? ''), c.w - 8).length;
+    });
+    const h = Math.max(rowH, Math.max(...lineCounts) * 10 + 8);
+    if (y + h > maxY) newPage();
+    if (idx % 2 === 0) {
+      doc.setFillColor(245, 248, 252);
+      doc.rect(left, y, tableW, h, 'F');
+    }
+    doc.setDrawColor(225, 232, 242);
+    doc.line(left, y + h, left + tableW, y + h);
+    let x = left + 4;
+    columns.forEach(c => {
+      const raw = typeof c.value === 'function' ? c.value(row, idx) : row[c.key];
+      pdfText(doc, raw, x, y + 12, c.w - 8);
+      x += c.w;
+    });
+    y += h;
+  });
+  return y;
+}
+
+async function downloadSimulationPdf() {
+  if (!SIM.donor.current) {
+    showToast('PDF downloads are available for verified supporters only.', 'error');
+    return;
+  }
+  if (!SIM.sim.result) {
+    showToast('Run simulation first.', 'error');
+    return;
+  }
+  const jsPDF = window.jspdf?.jsPDF;
+  if (!jsPDF) {
+    showToast('PDF library did not load. Check internet connection and retry.', 'error');
+    return;
+  }
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  addPdfHeader(doc, `Seat Allocation Simulation: ${SIM.sim.program}`, 'simulation_summary');
+  let y = 145;
+  const addPage = () => {
+    addPdfFooter(doc);
+    doc.addPage();
+    addPdfHeader(doc, `Seat Allocation Simulation: ${SIM.sim.program}`, 'simulation_summary');
+    y = 145;
+  };
+  const { seatTree, candidates } = SIM.sim.result;
+  const placed = candidates.filter(c => c.placed).length;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(20, 35, 55);
+  doc.text(`Placed: ${placed} · Unplaced: ${candidates.length - placed} · Merit basis: ${getActiveMarksLabel()}${SIM.sim.parentBonus ? ' · Parent bonus ON' : ''}`, 42, y);
+  y += 24;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  const rows = [];
+  for (const [q, specs] of Object.entries(seatTree)) {
+    for (const [s, hosps] of Object.entries(specs)) {
+      for (const [h, sl] of Object.entries(hosps)) {
+        if (!sl.candidates.length) continue;
+        const cutoff = Math.min(...sl.candidates.map(c => c.marksTotal));
+        rows.push({ q, s, h, sl, cutoff });
+      }
+    }
+  }
+  rows.sort((a, b) => a.s.localeCompare(b.s) || a.h.localeCompare(b.h));
+  const simRows = rows.slice(0, 180).map(r => ({
+    slot: `${r.s} / ${r.h}`,
+    quota: r.q,
+    seats: `${r.sl.candidates.length}/${r.sl.jobs}`,
+    cutoff: fmtM(r.cutoff),
+    selected: r.sl.candidates.slice(0, 5).map(c => `• ${c.nameFull} (${fmtM(c.marksTotal)}, P${c.preferenceNo})`).join('\n'),
+  }));
+  y = drawPdfTable(doc, [
+    { label: 'Slot', w: 175, key: 'slot' },
+    { label: 'Quota', w: 70, key: 'quota' },
+    { label: 'Seats', w: 42, key: 'seats' },
+    { label: 'Cutoff', w: 48, key: 'cutoff' },
+    { label: 'Selected candidates', w: 215, key: 'selected' },
+  ], simRows, y, { title: `Seat Allocation Simulation: ${SIM.sim.program}`, reportType: 'simulation_summary' });
+  if (rows.length > 180) {
+    if (y > 755) addPage();
+    doc.text(`Export limited to first 180 filled slots out of ${rows.length}.`, 42, y);
+  }
+  addPdfFooter(doc);
+  await logPdfDownload('simulation_summary');
+  doc.save(`meritnama-simulation-${SIM.sim.program.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`);
 }
 
 function renderSimCard({ q, s, h, sl, cutoff, nextInLine, meInSlot, eligibleOthers, skippedHigherPrefCount }, program) {
@@ -2607,6 +3132,7 @@ function renderApplicantSimulationModal(cand, results) {
   const modal = document.getElementById('appSimModal');
   const body  = document.getElementById('appSimModalBody');
   if (!modal || !body) return;
+  SIM.sim.applicantReport = { cand, results };
 
   const validResults = results.filter(r => r.result && r.tracks.length);
   const trackResults = validResults.flatMap(r => r.tracks);
@@ -2637,6 +3163,10 @@ function renderApplicantSimulationModal(cand, results) {
       <div class="sim-my unplaced" style="margin-bottom:12px">
         No runnable candidate pool found for: ${skippedPrograms.map(esc).join(', ')}.
       </div>` : ''}
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin:0 0 1rem;">
+      <button class="btn btn-sm btn-primary" id="appSimDownloadPdfBtn" ${SIM.donor.current ? '' : 'disabled'}>Download applicant PDF</button>
+      <span style="font-size:0.74rem;color:var(--text-muted);align-self:center;">${SIM.donor.current ? 'Watermarked to your login' : 'Supporter-only export'}</span>
+    </div>
     <div class="app-sim-programs">
       ${validResults.length
         ? validResults.map(renderApplicantProgramCard).join('')
@@ -2645,6 +3175,80 @@ function renderApplicantSimulationModal(cand, results) {
   `;
 
   modal.classList.remove('hidden');
+  body.querySelector('#appSimDownloadPdfBtn')?.addEventListener('click', downloadApplicantSimulationPdf);
+}
+
+async function downloadApplicantSimulationPdf() {
+  if (!SIM.donor.current) {
+    showToast('PDF downloads are available for verified supporters only.', 'error');
+    return;
+  }
+  const report = SIM.sim.applicantReport;
+  if (!report?.cand) {
+    showToast('Run applicant result first.', 'error');
+    return;
+  }
+  const jsPDF = window.jspdf?.jsPDF;
+  if (!jsPDF) {
+    showToast('PDF library did not load. Check internet connection and retry.', 'error');
+    return;
+  }
+  const { cand, results } = report;
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  addPdfHeader(doc, `Applicant Result: ${cand.nameFull}`, 'applicant_result');
+  let y = 145;
+  const addPage = () => {
+    addPdfFooter(doc);
+    doc.addPage();
+    addPdfHeader(doc, `Applicant Result: ${cand.nameFull}`, 'applicant_result');
+    y = 145;
+  };
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text(`Applicant ID: ${cand.applicantId} · Merit basis: ${getActiveMarksLabel()}${SIM.sim.parentBonus ? ' · Parent bonus ON' : ''}`, 42, y);
+  y += 22;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  const validResults = results.filter(r => r.result && r.tracks.length);
+  if (!validResults.length) {
+    doc.text('No applied programs with preferences were found for this applicant.', 42, y);
+  }
+  validResults.forEach(programResult => {
+    if (y > 735) addPage();
+    doc.setFont('helvetica', 'bold');
+    doc.text(programResult.program, 42, y);
+    y += 14;
+    doc.setFont('helvetica', 'normal');
+    programResult.tracks.forEach(track => {
+      if (y > 735) addPage();
+      const wc = track.workCand;
+      const placement = wc.placed
+        ? `${wc._trackLabel}: placed at ${wc._s} / ${wc._h} (${wc._q})`
+        : `${wc._trackLabel}: not placed`;
+      doc.text(doc.splitTextToSize(placement, 510), 54, y);
+      y += 13;
+      const prefRows = track.history.slice(0, 12).map(row => ({
+        prefNo: row.pref.preferenceNo,
+        slot: `${row.pref.specialityName} @ ${row.pref.hospitalName.split(',')[0]}`,
+        score: fmtM(row.score),
+        cutoff: fmtM(row.cutoff),
+        margin: formatApplicantDelta(row.delta, row.status),
+        status: applicantStatusLabel(row.status),
+      }));
+      y = drawPdfTable(doc, [
+        { label: 'Pref', w: 32, key: 'prefNo' },
+        { label: 'Slot', w: 205, key: 'slot' },
+        { label: 'Score', w: 48, key: 'score' },
+        { label: 'Cutoff', w: 48, key: 'cutoff' },
+        { label: 'Margin', w: 78, key: 'margin' },
+        { label: 'Status', w: 88, key: 'status' },
+      ], prefRows, y, { title: `Applicant Result: ${cand.nameFull}`, reportType: 'applicant_result', pageStart: 145 });
+      y += 8;
+    });
+  });
+  addPdfFooter(doc);
+  await logPdfDownload('applicant_result');
+  doc.save(`meritnama-applicant-${cand.applicantId}.pdf`);
 }
 
 function renderApplicantProgramCard(programResult) {
@@ -3430,6 +4034,82 @@ let _allProfiles = [];
 let _profilesWired = false;
 // Pre-computed merit rankings: Map<applicantId string, {rank, total, pctile, tier, tierColor, programs}>
 let _meritRankCache = new Map();
+let _profileDonors = new Map();
+
+function _getAuthSessionEmail() {
+  try {
+    const raw = localStorage.getItem('meritnama_auth_session');
+    const session = raw ? JSON.parse(raw) : null;
+    return (session && typeof session.email === 'string') ? session.email.toLowerCase().trim() : '';
+  } catch (_) {
+    return '';
+  }
+}
+
+function _profileCompletion(p) {
+  const checks = [
+    !!p?.name,
+    !!p?.specialty,
+    !!p?.hospital,
+    typeof p?.inducted === 'boolean',
+    !!p?.profilePicBase64,
+    p?.isPublic === true,
+  ];
+  const done = checks.filter(Boolean).length;
+  return { done, total: checks.length, pct: Math.round((done / checks.length) * 100) };
+}
+
+function _renderMyProfilePanel(allProfileDocs) {
+  const titleEl = document.getElementById('profilesSelfTitle');
+  const metaEl = document.getElementById('profilesSelfMeta');
+  const chipsEl = document.getElementById('profilesSelfChips');
+  const avatarEl = document.getElementById('profilesSelfAvatar');
+  if (!titleEl || !metaEl || !chipsEl || !avatarEl) return;
+
+  const email = _getAuthSessionEmail();
+  const profile = email
+    ? allProfileDocs.find(p => String(p.email || '').toLowerCase() === email)
+    : null;
+  const displayName = profile?.name || email || 'Your profile';
+  const initial = (displayName || '?').charAt(0).toUpperCase();
+  const completion = _profileCompletion(profile || {});
+  const visibility = profile?.isPublic ? 'Public' : 'Private';
+  const status = profile?.inducted ? 'Inducted' : 'Applicant';
+  const donor = email ? _profileDonors.get(email) : null;
+
+  avatarEl.innerHTML = profile?.profilePicBase64
+    ? `<img src="${profile.profilePicBase64}" alt="" />`
+    : esc(initial);
+  titleEl.textContent = profile
+    ? `${displayName}`
+    : 'Create your MeritNama profile';
+  metaEl.textContent = profile
+    ? `${visibility} profile · ${status}${profile.specialty ? ' · ' + profile.specialty : ''}${profile.hospital ? ' · ' + profile.hospital : ''}`
+    : 'Add your specialty, hospital, status, photo, and visibility so others can understand your background.';
+
+  const visibilityClass = profile?.isPublic ? ' good' : '';
+  chipsEl.innerHTML = `
+    <span class="profiles-self-chip${completion.pct >= 80 ? ' good' : ''}">${completion.pct}% complete</span>
+    <span class="profiles-self-chip${visibilityClass}">${visibility}</span>
+    <span class="profiles-self-chip">${status}</span>
+    ${donor ? '<span class="profiles-self-chip good">Supporter</span>' : ''}
+    ${profile?.updatedAt ? '<span class="profiles-self-chip">Recently saved</span>' : ''}
+  `;
+}
+
+function _buildProfileDonorMap(contributionDocs) {
+  _profileDonors.clear();
+  contributionDocs.forEach(doc => {
+    const d = doc.data ? doc.data() : doc;
+    const email = String(d.email || '').toLowerCase().trim();
+    if (!email) return;
+    const prev = _profileDonors.get(email) || { count: 0, amountPKR: 0, amountUSD: 0 };
+    prev.count += 1;
+    prev.amountPKR += Number(d.amountPKR) || 0;
+    prev.amountUSD += Number(d.amountUSD) || 0;
+    _profileDonors.set(email, prev);
+  });
+}
 
 function _buildMeritCache() {
   if (!SIM.candidates?.length) return;
@@ -3469,15 +4149,18 @@ async function renderProfilesTab() {
 
   try {
     const db = firebase.firestore();
-    const [profilesSnap, adminsSnap] = await Promise.all([
+    const [profilesSnap, adminsSnap, contribSnap] = await Promise.all([
       db.collection('user_profiles').orderBy('updatedAt', 'desc').get(),
       db.collection('authorized_users').where('isAdmin', '==', true).get(),
+      db.collection('contributions').get().catch(() => ({ docs: [] })),
     ]);
+    _buildProfileDonorMap(contribSnap.docs || []);
     const adminEmails = new Set(adminsSnap.docs.map(d => d.id));
     const allProfileDocs = profilesSnap.docs.map(d => ({ email: d.id, isAdmin: adminEmails.has(d.id), ...d.data() }));
     const totalWithData  = allProfileDocs.filter(p => p.name || p.specialty || p.hospital).length;
     _allProfiles = allProfileDocs.filter(p => p.isPublic && (p.name || p.specialty || p.hospital));
     const privateCount = totalWithData - _allProfiles.length;
+    _renderMyProfilePanel(allProfileDocs);
 
     // Build merit rank cache once (O(n log n) sort, done here not per click)
     _buildMeritCache();
@@ -3534,6 +4217,7 @@ function _renderProfileGrid(profiles) {
 
   grid.innerHTML = profiles.map((p, i) => {
     const initial = (p.name || p.email || '?').charAt(0).toUpperCase();
+    const profileKey = String(p.email || i);
     const hue = p.profileHue ?? 205;
     const avatarBorder = p.profilePicBase64
       ? `border:2px solid rgba(77,184,217,0.4)`
@@ -3551,6 +4235,10 @@ function _renderProfileGrid(profiles) {
     const adminBadge = p.isAdmin
       ? `<span style="padding:2px 7px;border-radius:100px;background:rgba(232,166,39,0.12);border:1px solid rgba(232,166,39,0.35);color:var(--neon-gold,#e8a627);font-size:0.65rem;font-weight:700;">⚡ Admin</span>`
       : '';
+    const donor = _profileDonors.get(String(p.email || '').toLowerCase());
+    const donorBadge = donor
+      ? `<span style="padding:2px 8px;border-radius:100px;background:linear-gradient(135deg,rgba(232,166,39,0.18),rgba(244,114,182,0.1));border:1px solid rgba(232,166,39,0.42);color:var(--neon-gold,#e8a627);font-size:0.66rem;font-weight:800;">★ Supporter</span>`
+      : '';
 
     // Merit insight (only if candidate data loaded)
     const insight = _profileMeritInsight(p);
@@ -3567,12 +4255,12 @@ function _renderProfileGrid(profiles) {
     const specialty = p.specialty ? `<div style="display:flex;align-items:center;gap:0.35rem;font-size:0.78rem;color:var(--text-muted);">🩺 <span style="color:var(--text);">${esc(p.specialty)}</span></div>` : '';
     const hospital  = p.hospital  ? `<div style="display:flex;align-items:center;gap:0.35rem;font-size:0.78rem;color:var(--text-muted);">🏥 <span style="color:var(--text-muted);">${esc(p.hospital)}</span></div>` : '';
 
-    return `<div data-pidx="${i}" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:0.6rem;cursor:pointer;transition:border-color 0.18s,transform 0.15s,box-shadow 0.18s;" onmouseover="this.style.borderColor='hsl(${hue},50%,45%)';this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 24px rgba(0,0,0,0.3)';" onmouseout="this.style.borderColor='var(--border)';this.style.transform='';this.style.boxShadow='';">
+    return `<div data-profile-key="${esc(profileKey)}" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:0.6rem;cursor:pointer;transition:border-color 0.18s,transform 0.15s,box-shadow 0.18s;" onmouseover="this.style.borderColor='hsl(${hue},50%,45%)';this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 24px rgba(0,0,0,0.3)';" onmouseout="this.style.borderColor='var(--border)';this.style.transform='';this.style.boxShadow='';">
       <div style="display:flex;align-items:center;gap:0.8rem;">
         <div style="width:48px;height:48px;border-radius:50%;${avatarBg}${avatarBorder};flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;">${avatarHtml}</div>
         <div style="min-width:0;flex:1;">
           <div style="font-size:0.92rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0.3rem;">${esc(p.name || '(no name)')}</div>
-          <div style="display:flex;flex-wrap:wrap;gap:0.28rem;">${statusTag}${adminBadge}${tierPill}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:0.28rem;">${statusTag}${adminBadge}${donorBadge}${tierPill}</div>
         </div>
       </div>
       ${specialty || hospital ? `<div style="display:flex;flex-direction:column;gap:0.18rem;padding-top:0.15rem;border-top:1px solid rgba(255,255,255,0.04);">${specialty}${hospital}</div>` : ''}
@@ -3581,10 +4269,12 @@ function _renderProfileGrid(profiles) {
   }).join('');
 
   // Click to open profile modal
-  grid.querySelectorAll('[data-pidx]').forEach(el => {
+  grid.querySelectorAll('[data-profile-key]').forEach(el => {
     el.addEventListener('click', () => {
-      const idx = parseInt(el.dataset.pidx, 10);
-      _showProfileModal(_allProfiles[idx]);
+      const key = el.dataset.profileKey || '';
+      const profile = profiles.find(p => String(p.email || '') === key)
+        || profiles.find((p, idx) => String(p.email || idx) === key);
+      _showProfileModal(profile);
     });
   });
 }
@@ -3609,6 +4299,10 @@ function _showProfileModal(p) {
     : `<span style="padding:3px 11px;border-radius:100px;background:rgba(77,184,217,0.1);border:1px solid rgba(77,184,217,0.22);color:var(--neon-cyan);font-size:0.75rem;font-weight:700;">Applicant</span>`;
   const adminBadge = p.isAdmin
     ? `<span style="padding:3px 10px;border-radius:100px;background:rgba(232,166,39,0.12);border:1px solid rgba(232,166,39,0.35);color:var(--neon-gold,#e8a627);font-size:0.73rem;font-weight:700;">⚡ Admin</span>`
+    : '';
+  const donor = _profileDonors.get(String(p.email || '').toLowerCase());
+  const donorBadge = donor
+    ? `<span style="padding:3px 11px;border-radius:100px;background:linear-gradient(135deg,rgba(232,166,39,0.2),rgba(244,114,182,0.1));border:1px solid rgba(232,166,39,0.45);color:var(--neon-gold,#e8a627);font-size:0.75rem;font-weight:800;">★ MeritNama Supporter</span>`
     : '';
 
   // ── Projected placement from simulation result ─────────────────
@@ -3703,7 +4397,7 @@ function _showProfileModal(p) {
       <div style="width:82px;height:82px;border-radius:50%;${avatarBg}${avatarBorder};display:flex;align-items:center;justify-content:center;overflow:hidden;">${avatarHtml}</div>
       <div>
         <div style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:0.4rem;">${esc(p.name || '(no name)')}</div>
-        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:0.35rem;">${statusTag}${adminBadge}</div>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:0.35rem;">${statusTag}${adminBadge}${donorBadge}</div>
       </div>
     </div>
     <div style="padding:0 1.2rem 1.5rem;">

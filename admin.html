@@ -991,12 +991,14 @@
               <th>Specialty</th>
               <th>Hospital</th>
               <th>Status</th>
+              <th>Visibility</th>
+              <th>Support</th>
               <th>App ID</th>
               <th>Updated</th>
             </tr>
           </thead>
           <tbody id="profilesBody">
-            <tr><td colspan="7" class="empty-state">Loading profiles…</td></tr>
+            <tr><td colspan="9" class="empty-state">Loading profiles…</td></tr>
           </tbody>
         </table>
       </div>
@@ -2294,7 +2296,7 @@ function renderAccessRequests() {
       r.paymentReference ? `Ref: ${escapeHtml(r.paymentReference)}` : '',
     ].filter(Boolean);
     const pay = (r.paymentDeclared || paymentMeta.length)
-      ? `${r.paymentDeclared ? 'Yes' : '<span style="opacity:0.75">Not declared</span>'}${paymentMeta.length ? `<div class="invite-meta-sub">${paymentMeta.join('<br>')}</div>` : ''}`
+      ? `${r.paymentDeclared ? 'Yes' : '<span style="opacity:0.75">Not declared</span>'}${r.paymentVerified ? '<div><span class="badge badge-success" style="margin-top:4px;">Verified</span></div>' : ''}${paymentMeta.length ? `<div class="invite-meta-sub">${paymentMeta.join('<br>')}</div>` : ''}`
       : '<span style="opacity:0.55">—</span>';
     const adminMessage = r.message
       ? `<div class="request-message-cell">${escapeHtml(r.message)}</div>`
@@ -2313,6 +2315,9 @@ function renderAccessRequests() {
       actions = `<button class="action-btn" data-action="copy-req-pin" data-email="${escapeHtml(r.email)}">Copy PIN</button>`;
       if (!r.emailSent && r.approvedPin) {
         actions += ` <button class="action-btn" data-action="resend-req" data-email="${escapeHtml(r.email)}">Send email</button>`;
+      }
+      if ((r.paymentDeclared || r.paymentReference || r.paymentAmountPKR) && !r.paymentVerified) {
+        actions += ` <button class="action-btn" data-action="verify-payment" data-email="${escapeHtml(r.email)}">Verify payment</button>`;
       }
     }
     return `<tr>
@@ -2411,6 +2416,47 @@ async function resendAccessRequestEmail(email) {
     }).catch(() => {});
     showAdminToast(`Email failed: ${msg}`, 'error');
     await loadAccessRequests();
+  }
+}
+
+async function verifyAccessRequestPayment(email) {
+  const req = allAccessRequests.find(r => r.email === email);
+  if (!req) return;
+  if (req.paymentVerified) {
+    showAdminToast('Payment already verified.', 'info');
+    return;
+  }
+  const amountPKR = Number(req.paymentAmountPKR) || 0;
+  if (!amountPKR && !confirm(`${email} did not provide a payment amount. Create a zero-amount contribution record anyway?`)) return;
+  if (amountPKR && !confirm(`Verify payment for ${email} and add PKR ${amountPKR.toLocaleString('en-PK')} to contributions?`)) return;
+
+  try {
+    const rate = 278;
+    const contribution = {
+      name: req.nameFull || email,
+      email,
+      amountPKR: Math.round(amountPKR),
+      amountUSD: amountPKR ? parseFloat((amountPKR / rate).toFixed(2)) : 0,
+      conversionRate: rate,
+      date: firebase.firestore.FieldValue.serverTimestamp(),
+      source: 'access_request_payment',
+      accessRequestId: email,
+      paymentReference: req.paymentReference || '',
+      verifiedBy: getAdminSessionEmail() || null,
+      verifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+    const ref = await db.collection('contributions').add(contribution);
+    await db.collection('access_requests').doc(email).update({
+      paymentVerified: true,
+      paymentVerifiedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      paymentVerifiedBy: getAdminSessionEmail() || null,
+      contributionId: ref.id,
+    });
+    showAdminToast('Payment verified and contribution added.', 'success');
+    await loadAccessRequests();
+    if (document.getElementById('tab-contributions')?.style.display !== 'none') await loadContributions();
+  } catch (err) {
+    alert('Payment verification failed: ' + err.message);
   }
 }
 
@@ -3542,8 +3588,11 @@ function renderContributions() {
       : '\u2014';
     const pkr = c.amountPKR ? `PKR ${Number(c.amountPKR).toLocaleString()}` : '\u2014';
     const usd = c.amountUSD ? `$${Number(c.amountUSD).toFixed(2)}` : '\u2014';
+    const source = c.source === 'access_request_payment'
+      ? '<div class="invite-meta-sub">Verified from access request</div>'
+      : '';
     return `<tr>
-      <td>${escapeHtml(c.name || 'Anonymous')}</td>
+      <td>${escapeHtml(c.name || 'Anonymous')}${c.email ? `<div class="invite-meta-sub">${escapeHtml(c.email)}</div>` : ''}${source}</td>
       <td>${pkr}</td>
       <td>${usd}</td>
       <td>${dateStr}</td>
@@ -3671,18 +3720,37 @@ document.getElementById('filterProfiles')?.addEventListener('input', renderProfi
 
 // --- User Profiles ---
 let allProfiles = [];
+let adminProfileDonors = new Map();
+
+function buildAdminDonorMap(contributions) {
+  const map = new Map();
+  contributions.forEach(c => {
+    const email = String(c.email || '').toLowerCase().trim();
+    if (!email) return;
+    const prev = map.get(email) || { count: 0, amountPKR: 0, amountUSD: 0 };
+    prev.count += 1;
+    prev.amountPKR += Number(c.amountPKR) || 0;
+    prev.amountUSD += Number(c.amountUSD) || 0;
+    map.set(email, prev);
+  });
+  return map;
+}
 
 async function loadProfiles() {
   const tbody = document.getElementById('profilesBody');
   const countEl = document.getElementById('profilesCount');
-  tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Loading…</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Loading…</td></tr>';
   countEl.textContent = 'Loading…';
   try {
-    const snap = await db.collection('user_profiles').orderBy('updatedAt', 'desc').get();
+    const [snap, contribSnap] = await Promise.all([
+      db.collection('user_profiles').orderBy('updatedAt', 'desc').get(),
+      db.collection('contributions').get().catch(() => ({ docs: [] })),
+    ]);
+    adminProfileDonors = buildAdminDonorMap((contribSnap.docs || []).map(d => d.data()));
     allProfiles = snap.docs.map(doc => ({ email: doc.id, ...doc.data() }));
     renderProfiles();
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Error: ${escapeHtml(err.message)}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Error: ${escapeHtml(err.message)}</td></tr>`;
     countEl.textContent = '';
   }
 }
@@ -3701,9 +3769,10 @@ function renderProfiles() {
     );
   }
   const inducted = allProfiles.filter(d => d.inducted).length;
-  countEl.textContent = `${list.length} shown · ${allProfiles.length} total · ${inducted} inducted`;
+  const privateCount = allProfiles.filter(d => d.isPublic !== true).length;
+  countEl.textContent = `${list.length} shown · ${allProfiles.length} total · ${inducted} inducted · ${privateCount} private`;
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No profiles match.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No profiles match.</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(d => {
@@ -3713,6 +3782,13 @@ function renderProfiles() {
     const status = d.inducted
       ? `<span style="color:var(--success);font-weight:600;">Inducted ${d.inductionYear ? escapeHtml(String(d.inductionYear)) : ''}</span>`
       : '<span style="color:var(--text-muted);">Applicant</span>';
+    const visibility = d.isPublic
+      ? '<span class="badge badge-success">Public</span>'
+      : '<span class="badge badge-muted">Private</span>';
+    const donor = adminProfileDonors.get(String(email || '').toLowerCase());
+    const support = donor
+      ? `<span class="badge" style="background:rgba(232,166,39,0.14);border-color:rgba(232,166,39,0.34);color:var(--neon-gold);">★ Supporter</span><div class="invite-meta-sub">${donor.count} contribution${donor.count !== 1 ? 's' : ''}</div>`
+      : '<span style="color:var(--muted);">—</span>';
     const appId = d.applicantId ? `<code style="font-size:0.78rem;">${escapeHtml(String(d.applicantId))}</code>` : '<span style="color:var(--muted);">—</span>';
     const updated = d.updatedAt
       ? d.updatedAt.toDate().toLocaleDateString('en-PK', { day:'2-digit', month:'short', year:'numeric' })
@@ -3723,6 +3799,8 @@ function renderProfiles() {
       <td>${specialty}</td>
       <td>${hospital}</td>
       <td>${status}</td>
+      <td>${visibility}</td>
+      <td>${support}</td>
       <td>${appId}</td>
       <td style="font-size:0.78rem;">${updated}</td>
     </tr>`;
@@ -3846,6 +3924,7 @@ document.getElementById('requestsBody')?.addEventListener('click', function (e) 
   else if (action === 'reject-req') rejectAccessRequest(email);
   else if (action === 'resend-req') resendAccessRequestEmail(email);
   else if (action === 'copy-req-pin') copyAccessRequestPin(email);
+  else if (action === 'verify-payment') verifyAccessRequestPayment(email);
 });
 
 if (getAdminSession()) {
