@@ -847,7 +847,7 @@
     <!-- ── Tab: Screenshot Logs ────────────────────── -->
     <div id="tab-screenshots" style="display:none;">
       <div class="controls">
-        <input type="text" id="filterScreenshotEmail" placeholder="Filter by email or page..." />
+        <input type="text" id="filterScreenshotEmail" placeholder="Filter by email, trace ID, or page..." />
         <select id="filterScreenshotType">
           <option value="all">All Events</option>
           <option value="printscreen_key">PrintScreen key</option>
@@ -864,6 +864,7 @@
             <tr>
               <th>Time</th>
               <th>Email</th>
+              <th>Trace ID</th>
               <th>Event</th>
               <th>Page</th>
               <th>Visibility</th>
@@ -871,7 +872,7 @@
             </tr>
           </thead>
           <tbody id="screenshotLogsBody">
-            <tr><td colspan="6" class="empty-state">Loading screenshot logs&hellip;</td></tr>
+            <tr><td colspan="7" class="empty-state">Loading screenshot logs&hellip;</td></tr>
           </tbody>
         </table>
       </div>
@@ -1992,7 +1993,7 @@ function renderLogs() {
 
 async function loadScreenshotLogs() {
   const tbody = document.getElementById('screenshotLogsBody');
-  if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading screenshot logs&hellip;</td></tr>';
+  if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Loading screenshot logs&hellip;</td></tr>';
 
   try {
     const snapshot = await db.collection('screenshot_logs')
@@ -2008,6 +2009,7 @@ async function loadScreenshotLogs() {
       return {
         id: doc.id,
         email: d.email || 'unknown',
+        traceId: d.traceId || makeAdminTraceId(d.email || ''),
         eventType: d.eventType || 'screenshot_attempt',
         page: d.path || d.page || '—',
         visibilityState: d.visibilityState || '—',
@@ -2019,7 +2021,7 @@ async function loadScreenshotLogs() {
   } catch (err) {
     allScreenshotLogs = [];
     if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Failed to load screenshot logs: ${escapeHtml(err.message)}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Failed to load screenshot logs: ${escapeHtml(err.message)}</td></tr>`;
     }
     const countEl = document.getElementById('screenshotLogsCount');
     if (countEl) countEl.textContent = '0';
@@ -2035,6 +2037,17 @@ function screenshotEventLabel(type) {
   return labels[type] || type || 'Screenshot attempt';
 }
 
+function makeAdminTraceId(email) {
+  email = String(email || '').toLowerCase().trim();
+  if (!email || email === 'unknown') return '';
+  let hash = 2166136261;
+  for (let i = 0; i < email.length; i++) {
+    hash ^= email.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36).toUpperCase().padStart(7, '0').slice(0, 7);
+}
+
 function renderScreenshotLogs() {
   const query = document.getElementById('filterScreenshotEmail')?.value?.toLowerCase().trim() || '';
   const type = document.getElementById('filterScreenshotType')?.value || 'all';
@@ -2046,6 +2059,8 @@ function renderScreenshotLogs() {
   if (query) {
     filtered = filtered.filter(l =>
       String(l.email || '').toLowerCase().includes(query) ||
+      String(l.traceId || '').toLowerCase().includes(query) ||
+      (l.traceId ? `mn-${String(l.traceId).toLowerCase()}` : '').includes(query) ||
       String(l.page || '').toLowerCase().includes(query)
     );
   }
@@ -2053,7 +2068,7 @@ function renderScreenshotLogs() {
 
   if (countEl) countEl.textContent = `${filtered.length} of ${allScreenshotLogs.length}`;
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No screenshot logs found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No screenshot logs found.</td></tr>';
     return;
   }
 
@@ -2062,9 +2077,11 @@ function renderScreenshotLogs() {
       ? l.timestamp.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' })
       : '—';
     const ua = l.userAgent.length > 70 ? l.userAgent.substring(0, 70) + '…' : l.userAgent;
+    const traceLabel = l.traceId ? `MN-${l.traceId}` : '—';
     return `<tr>
       <td>${escapeHtml(time)}</td>
       <td>${escapeHtml(l.email)}</td>
+      <td><span class="ip-cell">${escapeHtml(traceLabel)}</span></td>
       <td><span class="badge-fail">${escapeHtml(screenshotEventLabel(l.eventType))}</span></td>
       <td>${escapeHtml(l.page)}</td>
       <td>${escapeHtml(l.visibilityState)}</td>

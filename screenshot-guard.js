@@ -15,6 +15,8 @@
     shieldTimer: null,
     blurTimer: null,
     watermarkLabel: '',
+    traceLabel: '',
+    traceTimer: null,
   };
 
   function getSessionEmail() {
@@ -118,6 +120,58 @@
       body.mn-watermark-enabled #mnPrivacyWatermark {
         display: block;
       }
+      #mnPrivacyTrace {
+        position: fixed;
+        inset: 0;
+        z-index: 2147482999;
+        display: none;
+        pointer-events: none;
+      }
+      #mnPrivacyTrace span {
+        position: absolute;
+        max-width: 220px;
+        overflow: hidden;
+        color: rgba(219, 234, 254, 0.16);
+        font: 700 10px/1.25 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #mnPrivacyTrace span:nth-child(1) { top: 12%; left: 1rem; }
+      #mnPrivacyTrace span:nth-child(2) { top: 24%; right: 1rem; }
+      #mnPrivacyTrace span:nth-child(3) { top: 48%; left: 1rem; writing-mode: vertical-rl; }
+      #mnPrivacyTrace span:nth-child(4) { top: 54%; right: 1rem; writing-mode: vertical-rl; }
+      #mnPrivacyTrace span:nth-child(5) { bottom: 16%; left: 1rem; }
+      #mnPrivacyTrace span:nth-child(6) { bottom: 10%; right: 1rem; }
+      body.mn-watermark-enabled #mnPrivacyTrace {
+        display: block;
+      }
+      body.mn-trace-emphasis #mnPrivacyTrace span {
+        color: rgba(219, 234, 254, 0.34);
+      }
+      .mn-trace-host {
+        position: relative;
+      }
+      .mn-trace-host::after {
+        content: attr(data-mn-trace);
+        position: absolute;
+        right: 0.55rem;
+        bottom: 0.35rem;
+        z-index: 2;
+        max-width: 170px;
+        overflow: hidden;
+        pointer-events: none;
+        color: rgba(219, 234, 254, 0.11);
+        font: 700 9px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        letter-spacing: 0.06em;
+        text-overflow: ellipsis;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      body.mn-trace-emphasis .mn-trace-host::after {
+        color: rgba(219, 234, 254, 0.25);
+      }
       @media print {
         body * {
           visibility: hidden !important;
@@ -167,16 +221,92 @@
     return watermark;
   }
 
+  function ensureTrace() {
+    let trace = document.getElementById('mnPrivacyTrace');
+    if (trace) return trace;
+    trace = document.createElement('div');
+    trace.id = 'mnPrivacyTrace';
+    trace.setAttribute('aria-hidden', 'true');
+    trace.innerHTML = Array.from({ length: 6 }, () => '<span></span>').join('');
+    document.body.appendChild(trace);
+    return trace;
+  }
+
   function refreshWatermark() {
     const email = getSessionEmail();
+    const traceId = email ? makeTraceId(email) : '';
     const label = email ? `Private session: ${email}` : '';
+    const traceLabel = email && traceId ? makeTraceLabel(email, traceId) : '';
     if (label === state.watermarkLabel) return;
     state.watermarkLabel = label;
+    state.traceLabel = traceLabel;
 
     const watermark = ensureWatermark();
     const text = watermark.querySelector('span');
     if (text) text.textContent = label;
+
+    const trace = ensureTrace();
+    trace.querySelectorAll('span').forEach(function (span) {
+      span.textContent = traceLabel;
+    });
+    tagTraceHosts(traceLabel);
     document.body.classList.toggle('mn-watermark-enabled', !!label);
+  }
+
+  function makeTraceId(email) {
+    let hash = 2166136261;
+    for (let i = 0; i < email.length; i++) {
+      hash ^= email.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(36).toUpperCase().padStart(7, '0').slice(0, 7);
+  }
+
+  function makeTraceLabel(email, traceId) {
+    const name = String(email || '').split('@')[0].replace(/[^a-z0-9._-]/gi, '').slice(0, 18);
+    return `${name || 'user'} MN-${traceId}`;
+  }
+
+  function tagTraceHosts(traceLabel) {
+    document.querySelectorAll('.mn-trace-host').forEach(function (el) {
+      if (!traceLabel) {
+        el.classList.remove('mn-trace-host');
+        el.removeAttribute('data-mn-trace');
+      } else {
+        el.setAttribute('data-mn-trace', traceLabel);
+      }
+    });
+    if (!traceLabel) return;
+
+    const selectors = [
+      '.card',
+      '.panel',
+      '.table-wrap',
+      '.metric-card',
+      '.stat-card',
+      '.modal-card',
+      '.auth-card',
+      '.hp-section',
+      '.hosp-card',
+      '.start-card',
+      '.sim-card',
+      '.profile-card',
+      'section.tab-content.active',
+    ];
+    const hosts = document.querySelectorAll(selectors.join(','));
+    Array.prototype.slice.call(hosts, 0, 18).forEach(function (el) {
+      if (el.id === 'mnPrivacyShield' || el.id === 'mnPrivacyWatermark' || el.id === 'mnPrivacyTrace') return;
+      el.classList.add('mn-trace-host');
+      el.setAttribute('data-mn-trace', traceLabel);
+    });
+  }
+
+  function emphasizeTrace() {
+    document.body.classList.add('mn-trace-emphasis');
+    clearTimeout(state.traceTimer);
+    state.traceTimer = setTimeout(function () {
+      document.body.classList.remove('mn-trace-emphasis');
+    }, 2200);
   }
 
   function showShield(message, options) {
@@ -185,6 +315,7 @@
     const text = document.getElementById('mnPrivacyShieldText');
     if (text) text.textContent = message || 'Screenshots are disabled on this site.';
     document.body.classList.add('mn-privacy-shielded');
+    emphasizeTrace();
 
     if (opts.logType) logScreenshotEvent(opts.logType, opts.extra || {});
 
@@ -209,8 +340,10 @@
     const db = getDb();
     if (!db) return;
 
+    const email = getSessionEmail();
     const payload = {
-      email: getSessionEmail() || 'unknown',
+      email: email || 'unknown',
+      traceId: email ? makeTraceId(email) : '',
       eventType,
       page: PAGE,
       path: window.location.pathname + window.location.search,
@@ -247,6 +380,7 @@
     if (e && e.cancelable) e.preventDefault();
     if (e) e.stopPropagation();
     clearClipboard();
+    emphasizeTrace();
     showShield('Screenshot capture is disabled. This attempt has been logged for admin review.', {
       logType: source,
       extra: { key: e ? (e.key || e.code || '') : '' },
@@ -272,6 +406,7 @@
     ensureStyles();
     ensureShield();
     ensureWatermark();
+    ensureTrace();
     document.body.classList.add('mn-screen-guard-active');
     refreshWatermark();
 
@@ -302,7 +437,10 @@
       }
     });
     window.addEventListener('storage', refreshWatermark);
-    setInterval(refreshWatermark, 2000);
+    setInterval(function () {
+      refreshWatermark();
+      tagTraceHosts(state.traceLabel);
+    }, 2000);
   }
 
   window.MNScreenshotGuard = {
