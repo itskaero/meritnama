@@ -693,6 +693,7 @@
       <div class="sidebar-section">Main</div>
       <button class="sidebar-link active" data-tab="overview"><span class="nav-icon">📊</span> Overview</button>
       <button class="sidebar-link" data-tab="logs"><span class="nav-icon">📋</span> Access Logs</button>
+      <button class="sidebar-link" data-tab="screenshots"><span class="nav-icon">&#128274;</span> Screenshot Logs</button>
       <div class="sidebar-section">People</div>
       <button class="sidebar-link" data-tab="users"><span class="nav-icon">👥</span> Users <span class="nav-badge" id="navBadgeUsers">—</span></button>
       <button class="sidebar-link" data-tab="access-requests"><span class="nav-icon">📥</span> Access Requests <span class="nav-badge" id="navBadgeRequests">—</span></button>
@@ -800,6 +801,7 @@
     <nav class="tab-nav">
       <button class="tab-btn" data-tab="overview">Overview</button>
       <button class="tab-btn" data-tab="logs">Access Logs</button>
+      <button class="tab-btn" data-tab="screenshots">Screenshot Logs</button>
       <button class="tab-btn" data-tab="users">Authorized Users</button>
       <button class="tab-btn" data-tab="contributions">Contributions</button>
       <button class="tab-btn" data-tab="mentorship">Mentorship</button>
@@ -837,6 +839,39 @@
           </thead>
           <tbody id="logsBody">
             <tr><td colspan="8" class="empty-state">Loading logs&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Tab: Screenshot Logs ────────────────────── -->
+    <div id="tab-screenshots" style="display:none;">
+      <div class="controls">
+        <input type="text" id="filterScreenshotEmail" placeholder="Filter by email or page..." />
+        <select id="filterScreenshotType">
+          <option value="all">All Events</option>
+          <option value="printscreen_key">PrintScreen key</option>
+          <option value="screenshot_shortcut">Screenshot shortcut</option>
+          <option value="print_blocked">Print blocked</option>
+        </select>
+        <span id="screenshotLogsCount" class="header-pill" style="font-size:0.72rem;">—</span>
+        <button id="refreshScreenshotLogsBtn">&#x21BB; Refresh</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Email</th>
+              <th>Event</th>
+              <th>Page</th>
+              <th>Visibility</th>
+              <th>User Agent</th>
+            </tr>
+          </thead>
+          <tbody id="screenshotLogsBody">
+            <tr><td colspan="6" class="empty-state">Loading screenshot logs&hellip;</td></tr>
           </tbody>
         </table>
       </div>
@@ -1476,6 +1511,7 @@ const SESSION_DURATION = 2 * 60 * 60 * 1000; // 2 hours
 const TAB_META = {
   overview:      { title: 'Overview',           sub: 'Platform metrics and live activity' },
   logs:          { title: 'Access Logs',        sub: 'Login attempts and portal access history' },
+  screenshots:   { title: 'Screenshot Logs',    sub: 'Blocked screenshot and print attempts by signed-in users' },
   users:         { title: 'Authorized Users',   sub: 'Manage portal access and credentials' },
   'access-requests': { title: 'Access Requests', sub: 'Candidate self-service requests — approve to grant access' },
   profiles:      { title: 'User Profiles',      sub: 'Applicant and trainee profile data' },
@@ -1485,6 +1521,7 @@ const TAB_META = {
 };
 
 let allLogs = [];
+let allScreenshotLogs = [];
 let authUserMeta = { byEmail: {}, inviteesByInviter: {} };
 let overviewMetricsCache = {};
 let sessionTimerInterval = null;
@@ -1949,6 +1986,89 @@ function renderLogs() {
       <td>${escapeHtml(l.page)}</td>
       <td title="${escapeHtml(l.userAgent)}">${escapeHtml(ua)}</td>
       <td>${actionBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function loadScreenshotLogs() {
+  const tbody = document.getElementById('screenshotLogsBody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading screenshot logs&hellip;</td></tr>';
+
+  try {
+    const snapshot = await db.collection('screenshot_logs')
+      .orderBy('createdAt', 'desc')
+      .limit(500)
+      .get();
+
+    allScreenshotLogs = snapshot.docs.map(doc => {
+      const d = doc.data();
+      const timestamp = d.createdAt?.toDate?.()
+        || d.timestamp?.toDate?.()
+        || (d.clientAt ? new Date(d.clientAt) : null);
+      return {
+        id: doc.id,
+        email: d.email || 'unknown',
+        eventType: d.eventType || 'screenshot_attempt',
+        page: d.path || d.page || '—',
+        visibilityState: d.visibilityState || '—',
+        userAgent: d.userAgent || '—',
+        timestamp: timestamp && !Number.isNaN(timestamp.getTime()) ? timestamp : null,
+      };
+    });
+    renderScreenshotLogs();
+  } catch (err) {
+    allScreenshotLogs = [];
+    if (tbody) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Failed to load screenshot logs: ${escapeHtml(err.message)}</td></tr>`;
+    }
+    const countEl = document.getElementById('screenshotLogsCount');
+    if (countEl) countEl.textContent = '0';
+  }
+}
+
+function screenshotEventLabel(type) {
+  const labels = {
+    printscreen_key: 'PrintScreen key',
+    screenshot_shortcut: 'Screenshot shortcut',
+    print_blocked: 'Print blocked',
+  };
+  return labels[type] || type || 'Screenshot attempt';
+}
+
+function renderScreenshotLogs() {
+  const query = document.getElementById('filterScreenshotEmail')?.value?.toLowerCase().trim() || '';
+  const type = document.getElementById('filterScreenshotType')?.value || 'all';
+  const tbody = document.getElementById('screenshotLogsBody');
+  const countEl = document.getElementById('screenshotLogsCount');
+  if (!tbody) return;
+
+  let filtered = allScreenshotLogs;
+  if (query) {
+    filtered = filtered.filter(l =>
+      String(l.email || '').toLowerCase().includes(query) ||
+      String(l.page || '').toLowerCase().includes(query)
+    );
+  }
+  if (type !== 'all') filtered = filtered.filter(l => l.eventType === type);
+
+  if (countEl) countEl.textContent = `${filtered.length} of ${allScreenshotLogs.length}`;
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No screenshot logs found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(l => {
+    const time = l.timestamp
+      ? l.timestamp.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' })
+      : '—';
+    const ua = l.userAgent.length > 70 ? l.userAgent.substring(0, 70) + '…' : l.userAgent;
+    return `<tr>
+      <td>${escapeHtml(time)}</td>
+      <td>${escapeHtml(l.email)}</td>
+      <td><span class="badge-fail">${escapeHtml(screenshotEventLabel(l.eventType))}</span></td>
+      <td>${escapeHtml(l.page)}</td>
+      <td>${escapeHtml(l.visibilityState)}</td>
+      <td title="${escapeHtml(l.userAgent)}">${escapeHtml(ua)}</td>
     </tr>`;
   }).join('');
 }
@@ -2547,7 +2667,7 @@ async function saveAccessConfigEditor() {
 }
 
 function switchTab(tab) {
-  const tabs = ['overview', 'logs', 'users', 'access-requests', 'contributions', 'mentorship', 'broadcast', 'profiles'];
+  const tabs = ['overview', 'logs', 'screenshots', 'users', 'access-requests', 'contributions', 'mentorship', 'broadcast', 'profiles'];
   for (const t of tabs) {
     const el = document.getElementById('tab-' + t);
     if (el) el.style.display = tab === t ? '' : 'none';
@@ -2570,6 +2690,7 @@ function switchTab(tab) {
   if (tab === 'broadcast')     loadBroadcast();
   if (tab === 'profiles')      loadProfiles();
   if (tab === 'logs')          loadLogs();
+  if (tab === 'screenshots')   loadScreenshotLogs();
 }
 
 // ── BROADCAST NOTIFICATIONS ──────────────────────────────────────────────────
@@ -3470,6 +3591,7 @@ async function refreshAllAdminData() {
     await loadOverviewMetrics();
     const tab = localStorage.getItem(ADMIN_TAB_KEY) || 'overview';
     if (tab === 'users') await loadUsers();
+    if (tab === 'screenshots') await loadScreenshotLogs();
     if (tab === 'access-requests') await loadAccessRequests();
     if (tab === 'contributions') await loadContributions();
     if (tab === 'profiles') await loadProfiles();
@@ -3528,6 +3650,9 @@ document.getElementById('refreshAllBtn')?.addEventListener('click', refreshAllAd
 document.getElementById('refreshBtn').addEventListener('click', loadLogs);
 document.getElementById('filterEmail').addEventListener('input', renderLogs);
 document.getElementById('filterStatus').addEventListener('change', renderLogs);
+document.getElementById('refreshScreenshotLogsBtn')?.addEventListener('click', loadScreenshotLogs);
+document.getElementById('filterScreenshotEmail')?.addEventListener('input', renderScreenshotLogs);
+document.getElementById('filterScreenshotType')?.addEventListener('change', renderScreenshotLogs);
 document.getElementById('addUserBtn').addEventListener('click', () => openAddUserModal(''));
 document.getElementById('addUserBtn2').addEventListener('click', () => openAddUserModal(''));
 document.getElementById('refreshUsersBtn').addEventListener('click', loadUsers);
