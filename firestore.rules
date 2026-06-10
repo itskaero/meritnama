@@ -35,6 +35,14 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // User warnings/inbox — admin creates; users read and mark their own messages read.
+    // Current project uses client-side PIN gating, so access is trust-gated in UI.
+    match /user_warnings/{warningId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if false;
+    }
+
     // Training reviews — publicly readable and creatable, no edits/deletes
     match /training_reviews/{reviewId} {
       allow read: if true;
