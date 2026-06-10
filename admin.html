@@ -699,6 +699,7 @@
       <button class="sidebar-link" data-tab="access-requests"><span class="nav-icon">📥</span> Access Requests <span class="nav-badge" id="navBadgeRequests">—</span></button>
       <button class="sidebar-link" data-tab="profiles"><span class="nav-icon">🪪</span> Profiles <span class="nav-badge" id="navBadgeProfiles">—</span></button>
       <button class="sidebar-link" data-tab="mentorship"><span class="nav-icon">🎓</span> Mentorship <span class="nav-badge" id="navBadgeMentors">—</span></button>
+      <button class="sidebar-link" data-tab="warnings"><span class="nav-icon">&#9888;</span> User Warnings</button>
       <div class="sidebar-section">Finance</div>
       <button class="sidebar-link" data-tab="contributions"><span class="nav-icon">💰</span> Contributions</button>
       <div class="sidebar-section">Site</div>
@@ -802,6 +803,7 @@
       <button class="tab-btn" data-tab="overview">Overview</button>
       <button class="tab-btn" data-tab="logs">Access Logs</button>
       <button class="tab-btn" data-tab="screenshots">Screenshot Logs</button>
+      <button class="tab-btn" data-tab="warnings">User Warnings</button>
       <button class="tab-btn" data-tab="users">Authorized Users</button>
       <button class="tab-btn" data-tab="contributions">Contributions</button>
       <button class="tab-btn" data-tab="mentorship">Mentorship</button>
@@ -847,7 +849,7 @@
     <!-- ── Tab: Screenshot Logs ────────────────────── -->
     <div id="tab-screenshots" style="display:none;">
       <div class="controls">
-        <input type="text" id="filterScreenshotEmail" placeholder="Filter by email or page..." />
+        <input type="text" id="filterScreenshotEmail" placeholder="Filter by email, trace ID, or page..." />
         <select id="filterScreenshotType">
           <option value="all">All Events</option>
           <option value="printscreen_key">PrintScreen key</option>
@@ -864,14 +866,83 @@
             <tr>
               <th>Time</th>
               <th>Email</th>
+              <th>Trace ID</th>
               <th>Event</th>
               <th>Page</th>
+              <th>Tab / Modal</th>
+              <th>App ID</th>
               <th>Visibility</th>
               <th>User Agent</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="screenshotLogsBody">
-            <tr><td colspan="6" class="empty-state">Loading screenshot logs&hellip;</td></tr>
+            <tr><td colspan="10" class="empty-state">Loading screenshot logs&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Tab: User Warnings ──────────────────────── -->
+    <div id="tab-warnings" style="display:none;">
+      <div class="panel" style="margin-bottom:1rem;">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Send warning / inbox message</div>
+            <div class="panel-sub">Delivered to the user's site inbox on signed-in pages</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.75rem;">
+          <div class="modal-field" style="margin:0;">
+            <label>Recipient email</label>
+            <input type="email" id="warnRecipient" placeholder="user@example.com" />
+          </div>
+          <div class="modal-field" style="margin:0;">
+            <label>Severity</label>
+            <select id="warnSeverity">
+              <option value="warning">Warning</option>
+              <option value="danger">Serious warning</option>
+              <option value="info">Info</option>
+              <option value="success">Resolved / notice</option>
+            </select>
+          </div>
+          <div class="modal-field" style="margin:0;grid-column:1/-1;">
+            <label>Title</label>
+            <input type="text" id="warnTitle" placeholder="Screenshot policy reminder" maxlength="120" />
+          </div>
+          <div class="modal-field" style="margin:0;grid-column:1/-1;">
+            <label>Message</label>
+            <textarea id="warnMessage" rows="4" style="width:100%;resize:vertical;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.82rem;" placeholder="Write the warning shown to this user..."></textarea>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.9rem;flex-wrap:wrap;">
+          <button id="sendWarningBtn" style="padding:8px 18px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Send Warning</button>
+          <button id="clearWarningBtn" style="padding:8px 14px;background:rgba(255,255,255,0.04);color:var(--text);border:1px solid var(--border);border-radius:8px;cursor:pointer;">Clear</button>
+          <span id="warningStatus" style="font-size:0.8rem;color:var(--text-muted);"></span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <input type="text" id="filterWarnings" placeholder="Search warning recipient, title, message..." />
+        <button id="refreshWarningsBtn">&#x21BB; Refresh</button>
+        <span id="warningsCount" class="header-pill" style="font-size:0.72rem;">—</span>
+      </div>
+      <div class="table-wrap">
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th>Created</th>
+              <th>Recipient</th>
+              <th>Severity</th>
+              <th>Title</th>
+              <th>Message</th>
+              <th>Read</th>
+              <th>Sent By</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="warningsBody">
+            <tr><td colspan="8" class="empty-state">Loading warnings&hellip;</td></tr>
           </tbody>
         </table>
       </div>
@@ -1512,6 +1583,7 @@ const TAB_META = {
   overview:      { title: 'Overview',           sub: 'Platform metrics and live activity' },
   logs:          { title: 'Access Logs',        sub: 'Login attempts and portal access history' },
   screenshots:   { title: 'Screenshot Logs',    sub: 'Blocked screenshot and print attempts by signed-in users' },
+  warnings:      { title: 'User Warnings',      sub: 'Send and review admin inbox messages for users' },
   users:         { title: 'Authorized Users',   sub: 'Manage portal access and credentials' },
   'access-requests': { title: 'Access Requests', sub: 'Candidate self-service requests — approve to grant access' },
   profiles:      { title: 'User Profiles',      sub: 'Applicant and trainee profile data' },
@@ -1522,6 +1594,7 @@ const TAB_META = {
 
 let allLogs = [];
 let allScreenshotLogs = [];
+let allWarnings = [];
 let authUserMeta = { byEmail: {}, inviteesByInviter: {} };
 let overviewMetricsCache = {};
 let sessionTimerInterval = null;
@@ -1992,7 +2065,7 @@ function renderLogs() {
 
 async function loadScreenshotLogs() {
   const tbody = document.getElementById('screenshotLogsBody');
-  if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading screenshot logs&hellip;</td></tr>';
+  if (tbody) tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Loading screenshot logs&hellip;</td></tr>';
 
   try {
     const snapshot = await db.collection('screenshot_logs')
@@ -2008,8 +2081,14 @@ async function loadScreenshotLogs() {
       return {
         id: doc.id,
         email: d.email || 'unknown',
+        traceId: d.traceId || makeAdminTraceId(d.email || ''),
         eventType: d.eventType || 'screenshot_attempt',
         page: d.path || d.page || '—',
+        activeTab: d.activeTab || d.context?.activeTab || '',
+        activeTabLabel: d.activeTabLabel || d.context?.activeTabLabel || '',
+        modalId: d.modalId || d.context?.modalId || '',
+        modalTitle: d.modalTitle || d.context?.modalTitle || '',
+        applicantId: d.applicantId || d.context?.applicantId || '',
         visibilityState: d.visibilityState || '—',
         userAgent: d.userAgent || '—',
         timestamp: timestamp && !Number.isNaN(timestamp.getTime()) ? timestamp : null,
@@ -2019,7 +2098,7 @@ async function loadScreenshotLogs() {
   } catch (err) {
     allScreenshotLogs = [];
     if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Failed to load screenshot logs: ${escapeHtml(err.message)}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10" class="empty-state">Failed to load screenshot logs: ${escapeHtml(err.message)}</td></tr>`;
     }
     const countEl = document.getElementById('screenshotLogsCount');
     if (countEl) countEl.textContent = '0';
@@ -2035,6 +2114,17 @@ function screenshotEventLabel(type) {
   return labels[type] || type || 'Screenshot attempt';
 }
 
+function makeAdminTraceId(email) {
+  email = String(email || '').toLowerCase().trim();
+  if (!email || email === 'unknown') return '';
+  let hash = 2166136261;
+  for (let i = 0; i < email.length; i++) {
+    hash ^= email.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36).toUpperCase().padStart(7, '0').slice(0, 7);
+}
+
 function renderScreenshotLogs() {
   const query = document.getElementById('filterScreenshotEmail')?.value?.toLowerCase().trim() || '';
   const type = document.getElementById('filterScreenshotType')?.value || 'all';
@@ -2046,6 +2136,11 @@ function renderScreenshotLogs() {
   if (query) {
     filtered = filtered.filter(l =>
       String(l.email || '').toLowerCase().includes(query) ||
+      String(l.traceId || '').toLowerCase().includes(query) ||
+      (l.traceId ? `mn-${String(l.traceId).toLowerCase()}` : '').includes(query) ||
+      String(l.activeTab || '').toLowerCase().includes(query) ||
+      String(l.modalTitle || '').toLowerCase().includes(query) ||
+      String(l.applicantId || '').toLowerCase().includes(query) ||
       String(l.page || '').toLowerCase().includes(query)
     );
   }
@@ -2053,7 +2148,7 @@ function renderScreenshotLogs() {
 
   if (countEl) countEl.textContent = `${filtered.length} of ${allScreenshotLogs.length}`;
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No screenshot logs found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">No screenshot logs found.</td></tr>';
     return;
   }
 
@@ -2062,15 +2157,176 @@ function renderScreenshotLogs() {
       ? l.timestamp.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' })
       : '—';
     const ua = l.userAgent.length > 70 ? l.userAgent.substring(0, 70) + '…' : l.userAgent;
+    const traceLabel = l.traceId ? `MN-${l.traceId}` : '—';
+    const tabModal = [
+      l.activeTab ? `Tab: ${l.activeTabLabel || l.activeTab}` : '',
+      l.modalId || l.modalTitle ? `Modal: ${l.modalTitle || l.modalId}` : '',
+    ].filter(Boolean).join(' · ') || '—';
+    const warnBtn = l.email && l.email !== 'unknown'
+      ? `<button class="action-btn" data-warning-email="${escapeHtml(l.email)}" data-warning-context="${escapeHtml(screenshotEventLabel(l.eventType))}">Warn</button>`
+      : '—';
     return `<tr>
       <td>${escapeHtml(time)}</td>
       <td>${escapeHtml(l.email)}</td>
+      <td><span class="ip-cell">${escapeHtml(traceLabel)}</span></td>
       <td><span class="badge-fail">${escapeHtml(screenshotEventLabel(l.eventType))}</span></td>
       <td>${escapeHtml(l.page)}</td>
+      <td title="${escapeHtml(tabModal)}">${escapeHtml(tabModal.length > 70 ? tabModal.slice(0, 68) + '…' : tabModal)}</td>
+      <td>${escapeHtml(l.applicantId || '—')}</td>
       <td>${escapeHtml(l.visibilityState)}</td>
       <td title="${escapeHtml(l.userAgent)}">${escapeHtml(ua)}</td>
+      <td>${warnBtn}</td>
     </tr>`;
   }).join('');
+}
+
+function setWarningStatus(message, color = 'var(--text-muted)') {
+  const el = document.getElementById('warningStatus');
+  if (!el) return;
+  el.textContent = message || '';
+  el.style.color = color;
+}
+
+function clearWarningComposer() {
+  const recipient = document.getElementById('warnRecipient');
+  const severity = document.getElementById('warnSeverity');
+  const title = document.getElementById('warnTitle');
+  const message = document.getElementById('warnMessage');
+  if (recipient) recipient.value = '';
+  if (severity) severity.value = 'warning';
+  if (title) title.value = '';
+  if (message) message.value = '';
+  setWarningStatus('');
+}
+
+function openWarningComposer(email, context) {
+  switchTab('warnings');
+  const recipient = document.getElementById('warnRecipient');
+  const severity = document.getElementById('warnSeverity');
+  const title = document.getElementById('warnTitle');
+  const message = document.getElementById('warnMessage');
+  if (recipient) recipient.value = (email || '').toLowerCase().trim();
+  if (severity) severity.value = 'warning';
+  if (title && !title.value) title.value = 'Screenshot policy reminder';
+  if (message && !message.value) {
+    message.value = `Your account was linked to a protected-content screenshot/print attempt${context ? ' (' + context + ')' : ''}. Please do not capture or share private MeritNama content.`;
+  }
+  setWarningStatus('Review and send this warning.', 'var(--neon-gold)');
+  setTimeout(() => recipient?.focus(), 50);
+}
+
+async function sendUserWarning() {
+  const recipient = document.getElementById('warnRecipient')?.value?.trim().toLowerCase() || '';
+  const severity = document.getElementById('warnSeverity')?.value || 'warning';
+  const title = document.getElementById('warnTitle')?.value?.trim() || 'Admin message';
+  const message = document.getElementById('warnMessage')?.value?.trim() || '';
+  const btn = document.getElementById('sendWarningBtn');
+  if (!recipient || !recipient.includes('@')) {
+    setWarningStatus('Enter a valid recipient email.', 'var(--neon-pink)');
+    return;
+  }
+  if (!message) {
+    setWarningStatus('Enter a warning message.', 'var(--neon-pink)');
+    return;
+  }
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+  setWarningStatus('Sending warning…');
+  try {
+    await db.collection('user_warnings').add({
+      recipientEmail: recipient,
+      severity,
+      title,
+      message,
+      status: 'active',
+      createdBy: getAdminSessionEmail() || 'admin',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    setWarningStatus('Warning sent to user inbox.', 'var(--neon-green)');
+    showAdminToast('Warning sent.', 'success');
+    await loadWarnings();
+  } catch (err) {
+    setWarningStatus('Send failed: ' + err.message, 'var(--neon-pink)');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Send Warning'; }
+  }
+}
+
+async function loadWarnings() {
+  const tbody = document.getElementById('warningsBody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading warnings&hellip;</td></tr>';
+  try {
+    const snap = await db.collection('user_warnings')
+      .orderBy('createdAt', 'desc')
+      .limit(200)
+      .get();
+    allWarnings = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderWarningsAdmin();
+  } catch (err) {
+    allWarnings = [];
+    if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Failed to load warnings: ${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function formatAdminWarningDate(value) {
+  const d = value?.toDate ? value.toDate() : (value ? new Date(value) : null);
+  if (!d || Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function renderWarningsAdmin() {
+  const tbody = document.getElementById('warningsBody');
+  const countEl = document.getElementById('warningsCount');
+  if (!tbody) return;
+  const q = document.getElementById('filterWarnings')?.value?.toLowerCase().trim() || '';
+  let filtered = allWarnings;
+  if (q) {
+    filtered = filtered.filter(w =>
+      String(w.recipientEmail || '').toLowerCase().includes(q) ||
+      String(w.title || '').toLowerCase().includes(q) ||
+      String(w.message || '').toLowerCase().includes(q) ||
+      String(w.createdBy || '').toLowerCase().includes(q)
+    );
+  }
+  if (countEl) countEl.textContent = `${filtered.length} of ${allWarnings.length}`;
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No warnings found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(w => {
+    const message = String(w.message || '');
+    const msgShort = message.length > 90 ? message.slice(0, 88) + '…' : message;
+    const read = w.readAt ? formatAdminWarningDate(w.readAt) : '<span class="badge-fail">Unread</span>';
+    const archived = w.status === 'archived';
+    const action = archived
+      ? '<span style="color:var(--text-muted);">Archived</span>'
+      : `<button class="action-btn" data-warning-archive="${escapeHtml(w.id)}">Archive</button>`;
+    return `<tr>
+      <td>${escapeHtml(formatAdminWarningDate(w.createdAt))}</td>
+      <td>${escapeHtml(w.recipientEmail || '—')}</td>
+      <td>${escapeHtml(w.severity || 'warning')}</td>
+      <td>${escapeHtml(w.title || '—')}</td>
+      <td title="${escapeHtml(message)}">${escapeHtml(msgShort || '—')}</td>
+      <td>${read}</td>
+      <td>${escapeHtml(w.createdBy || '—')}</td>
+      <td>${action}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function archiveWarning(id) {
+  if (!id) return;
+  try {
+    await db.collection('user_warnings').doc(id).set({
+      status: 'archived',
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      archivedBy: getAdminSessionEmail() || 'admin',
+    }, { merge: true });
+    await loadWarnings();
+    showAdminToast('Warning archived.', 'success');
+  } catch (err) {
+    showAdminToast('Archive failed: ' + err.message, 'error');
+  }
 }
 
 function escapeHtml(str) {
@@ -2667,7 +2923,7 @@ async function saveAccessConfigEditor() {
 }
 
 function switchTab(tab) {
-  const tabs = ['overview', 'logs', 'screenshots', 'users', 'access-requests', 'contributions', 'mentorship', 'broadcast', 'profiles'];
+  const tabs = ['overview', 'logs', 'screenshots', 'warnings', 'users', 'access-requests', 'contributions', 'mentorship', 'broadcast', 'profiles'];
   for (const t of tabs) {
     const el = document.getElementById('tab-' + t);
     if (el) el.style.display = tab === t ? '' : 'none';
@@ -2691,6 +2947,7 @@ function switchTab(tab) {
   if (tab === 'profiles')      loadProfiles();
   if (tab === 'logs')          loadLogs();
   if (tab === 'screenshots')   loadScreenshotLogs();
+  if (tab === 'warnings')      loadWarnings();
 }
 
 // ── BROADCAST NOTIFICATIONS ──────────────────────────────────────────────────
@@ -3592,6 +3849,7 @@ async function refreshAllAdminData() {
     const tab = localStorage.getItem(ADMIN_TAB_KEY) || 'overview';
     if (tab === 'users') await loadUsers();
     if (tab === 'screenshots') await loadScreenshotLogs();
+    if (tab === 'warnings') await loadWarnings();
     if (tab === 'access-requests') await loadAccessRequests();
     if (tab === 'contributions') await loadContributions();
     if (tab === 'profiles') await loadProfiles();
@@ -3653,6 +3911,19 @@ document.getElementById('filterStatus').addEventListener('change', renderLogs);
 document.getElementById('refreshScreenshotLogsBtn')?.addEventListener('click', loadScreenshotLogs);
 document.getElementById('filterScreenshotEmail')?.addEventListener('input', renderScreenshotLogs);
 document.getElementById('filterScreenshotType')?.addEventListener('change', renderScreenshotLogs);
+document.getElementById('screenshotLogsBody')?.addEventListener('click', function (e) {
+  const btn = e.target.closest('[data-warning-email]');
+  if (!btn) return;
+  openWarningComposer(btn.getAttribute('data-warning-email'), btn.getAttribute('data-warning-context') || '');
+});
+document.getElementById('sendWarningBtn')?.addEventListener('click', sendUserWarning);
+document.getElementById('clearWarningBtn')?.addEventListener('click', clearWarningComposer);
+document.getElementById('refreshWarningsBtn')?.addEventListener('click', loadWarnings);
+document.getElementById('filterWarnings')?.addEventListener('input', renderWarningsAdmin);
+document.getElementById('warningsBody')?.addEventListener('click', function (e) {
+  const btn = e.target.closest('[data-warning-archive]');
+  if (btn) archiveWarning(btn.getAttribute('data-warning-archive'));
+});
 document.getElementById('addUserBtn').addEventListener('click', () => openAddUserModal(''));
 document.getElementById('addUserBtn2').addEventListener('click', () => openAddUserModal(''));
 document.getElementById('refreshUsersBtn').addEventListener('click', loadUsers);
