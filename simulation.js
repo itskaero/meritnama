@@ -559,7 +559,7 @@ function setupFindMe() {
     if (e.key === 'Enter') identifyUser(input.value.trim());
   });
   clr?.addEventListener('click', clearMe);
-  addBtn?.addEventListener('click', openCustomModal);
+  addBtn?.addEventListener('click', () => openCustomModal(input?.value?.trim()));
 
   if (SIM.myId) updateMyBadge();
 }
@@ -698,18 +698,75 @@ function saveCustomCand(c) {
   localStorage.setItem(CUSTOM_KEY, JSON.stringify(SIM.customCand));
 }
 
-function openCustomModal() {
+function cloneCandidate(c) {
+  return c ? JSON.parse(JSON.stringify(c)) : null;
+}
+
+function findDatasetCandidate(idStr) {
+  const id = String(idStr || '').trim();
+  if (!id) return null;
+  return SIM.candidates.find(c => String(c.applicantId) === id) || null;
+}
+
+function setInputValue(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.value = value ?? '';
+}
+
+function readNumberInput(id, fallback = 0) {
+  const raw = document.getElementById(id)?.value?.trim();
+  if (raw == null || raw === '') return fallback;
+  const n = parseFloat(raw);
+  return isNaN(n) ? fallback : n;
+}
+
+function resetCustomModal() {
+  [
+    'customName', 'customId', 'customMarksTotal', 'customMarksFCPS',
+    'customMarksFCPSD', 'customMarksMS', 'customMarksMD', 'customMarksMDS',
+    'customSourceId',
+  ].forEach(id => setInputValue(id, ''));
+  window.clearCustomPrefRows?.();
+}
+
+function applyCandidateToCustomForm(candidate, sourceId = '') {
+  if (!candidate) return;
+  ensureCandidateAdjusted(candidate);
+  const pm = candidate.programMarks || {};
+  setInputValue('customName', candidate.nameFull || '');
+  setInputValue('customId', candidate.applicantId || '');
+  setInputValue('customMarksTotal', candidate.marksTotal ?? '');
+  setInputValue('customMarksFCPS', pm.FCPS ?? '');
+  setInputValue('customMarksFCPSD', pm.FCPSD ?? pm['FCPS Dentistry'] ?? '');
+  setInputValue('customMarksMS', pm.MS ?? '');
+  setInputValue('customMarksMD', pm.MD ?? '');
+  setInputValue('customMarksMDS', pm.MDS ?? '');
+  setInputValue('customSourceId', sourceId || candidate.applicantId || '');
+  window.populateCustomPrefRows?.(candidate.preference || {});
+}
+
+function openCustomModal(sourceId = '') {
   const m = document.getElementById('customModal');
   if (!m) return;
 
+  const lookupId = String(sourceId || '').trim();
+  setInputValue('customLookupId', lookupId);
   const existing = SIM.customCand;
-  if (existing) {
-    document.getElementById('customName').value      = existing.nameFull;
-    document.getElementById('customId').value        = existing.applicantId;
-    document.getElementById('customMarksTotal').value = existing.marksTotal;
-    document.getElementById('customMarksFCPS').value = existing.programMarks?.FCPS ?? '';
-    document.getElementById('customMarksMS').value   = existing.programMarks?.MS  ?? '';
-    document.getElementById('customMarksMD').value   = existing.programMarks?.MD  ?? '';
+  if (lookupId && (!existing || String(existing.applicantId) !== lookupId)) {
+    const found = findDatasetCandidate(lookupId);
+    if (found) {
+      applyCandidateToCustomForm(found, lookupId);
+      showToast(`Loaded ${found.nameFull}. You can edit marks before saving.`, 'info');
+    } else {
+      resetCustomModal();
+      setInputValue('customLookupId', lookupId);
+      setInputValue('customId', lookupId);
+      showToast(`ID ${lookupId} not found. Continue with manual entry.`, 'warning');
+    }
+  } else if (existing) {
+    applyCandidateToCustomForm(existing, existing._sourceApplicantId || existing.applicantId);
+  } else {
+    resetCustomModal();
   }
   m.classList.remove('hidden');
 }
@@ -727,25 +784,42 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('customSaveBtn')?.addEventListener('click', () => {
     const name  = document.getElementById('customName')?.value?.trim() || '(Me)';
     const id    = parseInt(document.getElementById('customId')?.value) || 99999;
-    const total = parseFloat(document.getElementById('customMarksTotal')?.value) || 0;
-    const fcps  = parseFloat(document.getElementById('customMarksFCPS')?.value) || total;
-    const ms    = parseFloat(document.getElementById('customMarksMS')?.value) || total;
-    const md    = parseFloat(document.getElementById('customMarksMD')?.value) || total;
+    const total = readNumberInput('customMarksTotal', 0);
+    const fcps  = readNumberInput('customMarksFCPS', total);
+    const fcpsd = readNumberInput('customMarksFCPSD', fcps);
+    const ms    = readNumberInput('customMarksMS', total);
+    const md    = readNumberInput('customMarksMD', total);
+    const mds   = readNumberInput('customMarksMDS', total);
+    const sourceId = document.getElementById('customSourceId')?.value?.trim();
 
     const prefs = gatherCustomPrefs();
+    const source = findDatasetCandidate(sourceId) || findDatasetCandidate(id);
 
     const cand = {
+      ...(cloneCandidate(source) || {}),
       applicantId:  id,
       nameFull:     name,
       marksTotal:   total,
-      programMarks: { FCPS: fcps, MS: ms, MD: md },
+      programMarks: {
+        ...((source && cloneCandidate(source).programMarks) || {}),
+        FCPS: fcps,
+        FCPSD: fcpsd,
+        'FCPS Dentistry': fcpsd,
+        MS: ms,
+        MD: md,
+        MDS: mds,
+      },
       applied_in:   {
+        ...((source && cloneCandidate(source).applied_in) || {}),
         FCPS: !!prefs.FCPS?.length,
+        'FCPS Dentistry': !!prefs['FCPS Dentistry']?.length,
         MS:   !!prefs.MS?.length,
         MD:   !!prefs.MD?.length,
+        MDS:  !!prefs.MDS?.length,
       },
       preference:   prefs,
       _custom:      true,
+      _sourceApplicantId: sourceId || String(id),
     };
     saveCustomCand(cand);
     SIM.myId = String(id);
@@ -755,6 +829,28 @@ document.addEventListener('DOMContentLoaded', () => {
     applyAndRenderCandidates();
     renderCandStats();
     showToast(`Saved as "${name}" (ID ${id}).`, 'success');
+  });
+
+  document.getElementById('customLoadByIdBtn')?.addEventListener('click', () => {
+    const id = document.getElementById('customLookupId')?.value?.trim();
+    if (!id) {
+      showToast('Enter an Applicant ID to load.', 'warning');
+      return;
+    }
+    const found = findDatasetCandidate(id);
+    if (!found) {
+      showToast(`ID ${id} was not found. You can still fill manually.`, 'warning');
+      setInputValue('customId', id);
+      setInputValue('customSourceId', '');
+      return;
+    }
+    applyCandidateToCustomForm(found, id);
+    showToast(`Loaded ${found.nameFull}. Edit marks or preferences, then save.`, 'success');
+  });
+
+  document.getElementById('customBlankBtn')?.addEventListener('click', () => {
+    resetCustomModal();
+    showToast('Blank manual form ready.', 'info');
   });
 });
 

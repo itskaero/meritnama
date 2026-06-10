@@ -824,6 +824,76 @@
     .whatif-result-row .rank-change.improved { color: #27c98b; }
     .whatif-result-row .rank-change.same { color: var(--text-muted); }
     .whatif-result-row .rank-change.worsened { color: #dc3c3c; }
+    .whatif-toggle {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.74rem; color: var(--text-muted); user-select: none;
+      padding-bottom: 0.55rem;
+    }
+    .whatif-toggle input { accent-color: var(--neon-purple); }
+    .whatif-sim-summary {
+      display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 0.8rem;
+    }
+    .whatif-pill {
+      border: 1px solid var(--border); border-radius: 999px;
+      padding: 0.25rem 0.55rem; font-size: 0.72rem;
+      color: var(--text-muted); background: rgba(255,255,255,0.03);
+    }
+    .whatif-pill.placed {
+      color: #27c98b; border-color: rgba(39,201,139,0.3);
+      background: rgba(39,201,139,0.09);
+    }
+    .whatif-pill.unplaced {
+      color: #e8a627; border-color: rgba(232,166,39,0.32);
+      background: rgba(232,166,39,0.09);
+    }
+    .whatif-program-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,0.025);
+      padding: 0.75rem;
+    }
+    .whatif-program-head {
+      display: flex; justify-content: space-between; gap: 0.75rem;
+      align-items: flex-start; margin-bottom: 0.55rem;
+    }
+    .whatif-program-title { color: var(--text); font-weight: 700; }
+    .whatif-program-sub { color: var(--text-muted); font-size: 0.74rem; margin-top: 0.15rem; }
+    .whatif-track-card {
+      border-top: 1px solid var(--border);
+      padding-top: 0.55rem; margin-top: 0.55rem;
+    }
+    .whatif-track-head {
+      display: flex; justify-content: space-between; gap: 0.75rem;
+      font-size: 0.8rem; margin-bottom: 0.45rem;
+    }
+    .whatif-placement { color: var(--text); font-weight: 600; }
+    .whatif-placement small { display:block; color: var(--text-muted); font-weight: 400; margin-top: 0.12rem; }
+    .whatif-pref-grid {
+      display: grid; grid-template-columns: 42px 1fr 58px 58px 72px 74px;
+      gap: 0.35rem; align-items: center; font-size: 0.73rem;
+    }
+    .whatif-pref-grid.header {
+      color: var(--text-muted); font-size: 0.66rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      padding-bottom: 0.25rem;
+    }
+    .whatif-pref-row {
+      padding: 0.35rem 0; border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .whatif-pref-row.placed { color: #27c98b; }
+    .whatif-pref-row.beaten .whatif-margin { color: #dc3c3c; }
+    .whatif-pref-row.not_attempted { opacity: 0.72; }
+    .whatif-slot-main { color: var(--text); font-weight: 500; }
+    .whatif-slot-sub { color: var(--text-muted); font-size: 0.68rem; margin-top: 0.1rem; }
+    .whatif-num, .whatif-margin { font-variant-numeric: tabular-nums; }
+    .whatif-empty { color: var(--text-muted); font-size: 0.78rem; padding: 0.5rem 0; }
+    @media (max-width: 680px) {
+      .whatif-pref-grid {
+        grid-template-columns: 36px 1fr 52px;
+      }
+      .whatif-pref-grid.header span:nth-child(n+4),
+      .whatif-pref-row > span:nth-child(n+4) { display: none; }
+    }
 
     /* ══════════════════════════════════════════════════
        VOLATILITY INDEX
@@ -1314,15 +1384,18 @@
     <div class="whatif-card">
       <h4>🧪 What-If Sandbox</h4>
       <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem;">
-        Add extra marks to your current total to see how it shifts your rank across preferred slots.
-        For example, enter 2 to see what happens if you scored 2 marks higher.
+        Run the same seat-allocation simulation used on the Induction Portal page, with optional marks added to your Applicant ID record.
       </p>
       <div class="whatif-controls">
         <div class="whatif-field">
           <label for="whatifExtraMarks">Extra Marks (added to your total)</label>
           <input type="number" id="whatifExtraMarks" min="-5" max="10" step="0.5" value="0" />
         </div>
-        <button class="whatif-run-btn" id="whatifRunBtn">▶ Simulate</button>
+        <label class="whatif-toggle">
+          <input type="checkbox" id="whatifParentBonus" />
+          Parent institute bonus
+        </label>
+        <button class="whatif-run-btn" id="whatifRunBtn">▶ Run Allocation</button>
       </div>
       <div class="whatif-results" id="whatifResults"></div>
     </div>
@@ -2547,38 +2620,37 @@ async function loadDashboard(cand) {
     }
   }
 
-  if (!scored.length) return;
-
-  // Show top 3 chances
+  card.style.display = '';
   scored.sort((a, b) => b.prob - a.prob);
   const top3 = scored.slice(0, 3);
-
-  card.style.display = '';
-  const chancesHtml = top3.map(s => `
-    <div class="dash-chance-card">
-      <div class="dash-chance-info">
-        <div class="dash-chance-slot">${esc(s.pref.specialityName)}</div>
-        <div class="dash-chance-sub">${esc(s.pref.hospitalName)} · ${esc(s.prog)}</div>
-      </div>
-      <div class="dash-chance-prob ${getProbClass(s.prob)}">${s.prob}%</div>
-    </div>`).join('');
+  const chancesHtml = top3.length
+    ? top3.map(s => `
+      <div class="dash-chance-card">
+        <div class="dash-chance-info">
+          <div class="dash-chance-slot">${esc(s.pref.specialityName)}</div>
+          <div class="dash-chance-sub">${esc(s.pref.hospitalName)} · ${esc(s.prog)}</div>
+        </div>
+        <div class="dash-chance-prob ${getProbClass(s.prob)}">${s.prob}%</div>
+      </div>`).join('')
+    : '<p style="color:var(--text-muted);font-size:0.78rem">Historical probability data is unavailable for your preferences, but allocation simulation is still available below.</p>';
 
   document.getElementById('dashTopChances').innerHTML = `
     <div class="dash-top-chances">${chancesHtml}</div>
     <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.75rem;">
-      Probabilities are based on historical cutoff volatility and your current percentile position.
+      ${top3.length ? 'Probabilities are based on historical cutoff volatility and your current percentile position.' : 'Seat allocation uses current candidate preferences and seat counts.'}
     </p>`;
 
   // Load What-If, Volatility, and Optimizer
   loadWhatIf(cand, scored, lookup, candidatesMap);
   loadVolatilityIndex(cand, allPrefs, lookup);
-  loadPreferenceOptimizer(scored);
+  if (scored.length) loadPreferenceOptimizer(scored);
 }
 
 // ══ What-If Sandbox ═══════════════════════════════════════
 function loadWhatIf(cand, scored, lookup, candidatesMap) {
   const card = document.getElementById('whatifCard');
-  if (!card || !scored.length) return;
+  if (!card || !cand) return;
+  if (!Object.values(cand.preference || {}).some(prefs => Array.isArray(prefs) && prefs.length)) return;
   card.style.display = '';
 
   const btn = document.getElementById('whatifRunBtn');
@@ -2586,43 +2658,395 @@ function loadWhatIf(cand, scored, lookup, candidatesMap) {
   const newBtn = btn.cloneNode(true);
   btn.parentNode.replaceChild(newBtn, btn);
 
-  newBtn.addEventListener('click', () => {
+  newBtn.addEventListener('click', async () => {
     const totalExtra = parseFloat(document.getElementById('whatifExtraMarks').value) || 0;
-
-    if (totalExtra === 0) {
-      document.getElementById('whatifResults').innerHTML =
-        '<p style="font-size:0.78rem;color:var(--text-muted)">Enter a non-zero value above to see impact.</p>';
-      return;
+    const parentBonus = !!document.getElementById('whatifParentBonus')?.checked;
+    const out = document.getElementById('whatifResults');
+    if (out) out.innerHTML = '<p class="whatif-empty">Running allocation simulation...</p>';
+    newBtn.disabled = true;
+    newBtn.textContent = 'Running...';
+    try {
+      const seats = await fetchProfileSeats();
+      const report = runProfileWhatIfAllocation(cand, candidatesMap, totalExtra, parentBonus, seats);
+      renderProfileWhatIfAllocation(report, totalExtra, parentBonus, !!seats);
+    } catch (e) {
+      console.warn('Profile What-If allocation failed:', e);
+      if (out) out.innerHTML = '<p class="whatif-empty">Could not run allocation simulation. Please try again.</p>';
+    } finally {
+      newBtn.disabled = false;
+      newBtn.textContent = '▶ Run Allocation';
     }
-
-    // Simulate: extra marks increase the candidate's effective total
-    // Re-compute percentile with boosted marks
-    const resultsHtml = scored.slice(0, 8).map(s => {
-      const prog = s.prog;
-      const myOrigTotal = calcEffectiveMarks(cand, prog);
-      const myBoostedTotal = myOrigTotal + totalExtra;
-
-      // Count how many in pool are below boosted total
-      const pool = Object.values(candidatesMap).filter(c => c.applied_in?.[prog]);
-      const belowBoosted = pool.filter(c => {
-        return calcEffectiveMarks(c, prog) < myBoostedTotal;
-      }).length;
-      const newPctile = pool.length ? Math.round((belowBoosted / pool.length) * 100) : s.myPctile;
-
-      const newProb = computePlacementProbability(newPctile, s.slot);
-      const diff = (newProb ?? 0) - s.prob;
-      const diffClass = diff > 0 ? 'improved' : diff < 0 ? 'worsened' : 'same';
-      const diffStr = diff > 0 ? `+${diff}%` : diff < 0 ? `${diff}%` : '—';
-
-      return `
-        <div class="whatif-result-row">
-          <span class="slot-name">${esc(s.pref.specialityName)} · ${esc(s.pref.hospitalName)}</span>
-          <span class="rank-change ${diffClass}">${(newProb ?? 0)}% (${diffStr})</span>
-        </div>`;
-    }).join('');
-
-    document.getElementById('whatifResults').innerHTML = resultsHtml;
   });
+}
+
+const PF_QUOTA_TRACKS = { ARMED: 'armed', CIVILIAN: 'civilian' };
+const PF_CIVILIAN_QUOTA_KEYS = new Set([
+  'kpk sindh balochistan', 'punjab', 'disable', 'foreign', 'foriegn',
+  'ajk gb ict', 'ajk g b ict', 'dental', 'placement',
+]);
+let _profileSeatsCache = undefined;
+
+function clonePlain(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function candidateListFromData(data) {
+  return Array.isArray(data) ? data : Object.values(data || {});
+}
+
+async function fetchProfileSeats() {
+  if (_profileSeatsCache !== undefined) return _profileSeatsCache;
+  try {
+    const res = await fetch('data/induction21_seats.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    _profileSeatsCache = await res.json();
+  } catch (_) {
+    _profileSeatsCache = null;
+  }
+  return _profileSeatsCache;
+}
+
+function normalizeProfileQuotaName(quotaName) {
+  return String(quotaName || '')
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\band\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function profileQuotaTrack(quotaName) {
+  const q = normalizeProfileQuotaName(quotaName);
+  if (q.includes('armed force')) return PF_QUOTA_TRACKS.ARMED;
+  return PF_CIVILIAN_QUOTA_KEYS.has(q) ? PF_QUOTA_TRACKS.CIVILIAN : PF_QUOTA_TRACKS.CIVILIAN;
+}
+
+function profileQuotaTrackLabel(track) {
+  return track === PF_QUOTA_TRACKS.ARMED ? 'Armed' : 'Civilian';
+}
+
+function profileTrackSort(track) {
+  return track === PF_QUOTA_TRACKS.CIVILIAN ? 0 : 1;
+}
+
+function profileProgramBonus(cand, program) {
+  const pm = cand.programMarks || {};
+  if (program === 'FCPS Dentistry') return Number(pm['FCPS Dentistry'] ?? pm.FCPSD ?? 0) || 0;
+  return Number(pm[program] ?? 0) || 0;
+}
+
+function profileEffectiveMark(cand, program) {
+  const appliedIn = cand.applied_in || {};
+  const hasExplicitFlag = Object.prototype.hasOwnProperty.call(appliedIn, program);
+  const hasProgramPrefs = (cand.preference?.[program] || []).length > 0;
+  if (!appliedIn[program] && (hasExplicitFlag || !hasProgramPrefs)) return null;
+  return (Number(cand.marksTotal) || 0) + profileProgramBonus(cand, program);
+}
+
+function profileApplicantPrograms(cand) {
+  const prefPrograms = Object.keys(cand.preference || {})
+    .filter(p => (cand.preference?.[p] || []).length);
+  const appliedPrograms = Object.entries(cand.applied_in || {})
+    .filter(([, v]) => !!v)
+    .map(([p]) => p);
+  const programs = new Set([...prefPrograms, ...appliedPrograms]);
+  const order = ['FCPS', 'FCPS Dentistry', 'MS', 'MD', 'MDS'];
+  return [...programs].filter(p => profileEffectiveMark(cand, p) != null || prefPrograms.includes(p))
+    .sort((a, b) => {
+      const ia = order.indexOf(a);
+      const ib = order.indexOf(b);
+      if (ia !== -1 || ib !== -1) return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+      return a.localeCompare(b);
+    });
+}
+
+function buildProfileSeatTree(program, candidates, seatsRaw) {
+  if (seatsRaw) {
+    const nested = Array.isArray(seatsRaw)
+      ? seatsRaw.reduce((acc, row) => {
+          const prog = row.typeName;
+          const quota = row.quotaName;
+          const spec = row.specialityName;
+          const hosp = row.hospitalName;
+          acc[prog] ??= {};
+          acc[prog][quota] ??= {};
+          acc[prog][quota][spec] ??= {};
+          acc[prog][quota][spec][hosp] = row.seats;
+          return acc;
+        }, {})
+      : seatsRaw;
+    if (nested?.[program]) {
+      const tree = {};
+      for (const [q, specs] of Object.entries(nested[program])) {
+        tree[q] = {};
+        for (const [s, hosps] of Object.entries(specs)) {
+          tree[q][s] = {};
+          for (const [h, n] of Object.entries(hosps)) {
+            tree[q][s][h] = { jobs: Number(n) || 0, candidates: [], others: [] };
+          }
+        }
+      }
+      return tree;
+    }
+  }
+
+  const tree = {};
+  candidates.forEach(c => {
+    (c.preference?.[program] || []).forEach(p => {
+      tree[p.quotaName] ??= {};
+      tree[p.quotaName][p.specialityName] ??= {};
+      tree[p.quotaName][p.specialityName][p.hospitalName] ??= { jobs: 1, candidates: [], others: [] };
+    });
+  });
+  return tree;
+}
+
+function profileTrackPrefs(candidate, program, track) {
+  return (candidate.preference?.[program] || [])
+    .filter(p => profileQuotaTrack(p.quotaName) === track)
+    .slice()
+    .sort((a, b) => (a.preferenceNo || 0) - (b.preferenceNo || 0));
+}
+
+function runProfilePlacement(candidates, seatTree, program, parentBonus) {
+  const work = candidates.flatMap(c => {
+    const marksTotal = profileEffectiveMark(c, program);
+    if (marksTotal == null) return [];
+    return [PF_QUOTA_TRACKS.CIVILIAN, PF_QUOTA_TRACKS.ARMED]
+      .map(track => ({
+        applicantId: c.applicantId,
+        nameFull: c.nameFull,
+        marksTotal,
+        _track: track,
+        _trackLabel: profileQuotaTrackLabel(track),
+        _prefs: profileTrackPrefs(c, program, track),
+        placed: false,
+        _q: null,
+        _s: null,
+        _h: null,
+      }))
+      .filter(cw => cw._prefs.length);
+  });
+
+  const slot = (q, s, h) => seatTree?.[q]?.[s]?.[h];
+  const effM = (cw, pref) => cw.marksTotal + (parentBonus ? (Number(pref.marks) || 0) : 0);
+  const entry = (cw, pref) => ({
+    applicantId: cw.applicantId,
+    nameFull: cw.nameFull,
+    marksTotal: effM(cw, pref),
+    preferenceNo: pref.preferenceNo,
+    _track: cw._track,
+    _trackLabel: cw._trackLabel,
+  });
+
+  let prevPlaced = -1;
+  for (let pass = 0; pass < 200; pass++) {
+    const unplaced = work.filter(c => !c.placed).sort((a, b) => b.marksTotal - a.marksTotal);
+    if (!unplaced.length) break;
+    for (const cw of unplaced) {
+      for (const pref of cw._prefs) {
+        const sl = slot(pref.quotaName, pref.specialityName, pref.hospitalName);
+        if (!sl || sl.jobs <= 0) continue;
+        const em = effM(cw, pref);
+        if (sl.candidates.length < sl.jobs) {
+          sl.candidates.push(entry(cw, pref));
+          cw.placed = true; cw._q = pref.quotaName; cw._s = pref.specialityName; cw._h = pref.hospitalName;
+          break;
+        }
+        const lowest = sl.candidates.reduce((m, x) => x.marksTotal < m.marksTotal ? x : m);
+        if (em > lowest.marksTotal) {
+          sl.candidates = sl.candidates.filter(x => !(String(x.applicantId) === String(lowest.applicantId) && x._track === lowest._track));
+          const evicted = work.find(x => String(x.applicantId) === String(lowest.applicantId) && x._track === lowest._track);
+          if (evicted) {
+            evicted.placed = false; evicted._q = evicted._s = evicted._h = null;
+          }
+          sl.candidates.push(entry(cw, pref));
+          cw.placed = true; cw._q = pref.quotaName; cw._s = pref.specialityName; cw._h = pref.hospitalName;
+          break;
+        }
+      }
+    }
+    const totalPlaced = work.filter(c => c.placed).length;
+    if (totalPlaced === prevPlaced) break;
+    prevPlaced = totalPlaced;
+  }
+
+  for (const specs of Object.values(seatTree)) {
+    for (const hosps of Object.values(specs)) {
+      for (const sl of Object.values(hosps)) {
+        sl.candidates.sort((a, b) => b.marksTotal - a.marksTotal);
+      }
+    }
+  }
+  return { seatTree, candidates: work };
+}
+
+function sameProfileSlot(pref, quota, spec, hosp) {
+  return pref.quotaName === quota && pref.specialityName === spec && pref.hospitalName === hosp;
+}
+
+function buildProfilePreferenceRows(workCand, seatTree, parentBonus) {
+  const placedPref = workCand.placed
+    ? workCand._prefs.find(p => sameProfileSlot(p, workCand._q, workCand._s, workCand._h))
+    : null;
+  const placedPrefNo = placedPref?.preferenceNo ?? Infinity;
+  return workCand._prefs.map(pref => {
+    const sl = seatTree?.[pref.quotaName]?.[pref.specialityName]?.[pref.hospitalName] || null;
+    const score = workCand.marksTotal + (parentBonus ? (Number(pref.marks) || 0) : 0);
+    const cutoff = sl?.candidates?.length ? Math.min(...sl.candidates.map(c => c.marksTotal)) : null;
+    const isPlacedHere = workCand.placed && sameProfileSlot(pref, workCand._q, workCand._s, workCand._h);
+    let status = 'beaten';
+    if (!sl) status = 'no_slot';
+    else if (isPlacedHere) status = 'placed';
+    else if (pref.preferenceNo > placedPrefNo) status = 'not_attempted';
+    else if (cutoff == null) status = 'no_cutoff';
+    return {
+      pref,
+      status,
+      score,
+      cutoff,
+      delta: cutoff == null ? null : score - cutoff,
+      seats: sl?.jobs ?? null,
+      filled: sl?.candidates?.length ?? 0,
+    };
+  });
+}
+
+function runProfileWhatIfAllocation(cand, candidatesMap, extraMarks, parentBonus, seatsRaw) {
+  const id = String(cand.applicantId);
+  const modified = clonePlain(cand);
+  modified.marksTotal = (Number(modified.marksTotal) || 0) + extraMarks;
+
+  const pool = candidateListFromData(candidatesMap)
+    .filter(c => String(c.applicantId) !== id)
+    .map(clonePlain);
+  pool.push(modified);
+
+  const programs = profileApplicantPrograms(modified);
+  const results = programs.map(program => {
+    const programPool = pool.filter(c => profileEffectiveMark(c, program) != null);
+    const seatTree = buildProfileSeatTree(program, programPool, seatsRaw);
+    const result = runProfilePlacement(programPool, seatTree, program, parentBonus);
+    const tracks = result.candidates
+      .filter(c => String(c.applicantId) === id)
+      .sort((a, b) => profileTrackSort(a._track) - profileTrackSort(b._track))
+      .map(workCand => ({
+        trackLabel: workCand._trackLabel,
+        workCand,
+        history: buildProfilePreferenceRows(workCand, result.seatTree, parentBonus),
+      }));
+    return { program, result, tracks };
+  });
+
+  return { cand: modified, results };
+}
+
+function profileFmtMarks(value) {
+  if (value == null || value === '') return '—';
+  const n = Number(value);
+  return Number.isFinite(n) ? n.toFixed(2) : '—';
+}
+
+function profileShortHospital(name) {
+  return String(name || '').split(',')[0].trim();
+}
+
+function profileWhatIfStatusLabel(status) {
+  if (status === 'placed') return 'Placed';
+  if (status === 'beaten') return 'Short';
+  if (status === 'not_attempted') return 'Skipped';
+  if (status === 'no_cutoff') return 'No cutoff';
+  return 'No seats';
+}
+
+function profileWhatIfMargin(delta, status) {
+  if (delta == null) return '—';
+  if (status === 'not_attempted') {
+    return delta >= 0 ? `Would +${profileFmtMarks(delta)}` : `Would short ${profileFmtMarks(Math.abs(delta))}`;
+  }
+  if (status === 'beaten' && delta < 0) return `-${profileFmtMarks(Math.abs(delta))}`;
+  return `${delta >= 0 ? '+' : '-'}${profileFmtMarks(Math.abs(delta))}`;
+}
+
+function renderProfileWhatIfAllocation(report, extraMarks, parentBonus, hasSeats) {
+  const out = document.getElementById('whatifResults');
+  if (!out) return;
+  const validResults = report.results.filter(r => r.tracks.length);
+  const tracks = validResults.flatMap(r => r.tracks);
+  const placedCount = tracks.filter(t => t.workCand.placed).length;
+  const trackCount = tracks.length;
+
+  out.innerHTML = `
+    <div class="whatif-sim-summary">
+      <span class="whatif-pill ${placedCount ? 'placed' : 'unplaced'}">${placedCount}/${trackCount || 0} tracks placed</span>
+      <span class="whatif-pill">Total marks: ${profileFmtMarks(report.cand.marksTotal)}</span>
+      <span class="whatif-pill">${extraMarks >= 0 ? '+' : ''}${profileFmtMarks(extraMarks)} marks scenario</span>
+      <span class="whatif-pill">${parentBonus ? 'Parent bonus on' : 'Parent bonus off'}</span>
+      <span class="whatif-pill">${hasSeats ? 'Seat data loaded' : 'Fallback seats'}</span>
+    </div>
+    ${validResults.length ? validResults.map(renderProfileWhatIfProgram).join('') : '<p class="whatif-empty">No runnable preferences were found for your Applicant ID.</p>'}
+  `;
+}
+
+function renderProfileWhatIfProgram(programResult) {
+  const placedCount = programResult.tracks.filter(t => t.workCand.placed).length;
+  return `
+    <div class="whatif-program-card">
+      <div class="whatif-program-head">
+        <div>
+          <div class="whatif-program-title">${esc(programResult.program)}</div>
+          <div class="whatif-program-sub">${placedCount ? 'Projected placement found' : 'No placement in this programme'}</div>
+        </div>
+        <span class="whatif-pill ${placedCount ? 'placed' : 'unplaced'}">${placedCount ? `${placedCount} placed` : 'Unplaced'}</span>
+      </div>
+      ${programResult.tracks.map(renderProfileWhatIfTrack).join('')}
+    </div>`;
+}
+
+function renderProfileWhatIfTrack(track) {
+  const placed = track.workCand.placed;
+  const placedRow = track.history.find(r => r.status === 'placed');
+  const bestMiss = track.history
+    .filter(r => r.status === 'beaten' && r.delta != null)
+    .sort((a, b) => Math.abs(a.delta) - Math.abs(b.delta))[0];
+  const headline = placed && placedRow
+    ? `Preference #${placedRow.pref.preferenceNo}: ${placedRow.pref.specialityName}`
+    : bestMiss
+      ? `Closest shortfall: ${profileFmtMarks(Math.max(0, -bestMiss.delta))} marks`
+      : 'Not placed in recorded preferences';
+  const sub = placed && placedRow
+    ? `${placedRow.pref.hospitalName} · ${placedRow.pref.quotaName}`
+    : `${track.history.length} preferences checked`;
+
+  return `
+    <div class="whatif-track-card">
+      <div class="whatif-track-head">
+        <div class="whatif-placement">${esc(track.trackLabel)}: ${esc(headline)}<small>${esc(sub)}</small></div>
+        <span class="whatif-pill ${placed ? 'placed' : 'unplaced'}">${placed ? 'Placed' : 'Unplaced'}</span>
+      </div>
+      <div class="whatif-pref-grid header">
+        <span>Pref</span><span>Slot</span><span>Score</span><span>Cutoff</span><span>Margin</span><span>Status</span>
+      </div>
+      ${track.history.slice(0, 18).map(renderProfileWhatIfPrefRow).join('')}
+      ${track.history.length > 18 ? `<p class="whatif-empty">Showing first 18 of ${track.history.length} preferences.</p>` : ''}
+    </div>`;
+}
+
+function renderProfileWhatIfPrefRow(row) {
+  return `
+    <div class="whatif-pref-grid whatif-pref-row ${esc(row.status)}">
+      <span>#${esc(row.pref.preferenceNo)}</span>
+      <div>
+        <div class="whatif-slot-main">${esc(row.pref.specialityName)}</div>
+        <div class="whatif-slot-sub">${esc(profileShortHospital(row.pref.hospitalName))} · ${esc(row.pref.quotaName)}${row.seats != null ? ` · ${row.filled}/${row.seats} seats` : ''}</div>
+      </div>
+      <span class="whatif-num">${profileFmtMarks(row.score)}</span>
+      <span class="whatif-num">${profileFmtMarks(row.cutoff)}</span>
+      <span class="whatif-margin">${esc(profileWhatIfMargin(row.delta, row.status))}</span>
+      <span>${esc(profileWhatIfStatusLabel(row.status))}</span>
+    </div>`;
 }
 
 // ══ Trend Volatility Index ════════════════════════════════

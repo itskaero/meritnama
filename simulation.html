@@ -3033,8 +3033,21 @@
   <div class="modal-overlay" id="customModalOverlay"></div>
   <div class="custom-modal-box">
     <button class="modal-close" id="customModalClose" title="Close">&times;</button>
-    <h3>Add Yourself Manually</h3>
-    <p>If your data is not in the dataset, enter your marks and preferences here. Saved to your browser only &mdash; not sent anywhere.</p>
+    <h3>Add or Edit Yourself</h3>
+    <p>Start from an Applicant ID to pull marks and preferences, or leave it blank and enter everything manually. Saved to your browser only &mdash; not sent anywhere.</p>
+
+    <div class="app-sim-tool" style="margin:10px 0 14px">
+      <div class="app-sim-tool-head">
+        <span class="app-sim-tool-title">Load from Applicant ID</span>
+        <span class="app-sim-tool-hint">Imported records stay editable before saving.</span>
+      </div>
+      <div class="app-sim-row">
+        <input type="number" id="customLookupId" class="mt-filter-input" placeholder="Applicant ID&hellip;" />
+        <button id="customLoadByIdBtn" class="btn btn-sm" type="button">Load record</button>
+        <button id="customBlankBtn" class="btn btn-sm" type="button">Blank manual form</button>
+      </div>
+    </div>
+    <input type="hidden" id="customSourceId" />
 
     <div class="input-grid" style="margin-bottom:14px">
       <div class="form-group">
@@ -3057,12 +3070,20 @@
         <input type="number" id="customMarksFCPS" class="mt-filter-input" step="0.01" placeholder="Leave blank = total" />
       </div>
       <div class="form-group">
+        <label for="customMarksFCPSD">FCPS Dentistry marks</label>
+        <input type="number" id="customMarksFCPSD" class="mt-filter-input" step="0.01" placeholder="Leave blank = FCPS" />
+      </div>
+      <div class="form-group">
         <label for="customMarksMS">MS marks</label>
         <input type="number" id="customMarksMS" class="mt-filter-input" step="0.01" placeholder="Leave blank = total" />
       </div>
       <div class="form-group">
         <label for="customMarksMD">MD marks</label>
         <input type="number" id="customMarksMD" class="mt-filter-input" step="0.01" placeholder="Leave blank = total" />
+      </div>
+      <div class="form-group">
+        <label for="customMarksMDS">MDS marks</label>
+        <input type="number" id="customMarksMDS" class="mt-filter-input" step="0.01" placeholder="Leave blank = total" />
       </div>
     </div>
 
@@ -3240,38 +3261,57 @@
     document.getElementById('appSimModal')?.classList.add('hidden'));
 
   let _prefCount = 0;
-  const PROGS_LIST = ['FCPS', 'MS', 'MD'];
+  const PROGS_LIST = ['FCPS', 'FCPS Dentistry', 'MS', 'MD', 'MDS'];
 
-  document.getElementById('addCustomPrefBtn')?.addEventListener('click', () => {
-    _prefCount++;
+  window.clearCustomPrefRows = function () {
+    const container = document.getElementById('customPrefsContainer');
+    if (container) container.innerHTML = '';
+    _prefCount = 0;
+  };
+
+  window.addCustomPrefRow = function (pref = {}) {
+    const container = document.getElementById('customPrefsContainer');
+    if (!container) return null;
+    const prefNo = parseInt(pref.preferenceNo, 10) || (_prefCount + 1);
+    _prefCount = Math.max(_prefCount + 1, prefNo);
+    const prog = pref.typeName || pref.program || 'FCPS';
+    const programs = PROGS_LIST.includes(prog) ? PROGS_LIST : [...PROGS_LIST, prog];
     const row = document.createElement('div');
     row.className = 'custom-pref-row';
-    row.style.cssText = 'display:grid;grid-template-columns:60px 80px 1fr 1fr auto;gap:6px;margin-bottom:6px;align-items:center;font-size:0.8rem';
+    row.style.cssText = 'display:grid;grid-template-columns:50px 76px 1fr 1fr;gap:6px;margin-bottom:6px;align-items:center;font-size:0.8rem';
     row.innerHTML = `
-      <input type="number" class="mt-filter-input cp-no" placeholder="#" value="${_prefCount}" min="1" />
-      <select class="mt-filter-sel cp-prog">
-        ${PROGS_LIST.map(p => `<option value="${p}">${p}</option>`).join('')}
-      </select>
-      <input type="text" class="mt-filter-input cp-quota" placeholder="Quota (e.g. Punjab)" />
-      <input type="text" class="mt-filter-input cp-spec" placeholder="Specialty" />
-      <input type="text" class="mt-filter-input cp-hosp" placeholder="Hospital" style="grid-column:span 1" />
-    `;
-    // Make it span full width for hospital
-    row.style.gridTemplateColumns = '50px 76px 1fr 1fr';
-    row.innerHTML = `
-      <input type="number" class="mt-filter-input cp-no" placeholder="#" value="${_prefCount}" min="1" style="width:100%" />
+      <input type="number" class="mt-filter-input cp-no" placeholder="#" min="1" style="width:100%" />
       <select class="mt-filter-sel cp-prog" style="width:100%">
-        ${PROGS_LIST.map(p => `<option value="${p}">${p}</option>`).join('')}
+        ${programs.map(p => `<option value="${p}">${p}</option>`).join('')}
       </select>
       <input type="text" class="mt-filter-input cp-quota" placeholder="Quota" style="width:100%" />
       <input type="text" class="mt-filter-input cp-spec" placeholder="Specialty" style="width:100%" />
       <div style="grid-column:1/-1;display:flex;gap:6px">
         <input type="text" class="mt-filter-input cp-hosp" placeholder="Hospital" style="flex:1" />
-        <button class="btn btn-sm" onclick="this.closest('.custom-pref-row').remove()" title="Remove">&times;</button>
+        <button class="btn btn-sm cp-remove" type="button" title="Remove">&times;</button>
       </div>
     `;
-    document.getElementById('customPrefsContainer')?.appendChild(row);
-  });
+    row.querySelector('.cp-no').value = prefNo;
+    row.querySelector('.cp-prog').value = prog;
+    row.querySelector('.cp-quota').value = pref.quotaName || '';
+    row.querySelector('.cp-spec').value = pref.specialityName || '';
+    row.querySelector('.cp-hosp').value = pref.hospitalName || '';
+    row.querySelector('.cp-remove')?.addEventListener('click', () => row.remove());
+    container.appendChild(row);
+    return row;
+  };
+
+  window.populateCustomPrefRows = function (preference = {}) {
+    window.clearCustomPrefRows();
+    const rows = [];
+    Object.entries(preference || {}).forEach(([prog, prefs]) => {
+      (Array.isArray(prefs) ? prefs : []).forEach(pref => rows.push({ ...pref, typeName: pref.typeName || prog }));
+    });
+    rows.sort((a, b) => String(a.typeName || '').localeCompare(String(b.typeName || '')) || (a.preferenceNo || 0) - (b.preferenceNo || 0));
+    rows.forEach(pref => window.addCustomPrefRow(pref));
+  };
+
+  document.getElementById('addCustomPrefBtn')?.addEventListener('click', () => window.addCustomPrefRow());
 </script>
 
 
