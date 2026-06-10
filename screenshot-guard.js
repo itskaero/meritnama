@@ -3,7 +3,9 @@
 (function () {
   const SESSION_KEY = 'meritnama_auth_session';
   const LOG_COLLECTION = 'screenshot_logs';
+  const ACTIVITY_COLLECTION = 'user_activity_logs';
   const LOG_THROTTLE_MS = 3000;
+  const ACTIVITY_HEARTBEAT_MS = 30 * 1000;
   const PAGE = window.location.pathname || '/';
 
   if (PAGE.endsWith('/admin.html') || PAGE.endsWith('admin.html')) return;
@@ -14,12 +16,11 @@
     lastLogAt: {},
     shieldTimer: null,
     blurTimer: null,
-    watermarkLabel: '',
-    traceLabel: '',
-    traceTimer: null,
     warningUnsubscribe: null,
     warningEmail: '',
     warnings: [],
+    lastActivitySignature: '',
+    lastActivityAt: 0,
   };
 
   function getSessionEmail() {
@@ -92,64 +93,14 @@
       body.mn-privacy-shielded #mnPrivacyShield {
         display: flex;
       }
-      body.mn-privacy-shielded > *:not(#mnPrivacyShield):not(#mnPrivacyWatermark):not(script):not(style) {
+      body.mn-privacy-shielded > *:not(#mnPrivacyShield):not(script):not(style) {
         filter: blur(20px) brightness(0.25) !important;
-      }
-      #mnPrivacyWatermark {
-        position: fixed;
-        left: max(0.7rem, env(safe-area-inset-left));
-        bottom: max(0.7rem, env(safe-area-inset-bottom));
-        z-index: 2147483000;
-        display: none;
-        max-width: min(340px, calc(100vw - 1.4rem));
-        padding: 0.38rem 0.62rem;
-        pointer-events: none;
-        color: rgba(219, 234, 254, 0.78);
-        background: rgba(5, 10, 22, 0.54);
-        border: 1px solid rgba(77, 184, 217, 0.22);
-        border-radius: 999px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-      }
-      #mnPrivacyWatermark span {
-        display: block;
-        overflow: hidden;
-        font: 600 11px/1.35 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        letter-spacing: 0.03em;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      body.mn-watermark-enabled #mnPrivacyWatermark {
-        display: block;
-      }
-      .mn-modal-trace-host {
-        position: relative;
-      }
-      .mn-modal-trace-host::after {
-        content: attr(data-mn-trace);
-        position: absolute;
-        right: 0.55rem;
-        bottom: 0.35rem;
-        z-index: 2;
-        max-width: 170px;
-        overflow: hidden;
-        pointer-events: none;
-        color: rgba(219, 234, 254, 0.11);
-        font: 700 9px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        letter-spacing: 0.06em;
-        text-overflow: ellipsis;
-        text-transform: uppercase;
-        white-space: nowrap;
-      }
-      body.mn-trace-emphasis .mn-modal-trace-host::after {
-        color: rgba(219, 234, 254, 0.25);
       }
       #mnWarningInboxBtn {
         position: fixed;
         right: max(0.85rem, env(safe-area-inset-right));
         bottom: max(0.85rem, env(safe-area-inset-bottom));
-        z-index: 2147482998;
+        z-index: 3500;
         display: none;
         align-items: center;
         gap: 0.4rem;
@@ -180,7 +131,7 @@
         position: fixed;
         right: max(0.85rem, env(safe-area-inset-right));
         bottom: calc(max(0.85rem, env(safe-area-inset-bottom)) + 3.2rem);
-        z-index: 2147482998;
+        z-index: 3500;
         display: none;
         width: min(380px, calc(100vw - 1.7rem));
         max-height: min(520px, calc(100vh - 5rem));
@@ -265,6 +216,37 @@
         font-size: 0.68rem;
         padding: 0.18rem 0.5rem;
       }
+      .mn-warning-reply {
+        margin-top: 0.65rem;
+        display: grid;
+        gap: 0.45rem;
+      }
+      .mn-warning-reply textarea {
+        width: 100%;
+        min-height: 58px;
+        resize: vertical;
+        padding: 0.5rem 0.6rem;
+        border: 1px solid rgba(77, 184, 217, 0.18);
+        border-radius: 10px;
+        color: #dbeafe;
+        background: rgba(255, 255, 255, 0.045);
+        font: 0.78rem/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      .mn-warning-reply button {
+        justify-self: end;
+        border: 1px solid rgba(62, 207, 142, 0.28);
+        border-radius: 999px;
+        color: #3ecf8e;
+        background: rgba(62, 207, 142, 0.08);
+        cursor: pointer;
+        font-size: 0.7rem;
+        padding: 0.28rem 0.7rem;
+      }
+      .mn-warning-replies {
+        margin-top: 0.55rem;
+        color: #9fb1cb;
+        font-size: 0.7rem;
+      }
       @media print {
         body * {
           visibility: hidden !important;
@@ -303,34 +285,6 @@
     return shield;
   }
 
-  function ensureWatermark() {
-    let watermark = document.getElementById('mnPrivacyWatermark');
-    if (watermark) return watermark;
-    watermark = document.createElement('div');
-    watermark.id = 'mnPrivacyWatermark';
-    watermark.setAttribute('aria-hidden', 'true');
-    watermark.innerHTML = '<span></span>';
-    document.body.appendChild(watermark);
-    return watermark;
-  }
-
-  function refreshWatermark() {
-    const email = getSessionEmail();
-    const traceId = email ? makeTraceId(email) : '';
-    const label = email ? `Private session: ${email}` : '';
-    const traceLabel = email && traceId ? makeTraceLabel(email, traceId) : '';
-    if (label === state.watermarkLabel) return;
-    state.watermarkLabel = label;
-    state.traceLabel = traceLabel;
-
-    const watermark = ensureWatermark();
-    const text = watermark.querySelector('span');
-    if (text) text.textContent = label;
-
-    tagModalTrace(traceLabel);
-    document.body.classList.toggle('mn-watermark-enabled', !!label);
-  }
-
   function makeTraceId(email) {
     let hash = 2166136261;
     for (let i = 0; i < email.length; i++) {
@@ -338,39 +292,6 @@
       hash = Math.imul(hash, 16777619);
     }
     return (hash >>> 0).toString(36).toUpperCase().padStart(7, '0').slice(0, 7);
-  }
-
-  function makeTraceLabel(email, traceId) {
-    const name = String(email || '').split('@')[0].replace(/[^a-z0-9._-]/gi, '').slice(0, 18);
-    return `${name || 'user'} MN-${traceId}`;
-  }
-
-  function tagModalTrace(traceLabel) {
-    document.querySelectorAll('.mn-modal-trace-host').forEach(function (el) {
-      if (!traceLabel) {
-        el.classList.remove('mn-modal-trace-host');
-        el.removeAttribute('data-mn-trace');
-      } else {
-        el.setAttribute('data-mn-trace', traceLabel);
-      }
-    });
-    if (!traceLabel) return;
-
-    const modal = getVisibleModalElement();
-    if (!modal) return;
-    const host = modal.querySelector('.modal-card, .auth-card, .mentor-modal-card, .cand-modal-sheet, .profile-modal-card')
-      || modal;
-    if (host.id === 'mnPrivacyShield' || host.id === 'mnPrivacyWatermark') return;
-    host.classList.add('mn-modal-trace-host');
-    host.setAttribute('data-mn-trace', traceLabel);
-  }
-
-  function emphasizeTrace() {
-    document.body.classList.add('mn-trace-emphasis');
-    clearTimeout(state.traceTimer);
-    state.traceTimer = setTimeout(function () {
-      document.body.classList.remove('mn-trace-emphasis');
-    }, 2200);
   }
 
   function isVisible(el) {
@@ -474,13 +395,81 @@
     };
   }
 
+  function activitySignature(context) {
+    return [
+      PAGE,
+      window.location.search || '',
+      context.activeTab || '',
+      context.modalId || '',
+      context.modalTitle || '',
+      context.applicantId || '',
+      context.hash || '',
+    ].join('|');
+  }
+
+  function pageLabelFromContext(context) {
+    const parts = [];
+    if (document.title) parts.push(document.title.replace(/\s+—\s+MeritNama/i, '').trim());
+    if (context.activeTabLabel || context.activeTab) parts.push(context.activeTabLabel || context.activeTab);
+    if (context.modalTitle || context.modalId) parts.push(`Modal: ${context.modalTitle || context.modalId}`);
+    if (context.applicantId) parts.push(`Applicant ID: ${context.applicantId}`);
+    return parts.filter(Boolean).join(' / ') || PAGE;
+  }
+
+  function writeUserActivity(reason) {
+    const email = getSessionEmail();
+    const db = getDb();
+    if (!email || !db) return;
+
+    const context = collectPageContext();
+    const signature = activitySignature(context);
+    const now = Date.now();
+    const shouldWriteLog = signature !== state.lastActivitySignature ||
+      (now - state.lastActivityAt) > ACTIVITY_HEARTBEAT_MS;
+
+    const payload = {
+      email,
+      traceId: makeTraceId(email),
+      page: PAGE,
+      path: window.location.pathname + window.location.search,
+      title: document.title || '',
+      pageLabel: pageLabelFromContext(context),
+      activeTab: context.activeTab || '',
+      activeTabLabel: context.activeTabLabel || '',
+      modalId: context.modalId || '',
+      modalTitle: context.modalTitle || '',
+      applicantId: context.applicantId || '',
+      hash: context.hash || '',
+      focusedElement: context.focusedElement || '',
+      visibilityState: document.visibilityState || '',
+      reason: reason || 'heartbeat',
+      context,
+      updatedAt: serverTimestamp(),
+    };
+
+    db.collection('presence').doc(email).set({
+      ...payload,
+      pageTitle: payload.pageLabel,
+      online: document.visibilityState !== 'hidden',
+      lastSeen: serverTimestamp(),
+    }, { merge: true }).catch(function () {});
+
+    if (shouldWriteLog) {
+      state.lastActivitySignature = signature;
+      state.lastActivityAt = now;
+      db.collection(ACTIVITY_COLLECTION).add({
+        ...payload,
+        createdAt: serverTimestamp(),
+      }).catch(function () {});
+    }
+  }
+
   function showShield(message, options) {
     const opts = options || {};
     ensureShield();
     const text = document.getElementById('mnPrivacyShieldText');
     if (text) text.textContent = message || 'Screenshots are disabled on this site.';
     document.body.classList.add('mn-privacy-shielded');
-    emphasizeTrace();
 
     if (opts.logType) logScreenshotEvent(opts.logType, opts.extra || {});
 
@@ -552,7 +541,6 @@
     if (e && e.cancelable) e.preventDefault();
     if (e) e.stopPropagation();
     clearClipboard();
-    emphasizeTrace();
     showShield('Screenshot capture is disabled. This attempt has been logged for admin review.', {
       logType: source,
       extra: { key: e ? (e.key || e.code || '') : '' },
@@ -607,8 +595,17 @@
     });
     dialog.addEventListener('click', function (e) {
       const readBtn = e.target.closest('[data-warning-read]');
-      if (!readBtn) return;
-      markWarningRead(readBtn.getAttribute('data-warning-read'));
+      if (readBtn) {
+        markWarningRead(readBtn.getAttribute('data-warning-read'));
+        return;
+      }
+      const replyBtn = e.target.closest('[data-warning-reply]');
+      if (replyBtn) {
+        const id = replyBtn.getAttribute('data-warning-reply');
+        const textarea = Array.from(dialog.querySelectorAll('[data-warning-reply-text]'))
+          .find(el => el.getAttribute('data-warning-reply-text') === id);
+        sendWarningReply(id, textarea?.value || '');
+      }
     });
     return { btn, dialog };
   }
@@ -650,9 +647,19 @@
       const severity = ['info', 'success', 'warning', 'danger'].includes(w.severity) ? w.severity : 'warning';
       const title = w.title || (severity === 'danger' ? 'Important warning' : 'Admin message');
       const readClass = w.readAt ? ' read' : '';
+      const replies = Array.isArray(w.replies) ? w.replies : [];
+      const latestReply = replies.length ? replies[replies.length - 1] : null;
+      const replyMeta = latestReply
+        ? `<div class="mn-warning-replies">Last reply: ${escapeHtml(String(latestReply.message || '').slice(0, 120))}</div>`
+        : '';
       return `<article class="mn-warning-item ${severity}${readClass}">
         <h4>${escapeHtml(title)}</h4>
         <p>${escapeHtml(w.message || '')}</p>
+        ${replyMeta}
+        <div class="mn-warning-reply">
+          <textarea data-warning-reply-text="${escapeHtml(w.id)}" maxlength="800" placeholder="Reply to admin..."></textarea>
+          <button type="button" data-warning-reply="${escapeHtml(w.id)}">Send reply</button>
+        </div>
         <div class="mn-warning-meta">
           <span>${escapeHtml(warningDate(w.createdAt) || 'Just now')}</span>
           ${w.readAt ? '<span>Read</span>' : `<button class="mn-warning-read-btn" type="button" data-warning-read="${escapeHtml(w.id)}">Mark read</button>`}
@@ -699,6 +706,30 @@
     }, { merge: true }).catch(function () {});
   }
 
+  function sendWarningReply(id, message) {
+    const text = String(message || '').trim();
+    if (!id || !text) return;
+    const db = getDb();
+    const email = getSessionEmail();
+    if (!db || !email) return;
+    db.collection('user_warnings').doc(id).set({
+      replies: firebase.firestore.FieldValue.arrayUnion({
+        email,
+        message: text.slice(0, 800),
+        createdAt: new Date().toISOString(),
+      }),
+      lastReplyAt: serverTimestamp(),
+      lastReplyBy: email,
+      readAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }, { merge: true }).then(function () {
+      const dialog = document.getElementById('mnWarningDialog');
+      const textarea = Array.from(dialog?.querySelectorAll('[data-warning-reply-text]') || [])
+        .find(el => el.getAttribute('data-warning-reply-text') === id);
+      if (textarea) textarea.value = '';
+    }).catch(function () {});
+  }
+
   function markVisibleWarningsRead() {
     state.warnings.filter(w => !w.readAt).slice(0, 10).forEach(w => markWarningRead(w.id));
   }
@@ -706,10 +737,9 @@
   function init() {
     ensureStyles();
     ensureShield();
-    ensureWatermark();
     ensureWarningInbox();
     document.body.classList.add('mn-screen-guard-active');
-    refreshWatermark();
+    writeUserActivity('page_load');
     subscribeWarnings();
 
     document.addEventListener('keydown', onKeyEvent, true);
@@ -728,28 +758,36 @@
     window.addEventListener('focus', function () {
       clearTimeout(state.blurTimer);
       hideShield();
-      refreshWatermark();
+      writeUserActivity('focus');
     });
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) {
+        writeUserActivity('hidden');
         showShield('Content hidden while the page is not active.', { persistent: true });
       } else {
         hideShield();
-        refreshWatermark();
+        writeUserActivity('visible');
       }
     });
-    window.addEventListener('storage', refreshWatermark);
-    setInterval(function () {
-      refreshWatermark();
-      tagModalTrace(state.traceLabel);
+    window.addEventListener('hashchange', function () { writeUserActivity('hashchange'); });
+    window.addEventListener('storage', function () {
+      writeUserActivity('storage');
       subscribeWarnings();
-    }, 2000);
+    });
+    document.addEventListener('click', function () {
+      setTimeout(function () { writeUserActivity('click'); }, 80);
+    }, true);
+    setInterval(function () {
+      writeUserActivity('heartbeat');
+      subscribeWarnings();
+    }, 10 * 1000);
   }
 
   window.MNScreenshotGuard = {
     logEvent: logScreenshotEvent,
     showShield,
-    refresh: refreshWatermark,
+    getContext: collectPageContext,
+    writeActivity: writeUserActivity,
   };
 
   if (document.readyState === 'loading') {

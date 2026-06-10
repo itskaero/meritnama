@@ -936,13 +936,14 @@
               <th>Severity</th>
               <th>Title</th>
               <th>Message</th>
+              <th>User Replies</th>
               <th>Read</th>
               <th>Sent By</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody id="warningsBody">
-            <tr><td colspan="8" class="empty-state">Loading warnings&hellip;</td></tr>
+            <tr><td colspan="9" class="empty-state">Loading warnings&hellip;</td></tr>
           </tbody>
         </table>
       </div>
@@ -1560,6 +1561,34 @@
   </div>
 </div>
 
+<!-- User Activity History Modal -->
+<div class="modal-overlay" id="userHistoryModal">
+  <div class="modal-card" style="max-width:860px;">
+    <div class="modal-title" id="userHistoryTitle">User Activity History</div>
+    <div class="modal-subtitle" id="userHistorySubtitle">Recent pages, tabs, modals, and applicant views</div>
+    <div class="table-wrap" style="max-height:60vh;overflow:auto;margin-bottom:0;">
+      <table class="logs-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Location</th>
+            <th>Tab</th>
+            <th>Modal</th>
+            <th>App ID</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody id="userHistoryBody">
+          <tr><td colspan="6" class="empty-state">Loading history&hellip;</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="userHistoryCloseBtn">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -2046,7 +2075,8 @@ function renderLogs() {
     const ua = l.userAgent.length > 60 ? l.userAgent.substring(0, 60) + 'â€¦' : l.userAgent;
     const actionEmail = l.email !== 'â€”' ? escapeHtml(l.email) : '';
     const actionBtn = actionEmail
-      ? `<button class="action-btn" onclick="openAddUserModal('${actionEmail}')">Grant Access</button>`
+      ? `<button class="action-btn" onclick="openAddUserModal('${actionEmail}')">Grant Access</button>
+         <button class="action-btn" data-history-email="${actionEmail}" style="margin-left:0.3rem;">History</button>`
       : 'â€”';
     const invitedBy = l.email !== 'â€”' ? renderInvitedByCell(l.email) : '—';
 
@@ -2254,7 +2284,7 @@ async function sendUserWarning() {
 
 async function loadWarnings() {
   const tbody = document.getElementById('warningsBody');
-  if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading warnings&hellip;</td></tr>';
+  if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Loading warnings&hellip;</td></tr>';
   try {
     const snap = await db.collection('user_warnings')
       .orderBy('createdAt', 'desc')
@@ -2264,7 +2294,7 @@ async function loadWarnings() {
     renderWarningsAdmin();
   } catch (err) {
     allWarnings = [];
-    if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Failed to load warnings: ${escapeHtml(err.message)}</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Failed to load warnings: ${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
@@ -2285,17 +2315,23 @@ function renderWarningsAdmin() {
       String(w.recipientEmail || '').toLowerCase().includes(q) ||
       String(w.title || '').toLowerCase().includes(q) ||
       String(w.message || '').toLowerCase().includes(q) ||
+      String((w.replies || []).map(r => r.message || '').join(' ')).toLowerCase().includes(q) ||
       String(w.createdBy || '').toLowerCase().includes(q)
     );
   }
   if (countEl) countEl.textContent = `${filtered.length} of ${allWarnings.length}`;
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No warnings found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No warnings found.</td></tr>';
     return;
   }
   tbody.innerHTML = filtered.map(w => {
     const message = String(w.message || '');
     const msgShort = message.length > 90 ? message.slice(0, 88) + '…' : message;
+    const replies = Array.isArray(w.replies) ? w.replies : [];
+    const replyText = replies.length
+      ? replies.slice(-2).map(r => `${r.email || w.recipientEmail || 'user'}: ${r.message || ''}`).join('\n')
+      : '';
+    const replyShort = replyText.length > 100 ? replyText.slice(0, 98) + '…' : replyText;
     const read = w.readAt ? formatAdminWarningDate(w.readAt) : '<span class="badge-fail">Unread</span>';
     const archived = w.status === 'archived';
     const action = archived
@@ -2307,6 +2343,7 @@ function renderWarningsAdmin() {
       <td>${escapeHtml(w.severity || 'warning')}</td>
       <td>${escapeHtml(w.title || '—')}</td>
       <td title="${escapeHtml(message)}">${escapeHtml(msgShort || '—')}</td>
+      <td title="${escapeHtml(replyText)}">${replyText ? escapeHtml(replyShort) : '<span style="color:var(--muted);">—</span>'}</td>
       <td>${read}</td>
       <td>${escapeHtml(w.createdBy || '—')}</td>
       <td>${action}</td>
@@ -2448,7 +2485,15 @@ function subscribePresence() {
         if (ageMs > PRESENCE_STALE_MS) return; // skip stale
 
         const isGreen = ageMs < 2 * 60 * 1000; // green = seen within 2 min
-        rows.push({ email: d.email || doc.id, page: d.pageTitle || d.page || 'â€”', lastSeen, isGreen });
+        rows.push({
+          email: d.email || doc.id,
+          page: d.pageTitle || d.page || 'â€”',
+          activeTab: d.activeTab || '',
+          modalTitle: d.modalTitle || '',
+          applicantId: d.applicantId || '',
+          lastSeen,
+          isGreen
+        });
       });
 
       // Sort: most recent first
@@ -2463,7 +2508,12 @@ function subscribePresence() {
             ? '<span class="live-dot green"></span>'
             : '<span class="live-dot yellow"></span>';
           const status = r.isGreen ? 'Active' : 'Recent';
-          return `<tr>
+          const contextTitle = [
+            r.activeTab ? `Tab: ${r.activeTab}` : '',
+            r.modalTitle ? `Modal: ${r.modalTitle}` : '',
+            r.applicantId ? `Applicant ID: ${r.applicantId}` : '',
+          ].filter(Boolean).join(' · ');
+          return `<tr data-presence-email="${escapeHtml(r.email)}" title="${escapeHtml(contextTitle || 'Click to view user history')}" style="cursor:pointer;">
             <td>${dot} ${status}</td>
             <td class="presence-email">${escapeHtml(r.email)}</td>
             <td>${escapeHtml(r.page)}</td>
@@ -2482,6 +2532,62 @@ function subscribePresence() {
     }, err => {
       console.warn('Presence snapshot error:', err);
     });
+}
+
+function closeUserHistoryModal() {
+  document.getElementById('userHistoryModal')?.classList.remove('open');
+}
+
+async function openUserHistory(email) {
+  email = (email || '').toLowerCase().trim();
+  if (!email) return;
+  const modal = document.getElementById('userHistoryModal');
+  const title = document.getElementById('userHistoryTitle');
+  const sub = document.getElementById('userHistorySubtitle');
+  const tbody = document.getElementById('userHistoryBody');
+  if (title) title.textContent = 'User Activity History';
+  if (sub) sub.textContent = email;
+  if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading history&hellip;</td></tr>';
+  modal?.classList.add('open');
+
+  try {
+    const snap = await db.collection('user_activity_logs')
+      .where('email', '==', email)
+      .limit(120)
+      .get();
+    const rows = snap.docs.map(doc => {
+      const d = doc.data();
+      return {
+        id: doc.id,
+        ...d,
+        createdAt: d.createdAt?.toDate?.() || d.updatedAt?.toDate?.() || null,
+      };
+    }).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+    if (!rows.length) {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No activity history for this user yet.</td></tr>';
+      return;
+    }
+
+    if (tbody) {
+      tbody.innerHTML = rows.map(r => {
+        const time = r.createdAt
+          ? r.createdAt.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' })
+          : '—';
+        const location = r.pageLabel || r.title || r.path || r.page || '—';
+        return `<tr>
+          <td>${escapeHtml(time)}</td>
+          <td title="${escapeHtml(r.path || '')}">${escapeHtml(location)}</td>
+          <td>${escapeHtml(r.activeTabLabel || r.activeTab || '—')}</td>
+          <td>${escapeHtml(r.modalTitle || r.modalId || '—')}</td>
+          <td>${escapeHtml(r.applicantId || '—')}</td>
+          <td>${escapeHtml(r.reason || '—')}</td>
+        </tr>`;
+      }).join('');
+    }
+  } catch (err) {
+    if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Failed to load history: ${escapeHtml(err.message)}</td></tr>`;
+  }
 }
 
 // --- Users Tab ---
@@ -3905,9 +4011,24 @@ document.getElementById('adminSubmit').addEventListener('click', async function 
 
 document.getElementById('logoutBtn').addEventListener('click', showLogin);
 document.getElementById('refreshAllBtn')?.addEventListener('click', refreshAllAdminData);
+document.getElementById('presenceBody')?.addEventListener('click', function (e) {
+  const row = e.target.closest('[data-presence-email]');
+  if (row) openUserHistory(row.getAttribute('data-presence-email'));
+});
+document.getElementById('userHistoryCloseBtn')?.addEventListener('click', closeUserHistoryModal);
+document.getElementById('userHistoryModal')?.addEventListener('click', function (e) {
+  if (e.target === this) closeUserHistoryModal();
+});
 document.getElementById('refreshBtn').addEventListener('click', loadLogs);
 document.getElementById('filterEmail').addEventListener('input', renderLogs);
 document.getElementById('filterStatus').addEventListener('change', renderLogs);
+document.getElementById('logsBody')?.addEventListener('click', function (e) {
+  const btn = e.target.closest('[data-history-email]');
+  if (btn) {
+    e.stopPropagation();
+    openUserHistory(btn.getAttribute('data-history-email'));
+  }
+});
 document.getElementById('refreshScreenshotLogsBtn')?.addEventListener('click', loadScreenshotLogs);
 document.getElementById('filterScreenshotEmail')?.addEventListener('input', renderScreenshotLogs);
 document.getElementById('filterScreenshotType')?.addEventListener('change', renderScreenshotLogs);
@@ -3935,6 +4056,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     closeAddUserModal();
     closeContribModal();
+    closeUserHistoryModal();
     document.getElementById('addContribModal')?.classList.remove('open');
   }
 });
