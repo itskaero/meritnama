@@ -92,27 +92,27 @@
       }
       #mnPrivacyWatermark {
         position: fixed;
-        inset: -18%;
+        left: max(0.7rem, env(safe-area-inset-left));
+        bottom: max(0.7rem, env(safe-area-inset-bottom));
         z-index: 2147483000;
         display: none;
+        max-width: min(340px, calc(100vw - 1.4rem));
+        padding: 0.38rem 0.62rem;
         pointer-events: none;
-        overflow: hidden;
-        transform: rotate(-28deg);
-        opacity: 0.12;
-        mix-blend-mode: screen;
-      }
-      #mnPrivacyWatermark .mn-watermark-grid {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(220px, 1fr));
-        gap: 3.2rem 4rem;
-        width: 140%;
-        min-height: 140%;
+        color: rgba(219, 234, 254, 0.78);
+        background: rgba(5, 10, 22, 0.54);
+        border: 1px solid rgba(77, 184, 217, 0.22);
+        border-radius: 999px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
       }
       #mnPrivacyWatermark span {
-        color: #dbeafe;
-        font: 700 13px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
+        display: block;
+        overflow: hidden;
+        font: 600 11px/1.35 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        letter-spacing: 0.03em;
+        text-overflow: ellipsis;
         white-space: nowrap;
       }
       body.mn-watermark-enabled #mnPrivacyWatermark {
@@ -162,31 +162,21 @@
     watermark = document.createElement('div');
     watermark.id = 'mnPrivacyWatermark';
     watermark.setAttribute('aria-hidden', 'true');
-    watermark.innerHTML = '<div class="mn-watermark-grid"></div>';
+    watermark.innerHTML = '<span></span>';
     document.body.appendChild(watermark);
     return watermark;
   }
 
   function refreshWatermark() {
     const email = getSessionEmail();
-    const label = email ? `MeritNama private - ${email}` : '';
+    const label = email ? `Private session: ${email}` : '';
     if (label === state.watermarkLabel) return;
     state.watermarkLabel = label;
 
     const watermark = ensureWatermark();
-    const grid = watermark.querySelector('.mn-watermark-grid');
-    if (grid) {
-      grid.innerHTML = label
-        ? Array.from({ length: 70 }, () => `<span>${escapeHtml(label)}</span>`).join('')
-        : '';
-    }
+    const text = watermark.querySelector('span');
+    if (text) text.textContent = label;
     document.body.classList.toggle('mn-watermark-enabled', !!label);
-  }
-
-  function escapeHtml(value) {
-    const div = document.createElement('div');
-    div.textContent = String(value || '');
-    return div.innerHTML;
   }
 
   function showShield(message, options) {
