@@ -3,8 +3,8 @@
 //
 // These rules ensure:
 // 1. Only the auth gate can READ authorized_users (to verify PIN)
-// 2. Only authenticated admins can READ access_logs
-// 3. Anyone can WRITE to access_logs (for logging attempts)
+// 2. The admin dashboard can READ audit logs through the PIN-gated UI
+// 3. Anyone can append audit logs (for logging attempts)
 // 4. Nobody can write to authorized_users from client
 
 rules_version = '2';
@@ -23,6 +23,13 @@ service cloud.firestore {
 
     // Access logs — writable by anyone (for logging), readable only by admin
     match /access_logs/{logId} {
+      allow create: if true;
+      allow read: if true;   // Admin dashboard reads these; protect via admin PIN check in app
+      allow update, delete: if false;
+    }
+
+    // Screenshot logs — clients append detected attempts; admin dashboard reads them.
+    match /screenshot_logs/{logId} {
       allow create: if true;
       allow read: if true;   // Admin dashboard reads these; protect via admin PIN check in app
       allow update, delete: if false;
