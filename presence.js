@@ -34,6 +34,23 @@
     return PAGE_TITLES[file] || PAGE_TITLES[window.location.pathname] || document.title || window.location.pathname;
   }
 
+  function getContext() {
+    try {
+      if (window.MNScreenshotGuard && typeof window.MNScreenshotGuard.getContext === 'function') {
+        return window.MNScreenshotGuard.getContext() || {};
+      }
+    } catch (_) {}
+    return {};
+  }
+
+  function pageLabel(context) {
+    const parts = [getPageTitle()];
+    if (context.activeTabLabel || context.activeTab) parts.push(context.activeTabLabel || context.activeTab);
+    if (context.modalTitle || context.modalId) parts.push('Modal: ' + (context.modalTitle || context.modalId));
+    if (context.applicantId) parts.push('Applicant ID: ' + context.applicantId);
+    return parts.filter(Boolean).join(' / ');
+  }
+
   function waitForFirebase(cb) {
     if (window.firebase && firebase.firestore) return cb();
     const t = setInterval(() => {
@@ -48,13 +65,19 @@
     const db   = firebase.firestore();
     const ref  = db.collection('presence').doc(email);
     const page = window.location.pathname;
-    const pageTitle = getPageTitle();
 
     function writePresence(online) {
+      const context = getContext();
       ref.set({
         email,
         page,
-        pageTitle,
+        pageTitle: pageLabel(context),
+        activeTab: context.activeTab || '',
+        activeTabLabel: context.activeTabLabel || '',
+        modalId: context.modalId || '',
+        modalTitle: context.modalTitle || '',
+        applicantId: context.applicantId || '',
+        context,
         online,
         lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
       }, { merge: true }).catch(() => {}); // best-effort, never throw

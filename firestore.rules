@@ -43,6 +43,13 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // User activity history — clients append location context; admin dashboard reads history.
+    match /user_activity_logs/{activityId} {
+      allow create: if true;
+      allow read: if true;
+      allow update, delete: if false;
+    }
+
     // Training reviews — publicly readable and creatable, no edits/deletes
     match /training_reviews/{reviewId} {
       allow read: if true;
