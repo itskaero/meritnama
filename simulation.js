@@ -4510,9 +4510,14 @@ const CHAT = {
   unsubscribe:        null,
   typingUnsubscribe:  null,
   pinUnsubscribe:     null,
+  presenceUnsubscribe: null,
   messages:           [],
   _legacy:            [],
   typingUsers:        [],
+  onlineMembers:      [],
+  roomCounts:         {},
+  onlineCounts:       {},
+  memberProfiles:     {},
   pinned:             null,
   unreadCount:        0,
   popupOpen:          false,
@@ -4524,16 +4529,23 @@ const CHAT = {
   sending:            false,
   typingDebounce:     null,
   typingClearTimer:   null,
+  presenceTimer:      null,
+  presenceUnloadBound:false,
+  activeRoomId:       null,
   COLLECTION:         'sim21_chat',
   TYPING_COLLECTION:  'sim21_chat_typing',
+  PRESENCE_COLLECTION:'sim21_room_presence',
   PIN_DOC:            'chat_pin',
   EVERYONE_TOKEN:     '@everyone',
   MUTE_EVERYONE_KEY:  'mn_chat_mute_everyone',
+  ROOM_KEY:           'mn_chat_active_room',
   _chatInitialized:   false,
   TYPING_TTL_MS:      4500,
   TYPING_DEBOUNCE_MS: 400,
+  PRESENCE_TTL_MS:    90 * 1000,
+  PRESENCE_HEARTBEAT_MS: 30 * 1000,
   CHAR_LIMIT:     500,
-  MAX_MESSAGES:   80,
+  MAX_MESSAGES:   200,
   MAX_IMAGE_INPUT: 12 * 1024 * 1024,
   MAX_IMAGE_STORED: 300 * 1024,
   MAX_FILE_SIZE:  300 * 1024,
@@ -4551,6 +4563,18 @@ const CHAT = {
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/zip', 'application/x-zip-compressed',
   ]),
+  ROOMS: [
+    { id: 'general', label: 'General', icon: '💬', desc: 'Open applicant discussion and quick help.' },
+    { id: 'announcements', label: 'Announcements', icon: '📣', desc: 'Important updates and pinned notices.' },
+    { id: 'preference-strategy', label: 'Preference Strategy', icon: '🎯', desc: 'Choice filling, safe/target/reach planning.' },
+    { id: 'documents', label: 'Documents', icon: '📄', desc: 'Eligibility, joining paperwork, certificates.' },
+    { id: 'mentor-qa', label: 'Mentor Q&A', icon: '🤝', desc: 'Ask seniors and verified trainees.' },
+    { id: 'fcps', label: 'FCPS', icon: '🩺', desc: 'FCPS-specific questions.' },
+    { id: 'ms-md', label: 'MS / MD', icon: '🏥', desc: 'MS and MD-specific discussion.' },
+    { id: 'medicine-allied', label: 'Medicine & Allied', icon: '💊', desc: 'Medicine, Paeds, Cardio, allied specialties.' },
+    { id: 'surgery-allied', label: 'Surgery & Allied', icon: '🔬', desc: 'Surgery, Gynae, Ortho, allied specialties.' },
+    { id: 'hospitals', label: 'Hospitals', icon: '🏨', desc: 'Training environment and hospital life.' },
+  ],
 };
 
 function _chatUID() {
@@ -4569,6 +4593,44 @@ function _chatName() {
   const saved = localStorage.getItem('_chat_name');
   CHAT.displayName = saved || null;
   return CHAT.displayName;
+}
+
+function _chatRoomById(roomId) {
+  return CHAT.ROOMS.find(r => r.id === roomId) || CHAT.ROOMS[0];
+}
+
+function _chatRoomId(roomId) {
+  const id = String(roomId || '').trim();
+  return _chatRoomById(id).id;
+}
+
+function _chatActiveRoom() {
+  if (!CHAT.activeRoomId) {
+    CHAT.activeRoomId = _chatRoomId(localStorage.getItem(CHAT.ROOM_KEY) || 'general');
+  }
+  return _chatRoomById(CHAT.activeRoomId);
+}
+
+function _chatMessageRoomId(msg) {
+  return _chatRoomId(msg?.roomId || 'general');
+}
+
+function _chatVisibleMessages() {
+  const roomId = _chatActiveRoom().id;
+  return CHAT.messages.filter(msg => _chatMessageRoomId(msg) === roomId);
+}
+
+function _chatAuthEmail() {
+  try {
+    const session = JSON.parse(localStorage.getItem('meritnama_auth_session') || 'null');
+    return String(session?.email || '').toLowerCase().trim();
+  } catch (_) {
+    return '';
+  }
+}
+
+function _chatRoomPresenceDocId(roomId, uid) {
+  return `${_chatRoomId(roomId)}_${String(uid || '').replace(/[^\w-]/g, '_').slice(0, 80)}`;
 }
 
 function _relTime(ts) {
@@ -4603,6 +4665,8 @@ function setupChat() {
       }
     } catch (_) {}
   }
+
+  _initChatRoomsUI();
 
   // Setup bubble toggle
   const bubble = document.getElementById('chatBubbleBtn');
@@ -4668,6 +4732,258 @@ function setupChat() {
   _startChatListener();
   _startTypingListener();
   _startChatPinListener();
+  _startRoomPresence();
+}
+
+function _initChatRoomsUI() {
+  _chatActiveRoom();
+  _renderRoomSelectors();
+  _renderRoomChrome();
+  _syncChatRoomControls();
+}
+
+function _renderRoomSelectors() {
+  const options = CHAT.ROOMS.map(room =>
+    `<option value="${esc(room.id)}">${room.icon} ${esc(room.label)}</option>`
+  ).join('');
+
+  ['chatTabRoomSelect', 'chatPopupRoomSelect'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel || sel.dataset.built) return;
+    sel.innerHTML = options;
+    sel.dataset.built = '1';
+    sel.addEventListener('change', () => _switchChatRoom(sel.value));
+  });
+
+  const list = document.getElementById('chatRoomList');
+  if (!list || list.dataset.built) return;
+  list.innerHTML = CHAT.ROOMS.map(room => `
+    <button class="chat-room-btn" type="button" data-room-id="${esc(room.id)}">
+      <span class="chat-room-row">
+        <span class="chat-room-name"><span>${room.icon}</span><span>${esc(room.label)}</span></span>
+        <span class="chat-room-badges">
+          <span class="chat-room-online" data-room-online="${esc(room.id)}">0</span>
+          <span class="chat-room-count" data-room-count="${esc(room.id)}">0</span>
+        </span>
+      </span>
+      <span class="chat-room-desc">${esc(room.desc)}</span>
+    </button>
+  `).join('');
+  list.dataset.built = '1';
+  list.querySelectorAll('.chat-room-btn').forEach(btn => {
+    btn.addEventListener('click', () => _switchChatRoom(btn.dataset.roomId));
+  });
+}
+
+function _syncChatRoomControls() {
+  const room = _chatActiveRoom();
+  ['chatTabRoomSelect', 'chatPopupRoomSelect'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel && sel.value !== room.id) sel.value = room.id;
+  });
+  document.querySelectorAll('.chat-room-btn[data-room-id]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.roomId === room.id);
+  });
+  const hint = document.getElementById('chatPopupRoomHint');
+  if (hint) hint.textContent = room.label;
+}
+
+function _renderRoomChrome() {
+  const room = _chatActiveRoom();
+  const meta = document.getElementById('chatActiveRoomMeta');
+  if (meta) {
+    meta.innerHTML = `
+      <div class="chat-active-room-title"><span>${room.icon}</span><span>${esc(room.label)}</span></div>
+      <div class="chat-active-room-desc">${esc(room.desc)} Older global chat messages remain in General.</div>
+    `;
+  }
+  _syncChatRoomControls();
+  _renderRoomCounts();
+}
+
+function _switchChatRoom(roomId) {
+  const next = _chatRoomId(roomId);
+  if (next === CHAT.activeRoomId) return;
+  const prev = CHAT.activeRoomId;
+  CHAT.activeRoomId = next;
+  localStorage.setItem(CHAT.ROOM_KEY, next);
+  _chatClearTyping();
+  ['Tab', 'Popup'].forEach(prefix => _clearChatReply(prefix));
+  _renderRoomChrome();
+  _renderAllChatMessages();
+  _renderTypingIndicators();
+  _startRoomPresence(prev);
+  _chatScrollBottom('chatTabMessages');
+  if (CHAT.popupOpen) _chatScrollBottom('chatPopupMessages');
+}
+
+function _renderRoomCounts() {
+  CHAT.ROOMS.forEach(room => {
+    const msgEl = document.querySelector(`[data-room-count="${room.id}"]`);
+    if (msgEl) msgEl.textContent = String(CHAT.roomCounts[room.id] || 0);
+    const onlineEl = document.querySelector(`[data-room-online="${room.id}"]`);
+    if (onlineEl) onlineEl.textContent = String(CHAT.onlineCounts[room.id] || 0);
+  });
+}
+
+function _chatPresenceMs(member) {
+  const raw = member?.updatedAt || member?.lastSeen;
+  if (raw?.toMillis) return raw.toMillis();
+  if (raw?.seconds != null) return raw.seconds * 1000;
+  if (raw) {
+    const d = new Date(raw);
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  }
+  return 0;
+}
+
+async function _chatWriteRoomPresence(roomId, online) {
+  let db;
+  try { db = firebase.firestore(); } catch { return; }
+  const uid = _chatUID();
+  const room = _chatRoomById(roomId || _chatActiveRoom().id);
+  const docId = _chatRoomPresenceDocId(room.id, uid);
+  try {
+    await db.collection(CHAT.PRESENCE_COLLECTION).doc(docId).set({
+      uid,
+      email: _chatAuthEmail(),
+      name: _chatName() || 'Anonymous',
+      roomId: room.id,
+      roomLabel: room.label,
+      online: !!online,
+      page: 'simulation',
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+  } catch (_) {}
+}
+
+function _startRoomPresence(previousRoomId) {
+  let db;
+  try { db = firebase.firestore(); } catch { return; }
+
+  if (previousRoomId && previousRoomId !== _chatActiveRoom().id) {
+    _chatWriteRoomPresence(previousRoomId, false);
+  }
+  if (CHAT.presenceUnsubscribe) CHAT.presenceUnsubscribe();
+  if (CHAT.presenceTimer) clearInterval(CHAT.presenceTimer);
+
+  _chatWriteRoomPresence(_chatActiveRoom().id, true);
+  CHAT.presenceTimer = setInterval(() => {
+    if (document.visibilityState !== 'hidden') {
+      _chatWriteRoomPresence(_chatActiveRoom().id, true);
+    }
+  }, CHAT.PRESENCE_HEARTBEAT_MS);
+
+  if (!CHAT.presenceUnloadBound) {
+    CHAT.presenceUnloadBound = true;
+    document.addEventListener('visibilitychange', () => {
+      _chatWriteRoomPresence(_chatActiveRoom().id, document.visibilityState === 'visible');
+    });
+    window.addEventListener('beforeunload', () => {
+      if (CHAT.presenceTimer) clearInterval(CHAT.presenceTimer);
+      _chatWriteRoomPresence(_chatActiveRoom().id, false);
+    });
+  }
+
+  CHAT.presenceUnsubscribe = db.collection(CHAT.PRESENCE_COLLECTION)
+    .onSnapshot(snap => {
+      const cutoff = Date.now() - CHAT.PRESENCE_TTL_MS;
+      const onlineByRoom = {};
+      const activeRoomId = _chatActiveRoom().id;
+      const members = [];
+      snap.docs.forEach(doc => {
+        const d = { id: doc.id, ...doc.data() };
+        const roomId = _chatRoomId(d.roomId || 'general');
+        const ts = _chatPresenceMs(d);
+        if (!d.online || (ts && ts < cutoff)) return;
+        onlineByRoom[roomId] = onlineByRoom[roomId] || new Map();
+        onlineByRoom[roomId].set(d.uid || doc.id, d);
+        if (roomId === activeRoomId) members.push(d);
+      });
+      CHAT.onlineCounts = Object.fromEntries(
+        Object.entries(onlineByRoom).map(([roomId, map]) => [roomId, map.size])
+      );
+      CHAT.onlineMembers = members.sort((a, b) => {
+        const ownA = a.uid === _chatUID() ? 0 : 1;
+        const ownB = b.uid === _chatUID() ? 0 : 1;
+        if (ownA !== ownB) return ownA - ownB;
+        return String(a.name || '').localeCompare(String(b.name || ''));
+      });
+      _renderRoomCounts();
+      _renderOnlineMembers();
+      _hydrateOnlineMemberProfiles();
+    }, err => console.warn('Room presence listener error:', err));
+}
+
+async function _hydrateOnlineMemberProfiles() {
+  const emails = CHAT.onlineMembers
+    .map(m => String(m.email || '').toLowerCase().trim())
+    .filter(email => email && CHAT.memberProfiles[email] === undefined);
+  if (!emails.length) return;
+
+  let db;
+  try { db = firebase.firestore(); } catch { return; }
+
+  await Promise.all(emails.slice(0, 20).map(async email => {
+    try {
+      const doc = await db.collection('user_profiles').doc(email).get();
+      CHAT.memberProfiles[email] = doc.exists ? doc.data() : null;
+    } catch (_) {
+      CHAT.memberProfiles[email] = null;
+    }
+  }));
+  _renderOnlineMembers();
+}
+
+function _chatMemberProfile(member) {
+  const email = String(member?.email || '').toLowerCase().trim();
+  if (!email) return null;
+  return CHAT.memberProfiles[email] || null;
+}
+
+function _chatMemberInitial(name) {
+  const clean = String(name || '?').trim();
+  if (!clean) return '?';
+  const parts = clean.split(/\s+/);
+  if (parts.length > 1) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return clean.slice(0, 2).toUpperCase();
+}
+
+function _renderOnlineMembers() {
+  const countEl = document.getElementById('chatOnlineCount');
+  if (countEl) countEl.textContent = String(CHAT.onlineMembers.length);
+  const list = document.getElementById('chatOnlineMembers');
+  if (!list) return;
+  if (!CHAT.onlineMembers.length) {
+    list.innerHTML = `<div class="chat-member-empty">No one else is online in ${esc(_chatActiveRoom().label)} yet.</div>`;
+    return;
+  }
+
+  list.innerHTML = CHAT.onlineMembers.map(member => {
+    const profile = _chatMemberProfile(member);
+    const name = profile?.name || member.name || member.email || 'Anonymous';
+    const isOwn = member.uid === _chatUID();
+    const avatar = profile?.profilePicBase64
+      ? `<img src="${profile.profilePicBase64}" alt="" />`
+      : esc(_chatMemberInitial(name));
+    const statusChip = profile?.inducted
+      ? '<span class="chat-member-chip good">Inducted</span>'
+      : '<span class="chat-member-chip">Applicant</span>';
+    const specialtyChip = profile?.specialty
+      ? `<span class="chat-member-chip">${esc(profile.specialty)}</span>`
+      : '';
+    const hospitalChip = profile?.hospital
+      ? `<span class="chat-member-chip">${esc(profile.hospital)}</span>`
+      : '';
+    return `
+      <div class="chat-member-card">
+        <div class="chat-member-avatar">${avatar}<span class="chat-member-dot"></span></div>
+        <div class="chat-member-main">
+          <div class="chat-member-name">${esc(name)}${isOwn ? ' (you)' : ''}</div>
+          <div class="chat-member-meta">${statusChip}${specialtyChip}${hospitalChip}</div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 function _chatPrefixKey(prefix) {
@@ -4982,6 +5298,7 @@ function _promptChatName(returnInputId) {
     const el = document.getElementById(id);
     if (el) _renderChatNameBar(el, id.includes('Tab') ? 'chatTabInput' : 'chatPopupInput');
   });
+  _chatWriteRoomPresence(_chatActiveRoom().id, true);
   input?.focus();
 }
 
@@ -5017,7 +5334,7 @@ function _sendChatMessage(inputId, msgsId, prefix) {
     return;
   }
   if (_chatHasEveryoneMention(text)) {
-    const ok = window.confirm('Send @everyone? Others in chat will get a notification.');
+    const ok = window.confirm(`Send @everyone to ${_chatActiveRoom().label}? Others in this room will get a notification.`);
     if (!ok) return;
   }
 
@@ -5030,10 +5347,14 @@ function _sendChatMessage(inputId, msgsId, prefix) {
   if (sendBtn) sendBtn.disabled = true;
 
   (async () => {
+    const room = _chatActiveRoom();
     const payload = {
       text: text || '',
       name,
       uid,
+      email: _chatAuthEmail(),
+      roomId: room.id,
+      roomLabel: room.label,
       ts: firebase.firestore.FieldValue.serverTimestamp(),
     };
 
@@ -5107,7 +5428,10 @@ function _startChatListener() {
     .orderBy('ts', 'asc')
     .limitToLast(CHAT.MAX_MESSAGES)
     .onSnapshot(snap => {
-      const fresh = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const fresh = snap.docs.map(d => {
+        const data = d.data();
+        return { id: d.id, ...data, roomId: _chatRoomId(data.roomId || 'general') };
+      });
       const prevIds = new Set(CHAT.messages.map(m => m.id));
       const uid = _chatUID();
       // Merge legacy + new, dedup by id, keep sorted by ts
@@ -5119,21 +5443,32 @@ function _startChatListener() {
         const tb = b.ts?.toMillis?.() ?? b.ts ?? 0;
         return ta - tb;
       });
+      CHAT.roomCounts = CHAT.messages.reduce((acc, msg) => {
+        const roomId = _chatMessageRoomId(msg);
+        acc[roomId] = (acc[roomId] || 0) + 1;
+        return acc;
+      }, {});
       if (CHAT._chatInitialized) {
+        const activeRoomId = _chatActiveRoom().id;
         for (const msg of CHAT.messages) {
           if (prevIds.has(msg.id)) continue;
           if (msg.uid === uid) continue;
+          if (_chatMessageRoomId(msg) !== activeRoomId) continue;
           if (_chatHasEveryoneMention(msg)) _notifyEveryoneMention(msg);
           if (_chatMentionsCurrentUser(msg)) _notifyUserMention(msg);
         }
       }
       CHAT._chatInitialized = true;
       const isVisible = CHAT.popupOpen || CHAT.tabActive;
-      if (!isVisible) {
+      const hasNewInActiveRoom = CHAT.messages.some(msg =>
+        !prevIds.has(msg.id) && msg.uid !== uid && _chatMessageRoomId(msg) === _chatActiveRoom().id
+      );
+      if (!isVisible && hasNewInActiveRoom) {
         CHAT.unreadCount++;
         _updateBadge();
       }
       _renderAllChatMessages();
+      _renderRoomCounts();
       if (isVisible) _chatScrollBottom('chatTabMessages');
       if (CHAT.popupOpen) _chatScrollBottom('chatPopupMessages');
     }, err => {
@@ -5177,7 +5512,7 @@ function _notifyEveryoneMention(msg) {
   if (_isEveryoneMuted()) return;
   const who = msg.name || 'Someone';
   const body = (msg.text || '').replace(/@everyone/gi, '').trim().slice(0, 140) || 'New community chat message';
-  const title = `${who} mentioned @everyone`;
+  const title = `${who} mentioned @everyone in ${_chatRoomById(msg.roomId).label}`;
   showToast(`${title}${body ? ': ' + body : ''}`, 'info');
   if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
     try {
@@ -5225,7 +5560,7 @@ function _chatMentionsCurrentUser(msg) {
 function _notifyUserMention(msg) {
   const who = msg.name || 'Someone';
   const body = (msg.text || '').trim().slice(0, 140) || 'New community chat message';
-  const title = `${who} mentioned you`;
+  const title = `${who} mentioned you in ${_chatRoomById(msg.roomId).label}`;
   showToast(`${title}${body ? ': ' + body : ''}`, 'info');
   if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
     try {
@@ -5272,8 +5607,12 @@ async function _chatWriteTyping() {
   const name = _chatName();
   if (!name) return;
   try {
+    const room = _chatActiveRoom();
     await db.collection(CHAT.TYPING_COLLECTION).doc(uid).set({
-      uid, name,
+      uid,
+      name,
+      roomId: room.id,
+      roomLabel: room.label,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
   } catch (_) {}
@@ -5301,9 +5640,11 @@ function _startTypingListener() {
   CHAT.typingUnsubscribe = db.collection(CHAT.TYPING_COLLECTION)
     .onSnapshot(snap => {
       const users = [];
+      const roomId = _chatActiveRoom().id;
       for (const doc of snap.docs) {
         const d = doc.data();
         if (!d.name || d.uid === uid) continue;
+        if (_chatRoomId(d.roomId || 'general') !== roomId) continue;
         const ts = d.updatedAt?.toMillis?.() ?? 0;
         if (ts && ts < cutoff()) continue;
         users.push(d.name);
@@ -5396,11 +5737,13 @@ function _renderChatMessages(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
   const uid = _chatUID();
-  if (!CHAT.messages.length) {
-    container.innerHTML = `<div class="chat-empty">No messages yet. Say hello! 👋</div>`;
+  const messages = _chatVisibleMessages();
+  const room = _chatActiveRoom();
+  if (!messages.length) {
+    container.innerHTML = `<div class="chat-empty">No messages in ${esc(room.label)} yet. Start the discussion! 👋</div>`;
     return;
   }
-  container.innerHTML = CHAT.messages.map(msg => {
+  container.innerHTML = messages.map(msg => {
     const isOwn  = msg.uid === uid;
     const relTm  = _relTime(msg.ts);
     const canReact = !String(msg.id).startsWith('_legacy_');
@@ -5422,13 +5765,13 @@ function _renderChatMessages(containerId) {
   });
   container.querySelectorAll('.chat-mention-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const msg = CHAT.messages.find(m => m.id === btn.dataset.id);
+      const msg = messages.find(m => m.id === btn.dataset.id);
       if (msg?.name) _insertChatMention(msg.name, btn.dataset.prefix);
     });
   });
   container.querySelectorAll('.chat-reply-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const msg = CHAT.messages.find(m => m.id === btn.dataset.id);
+      const msg = messages.find(m => m.id === btn.dataset.id);
       if (!msg) return;
       const prefix = containerId.includes('Popup') ? 'Popup' : 'Tab';
       _setChatReply(prefix, msg);

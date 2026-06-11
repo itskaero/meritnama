@@ -159,7 +159,9 @@ service cloud.firestore {
 
     // Community chat messages (Induction 21 simulation page)
     // Publicly readable and creatable; delete allowed (ownership enforced in UI).
-    // Fields: text, name, uid, ts, type, imageData, fileData, fileName, fileSize, mimeType, reactions, replyTo, mentionsEveryone, mentions
+    // Fields: text, name, uid, email, roomId, roomLabel, ts, type, imageData,
+    //         fileData, fileName, fileSize, mimeType, reactions, replyTo,
+    //         mentionsEveryone, mentions
     match /sim21_chat/{msgId} {
       allow read, create, delete: if true;
       allow update: if _sim21ChatReactionOnlyUpdate();
@@ -168,6 +170,12 @@ service cloud.firestore {
     // Ephemeral typing indicators — doc ID = chat uid
     // Fields: uid, name, updatedAt
     match /sim21_chat_typing/{uid} {
+      allow read, create, update, delete: if true;
+    }
+
+    // Room-level presence for grouped discussions.
+    // Doc ID = {roomId}_{chatUid}; fields: uid, email, name, roomId, roomLabel, online, page, updatedAt
+    match /sim21_room_presence/{presenceId} {
       allow read, create, update, delete: if true;
     }
 
