@@ -1616,9 +1616,149 @@
        COMMUNITY CHAT — tab layout
     --------------------------------------------------------------- */
     .chat-tab-wrap {
-      max-width: 780px; margin: 0 auto; padding: 0 1rem 4rem;
+      max-width: 1180px; margin: 0 auto; padding: 0 1rem 4rem;
       display: flex; flex-direction: column; gap: 0;
       height: calc(100vh - 340px); min-height: 480px;
+    }
+    .chat-discussion-shell {
+      flex: 1; min-height: 0;
+      display: grid; grid-template-columns: 220px minmax(0, 1fr) 230px;
+      gap: 12px;
+    }
+    .chat-room-sidebar,
+    .chat-member-sidebar,
+    .chat-main-panel {
+      min-height: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .chat-main-panel {
+      display: flex; flex-direction: column;
+    }
+    .chat-side-head {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(77,184,217,0.04);
+    }
+    .chat-side-kicker {
+      color: var(--text-muted);
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .chat-side-title {
+      color: var(--neon-cyan);
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+    .chat-room-list {
+      display: flex; flex-direction: column; gap: 4px;
+      padding: 10px; overflow-y: auto; max-height: 100%;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .chat-room-btn {
+      width: 100%; text-align: left; cursor: pointer;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 9px 10px;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font);
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .chat-room-btn:hover {
+      background: rgba(77,184,217,0.06);
+      border-color: rgba(77,184,217,0.16);
+      color: var(--text);
+    }
+    .chat-room-btn.active {
+      background: linear-gradient(135deg, rgba(77,184,217,0.13), rgba(124,101,196,0.08));
+      border-color: rgba(77,184,217,0.35);
+      color: var(--text);
+      box-shadow: 0 0 16px rgba(77,184,217,0.08);
+    }
+    .chat-room-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .chat-room-name {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-weight: 800; font-size: 0.82rem;
+    }
+    .chat-room-desc {
+      margin-top: 3px;
+      font-size: 0.69rem;
+      line-height: 1.35;
+      color: var(--text-muted);
+    }
+    .chat-room-badges {
+      display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+    }
+    .chat-room-count,
+    .chat-room-online {
+      min-width: 20px;
+      padding: 1px 6px;
+      border-radius: 100px;
+      font-size: 0.64rem;
+      font-weight: 800;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+    .chat-room-count {
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .chat-room-online {
+      color: var(--neon-green);
+      background: rgba(62,207,142,0.08);
+      border: 1px solid rgba(62,207,142,0.2);
+    }
+    .chat-active-room-meta {
+      padding: 10px 14px;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      background: rgba(77,184,217,0.025);
+    }
+    .chat-active-room-title {
+      display: flex; align-items: center; gap: 8px;
+      color: var(--text);
+      font-size: 0.88rem;
+      font-weight: 800;
+    }
+    .chat-active-room-desc {
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      line-height: 1.4;
+      margin-top: 2px;
+    }
+    .chat-room-select,
+    .chat-popup-room-select {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.8rem;
+      padding: 7px 10px;
+      outline: none;
+    }
+    .chat-room-select { display: none; margin-bottom: 10px; }
+    .chat-popup-roombar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(77,184,217,0.025);
+    }
+    .chat-popup-room-select { flex: 1; padding: 5px 8px; font-size: 0.76rem; }
+    .chat-popup-room-hint {
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      white-space: nowrap;
     }
     .chat-name-bar {
       display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
@@ -1626,6 +1766,10 @@
       border: 1px solid var(--border); border-bottom: none;
       border-radius: var(--radius-lg) var(--radius-lg) 0 0;
       font-size: 0.8rem;
+    }
+    .chat-main-panel .chat-name-bar {
+      border-left: none; border-right: none; border-top: none;
+      border-radius: 0;
     }
     .chat-messages {
       flex: 1; overflow-y: auto; padding: 14px;
@@ -1673,6 +1817,10 @@
     }
     .chat-input-area-popup {
       border-radius: 0 0 14px 14px;
+    }
+    .chat-main-panel .chat-input-area {
+      border-left: none; border-right: none; border-bottom: none;
+      border-radius: 0;
     }
     .chat-input-row { display: flex; gap: 8px; align-items: flex-end; }
     .chat-input-wrap { position: relative; flex: 1; }
@@ -1875,6 +2023,92 @@
     .chat-pin-label { font-size: 0.68rem; font-weight: 700; color: var(--neon-gold); display: block; margin-bottom: 4px; }
     .chat-pin-text { font-size: 0.8rem; line-height: 1.4; }
     .chat-pin-by { display: block; font-size: 0.68rem; color: var(--text-muted); margin-top: 4px; }
+    .chat-main-panel .chat-pin-banner {
+      margin: 8px 12px 0;
+    }
+    .chat-main-panel .chat-typing {
+      padding: 4px 14px 6px;
+    }
+    .chat-members-list {
+      display: flex; flex-direction: column; gap: 8px;
+      padding: 10px; overflow-y: auto; max-height: 100%;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .chat-member-empty {
+      padding: 28px 10px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+    .chat-member-card {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .chat-member-avatar {
+      position: relative;
+      width: 32px; height: 32px; border-radius: 50%;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      background: rgba(77,184,217,0.12);
+      border: 1px solid rgba(77,184,217,0.28);
+      color: var(--neon-cyan);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+    .chat-member-avatar img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .chat-member-dot {
+      position: absolute; right: -1px; bottom: -1px;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--neon-green);
+      border: 2px solid var(--bg-card);
+      box-shadow: 0 0 8px rgba(62,207,142,0.55);
+    }
+    .chat-member-main { min-width: 0; flex: 1; }
+    .chat-member-name {
+      color: var(--text);
+      font-size: 0.78rem;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chat-member-meta {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
+      margin-top: 2px;
+    }
+    .chat-member-chip {
+      padding: 1px 5px;
+      border-radius: 100px;
+      background: rgba(77,184,217,0.08);
+      border: 1px solid rgba(77,184,217,0.15);
+      color: var(--text-muted);
+      font-size: 0.59rem;
+      font-weight: 700;
+      max-width: 92px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .chat-member-chip.good {
+      color: var(--neon-green);
+      background: rgba(62,207,142,0.08);
+      border-color: rgba(62,207,142,0.18);
+    }
+    .chat-member-footer {
+      padding: 9px 12px;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      line-height: 1.35;
+      background: rgba(255,255,255,0.015);
+    }
     .chat-msg-highlight {
       animation: chatHighlight 1.6s ease;
     }
@@ -1948,6 +2182,14 @@
       .chat-popup { bottom: 82px; right: 12px; width: calc(100vw - 24px); }
       .chat-tab-wrap { height: auto; min-height: unset; }
       .chat-messages { height: 340px; flex: unset; }
+    }
+    @media (max-width: 980px) {
+      .chat-tab-wrap { height: auto; min-height: unset; }
+      .chat-discussion-shell { grid-template-columns: 1fr; }
+      .chat-room-sidebar { display: none; }
+      .chat-room-select { display: block; }
+      .chat-member-sidebar { min-height: 220px; }
+      .chat-members-list { max-height: 260px; }
     }
 
     /* -- Profiles tab improvements -- */
@@ -2954,41 +3196,64 @@
   </section>
 
   <!-- ══════════════════════════════════════════
-       TAB: COMMUNITY CHAT
+       TAB: GROUPED COMMUNITY DISCUSSIONS
   ══════════════════════════════════════════ -->
   <section class="tab-content" id="tab-community">
     <div class="section-header">
-      <h2>&#128172; Community Chat</h2>
-      <p>Reply, mention <strong>@username</strong> or <strong>@everyone</strong>, share images, and be respectful. Mute @everyone if it gets noisy.</p>
+      <h2>&#128172; Grouped Discussions</h2>
+      <p>Choose a room for focused discussion, see who is online in that room, mention <strong>@username</strong> or <strong>@everyone</strong>, and keep replies respectful.</p>
     </div>
     <div class="chat-tab-wrap">
-      <!-- Name bar -->
-      <div id="chatTabNameBar" class="chat-name-bar"></div>
-      <div id="chatTabPin" class="chat-pin-banner hidden"></div>
-      <div id="chatTabTyping" class="chat-typing hidden"></div>
-      <div id="chatTabMessages" class="chat-messages"></div>
-      <!-- Input area -->
-      <div class="chat-input-area">
-        <div id="chatTabEveryoneBar" class="chat-everyone-bar"></div>
-        <div id="chatTabReplyBar" class="chat-reply-bar hidden"></div>
-        <div id="chatTabAttachPreview" class="chat-attach-preview hidden"></div>
-        <div class="chat-input-row">
-          <div class="chat-toolbar">
-            <input type="file" id="chatTabImageInput" accept="image/jpeg,image/png,image/gif,image/webp" hidden />
-            <button id="chatTabImageBtn" class="chat-attach-btn" title="Upload image" type="button">&#128247;</button>
+      <select id="chatTabRoomSelect" class="chat-room-select" aria-label="Choose discussion room"></select>
+      <div class="chat-discussion-shell">
+        <aside class="chat-room-sidebar" aria-label="Discussion rooms">
+          <div class="chat-side-head">
+            <div class="chat-side-kicker">Rooms</div>
+            <div class="chat-side-title">Discuss by topic</div>
           </div>
-          <div class="chat-input-wrap">
-            <textarea id="chatTabInput" class="chat-textarea" rows="2"
-              placeholder="Type a message… (Enter to send, Shift+Enter for new line)"></textarea>
-            <button id="chatTabEmojiBtn" class="chat-emoji-btn" title="Emoji" type="button">&#128578;</button>
-            <div id="chatTabEmojiPicker" class="chat-emoji-picker hidden"></div>
+          <div id="chatRoomList" class="chat-room-list"></div>
+        </aside>
+
+        <div class="chat-main-panel">
+          <div id="chatTabNameBar" class="chat-name-bar"></div>
+          <div id="chatActiveRoomMeta" class="chat-active-room-meta"></div>
+          <div id="chatTabPin" class="chat-pin-banner hidden"></div>
+          <div id="chatTabTyping" class="chat-typing hidden"></div>
+          <div id="chatTabMessages" class="chat-messages"></div>
+          <div class="chat-input-area">
+            <div id="chatTabEveryoneBar" class="chat-everyone-bar"></div>
+            <div id="chatTabReplyBar" class="chat-reply-bar hidden"></div>
+            <div id="chatTabAttachPreview" class="chat-attach-preview hidden"></div>
+            <div class="chat-input-row">
+              <div class="chat-toolbar">
+                <input type="file" id="chatTabImageInput" accept="image/jpeg,image/png,image/gif,image/webp" hidden />
+                <button id="chatTabImageBtn" class="chat-attach-btn" title="Upload image" type="button">&#128247;</button>
+              </div>
+              <div class="chat-input-wrap">
+                <textarea id="chatTabInput" class="chat-textarea" rows="2"
+                  placeholder="Type a message… (Enter to send, Shift+Enter for new line)"></textarea>
+                <button id="chatTabEmojiBtn" class="chat-emoji-btn" title="Emoji" type="button">&#128578;</button>
+                <div id="chatTabEmojiPicker" class="chat-emoji-picker hidden"></div>
+              </div>
+              <button id="chatTabSendBtn" class="btn btn-primary chat-send-btn">Send</button>
+            </div>
+            <div class="chat-footer-row">
+              <span id="chatTabCharCount" class="chat-char-count">0/500</span>
+              <span style="color:var(--text-muted);font-size:0.72rem">@username mentions you &middot; @everyone notifies this room &middot; &#8617; reply</span>
+            </div>
           </div>
-          <button id="chatTabSendBtn" class="btn btn-primary chat-send-btn">Send</button>
         </div>
-        <div class="chat-footer-row">
-          <span id="chatTabCharCount" class="chat-char-count">0/500</span>
-          <span style="color:var(--text-muted);font-size:0.72rem">@username mentions you &middot; mute @everyone if needed &middot; &#8617; reply</span>
-        </div>
+
+        <aside class="chat-member-sidebar" aria-label="Online members">
+          <div class="chat-side-head">
+            <div class="chat-side-kicker">Online now</div>
+            <div class="chat-side-title"><span id="chatOnlineCount">0</span> members</div>
+          </div>
+          <div id="chatOnlineMembers" class="chat-members-list">
+            <div class="chat-member-empty">Loading online members&hellip;</div>
+          </div>
+          <div class="chat-member-footer">Shown per room from live presence. Keep this tab open to appear online.</div>
+        </aside>
       </div>
     </div>
   </section>
@@ -3123,9 +3388,13 @@
 
 <div id="chatPopup" class="chat-popup hidden" role="dialog" aria-label="Community Chat">
   <div class="chat-popup-header">
-    <span class="chat-popup-title">&#128172; Community Chat</span>
+    <span class="chat-popup-title">&#128172; Discussions</span>
     <button id="chatPopupOpenTabBtn" class="chat-popup-opentab" title="Open full chat tab" type="button">&#8599;</button>
     <button id="chatPopupCloseBtn" class="chat-popup-close" title="Close" type="button">&times;</button>
+  </div>
+  <div class="chat-popup-roombar">
+    <select id="chatPopupRoomSelect" class="chat-popup-room-select" aria-label="Choose discussion room"></select>
+    <span id="chatPopupRoomHint" class="chat-popup-room-hint">room</span>
   </div>
   <div id="chatPopupNameBar" class="chat-name-bar" style="padding:6px 12px;border-bottom:1px solid var(--border)"></div>
   <div id="chatPopupPin" class="chat-pin-banner hidden" style="margin:8px 10px 0"></div>
