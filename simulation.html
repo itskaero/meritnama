@@ -1794,6 +1794,33 @@
     .chat-msg-name { font-weight: 700; color: var(--neon-cyan, #4db8d9); }
     .chat-msg-name-own { color: var(--neon-purple, #7c65c4); }
     .chat-msg-time { opacity: 0.6; }
+    .chat-trust-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 1px 6px;
+      border-radius: 100px;
+      font-size: 0.58rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      line-height: 1.35;
+      border: 1px solid rgba(77,184,217,0.18);
+      background: rgba(77,184,217,0.08);
+      color: var(--text-muted);
+    }
+    .chat-trust-verified {
+      color: var(--neon-green);
+      background: rgba(62,207,142,0.09);
+      border-color: rgba(62,207,142,0.25);
+    }
+    .chat-trust-profile {
+      color: var(--neon-cyan);
+      background: rgba(77,184,217,0.08);
+      border-color: rgba(77,184,217,0.22);
+    }
+    .chat-trust-contributor {
+      color: var(--neon-gold);
+      background: linear-gradient(135deg, rgba(232,166,39,0.15), rgba(244,114,182,0.08));
+      border-color: rgba(232,166,39,0.34);
+    }
     .chat-del-btn {
       background: none; border: none; color: var(--text-muted); cursor: pointer;
       font-size: 0.9rem; padding: 0 3px; opacity: 0.4; transition: opacity 0.15s;
@@ -2101,6 +2128,20 @@
       background: rgba(62,207,142,0.08);
       border-color: rgba(62,207,142,0.18);
     }
+    .chat-member-chip.contributor {
+      color: var(--neon-gold);
+      background: rgba(232,166,39,0.1);
+      border-color: rgba(232,166,39,0.24);
+    }
+    .chat-member-chip.typing {
+      color: var(--neon-purple);
+      background: rgba(124,101,196,0.11);
+      border-color: rgba(124,101,196,0.24);
+    }
+    .chat-member-card.typing {
+      border-color: rgba(124,101,196,0.28);
+      background: rgba(124,101,196,0.045);
+    }
     .chat-member-footer {
       padding: 9px 12px;
       border-top: 1px solid var(--border);
@@ -2183,7 +2224,10 @@
       .chat-tab-wrap { height: auto; min-height: unset; }
       .chat-messages { height: 340px; flex: unset; }
     }
-    @media (max-width: 980px) {
+    @media (max-width: 1120px) {
+      .chat-discussion-shell { grid-template-columns: 190px minmax(0, 1fr) 210px; }
+    }
+    @media (max-width: 760px) {
       .chat-tab-wrap { height: auto; min-height: unset; }
       .chat-discussion-shell { grid-template-columns: 1fr; }
       .chat-room-sidebar { display: none; }
@@ -2984,6 +3028,11 @@
         <div class="form-group marks-basis-wrap">
           <label for="simMarksBasis">Merit basis</label>
           <select id="simMarksBasis" class="mt-filter-sel" title="Formula used when running placement simulation"></select>
+        </div>
+        <div class="form-group sim-status-scope-wrap">
+          <label for="simStatusScope">Candidate status scope</label>
+          <select id="simStatusScope" class="mt-filter-sel" title="Which verification statuses are included in seat allocation"></select>
+          <span id="simStatusScopeHint" class="select-all-hint">All candidates included.</span>
         </div>
       </div>
 

@@ -32,6 +32,9 @@ const SIM = {
     running:     false,
     parentBonus: false,
     filter:      '',
+    statusScopeId: 'all',
+    statusScopes: [],
+    showStatusScopeSelector: true,
     applicantReport: null,
   },
 
@@ -76,6 +79,7 @@ const SIM = {
 const MY_ID_KEY           = 'mn_sim_my_id';
 const CUSTOM_KEY          = 'mn_sim_custom_cand';
 const MARKS_OPTION_KEY    = 'mn_marks_option_id';
+const SIM_STATUS_SCOPE_KEY = 'mn_sim_status_scope_id';
 const MARKS_COMPONENT_FIELDS = [
   'mdcat', 'experience', 'matric', 'fsc', 'degree', 'houseJob',
   'research', 'position', 'hardAreas', 'attempts',
@@ -149,6 +153,44 @@ const CIVILIAN_QUOTA_KEYS = new Set([
   'placement',
 ]);
 
+const DEFAULT_SIM_STATUS_SCOPES = [
+  {
+    id: 'all',
+    label: 'All candidates',
+    description: 'Do not filter by verification status.',
+    includeAll: true,
+    statusIds: [],
+  },
+  {
+    id: 'accepted-pending',
+    label: 'Accepted + Pending',
+    description: 'Only candidates marked Accepted or Pending in profile verification.',
+    includeAll: false,
+    statusIds: [1, 11],
+  },
+  {
+    id: 'accepted',
+    label: 'Accepted only',
+    description: 'Only candidates marked Accepted.',
+    includeAll: false,
+    statusIds: [1],
+  },
+  {
+    id: 'pending',
+    label: 'Pending only',
+    description: 'Only candidates marked Pending.',
+    includeAll: false,
+    statusIds: [11],
+  },
+  {
+    id: 'rejected',
+    label: 'Rejected only',
+    description: 'Only candidates marked Rejected.',
+    includeAll: false,
+    statusIds: [2],
+  },
+];
+
 // ═══════════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════════
@@ -160,6 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initFetchProgress();
   initSimulationNotificationFeed();
   initMarksConfig();
+  initSimulationConfig();
   initScheduleTab();
   initProfileStatus();
   showLoading(true);
@@ -178,6 +221,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupSlotBrowser();
   setupSimulationTab();
   setupMarksSelectors();
+  setupSimulationStatusScopeSelector();
   setupChat();
   updateMyBadge();
 
@@ -669,6 +713,8 @@ async function initDonorEntitlements() {
     const sessionEmail = getSessionEmail();
     SIM.donor.current = sessionEmail ? SIM.donor.byEmail.get(sessionEmail) || null : null;
     SIM.donor.loaded = true;
+    _renderAllChatMessages();
+    _renderOnlineMembers();
     updateSbDownloadGate();
     updateCandidateDownloadGate();
     updateSimulationDownloadGate();
@@ -679,6 +725,8 @@ async function initDonorEntitlements() {
   } catch (e) {
     console.warn('Donor entitlement load failed:', e);
     SIM.donor.loaded = true;
+    _renderAllChatMessages();
+    _renderOnlineMembers();
     updateSbDownloadGate();
     updateCandidateDownloadGate();
     updateSimulationDownloadGate();
@@ -2767,8 +2815,17 @@ function setupSimulationTab() {
 
 function runSimulation() {
   const prog  = SIM.sim.program;
-  if (!allCandidates().some(c => effectiveMark(c, prog) != null)) {
+  const pool = simulationCandidatePool(prog);
+  if (!pool.sourceCandidateCount) {
     showToast('No candidates for this program.', 'warning');
+    return;
+  }
+  if (!pool.candidates.length) {
+    const scopeLabel = pool.scope?.label || 'selected status scope';
+    showToast(pool.statusUnavailable
+      ? 'Verification status data is not loaded yet. Try again shortly or use All candidates.'
+      : `No ${prog} candidates match "${scopeLabel}".`,
+      'warning');
     return;
   }
 
@@ -2790,10 +2847,17 @@ function runSimulation() {
 }
 
 function runSimulationForProgram(program) {
-  const cands = allCandidates().filter(c => effectiveMark(c, program) != null);
+  const pool = simulationCandidatePool(program);
+  const cands = pool.candidates;
   if (!cands.length) return null;
   const tree = buildSeatTree(program);
-  return runPlacement(cands, tree, program, SIM.sim.parentBonus);
+  const result = runPlacement(cands, tree, program, SIM.sim.parentBonus);
+  result.statusScope = pool.scope;
+  result.sourceCandidateCount = pool.sourceCandidateCount;
+  result.includedCandidateCount = pool.includedCandidateCount;
+  result.excludedByStatusCount = pool.excludedByStatusCount;
+  result.missingStatusCount = pool.missingStatusCount;
+  return result;
 }
 
 function renderSimResults() {
@@ -2829,6 +2893,10 @@ function renderSimResults() {
 
   const placed  = candidates.filter(c => c.placed).length;
   const total   = candidates.length;
+  const statusScope = result.statusScope || getActiveSimStatusScope();
+  const statusSummary = statusScope?.includeAll
+    ? 'Status scope: all candidates'
+    : `Status scope: ${statusScope?.label || 'Filtered'} · included ${Number(result.includedCandidateCount || total).toLocaleString()} of ${Number(result.sourceCandidateCount || total).toLocaleString()} candidates${result.missingStatusCount ? ` · ${Number(result.missingStatusCount).toLocaleString()} had no status` : ''}`;
 
   // Flatten tree to rows, apply filter
   const rows = [];
@@ -2863,7 +2931,7 @@ function renderSimResults() {
         <div><span class="sim-sum-val">${filledSlots}</span><span class="sim-sum-lbl">Slots filled</span></div>
         <div><span class="sim-sum-val">${rows.length}</span><span class="sim-sum-lbl">Total slots</span></div>
       </div>
-      <p style="margin-top:10px;font-size:0.72rem;color:var(--text-muted)">Merit basis: <strong>${esc(getActiveMarksLabel())}</strong>${SIM.sim.parentBonus ? ' · Parent institute bonus on' : ''}</p>
+      <p style="margin-top:10px;font-size:0.72rem;color:var(--text-muted)">Merit basis: <strong>${esc(getActiveMarksLabel())}</strong>${SIM.sim.parentBonus ? ' · Parent institute bonus on' : ''} · ${esc(statusSummary)}</p>
     </div>
     <div class="sim-grid">
       ${rows.map(r => renderSimCard(r, program)).join('')}
@@ -3012,7 +3080,8 @@ async function downloadSimulationPdf() {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
   doc.setTextColor(20, 35, 55);
-  doc.text(`Placed: ${placed} · Unplaced: ${candidates.length - placed} · Merit basis: ${getActiveMarksLabel()}${SIM.sim.parentBonus ? ' · Parent bonus ON' : ''}`, 42, y);
+  const statusLabel = SIM.sim.result.statusScope?.label || getActiveSimStatusScope()?.label || 'All candidates';
+  doc.text(`Placed: ${placed} · Unplaced: ${candidates.length - placed} · Merit basis: ${getActiveMarksLabel()}${SIM.sim.parentBonus ? ' · Parent bonus ON' : ''} · Status: ${statusLabel}`, 42, y);
   y += 24;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
@@ -3243,6 +3312,7 @@ function renderApplicantSimulationModal(cand, results) {
           &middot; Base marks: <strong>${fmtM(baseMarks(cand))}</strong>
           &middot; Portal marksTotal: <strong>${fmtM(cand.marksTotal)}</strong>
           &middot; Parent bonus: <strong>${SIM.sim.parentBonus ? 'On' : 'Off'}</strong>
+          &middot; Status scope: <strong>${esc(getActiveSimStatusScope()?.label || 'All candidates')}</strong>
         </p>
       </div>
       <div class="app-sim-summary-pills">
@@ -3297,7 +3367,7 @@ async function downloadApplicantSimulationPdf() {
   };
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
-  doc.text(`Applicant ID: ${cand.applicantId} · Merit basis: ${getActiveMarksLabel()}${SIM.sim.parentBonus ? ' · Parent bonus ON' : ''}`, 42, y);
+  doc.text(`Applicant ID: ${cand.applicantId} · Merit basis: ${getActiveMarksLabel()}${SIM.sim.parentBonus ? ' · Parent bonus ON' : ''} · Status: ${getActiveSimStatusScope()?.label || 'All candidates'}`, 42, y);
   y += 22;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
@@ -3752,6 +3822,152 @@ function setActiveMarksOption(id) {
   localStorage.setItem(MARKS_OPTION_KEY, id);
   syncMarksSelectorUI();
   onMarksOptionChanged(true);
+}
+
+function normalizeSimStatusScope(raw, idx = 0) {
+  if (!raw || typeof raw !== 'object') return null;
+  const id = typeof raw.id === 'string' && raw.id.trim()
+    ? raw.id.trim()
+    : `scope-${idx + 1}`;
+  const label = typeof raw.label === 'string' && raw.label.trim()
+    ? raw.label.trim()
+    : id;
+  const description = typeof raw.description === 'string' ? raw.description.trim() : '';
+  const includeAll = raw.includeAll === true || id === 'all';
+  const statusIds = includeAll
+    ? []
+    : (Array.isArray(raw.statusIds) ? raw.statusIds : [])
+        .map(n => Number(n))
+        .filter(n => Number.isFinite(n));
+  if (!includeAll && !statusIds.length) return null;
+  return { id, label, description, includeAll, statusIds };
+}
+
+function cloneDefaultSimStatusScopes() {
+  return DEFAULT_SIM_STATUS_SCOPES.map(scope => ({
+    ...scope,
+    statusIds: [...(scope.statusIds || [])],
+  }));
+}
+
+function applySimulationConfig(data) {
+  const parsed = Array.isArray(data?.statusScopes)
+    ? data.statusScopes.map((scope, i) => normalizeSimStatusScope(scope, i)).filter(Boolean)
+    : [];
+  SIM.sim.statusScopes = parsed.length ? parsed : cloneDefaultSimStatusScopes();
+  SIM.sim.showStatusScopeSelector = MNNotif.readMarksConfigBool(data?.showStatusScopeSelector, true);
+
+  const defaultId = typeof data?.defaultStatusScopeId === 'string' && data.defaultStatusScopeId.trim()
+    ? data.defaultStatusScopeId.trim()
+    : 'all';
+  const storedId = localStorage.getItem(SIM_STATUS_SCOPE_KEY);
+  const ids = new Set(SIM.sim.statusScopes.map(scope => scope.id));
+  const pick = id => ids.has(id) ? id : null;
+  SIM.sim.statusScopeId = SIM.sim.showStatusScopeSelector
+    ? (pick(storedId) || pick(defaultId) || SIM.sim.statusScopes[0]?.id || 'all')
+    : (pick(defaultId) || SIM.sim.statusScopes[0]?.id || 'all');
+
+  if (SIM.sim.showStatusScopeSelector && SIM.sim.statusScopeId) {
+    localStorage.setItem(SIM_STATUS_SCOPE_KEY, SIM.sim.statusScopeId);
+  }
+  syncSimulationStatusScopeUI();
+}
+
+function initSimulationConfig() {
+  applySimulationConfig(null);
+  try {
+    firebase.firestore().collection('notifications').doc('simulation_config')
+      .onSnapshot(snap => {
+        applySimulationConfig(snap.exists ? snap.data() : null);
+        if (SIM.sim.result) {
+          SIM.sim.result = null;
+          document.getElementById('simResults').innerHTML = '';
+          updateSimulationDownloadGate();
+        }
+      }, err => console.warn('[SimulationConfig] listener error:', err));
+  } catch (e) {
+    console.warn('[SimulationConfig] init failed:', e);
+  }
+}
+
+function getActiveSimStatusScope() {
+  return SIM.sim.statusScopes.find(scope => scope.id === SIM.sim.statusScopeId)
+    || SIM.sim.statusScopes[0]
+    || DEFAULT_SIM_STATUS_SCOPES[0];
+}
+
+function syncSimulationStatusScopeUI() {
+  const wrap = document.querySelector('.sim-status-scope-wrap');
+  const sel = document.getElementById('simStatusScope');
+  const hint = document.getElementById('simStatusScopeHint');
+  if (!sel) return;
+  sel.innerHTML = SIM.sim.statusScopes.map(scope =>
+    `<option value="${esc(scope.id)}">${esc(scope.label)}</option>`
+  ).join('');
+  sel.value = SIM.sim.statusScopeId;
+  sel.disabled = !SIM.sim.showStatusScopeSelector || SIM.sim.statusScopes.length <= 1;
+  wrap?.classList.toggle('hidden', !SIM.sim.showStatusScopeSelector);
+  const scope = getActiveSimStatusScope();
+  if (hint) hint.textContent = scope.description || (scope.includeAll ? 'All candidates included.' : 'Filtered by verification status.');
+}
+
+function setupSimulationStatusScopeSelector() {
+  const sel = document.getElementById('simStatusScope');
+  sel?.addEventListener('change', e => {
+    const next = e.target.value;
+    if (!SIM.sim.statusScopes.some(scope => scope.id === next)) return;
+    SIM.sim.statusScopeId = next;
+    localStorage.setItem(SIM_STATUS_SCOPE_KEY, next);
+    SIM.sim.result = null;
+    document.getElementById('simResults').innerHTML = '';
+    updateSimulationDownloadGate();
+    syncSimulationStatusScopeUI();
+  });
+  syncSimulationStatusScopeUI();
+}
+
+function candidateMatchesSimStatusScope(candidate, scope = getActiveSimStatusScope()) {
+  if (!scope || scope.includeAll) return true;
+  const st = getProfileStatusForCandidate(candidate);
+  if (!st) return false;
+  return scope.statusIds.includes(Number(st.statusId));
+}
+
+function simulationCandidatePool(program) {
+  const base = allCandidates().filter(c => effectiveMark(c, program) != null);
+  const scope = getActiveSimStatusScope();
+  if (!scope || scope.includeAll) {
+    return {
+      candidates: base,
+      scope,
+      sourceCandidateCount: base.length,
+      includedCandidateCount: base.length,
+      excludedByStatusCount: 0,
+      missingStatusCount: 0,
+      statusUnavailable: false,
+    };
+  }
+
+  const statusCount = Object.keys(SIM.profileStatus.byId || {}).length;
+  const included = [];
+  let missingStatusCount = 0;
+  for (const cand of base) {
+    const st = getProfileStatusForCandidate(cand);
+    if (!st) {
+      missingStatusCount++;
+      continue;
+    }
+    if (scope.statusIds.includes(Number(st.statusId))) included.push(cand);
+  }
+  return {
+    candidates: included,
+    scope,
+    sourceCandidateCount: base.length,
+    includedCandidateCount: included.length,
+    excludedByStatusCount: base.length - included.length,
+    missingStatusCount,
+    statusUnavailable: !statusCount,
+  };
 }
 
 function onMarksOptionChanged(clearSim) {
@@ -4510,15 +4726,18 @@ const CHAT = {
   unsubscribe:        null,
   typingUnsubscribe:  null,
   pinUnsubscribe:     null,
+  roomPinsUnsubscribe:null,
   presenceUnsubscribe: null,
   messages:           [],
   _legacy:            [],
   typingUsers:        [],
+  typingByUid:        new Set(),
   onlineMembers:      [],
   roomCounts:         {},
   onlineCounts:       {},
   memberProfiles:     {},
   pinned:             null,
+  roomPins:           {},
   unreadCount:        0,
   popupOpen:          false,
   tabActive:          false,
@@ -4536,6 +4755,7 @@ const CHAT = {
   TYPING_COLLECTION:  'sim21_chat_typing',
   PRESENCE_COLLECTION:'sim21_room_presence',
   PIN_DOC:            'chat_pin',
+  ROOM_PINS_DOC:      'chat_room_pins',
   EVERYONE_TOKEN:     '@everyone',
   MUTE_EVERYONE_KEY:  'mn_chat_mute_everyone',
   ROOM_KEY:           'mn_chat_active_room',
@@ -4732,6 +4952,7 @@ function setupChat() {
   _startChatListener();
   _startTypingListener();
   _startChatPinListener();
+  _startRoomPinsListener();
   _startRoomPresence();
 }
 
@@ -4812,6 +5033,7 @@ function _switchChatRoom(roomId) {
   _renderRoomChrome();
   _renderAllChatMessages();
   _renderTypingIndicators();
+  _renderChatPinBanners();
   _startRoomPresence(prev);
   _chatScrollBottom('chatTabMessages');
   if (CHAT.popupOpen) _chatScrollBottom('chatPopupMessages');
@@ -4916,9 +5138,10 @@ function _startRoomPresence(previousRoomId) {
 }
 
 async function _hydrateOnlineMemberProfiles() {
-  const emails = CHAT.onlineMembers
-    .map(m => String(m.email || '').toLowerCase().trim())
-    .filter(email => email && CHAT.memberProfiles[email] === undefined);
+  const emails = [...new Set([
+    ...CHAT.onlineMembers.map(m => String(m.email || '').toLowerCase().trim()),
+    ...CHAT.messages.map(m => String(m.email || '').toLowerCase().trim()),
+  ].filter(email => email && CHAT.memberProfiles[email] === undefined))];
   if (!emails.length) return;
 
   let db;
@@ -4933,12 +5156,46 @@ async function _hydrateOnlineMemberProfiles() {
     }
   }));
   _renderOnlineMembers();
+  _renderAllChatMessages();
 }
 
 function _chatMemberProfile(member) {
   const email = String(member?.email || '').toLowerCase().trim();
   if (!email) return null;
   return CHAT.memberProfiles[email] || null;
+}
+
+function _chatProfileHasPublicInfo(profile) {
+  return !!(profile?.isPublic && (profile.name || profile.specialty || profile.hospital || profile.profilePicBase64));
+}
+
+function _chatIsVerifiedProfile(profile) {
+  return !!(profile?.applicantId || profile?.inducted || profile?.verified || profile?.isVerified);
+}
+
+function _chatIsContributor(email) {
+  const key = String(email || '').toLowerCase().trim();
+  return !!(key && SIM.donor?.byEmail?.has(key));
+}
+
+function _chatTrustBadges(email, profile) {
+  const badges = [];
+  if (_chatIsVerifiedProfile(profile)) {
+    badges.push('<span class="chat-trust-badge chat-trust-verified" title="Linked or verified profile">✓ Verified</span>');
+  }
+  if (_chatProfileHasPublicInfo(profile)) {
+    badges.push('<span class="chat-trust-badge chat-trust-profile" title="Public MeritNama profile">Profile</span>');
+  }
+  if (_chatIsContributor(email)) {
+    badges.push('<span class="chat-trust-badge chat-trust-contributor" title="MeritNama contributor">★ Contributor</span>');
+  }
+  return badges.join('');
+}
+
+function _chatProfileForEmail(email) {
+  const key = String(email || '').toLowerCase().trim();
+  if (!key) return null;
+  return CHAT.memberProfiles[key] || null;
 }
 
 function _chatMemberInitial(name) {
@@ -4961,14 +5218,25 @@ function _renderOnlineMembers() {
 
   list.innerHTML = CHAT.onlineMembers.map(member => {
     const profile = _chatMemberProfile(member);
+    const email = String(member.email || '').toLowerCase().trim();
     const name = profile?.name || member.name || member.email || 'Anonymous';
     const isOwn = member.uid === _chatUID();
+    const isTyping = CHAT.typingByUid.has(member.uid);
     const avatar = profile?.profilePicBase64
       ? `<img src="${profile.profilePicBase64}" alt="" />`
       : esc(_chatMemberInitial(name));
     const statusChip = profile?.inducted
       ? '<span class="chat-member-chip good">Inducted</span>'
       : '<span class="chat-member-chip">Applicant</span>';
+    const publicProfileChip = _chatProfileHasPublicInfo(profile)
+      ? '<span class="chat-member-chip">Profile</span>'
+      : '';
+    const contributorChip = _chatIsContributor(email)
+      ? '<span class="chat-member-chip contributor">Contributor</span>'
+      : '';
+    const typingChip = isTyping
+      ? '<span class="chat-member-chip typing">typing</span>'
+      : '';
     const specialtyChip = profile?.specialty
       ? `<span class="chat-member-chip">${esc(profile.specialty)}</span>`
       : '';
@@ -4976,11 +5244,11 @@ function _renderOnlineMembers() {
       ? `<span class="chat-member-chip">${esc(profile.hospital)}</span>`
       : '';
     return `
-      <div class="chat-member-card">
+      <div class="chat-member-card${isTyping ? ' typing' : ''}">
         <div class="chat-member-avatar">${avatar}<span class="chat-member-dot"></span></div>
         <div class="chat-member-main">
           <div class="chat-member-name">${esc(name)}${isOwn ? ' (you)' : ''}</div>
-          <div class="chat-member-meta">${statusChip}${specialtyChip}${hospitalChip}</div>
+          <div class="chat-member-meta">${_chatTrustBadges(email, profile)}${typingChip}${statusChip}${publicProfileChip}${contributorChip}${specialtyChip}${hospitalChip}</div>
         </div>
       </div>`;
   }).join('');
@@ -5469,6 +5737,7 @@ function _startChatListener() {
       }
       _renderAllChatMessages();
       _renderRoomCounts();
+      _hydrateOnlineMemberProfiles();
       if (isVisible) _chatScrollBottom('chatTabMessages');
       if (CHAT.popupOpen) _chatScrollBottom('chatPopupMessages');
     }, err => {
@@ -5640,6 +5909,7 @@ function _startTypingListener() {
   CHAT.typingUnsubscribe = db.collection(CHAT.TYPING_COLLECTION)
     .onSnapshot(snap => {
       const users = [];
+      const typingSet = new Set();
       const roomId = _chatActiveRoom().id;
       for (const doc of snap.docs) {
         const d = doc.data();
@@ -5647,18 +5917,22 @@ function _startTypingListener() {
         if (_chatRoomId(d.roomId || 'general') !== roomId) continue;
         const ts = d.updatedAt?.toMillis?.() ?? 0;
         if (ts && ts < cutoff()) continue;
-        users.push(d.name);
+        users.push({ uid: d.uid || doc.id, name: d.name });
+        typingSet.add(d.uid || doc.id);
       }
       CHAT.typingUsers = users.slice(0, 4);
+      CHAT.typingByUid = typingSet;
       _renderTypingIndicators();
+      _renderOnlineMembers();
     }, err => console.warn('Typing listener error:', err));
 }
 
 function _renderTypingIndicators() {
-  const text = CHAT.typingUsers.length
-    ? (CHAT.typingUsers.length === 1
-        ? `${CHAT.typingUsers[0]} is typing…`
-        : `${CHAT.typingUsers.slice(0, 2).join(', ')}${CHAT.typingUsers.length > 2 ? ' +' + (CHAT.typingUsers.length - 2) : ''} typing…`)
+  const names = CHAT.typingUsers.map(u => u.name || 'Someone');
+  const text = names.length
+    ? (names.length === 1
+        ? `${names[0]} is typing…`
+        : `${names.slice(0, 2).join(', ')}${names.length > 2 ? ' +' + (names.length - 2) : ''} typing…`)
     : '';
   ['chatTabTyping', 'chatPopupTyping'].forEach(id => {
     const el = document.getElementById(id);
@@ -5684,23 +5958,49 @@ function _startChatPinListener() {
     }, err => console.warn('Chat pin listener error:', err));
 }
 
+function _startRoomPinsListener() {
+  let db;
+  try { db = firebase.firestore(); } catch { return; }
+  if (CHAT.roomPinsUnsubscribe) CHAT.roomPinsUnsubscribe();
+  CHAT.roomPinsUnsubscribe = db.collection('notifications').doc(CHAT.ROOM_PINS_DOC)
+    .onSnapshot(snap => {
+      CHAT.roomPins = snap.exists ? (snap.data()?.rooms || {}) : {};
+      _renderChatPinBanners();
+    }, err => console.warn('Room pins listener error:', err));
+}
+
+function _chatActivePins() {
+  const pins = [];
+  const roomId = _chatActiveRoom().id;
+  const roomPin = CHAT.roomPins?.[roomId];
+  if (roomPin?.active !== false && roomPin?.text) {
+    pins.push({ ...roomPin, label: `${_chatActiveRoom().label} pinned post`, scope: 'room' });
+  }
+  if (CHAT.pinned?.text) {
+    pins.push({ ...CHAT.pinned, label: 'Portal pinned post', scope: 'global' });
+  }
+  return pins;
+}
+
 function _renderChatPinBanners() {
-  const pin = CHAT.pinned;
+  const pins = _chatActivePins();
   ['chatTabPin', 'chatPopupPin'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    if (!pin?.text) {
+    if (!pins.length) {
       el.classList.add('hidden');
       el.innerHTML = '';
       return;
     }
-    const by = pin.pinnedBy ? ` — ${esc(pin.pinnedBy)}` : '';
-    el.innerHTML = `
+    el.innerHTML = pins.map(pin => {
+      const by = pin.pinnedBy ? ` — ${esc(pin.pinnedBy)}` : '';
+      return `
       <div class="chat-pin-inner">
-        <span class="chat-pin-label">&#128204; Pinned</span>
+        <span class="chat-pin-label">&#128204; ${esc(pin.label || 'Pinned')}</span>
         <span class="chat-pin-text">${esc(pin.text).replace(/\n/g, '<br>')}</span>
         ${by ? `<span class="chat-pin-by">${by}</span>` : ''}
       </div>`;
+    }).join('');
     el.classList.remove('hidden');
   });
 }
@@ -5747,9 +6047,13 @@ function _renderChatMessages(containerId) {
     const isOwn  = msg.uid === uid;
     const relTm  = _relTime(msg.ts);
     const canReact = !String(msg.id).startsWith('_legacy_');
+    const authorEmail = String(msg.email || '').toLowerCase().trim();
+    const authorProfile = _chatProfileForEmail(authorEmail);
+    const badges = _chatTrustBadges(authorEmail, authorProfile);
     return `<div class="chat-msg ${isOwn ? 'chat-msg-own' : ''}" data-msg-id="${msg.id}">
       <div class="chat-msg-meta">
         <span class="chat-msg-name ${isOwn ? 'chat-msg-name-own' : ''}">${esc(msg.name || 'Anonymous')}</span>
+        ${badges}
         <span class="chat-msg-time">${relTm}</span>
         ${canReact ? `<button class="chat-mention-btn" data-id="${msg.id}" data-prefix="${containerId.includes('Popup') ? 'Popup' : 'Tab'}" title="Mention @${esc(msg.name || 'user')}">@</button>` : ''}
         ${canReact ? `<button class="chat-reply-btn" data-id="${msg.id}" title="Reply">&#8617;</button>` : ''}

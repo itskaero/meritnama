@@ -1407,6 +1407,64 @@
       </details>
 
       <details class="broadcast-section">
+        <summary>🧮 Seat Allocation Status Scope</summary>
+        <div class="broadcast-section-body">
+      <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
+        Controls which profile verification statuses can be included in the <strong>Seat Allocation</strong> simulation.
+        Stored in <code>notifications/simulation_config</code>. Hide the selector to force one admin-chosen scope for everyone.
+      </p>
+
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem;">
+        <button id="simCfgLoadBtn" style="padding:8px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Load Config</button>
+        <button id="simCfgDefaultsBtn" style="padding:8px 16px;background:rgba(245,200,66,0.12);color:#f5c842;border:1px solid rgba(245,200,66,0.28);border-radius:8px;cursor:pointer;font-weight:600;">Reset Defaults</button>
+        <button id="simCfgSaveBtn" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save Config</button>
+      </div>
+
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;max-width:760px;margin-bottom:1rem;">
+        <div class="modal-field" style="flex:1;min-width:220px;">
+          <label>Default scope for new visitors</label>
+          <select id="simCfgDefaultScope" style="width:100%;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;"></select>
+        </div>
+        <div class="modal-field" style="flex:0 0 auto;display:flex;align-items:flex-end;padding-bottom:2px;">
+          <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:500;cursor:pointer;">
+            <input type="checkbox" id="simCfgShowSelector" checked style="accent-color:var(--accent);" />
+            Show status selector on simulation page
+          </label>
+        </div>
+      </div>
+
+      <div id="simCfgScopes" style="max-width:760px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.6rem;"></div>
+
+      <div style="max-width:760px;margin-top:1rem;border:1px solid var(--border);border-radius:8px;padding:1rem;background:rgba(255,255,255,0.02);">
+        <div style="font-size:0.82rem;font-weight:700;color:var(--accent);margin-bottom:0.75rem;">Add custom status scope</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <div class="modal-field" style="margin:0;">
+            <label>ID <span style="font-weight:400;">(slug, unique)</span></label>
+            <input type="text" id="simCfgCustomId" placeholder="e.g. accepted-rejected" />
+          </div>
+          <div class="modal-field" style="margin:0;">
+            <label>Label <span style="font-weight:400;">(shown to users)</span></label>
+            <input type="text" id="simCfgCustomLabel" placeholder="e.g. Accepted + Rejected" />
+          </div>
+          <div class="modal-field" style="margin:0;">
+            <label>Status IDs <span style="font-weight:400;">(comma-separated)</span></label>
+            <input type="text" id="simCfgCustomStatusIds" placeholder="e.g. 1,2" />
+          </div>
+          <div class="modal-field" style="margin:0;">
+            <label>Description <span style="font-weight:400;">(optional)</span></label>
+            <input type="text" id="simCfgCustomDescription" placeholder="Shown as helper text on simulation page" />
+          </div>
+        </div>
+        <p style="font-size:0.72rem;color:var(--text-muted);margin:0.7rem 0 0;">
+          Common verification status IDs: <code>1</code> Accepted, <code>11</code> Pending, <code>2</code> Rejected. You can combine any IDs present in the imported profile-status data.
+        </p>
+        <button type="button" id="simCfgCustomAddBtn" style="margin-top:0.85rem;padding:8px 16px;background:rgba(62,207,142,0.15);color:var(--success);border:1px solid rgba(62,207,142,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Add Custom Scope</button>
+      </div>
+      <div id="simCfgStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
+        </div>
+      </details>
+
+      <details class="broadcast-section">
         <summary>🔐 Access Request &amp; Payment Config</summary>
         <div class="broadcast-section-body">
       <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
@@ -1607,6 +1665,14 @@ const db = firebase.firestore();
 const ADMIN_SESSION_KEY = 'meritnama_admin_session';
 const ADMIN_TAB_KEY = 'mn_admin_tab';
 const SESSION_DURATION = 2 * 60 * 60 * 1000; // 2 hours
+
+const DEFAULT_SIM_STATUS_SCOPES_ADMIN = [
+  { id: 'all', label: 'All candidates', description: 'Do not filter by verification status.', includeAll: true, statusIds: [] },
+  { id: 'accepted-pending', label: 'Accepted + Pending', description: 'Only candidates marked Accepted or Pending.', includeAll: false, statusIds: [1, 11] },
+  { id: 'accepted', label: 'Accepted only', description: 'Only candidates marked Accepted.', includeAll: false, statusIds: [1] },
+  { id: 'pending', label: 'Pending only', description: 'Only candidates marked Pending.', includeAll: false, statusIds: [11] },
+  { id: 'rejected', label: 'Rejected only', description: 'Only candidates marked Rejected.', includeAll: false, statusIds: [2] },
+];
 
 const TAB_META = {
   overview:      { title: 'Overview',           sub: 'Platform metrics and live activity' },
@@ -3080,6 +3146,14 @@ function loadBroadcast() {
   document.getElementById('chatPinLoadBtn')?.addEventListener('click', loadChatPinEditor);
   document.getElementById('chatPinSaveBtn')?.addEventListener('click', saveChatPinEditor);
   document.getElementById('chatPinClearBtn')?.addEventListener('click', clearChatPinEditor);
+  const simCfgLoadBtn = document.getElementById('simCfgLoadBtn');
+  const simCfgDefaultsBtn = document.getElementById('simCfgDefaultsBtn');
+  const simCfgSaveBtn = document.getElementById('simCfgSaveBtn');
+  const simCfgCustomAddBtn = document.getElementById('simCfgCustomAddBtn');
+  if (simCfgLoadBtn) simCfgLoadBtn.onclick = loadSimulationConfigEditor;
+  if (simCfgDefaultsBtn) simCfgDefaultsBtn.onclick = loadSimulationConfigDefaults;
+  if (simCfgSaveBtn) simCfgSaveBtn.onclick = saveSimulationConfigEditor;
+  if (simCfgCustomAddBtn) simCfgCustomAddBtn.onclick = addCustomSimulationScope;
   initMarksConfigAdmin();
   initAccessConfigAdmin();
   loadSimulationNotificationsEditor();
@@ -3087,6 +3161,7 @@ function loadBroadcast() {
   loadScheduleAdminEditor();
   loadProfileStatusAdminEditor();
   loadChatPinEditor();
+  loadSimulationConfigEditor();
 }
 
 function setScheduleAdminStatus(message, color = 'var(--text-muted)') {
@@ -3312,6 +3387,263 @@ async function clearChatPinEditor() {
     setChatPinAdminStatus('Pin cleared.', 'var(--neon-green)');
   } catch (e) {
     setChatPinAdminStatus('Error: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
+function setSimulationConfigStatus(message, color = 'var(--text-muted)') {
+  const el = document.getElementById('simCfgStatus');
+  if (!el) return;
+  el.textContent = message;
+  el.style.color = color;
+}
+
+function normalizeSimulationScopeAdmin(raw, idx = 0) {
+  if (!raw || typeof raw !== 'object') return null;
+  const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : `scope-${idx + 1}`;
+  const label = typeof raw.label === 'string' && raw.label.trim() ? raw.label.trim() : id;
+  const description = typeof raw.description === 'string' ? raw.description.trim() : '';
+  const includeAll = raw.includeAll === true || id === 'all';
+  const statusIds = includeAll
+    ? []
+    : (Array.isArray(raw.statusIds) ? raw.statusIds : [])
+        .map(Number)
+        .filter(Number.isFinite);
+  if (!includeAll && !statusIds.length) return null;
+  return { id, label, description, includeAll, statusIds };
+}
+
+function cloneDefaultSimulationScopesAdmin() {
+  return DEFAULT_SIM_STATUS_SCOPES_ADMIN.map(scope => ({
+    ...scope,
+    statusIds: [...(scope.statusIds || [])],
+  }));
+}
+
+function simulationScopeIsDefault(scopeId) {
+  return DEFAULT_SIM_STATUS_SCOPES_ADMIN.some(scope => scope.id === scopeId);
+}
+
+function allSimulationScopeTemplatesAdmin() {
+  const merged = new Map();
+  cloneDefaultSimulationScopesAdmin().forEach(scope => merged.set(scope.id, { ...scope, isDefault: true }));
+  (simulationConfigDraft.statusScopes || []).forEach(scope => {
+    if (!scope?.id) return;
+    const existing = merged.get(scope.id) || {};
+    merged.set(scope.id, {
+      ...existing,
+      ...scope,
+      statusIds: [...(scope.statusIds || [])],
+      isDefault: simulationScopeIsDefault(scope.id),
+    });
+  });
+  return [...merged.values()];
+}
+
+function parseSimulationStatusIds(raw) {
+  return String(raw || '')
+    .split(',')
+    .map(s => Number(s.trim()))
+    .filter(Number.isFinite);
+}
+
+let simulationConfigDraft = {
+  statusScopes: cloneDefaultSimulationScopesAdmin(),
+  defaultStatusScopeId: 'all',
+  showStatusScopeSelector: true,
+};
+
+function renderSimulationConfigEditor() {
+  const scopesEl = document.getElementById('simCfgScopes');
+  const defaultEl = document.getElementById('simCfgDefaultScope');
+  const showEl = document.getElementById('simCfgShowSelector');
+  if (!scopesEl || !defaultEl) return;
+
+  const activeIds = new Set((simulationConfigDraft.statusScopes || []).map(scope => scope.id));
+  const templates = allSimulationScopeTemplatesAdmin();
+  const defaultOptions = DEFAULT_SIM_STATUS_SCOPES_ADMIN
+    .filter(scope => activeIds.has(scope.id))
+    .map(scope => `<option value="${escapeHtml(scope.id)}">${escapeHtml(scope.label)}</option>`)
+    .concat(
+      templates
+        .filter(scope => activeIds.has(scope.id) && !simulationScopeIsDefault(scope.id))
+        .map(scope => `<option value="${escapeHtml(scope.id)}">${escapeHtml(scope.label)}</option>`)
+    );
+  defaultEl.innerHTML = defaultOptions.join('');
+  defaultEl.value = activeIds.has(simulationConfigDraft.defaultStatusScopeId)
+    ? simulationConfigDraft.defaultStatusScopeId
+    : (simulationConfigDraft.statusScopes[0]?.id || 'all');
+  defaultEl.onchange = () => {
+    simulationConfigDraft.defaultStatusScopeId = defaultEl.value || 'all';
+  };
+  if (showEl) showEl.checked = simulationConfigDraft.showStatusScopeSelector !== false;
+
+  scopesEl.innerHTML = templates.map(scope => {
+    const checked = activeIds.has(scope.id) ? 'checked' : '';
+    const disabled = scope.id === 'all' ? 'disabled' : '';
+    const statusLabel = scope.includeAll
+      ? 'all statuses'
+      : `status IDs: ${(scope.statusIds || []).join(', ')}`;
+    const removeBtn = scope.isDefault
+      ? ''
+      : `<button type="button" class="sim-cfg-remove-scope" data-scope-id="${escapeHtml(scope.id)}" style="margin-top:0.45rem;padding:4px 8px;background:rgba(224,84,112,0.1);color:var(--neon-pink);border:1px solid rgba(224,84,112,0.25);border-radius:6px;cursor:pointer;font-size:0.7rem;">Remove custom</button>`;
+    return `
+      <label style="display:flex;gap:0.65rem;align-items:flex-start;padding:0.75rem;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.02);cursor:pointer;">
+        <input type="checkbox" class="sim-cfg-scope-check" value="${escapeHtml(scope.id)}" ${checked} ${disabled} style="margin-top:2px;accent-color:var(--accent);" />
+        <span>
+          <strong style="color:var(--text);font-size:0.84rem;">${escapeHtml(scope.label)}</strong>
+          <br><span style="color:var(--text-muted);font-size:0.72rem;line-height:1.45;">${escapeHtml(statusLabel)}</span>
+          ${scope.description ? `<br><span style="color:var(--text-muted);font-size:0.74rem;line-height:1.45;">${escapeHtml(scope.description)}</span>` : ''}
+          ${removeBtn}
+        </span>
+      </label>`;
+  }).join('');
+
+  scopesEl.querySelectorAll('.sim-cfg-scope-check').forEach(input => {
+    input.addEventListener('change', () => {
+      const selected = new Set(['all']);
+      scopesEl.querySelectorAll('.sim-cfg-scope-check:checked').forEach(chk => selected.add(chk.value));
+      simulationConfigDraft.statusScopes = allSimulationScopeTemplatesAdmin()
+        .filter(scope => selected.has(scope.id))
+        .map(scope => ({ ...scope, statusIds: [...scope.statusIds] }));
+      if (!selected.has(simulationConfigDraft.defaultStatusScopeId)) {
+        simulationConfigDraft.defaultStatusScopeId = simulationConfigDraft.statusScopes[0]?.id || 'all';
+      }
+      renderSimulationConfigEditor();
+    });
+  });
+  scopesEl.querySelectorAll('.sim-cfg-remove-scope').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const id = btn.dataset.scopeId;
+      simulationConfigDraft.statusScopes = (simulationConfigDraft.statusScopes || [])
+        .filter(scope => scope.id !== id);
+      if (simulationConfigDraft.defaultStatusScopeId === id) {
+        simulationConfigDraft.defaultStatusScopeId = simulationConfigDraft.statusScopes[0]?.id || 'all';
+      }
+      renderSimulationConfigEditor();
+      setSimulationConfigStatus('Custom scope removed. Save to publish.', 'var(--neon-gold)');
+    });
+  });
+}
+
+function addCustomSimulationScope() {
+  const idEl = document.getElementById('simCfgCustomId');
+  const labelEl = document.getElementById('simCfgCustomLabel');
+  const statusEl = document.getElementById('simCfgCustomStatusIds');
+  const descEl = document.getElementById('simCfgCustomDescription');
+
+  const id = idEl?.value.trim() || '';
+  const label = labelEl?.value.trim() || '';
+  const statusIds = parseSimulationStatusIds(statusEl?.value || '');
+  const description = descEl?.value.trim() || '';
+
+  if (!id || !/^[a-z0-9][a-z0-9-_]*$/i.test(id)) {
+    setSimulationConfigStatus('Custom scope ID is required (letters, numbers, hyphens, underscores).', 'var(--neon-pink)');
+    return;
+  }
+  if (id === 'all') {
+    setSimulationConfigStatus('The ID "all" is reserved.', 'var(--neon-pink)');
+    return;
+  }
+  if (allSimulationScopeTemplatesAdmin().some(scope => scope.id === id)) {
+    setSimulationConfigStatus('A scope with this ID already exists.', 'var(--neon-pink)');
+    return;
+  }
+  if (!label) {
+    setSimulationConfigStatus('Custom scope label is required.', 'var(--neon-pink)');
+    return;
+  }
+  if (!statusIds.length) {
+    setSimulationConfigStatus('Enter at least one numeric status ID, e.g. 1,11.', 'var(--neon-pink)');
+    return;
+  }
+
+  simulationConfigDraft.statusScopes.push({
+    id,
+    label,
+    description,
+    includeAll: false,
+    statusIds,
+  });
+  if (idEl) idEl.value = '';
+  if (labelEl) labelEl.value = '';
+  if (statusEl) statusEl.value = '';
+  if (descEl) descEl.value = '';
+  renderSimulationConfigEditor();
+  setSimulationConfigStatus(`Added custom scope "${label}". Save to publish.`, 'var(--neon-green)');
+}
+
+function loadSimulationConfigDefaults() {
+  simulationConfigDraft = {
+    statusScopes: cloneDefaultSimulationScopesAdmin(),
+    defaultStatusScopeId: 'all',
+    showStatusScopeSelector: true,
+  };
+  renderSimulationConfigEditor();
+  setSimulationConfigStatus('Loaded built-in defaults (not saved yet).', 'var(--neon-green)');
+}
+
+async function loadSimulationConfigEditor() {
+  setSimulationConfigStatus('Loading config…');
+  try {
+    const snap = await db.collection('notifications').doc('simulation_config').get();
+    if (snap.exists) {
+      const data = snap.data();
+      const parsed = Array.isArray(data.statusScopes)
+        ? data.statusScopes.map(normalizeSimulationScopeAdmin).filter(Boolean)
+        : [];
+      simulationConfigDraft = {
+        statusScopes: parsed.length ? parsed : cloneDefaultSimulationScopesAdmin(),
+        defaultStatusScopeId: typeof data.defaultStatusScopeId === 'string' ? data.defaultStatusScopeId : 'all',
+        showStatusScopeSelector: readConfigBool(data.showStatusScopeSelector, true),
+      };
+      if (!simulationConfigDraft.statusScopes.some(scope => scope.id === 'all')) {
+        simulationConfigDraft.statusScopes.unshift({ ...DEFAULT_SIM_STATUS_SCOPES_ADMIN[0], statusIds: [] });
+      }
+      renderSimulationConfigEditor();
+      setSimulationConfigStatus('Loaded Firestore simulation config.', 'var(--neon-green)');
+    } else {
+      loadSimulationConfigDefaults();
+      setSimulationConfigStatus('No saved config — showing defaults.', 'var(--neon-gold)');
+    }
+  } catch (e) {
+    loadSimulationConfigDefaults();
+    setSimulationConfigStatus('Error loading config: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
+async function saveSimulationConfigEditor() {
+  const defaultStatusScopeId = document.getElementById('simCfgDefaultScope')?.value
+    || simulationConfigDraft.defaultStatusScopeId
+    || 'all';
+  const showStatusScopeSelector = !!document.getElementById('simCfgShowSelector')?.checked;
+  const activeIds = new Set((simulationConfigDraft.statusScopes || []).map(scope => scope.id));
+  if (!activeIds.has(defaultStatusScopeId)) {
+    setSimulationConfigStatus('Default scope must be one of the enabled scopes.', 'var(--neon-pink)');
+    return;
+  }
+  setSimulationConfigStatus('Saving config…');
+  try {
+    const payload = {
+      statusScopes: simulationConfigDraft.statusScopes.map(scope => ({
+        id: scope.id,
+        label: scope.label,
+        description: scope.description || '',
+        includeAll: !!scope.includeAll,
+        statusIds: scope.statusIds || [],
+      })),
+      defaultStatusScopeId,
+      showStatusScopeSelector,
+      source: 'admin',
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+    await db.collection('notifications').doc('simulation_config').set(payload, { merge: true });
+    simulationConfigDraft.defaultStatusScopeId = defaultStatusScopeId;
+    simulationConfigDraft.showStatusScopeSelector = showStatusScopeSelector;
+    setSimulationConfigStatus('✓ Simulation config saved. Seat Allocation updates live.', 'var(--neon-green)');
+  } catch (e) {
+    setSimulationConfigStatus('Error saving config: ' + e.message, 'var(--neon-pink)');
   }
 }
 
