@@ -1169,6 +1169,67 @@
     }
     .sim-bonus-label { display: flex; align-items: center; gap: 7px; font-size: 0.83rem; color: var(--text-light); cursor: pointer; }
     .sim-bonus-label input { accent-color: var(--neon-cyan, #4db8d9); cursor: pointer; }
+    .sim-consent-mode {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      padding: 7px 10px; border: 1px solid rgba(77,184,217,0.14);
+      border-radius: var(--radius, 10px); background: rgba(77,184,217,0.04);
+    }
+    .sim-consent-mode label {
+      font-size: 0.72rem; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;
+    }
+    .sim-consent-mode select {
+      min-width: 220px; background: var(--bg-input, rgba(255,255,255,0.05));
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); padding: 7px 10px; font: inherit;
+    }
+    .sim-consent-mode-hint { color: var(--text-muted); font-size: 0.74rem; }
+    .sim-consent-banner {
+      margin: 0 0 14px; padding: 14px;
+      border: 1px solid rgba(232,166,39,0.22);
+      border-left: 3px solid var(--neon-gold, #e8a627);
+      border-radius: var(--radius-lg, 16px);
+      background: linear-gradient(135deg, rgba(232,166,39,0.08), rgba(77,184,217,0.035));
+    }
+    .sim-consent-banner-head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 12px; flex-wrap: wrap; margin-bottom: 10px;
+    }
+    .sim-consent-banner-title { color: var(--text); font-weight: 900; font-size: 0.9rem; }
+    .sim-consent-banner-text { color: var(--text-muted); font-size: 0.78rem; margin-top: 2px; }
+    .sim-consent-chip-row { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+    .sim-consent-chip {
+      display: inline-flex; gap: 7px; align-items: center;
+      border: 1px solid rgba(224,84,112,0.28);
+      border-radius: 100px; background: rgba(224,84,112,0.09);
+      color: #e05470; padding: 4px 9px; font-size: 0.72rem; font-weight: 800;
+    }
+    .sim-consent-chip button {
+      appearance: none; border: 0; background: transparent;
+      color: inherit; cursor: pointer; font: inherit; padding: 0;
+      line-height: 1; opacity: 0.8;
+    }
+    .sim-consent-chip button:hover { opacity: 1; }
+    .sim-consent-impact-mini {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px; margin-top: 10px;
+    }
+    .sim-consent-impact-mini > div {
+      padding: 9px 10px; border-radius: var(--radius, 10px);
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.025);
+      color: var(--text-muted); font-size: 0.74rem;
+    }
+    .sim-consent-impact-mini strong {
+      display: block; color: var(--neon-cyan, #4db8d9);
+      font-size: 1rem; line-height: 1.1; margin-bottom: 2px;
+    }
+    .sim-row-no-consent,
+    .sim-other-row-no-consent,
+    .sim-next-no-consent {
+      outline: 1px solid rgba(224,84,112,0.42);
+      background: rgba(224,84,112,0.08) !important;
+    }
     .marks-basis-wrap { display: flex; flex-direction: column; gap: 4px; min-width: 220px; }
     .marks-basis-wrap label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
     .marks-basis-note { font-size: 0.72rem; color: var(--text-muted); max-width: 520px; line-height: 1.45; }
@@ -3176,6 +3237,15 @@
           <input type="checkbox" id="simParentBonus" />
           Parent Institute Bonus (+5&nbsp;marks within slot)
         </label>
+        <div class="sim-consent-mode">
+          <label for="simConsentMode">Candidate click</label>
+          <select id="simConsentMode">
+            <option value="view">Open placement detail</option>
+            <option value="no-consent">Mark clicked candidate: no consent</option>
+            <option value="consent">Mark clicked candidate: consented / restore</option>
+          </select>
+          <span id="simConsentModeHint" class="sim-consent-mode-hint">Run simulation, choose mode, then click a candidate row.</span>
+        </div>
       </div>
 
       <div class="app-sim-tool">

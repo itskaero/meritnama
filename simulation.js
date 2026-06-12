@@ -29,6 +29,7 @@ const SIM = {
   sim: {
     program:     'FCPS',
     result:      null,
+    baselineResult: null,
     running:     false,
     parentBonus: false,
     filter:      '',
@@ -36,6 +37,9 @@ const SIM = {
     statusScopes: [],
     showStatusScopeSelector: true,
     applicantReport: null,
+    consentMode: 'view',
+    noConsentIds: new Set(),
+    lastConsentReport: null,
   },
 
   consent: {
@@ -2795,6 +2799,8 @@ function setupSimulationTab() {
   document.getElementById('simProgram')?.addEventListener('change', e => {
     SIM.sim.program = e.target.value;
     SIM.sim.result  = null;
+    SIM.sim.baselineResult = null;
+    resetInteractiveConsentState();
     document.getElementById('simResults').innerHTML = '';
     updateSimulationDownloadGate();
   });
@@ -2802,6 +2808,8 @@ function setupSimulationTab() {
   document.getElementById('simParentBonus')?.addEventListener('change', e => {
     SIM.sim.parentBonus = e.target.checked;
     SIM.sim.result = null;
+    SIM.sim.baselineResult = null;
+    resetInteractiveConsentState();
     document.getElementById('simResults').innerHTML = '';
     updateSimulationDownloadGate();
   });
@@ -2809,6 +2817,10 @@ function setupSimulationTab() {
   document.getElementById('simFilter')?.addEventListener('input', e => {
     SIM.sim.filter = e.target.value.trim().toLowerCase();
     if (SIM.sim.result) renderSimResults();
+  });
+  document.getElementById('simConsentMode')?.addEventListener('change', e => {
+    SIM.sim.consentMode = e.target.value || 'view';
+    updateSimConsentModeHint();
   });
 
   document.getElementById('runSimBtn')?.addEventListener('click', runSimulation);
@@ -2822,6 +2834,7 @@ function setupSimulationTab() {
   appInput?.addEventListener('keydown', e => {
     if (e.key === 'Enter') runApplicantSimulation(appInput.value.trim());
   });
+  updateSimConsentModeHint();
 }
 
 function runSimulation() {
@@ -2846,7 +2859,9 @@ function runSimulation() {
   // Defer so the browser has time to update the button state
   setTimeout(() => {
     try {
-      SIM.sim.result = runSimulationForProgram(prog);
+      resetInteractiveConsentState();
+      SIM.sim.baselineResult = runSimulationForProgram(prog);
+      SIM.sim.result = SIM.sim.baselineResult;
       renderSimResults();
       if (SIM.sb.program === prog) renderSlot();
     } catch (e) {
@@ -2875,6 +2890,105 @@ function runPlacementFromPool(program, pool, excludedApplicantIds = new Set()) {
   result.missingStatusCount = pool.missingStatusCount;
   result.excludedByConsentCount = pool.candidates.length - cands.length;
   return result;
+}
+
+function resetInteractiveConsentState() {
+  SIM.sim.noConsentIds = new Set();
+  SIM.sim.lastConsentReport = null;
+  SIM.consent.lastReport = null;
+}
+
+function updateSimConsentModeHint() {
+  const sel = document.getElementById('simConsentMode');
+  const hint = document.getElementById('simConsentModeHint');
+  if (sel) sel.value = SIM.sim.consentMode || 'view';
+  if (!hint) return;
+  if (SIM.sim.consentMode === 'no-consent') {
+    hint.textContent = 'Click a candidate in results to remove them from the active consent pool and rerun.';
+  } else if (SIM.sim.consentMode === 'consent') {
+    hint.textContent = 'Click restore on removed candidates, or click a candidate to confirm they stay in the pool.';
+  } else {
+    hint.textContent = 'Click candidates to open their placement detail.';
+  }
+}
+
+function applyInteractiveConsentChoice(candidateId, mode) {
+  const id = String(candidateId || '').trim();
+  if (!id) return;
+  const program = SIM.sim.program;
+  const pool = simulationCandidatePool(program);
+  const candidate = allCandidates().find(c => String(c.applicantId) === id);
+  if (!candidate) {
+    showToast(`Applicant ID ${id} was not found.`, 'warning');
+    return;
+  }
+  if (!pool.candidates.some(c => String(c.applicantId) === id)) {
+    showToast(`${candidate.nameFull} is outside the active ${program} status scope.`, 'warning');
+    return;
+  }
+
+  const baseline = runPlacementFromPool(program, pool);
+  if (!baseline) {
+    showToast('Run simulation first.', 'warning');
+    return;
+  }
+
+  if (mode === 'no-consent') {
+    SIM.sim.noConsentIds.add(id);
+  } else if (mode === 'consent') {
+    SIM.sim.noConsentIds.delete(id);
+  }
+
+  const variant = SIM.sim.noConsentIds.size
+    ? runPlacementFromPool(program, pool, SIM.sim.noConsentIds)
+    : baseline;
+  if (!variant) {
+    showToast('No placement result could be generated after consent change.', 'error');
+    return;
+  }
+
+  const report = buildConsentReport({
+    mode,
+    program,
+    candidateId: id,
+    candidate,
+    baseline,
+    variant,
+    pool,
+  });
+
+  SIM.sim.baselineResult = baseline;
+  SIM.sim.result = variant;
+  SIM.sim.lastConsentReport = report;
+  SIM.consent.lastReport = report;
+  addConsentHistory(report);
+  renderSimResults();
+  if (SIM.activeTab === 'consent') renderConsentReport(report);
+  if (SIM.sb.program === program) renderSlot();
+
+  const action = mode === 'no-consent' ? 'removed from active pool' : 'kept/restored in active pool';
+  showToast(`${candidate.nameFull.split(' ').slice(0, 3).join(' ')} ${action}; simulation rerun.`, 'success');
+}
+
+function restoreNoConsentCandidate(candidateId) {
+  const id = String(candidateId || '').trim();
+  if (!id) return;
+  if (id === '__all') {
+    if (!SIM.sim.noConsentIds.size) return;
+    SIM.sim.noConsentIds = new Set();
+    const pool = simulationCandidatePool(SIM.sim.program);
+    const baseline = runPlacementFromPool(SIM.sim.program, pool);
+    if (!baseline) return;
+    SIM.sim.baselineResult = baseline;
+    SIM.sim.result = baseline;
+    SIM.sim.lastConsentReport = null;
+    SIM.consent.lastReport = null;
+    renderSimResults();
+    if (SIM.sb.program === SIM.sim.program) renderSlot();
+    showToast('All no-consent candidates restored; baseline simulation shown.', 'success');
+    return;
+  }
+  applyInteractiveConsentChoice(id, 'consent');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2996,9 +3110,18 @@ function runConsentWhatIf(mode) {
       if (!baseline || !variant) throw new Error('No placement result could be generated.');
 
       const report = buildConsentReport({ mode, program, candidateId, candidate: sourceCandidate, baseline, variant, pool });
+      SIM.sim.program = program;
+      SIM.sim.baselineResult = baseline;
+      SIM.sim.noConsentIds = mode === 'no-consent' ? new Set([candidateId]) : new Set();
+      SIM.sim.result = variant;
+      SIM.sim.lastConsentReport = report;
       SIM.consent.lastReport = report;
+      const simProgSel = document.getElementById('simProgram');
+      if (simProgSel) simProgSel.value = program;
       addConsentHistory(report);
       renderConsentReport(report);
+      renderSimResults();
+      if (SIM.sb.program === program) renderSlot();
     } catch (e) {
       console.error(e);
       showToast(`Consent what-if error: ${e.message}`, 'error');
@@ -3335,6 +3458,7 @@ function renderSimResults() {
       </div>
       <p style="margin-top:10px;font-size:0.72rem;color:var(--text-muted)">Merit basis: <strong>${esc(getActiveMarksLabel())}</strong>${SIM.sim.parentBonus ? ' · Parent institute bonus on' : ''} · ${esc(statusSummary)}</p>
     </div>
+    ${renderSimConsentBanner()}
     <div class="sim-grid">
       ${rows.map(r => renderSimCard(r, program)).join('')}
     </div>
@@ -3348,12 +3472,77 @@ function renderSimResults() {
     });
   });
 
-  // Delegate clicks on candidate rows → open placement detail modal
-  container.addEventListener('click', e => {
+  // Delegate candidate/result clicks. Consent mode reruns placement instead of opening detail.
+  container.onclick = e => {
+    const restore = e.target.closest('[data-consent-restore]');
+    if (restore) {
+      restoreNoConsentCandidate(restore.dataset.consentRestore);
+      return;
+    }
     const el = e.target.closest('[data-sim-cand]');
-    if (el) openSimCandidateDetail(el.dataset.simCand, el.dataset.simTrack);
-  });
+    if (!el) return;
+    if (SIM.sim.consentMode === 'no-consent' || SIM.sim.consentMode === 'consent') {
+      applyInteractiveConsentChoice(el.dataset.simCand, SIM.sim.consentMode);
+      return;
+    }
+    openSimCandidateDetail(el.dataset.simCand, el.dataset.simTrack);
+  };
   updateSimulationDownloadGate();
+}
+
+function renderSimConsentBanner() {
+  const ids = [...(SIM.sim.noConsentIds || new Set())];
+  const report = SIM.sim.lastConsentReport;
+  if (!ids.length && !report) return '';
+
+  const nameFor = id => {
+    const c = allCandidates().find(c => String(c.applicantId) === String(id));
+    return c ? c.nameFull.split(' ').slice(0, 3).join(' ') : `ID ${id}`;
+  };
+  const chips = ids.length
+    ? `<div class="sim-consent-chip-row">
+        ${ids.map(id => `<span class="sim-consent-chip">${esc(nameFor(id))} <button type="button" title="Restore candidate as consented" data-consent-restore="${esc(id)}">&times;</button></span>`).join('')}
+      </div>`
+    : '';
+
+  let impact = '';
+  let movement = '';
+  if (report) {
+    const targetChanges = report.changedCandidates?.filter(c => c.candidateId === report.candidateId).length || 0;
+    const othersChanged = Math.max(0, (report.changedCandidateCount ?? report.changedCandidates?.length ?? 0) - targetChanges);
+    const delta = report.variantPlacedCount - report.baselinePlacedCount;
+    impact = `<div class="sim-consent-impact-mini">
+      <div><strong>${report.mode === 'no-consent' ? report.releasedSlots.length : 0}</strong>Seat${report.releasedSlots.length === 1 ? '' : 's'} vacated by clicked candidate</div>
+      <div><strong>${othersChanged}</strong>Other placement change${othersChanged === 1 ? '' : 's'}</div>
+      <div><strong>${delta >= 0 ? '+' : ''}${delta}</strong>Placed-count delta</div>
+    </div>`;
+    if (report.releasedSlots?.length) {
+      movement = `<div class="sim-consent-chip-row">
+        ${report.releasedSlots.map(slot => {
+          const incoming = slot.incoming?.length
+            ? slot.incoming.map(c => `${esc(c.name)} (${fmtM(c.marksTotal)})`).join(', ')
+            : 'no move-in candidate';
+          return `<span class="sim-consent-chip" style="color:var(--neon-gold);border-color:rgba(232,166,39,0.28);background:rgba(232,166,39,0.08);">Vacated: ${esc(slot.s)} @ ${esc(shortHospital(slot.h))} &rarr; ${incoming}</span>`;
+        }).join('')}
+      </div>`;
+    }
+  }
+
+  return `<div class="sim-consent-banner">
+    <div class="sim-consent-banner-head">
+      <div>
+        <div class="sim-consent-banner-title">Interactive consent simulation active</div>
+        <div class="sim-consent-banner-text">
+          The allocation grid below has been rerun with no-consent candidates removed from the active pool.
+          Replacement candidates now appear in their new slots.
+        </div>
+      </div>
+      ${ids.length ? '<button class="btn btn-sm" type="button" data-consent-restore="__all">Restore all</button>' : ''}
+    </div>
+    ${chips}
+    ${impact}
+    ${movement}
+  </div>`;
 }
 
 function updateSimulationDownloadGate() {
@@ -4285,6 +4474,8 @@ function initSimulationConfig() {
         applySimulationConfig(snap.exists ? snap.data() : null);
         if (SIM.sim.result) {
           SIM.sim.result = null;
+          SIM.sim.baselineResult = null;
+          resetInteractiveConsentState();
           document.getElementById('simResults').innerHTML = '';
           updateSimulationDownloadGate();
         }
@@ -4327,7 +4518,8 @@ function setupSimulationStatusScopeSelector() {
     SIM.sim.statusScopeId = next;
     localStorage.setItem(SIM_STATUS_SCOPE_KEY, next);
     SIM.sim.result = null;
-    SIM.consent.lastReport = null;
+    SIM.sim.baselineResult = null;
+    resetInteractiveConsentState();
     document.getElementById('simResults').innerHTML = '';
     const consentResults = document.getElementById('consentResults');
     if (consentResults) {
@@ -4393,7 +4585,8 @@ function onMarksOptionChanged(clearSim) {
   applyAndRenderCandidates();
   if (clearSim) {
     SIM.sim.result = null;
-    SIM.consent.lastReport = null;
+    SIM.sim.baselineResult = null;
+    resetInteractiveConsentState();
     document.getElementById('simResults').innerHTML = '';
     const consentResults = document.getElementById('consentResults');
     if (consentResults) {
