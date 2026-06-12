@@ -32,6 +32,9 @@ const SIM = {
     running:     false,
     parentBonus: false,
     filter:      '',
+    statusScopeId: 'all',
+    statusScopes: [],
+    showStatusScopeSelector: true,
     applicantReport: null,
   },
 
@@ -76,6 +79,7 @@ const SIM = {
 const MY_ID_KEY           = 'mn_sim_my_id';
 const CUSTOM_KEY          = 'mn_sim_custom_cand';
 const MARKS_OPTION_KEY    = 'mn_marks_option_id';
+const SIM_STATUS_SCOPE_KEY = 'mn_sim_status_scope_id';
 const MARKS_COMPONENT_FIELDS = [
   'mdcat', 'experience', 'matric', 'fsc', 'degree', 'houseJob',
   'research', 'position', 'hardAreas', 'attempts',
@@ -149,6 +153,44 @@ const CIVILIAN_QUOTA_KEYS = new Set([
   'placement',
 ]);
 
+const DEFAULT_SIM_STATUS_SCOPES = [
+  {
+    id: 'all',
+    label: 'All candidates',
+    description: 'Do not filter by verification status.',
+    includeAll: true,
+    statusIds: [],
+  },
+  {
+    id: 'accepted-pending',
+    label: 'Accepted + Pending',
+    description: 'Only candidates marked Accepted or Pending in profile verification.',
+    includeAll: false,
+    statusIds: [1, 11],
+  },
+  {
+    id: 'accepted',
+    label: 'Accepted only',
+    description: 'Only candidates marked Accepted.',
+    includeAll: false,
+    statusIds: [1],
+  },
+  {
+    id: 'pending',
+    label: 'Pending only',
+    description: 'Only candidates marked Pending.',
+    includeAll: false,
+    statusIds: [11],
+  },
+  {
+    id: 'rejected',
+    label: 'Rejected only',
+    description: 'Only candidates marked Rejected.',
+    includeAll: false,
+    statusIds: [2],
+  },
+];
+
 // ═══════════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════════
@@ -160,6 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initFetchProgress();
   initSimulationNotificationFeed();
   initMarksConfig();
+  initSimulationConfig();
   initScheduleTab();
   initProfileStatus();
   showLoading(true);
@@ -178,6 +221,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupSlotBrowser();
   setupSimulationTab();
   setupMarksSelectors();
+  setupSimulationStatusScopeSelector();
   setupChat();
   updateMyBadge();
 
@@ -2771,8 +2815,17 @@ function setupSimulationTab() {
 
 function runSimulation() {
   const prog  = SIM.sim.program;
-  if (!allCandidates().some(c => effectiveMark(c, prog) != null)) {
+  const pool = simulationCandidatePool(prog);
+  if (!pool.sourceCandidateCount) {
     showToast('No candidates for this program.', 'warning');
+    return;
+  }
+  if (!pool.candidates.length) {
+    const scopeLabel = pool.scope?.label || 'selected status scope';
+    showToast(pool.statusUnavailable
+      ? 'Verification status data is not loaded yet. Try again shortly or use All candidates.'
+      : `No ${prog} candidates match "${scopeLabel}".`,
+      'warning');
     return;
   }
 
@@ -2794,10 +2847,17 @@ function runSimulation() {
 }
 
 function runSimulationForProgram(program) {
-  const cands = allCandidates().filter(c => effectiveMark(c, program) != null);
+  const pool = simulationCandidatePool(program);
+  const cands = pool.candidates;
   if (!cands.length) return null;
   const tree = buildSeatTree(program);
-  return runPlacement(cands, tree, program, SIM.sim.parentBonus);
+  const result = runPlacement(cands, tree, program, SIM.sim.parentBonus);
+  result.statusScope = pool.scope;
+  result.sourceCandidateCount = pool.sourceCandidateCount;
+  result.includedCandidateCount = pool.includedCandidateCount;
+  result.excludedByStatusCount = pool.excludedByStatusCount;
+  result.missingStatusCount = pool.missingStatusCount;
+  return result;
 }
 
 function renderSimResults() {
@@ -2833,6 +2893,10 @@ function renderSimResults() {
 
   const placed  = candidates.filter(c => c.placed).length;
   const total   = candidates.length;
+  const statusScope = result.statusScope || getActiveSimStatusScope();
+  const statusSummary = statusScope?.includeAll
+    ? 'Status scope: all candidates'
+    : `Status scope: ${statusScope?.label || 'Filtered'} · included ${Number(result.includedCandidateCount || total).toLocaleString()} of ${Number(result.sourceCandidateCount || total).toLocaleString()} candidates${result.missingStatusCount ? ` · ${Number(result.missingStatusCount).toLocaleString()} had no status` : ''}`;
 
   // Flatten tree to rows, apply filter
   const rows = [];
@@ -2867,7 +2931,7 @@ function renderSimResults() {
         <div><span class="sim-sum-val">${filledSlots}</span><span class="sim-sum-lbl">Slots filled</span></div>
         <div><span class="sim-sum-val">${rows.length}</span><span class="sim-sum-lbl">Total slots</span></div>
       </div>
-      <p style="margin-top:10px;font-size:0.72rem;color:var(--text-muted)">Merit basis: <strong>${esc(getActiveMarksLabel())}</strong>${SIM.sim.parentBonus ? ' · Parent institute bonus on' : ''}</p>
+      <p style="margin-top:10px;font-size:0.72rem;color:var(--text-muted)">Merit basis: <strong>${esc(getActiveMarksLabel())}</strong>${SIM.sim.parentBonus ? ' · Parent institute bonus on' : ''} · ${esc(statusSummary)}</p>
     </div>
     <div class="sim-grid">
       ${rows.map(r => renderSimCard(r, program)).join('')}
@@ -3016,7 +3080,8 @@ async function downloadSimulationPdf() {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
   doc.setTextColor(20, 35, 55);
-  doc.text(`Placed: ${placed} · Unplaced: ${candidates.length - placed} · Merit basis: ${getActiveMarksLabel()}${SIM.sim.parentBonus ? ' · Parent bonus ON' : ''}`, 42, y);
+  const statusLabel = SIM.sim.result.statusScope?.label || getActiveSimStatusScope()?.label || 'All candidates';
+  doc.text(`Placed: ${placed} · Unplaced: ${candidates.length - placed} · Merit basis: ${getActiveMarksLabel()}${SIM.sim.parentBonus ? ' · Parent bonus ON' : ''} · Status: ${statusLabel}`, 42, y);
   y += 24;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
@@ -3247,6 +3312,7 @@ function renderApplicantSimulationModal(cand, results) {
           &middot; Base marks: <strong>${fmtM(baseMarks(cand))}</strong>
           &middot; Portal marksTotal: <strong>${fmtM(cand.marksTotal)}</strong>
           &middot; Parent bonus: <strong>${SIM.sim.parentBonus ? 'On' : 'Off'}</strong>
+          &middot; Status scope: <strong>${esc(getActiveSimStatusScope()?.label || 'All candidates')}</strong>
         </p>
       </div>
       <div class="app-sim-summary-pills">
@@ -3301,7 +3367,7 @@ async function downloadApplicantSimulationPdf() {
   };
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
-  doc.text(`Applicant ID: ${cand.applicantId} · Merit basis: ${getActiveMarksLabel()}${SIM.sim.parentBonus ? ' · Parent bonus ON' : ''}`, 42, y);
+  doc.text(`Applicant ID: ${cand.applicantId} · Merit basis: ${getActiveMarksLabel()}${SIM.sim.parentBonus ? ' · Parent bonus ON' : ''} · Status: ${getActiveSimStatusScope()?.label || 'All candidates'}`, 42, y);
   y += 22;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
@@ -3756,6 +3822,152 @@ function setActiveMarksOption(id) {
   localStorage.setItem(MARKS_OPTION_KEY, id);
   syncMarksSelectorUI();
   onMarksOptionChanged(true);
+}
+
+function normalizeSimStatusScope(raw, idx = 0) {
+  if (!raw || typeof raw !== 'object') return null;
+  const id = typeof raw.id === 'string' && raw.id.trim()
+    ? raw.id.trim()
+    : `scope-${idx + 1}`;
+  const label = typeof raw.label === 'string' && raw.label.trim()
+    ? raw.label.trim()
+    : id;
+  const description = typeof raw.description === 'string' ? raw.description.trim() : '';
+  const includeAll = raw.includeAll === true || id === 'all';
+  const statusIds = includeAll
+    ? []
+    : (Array.isArray(raw.statusIds) ? raw.statusIds : [])
+        .map(n => Number(n))
+        .filter(n => Number.isFinite(n));
+  if (!includeAll && !statusIds.length) return null;
+  return { id, label, description, includeAll, statusIds };
+}
+
+function cloneDefaultSimStatusScopes() {
+  return DEFAULT_SIM_STATUS_SCOPES.map(scope => ({
+    ...scope,
+    statusIds: [...(scope.statusIds || [])],
+  }));
+}
+
+function applySimulationConfig(data) {
+  const parsed = Array.isArray(data?.statusScopes)
+    ? data.statusScopes.map((scope, i) => normalizeSimStatusScope(scope, i)).filter(Boolean)
+    : [];
+  SIM.sim.statusScopes = parsed.length ? parsed : cloneDefaultSimStatusScopes();
+  SIM.sim.showStatusScopeSelector = MNNotif.readMarksConfigBool(data?.showStatusScopeSelector, true);
+
+  const defaultId = typeof data?.defaultStatusScopeId === 'string' && data.defaultStatusScopeId.trim()
+    ? data.defaultStatusScopeId.trim()
+    : 'all';
+  const storedId = localStorage.getItem(SIM_STATUS_SCOPE_KEY);
+  const ids = new Set(SIM.sim.statusScopes.map(scope => scope.id));
+  const pick = id => ids.has(id) ? id : null;
+  SIM.sim.statusScopeId = SIM.sim.showStatusScopeSelector
+    ? (pick(storedId) || pick(defaultId) || SIM.sim.statusScopes[0]?.id || 'all')
+    : (pick(defaultId) || SIM.sim.statusScopes[0]?.id || 'all');
+
+  if (SIM.sim.showStatusScopeSelector && SIM.sim.statusScopeId) {
+    localStorage.setItem(SIM_STATUS_SCOPE_KEY, SIM.sim.statusScopeId);
+  }
+  syncSimulationStatusScopeUI();
+}
+
+function initSimulationConfig() {
+  applySimulationConfig(null);
+  try {
+    firebase.firestore().collection('notifications').doc('simulation_config')
+      .onSnapshot(snap => {
+        applySimulationConfig(snap.exists ? snap.data() : null);
+        if (SIM.sim.result) {
+          SIM.sim.result = null;
+          document.getElementById('simResults').innerHTML = '';
+          updateSimulationDownloadGate();
+        }
+      }, err => console.warn('[SimulationConfig] listener error:', err));
+  } catch (e) {
+    console.warn('[SimulationConfig] init failed:', e);
+  }
+}
+
+function getActiveSimStatusScope() {
+  return SIM.sim.statusScopes.find(scope => scope.id === SIM.sim.statusScopeId)
+    || SIM.sim.statusScopes[0]
+    || DEFAULT_SIM_STATUS_SCOPES[0];
+}
+
+function syncSimulationStatusScopeUI() {
+  const wrap = document.querySelector('.sim-status-scope-wrap');
+  const sel = document.getElementById('simStatusScope');
+  const hint = document.getElementById('simStatusScopeHint');
+  if (!sel) return;
+  sel.innerHTML = SIM.sim.statusScopes.map(scope =>
+    `<option value="${esc(scope.id)}">${esc(scope.label)}</option>`
+  ).join('');
+  sel.value = SIM.sim.statusScopeId;
+  sel.disabled = !SIM.sim.showStatusScopeSelector || SIM.sim.statusScopes.length <= 1;
+  wrap?.classList.toggle('hidden', !SIM.sim.showStatusScopeSelector);
+  const scope = getActiveSimStatusScope();
+  if (hint) hint.textContent = scope.description || (scope.includeAll ? 'All candidates included.' : 'Filtered by verification status.');
+}
+
+function setupSimulationStatusScopeSelector() {
+  const sel = document.getElementById('simStatusScope');
+  sel?.addEventListener('change', e => {
+    const next = e.target.value;
+    if (!SIM.sim.statusScopes.some(scope => scope.id === next)) return;
+    SIM.sim.statusScopeId = next;
+    localStorage.setItem(SIM_STATUS_SCOPE_KEY, next);
+    SIM.sim.result = null;
+    document.getElementById('simResults').innerHTML = '';
+    updateSimulationDownloadGate();
+    syncSimulationStatusScopeUI();
+  });
+  syncSimulationStatusScopeUI();
+}
+
+function candidateMatchesSimStatusScope(candidate, scope = getActiveSimStatusScope()) {
+  if (!scope || scope.includeAll) return true;
+  const st = getProfileStatusForCandidate(candidate);
+  if (!st) return false;
+  return scope.statusIds.includes(Number(st.statusId));
+}
+
+function simulationCandidatePool(program) {
+  const base = allCandidates().filter(c => effectiveMark(c, program) != null);
+  const scope = getActiveSimStatusScope();
+  if (!scope || scope.includeAll) {
+    return {
+      candidates: base,
+      scope,
+      sourceCandidateCount: base.length,
+      includedCandidateCount: base.length,
+      excludedByStatusCount: 0,
+      missingStatusCount: 0,
+      statusUnavailable: false,
+    };
+  }
+
+  const statusCount = Object.keys(SIM.profileStatus.byId || {}).length;
+  const included = [];
+  let missingStatusCount = 0;
+  for (const cand of base) {
+    const st = getProfileStatusForCandidate(cand);
+    if (!st) {
+      missingStatusCount++;
+      continue;
+    }
+    if (scope.statusIds.includes(Number(st.statusId))) included.push(cand);
+  }
+  return {
+    candidates: included,
+    scope,
+    sourceCandidateCount: base.length,
+    includedCandidateCount: included.length,
+    excludedByStatusCount: base.length - included.length,
+    missingStatusCount,
+    statusUnavailable: !statusCount,
+  };
 }
 
 function onMarksOptionChanged(clearSim) {
