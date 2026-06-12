@@ -1361,6 +1361,131 @@
     .app-sim-tool-hint { color: var(--text-muted); font-size: 0.76rem; }
     .app-sim-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .app-sim-row .mt-filter-input { flex: 1; min-width: 190px; }
+
+    /* Consent what-if simulator */
+    .consent-layout {
+      display: grid; grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 16px; align-items: start;
+    }
+    .consent-controls {
+      margin-bottom: 16px;
+    }
+    .consent-help {
+      margin-top: 12px; padding: 12px 14px;
+      border: 1px solid rgba(232,166,39,0.18);
+      border-left: 3px solid var(--neon-gold, #e8a627);
+      border-radius: var(--radius, 10px);
+      background: rgba(232,166,39,0.06);
+      color: var(--text-muted); font-size: 0.8rem;
+    }
+    .consent-action-row {
+      display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .consent-history-card {
+      position: sticky; top: 86px;
+      max-height: calc(100vh - 110px); overflow-y: auto;
+    }
+    .consent-history-head {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 10px; margin-bottom: 10px;
+    }
+    .consent-history-head h3 { margin: 0; color: var(--text); font-size: 0.95rem; }
+    .consent-history-list { display: flex; flex-direction: column; gap: 8px; }
+    .consent-history-empty {
+      color: var(--text-muted); font-size: 0.8rem; line-height: 1.5;
+      padding: 10px; border: 1px dashed var(--border);
+      border-radius: var(--radius, 10px);
+    }
+    .consent-history-item {
+      width: 100%; text-align: left; cursor: pointer;
+      background: rgba(255,255,255,0.025); color: var(--text);
+      border: 1px solid var(--border); border-radius: var(--radius, 10px);
+      padding: 10px; font-family: var(--font);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .consent-history-item:hover {
+      border-color: rgba(77,184,217,0.28);
+      background: rgba(77,184,217,0.055);
+    }
+    .consent-history-title { display: block; font-size: 0.82rem; font-weight: 800; }
+    .consent-history-meta { display: block; margin-top: 3px; color: var(--text-muted); font-size: 0.72rem; }
+    .consent-history-impact { display: block; margin-top: 5px; color: var(--neon-cyan, #4db8d9); font-size: 0.72rem; font-weight: 700; }
+    .consent-placeholder {
+      text-align: center; padding: 36px 18px;
+      color: var(--text-muted); border: 1px dashed var(--border);
+      border-radius: var(--radius-lg, 16px); background: rgba(255,255,255,0.015);
+    }
+    .consent-report { display: flex; flex-direction: column; gap: 14px; }
+    .consent-summary-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--border); border-radius: var(--radius-lg, 16px);
+      overflow: hidden;
+    }
+    .consent-summary-grid > div {
+      padding: 16px 12px; text-align: center;
+      border-right: 1px solid var(--border);
+      background: rgba(77,184,217,0.035);
+    }
+    .consent-summary-grid > div:last-child { border-right: 0; }
+    .consent-summary-grid > div:nth-child(2) { background: rgba(232,166,39,0.04); }
+    .consent-summary-grid > div:nth-child(3) { background: rgba(62,207,142,0.035); }
+    .consent-summary-grid > div:nth-child(4) { background: rgba(124,101,196,0.04); }
+    .consent-sum-val {
+      display: block; font-size: 1.35rem; line-height: 1; font-weight: 900;
+      color: var(--neon-cyan, #4db8d9); font-variant-numeric: tabular-nums;
+    }
+    .consent-sum-lbl {
+      display: block; margin-top: 5px; color: var(--text-muted);
+      font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.07em;
+    }
+    .consent-report-card {
+      padding: 16px; border: 1px solid var(--border);
+      border-radius: var(--radius-lg, 16px);
+      background: var(--bg-card, rgba(16,26,52,0.85));
+    }
+    .consent-report-card h3 {
+      margin: 0 0 10px; color: var(--text); font-size: 0.95rem;
+    }
+    .consent-placement-list, .consent-change-list, .consent-slot-list {
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .consent-placement-row, .consent-change-row, .consent-slot-row {
+      display: grid; grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px; align-items: center;
+      padding: 10px 12px; border-radius: var(--radius, 10px);
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.025);
+    }
+    .consent-row-title {
+      display: block; color: var(--text); font-weight: 800; font-size: 0.84rem;
+    }
+    .consent-row-meta {
+      display: block; color: var(--text-muted); font-size: 0.74rem; margin-top: 2px;
+    }
+    .consent-impact-pill {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 3px 9px; border-radius: 100px; white-space: nowrap;
+      font-size: 0.7rem; font-weight: 800;
+      border: 1px solid rgba(77,184,217,0.24);
+      color: var(--neon-cyan, #4db8d9); background: rgba(77,184,217,0.08);
+    }
+    .consent-impact-pill.gain {
+      color: var(--neon-green, #3ecf8e); border-color: rgba(62,207,142,0.3);
+      background: rgba(62,207,142,0.09);
+    }
+    .consent-impact-pill.move {
+      color: var(--neon-gold, #e8a627); border-color: rgba(232,166,39,0.3);
+      background: rgba(232,166,39,0.09);
+    }
+    .consent-impact-pill.remove {
+      color: #e05470; border-color: rgba(224,84,112,0.3);
+      background: rgba(224,84,112,0.09);
+    }
+    .consent-empty {
+      color: var(--text-muted); font-size: 0.8rem;
+      padding: 10px 0;
+    }
     .app-sim-modal-box { width: min(980px, 94vw); max-height: 88vh; overflow-y: auto; }
     .app-sim-modal-head {
       display: flex; align-items: flex-start; justify-content: space-between;
@@ -1492,6 +1617,12 @@
       .portal-guide-mini-grid {
         grid-template-columns: 1fr;
       }
+      .consent-layout { grid-template-columns: 1fr; }
+      .consent-history-card {
+        position: static;
+        max-height: none;
+      }
+      .consent-summary-grid { grid-template-columns: 1fr 1fr; }
       .sim-summary-grid { grid-template-columns: 1fr 1fr; }
       .sim-summary-grid > div:nth-child(2) { border-right: none; }
       .sim-summary-grid > div:nth-child(3) { border-top: 1px solid var(--border); }
@@ -2458,6 +2589,7 @@
     <button class="tab-btn" data-tab="candidates">&#128100; Candidate Pool</button>
     <button class="tab-btn" data-tab="slotbrowser">&#127919; Where Merit Falls</button>
     <button class="tab-btn" data-tab="simulation">&#9889; Seat Allocation</button>
+    <button class="tab-btn" data-tab="consent">&#8644; Consent What-If</button>
   </div>
   <div class="sim-nav-section sim-nav-secondary" aria-label="Planning and community">
     <span class="sim-nav-label">Plan</span>
@@ -3065,6 +3197,76 @@
     </div>
 
     <div id="simResults" style="margin-top:16px"></div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       TAB: CONSENT WHAT-IF
+  ══════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-consent">
+    <div class="section-header">
+      <h2>Consent What-If Simulator</h2>
+      <p>Compare normal seat allocation with a rerun where one candidate does not consent. The report shows the released seat, who moves in, and the subsequent candidate list changes.</p>
+    </div>
+
+    <div class="consent-layout">
+      <div class="consent-main">
+        <div class="card consent-controls">
+          <div class="marks-info-banner hidden" role="status" aria-live="polite">
+            <div class="marks-info-banner-icon" aria-hidden="true">📊</div>
+            <div class="marks-info-banner-content">
+              <div class="marks-info-banner-title"></div>
+              <div class="marks-info-banner-text"></div>
+              <div class="marks-info-banner-formula"><strong>Active formula:</strong> <span data-marks-banner-formula></span></div>
+            </div>
+          </div>
+          <div class="input-grid">
+            <div class="form-group">
+              <label for="consentProgram">Programme</label>
+              <select id="consentProgram" class="mt-filter-sel">
+                <option value="FCPS">FCPS</option>
+                <option value="FCPS Dentistry">FCPS Dentistry</option>
+                <option value="MS">MS</option>
+                <option value="MD">MD</option>
+                <option value="MDS">MDS</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="consentCandidateId">Applicant ID</label>
+              <input type="number" id="consentCandidateId" class="mt-filter-input" placeholder="Candidate who may consent or not&hellip;" />
+            </div>
+            <div class="form-group marks-basis-wrap">
+              <label for="consentMarksBasis">Merit basis</label>
+              <select id="consentMarksBasis" class="mt-filter-sel" title="Formula used for this what-if run"></select>
+            </div>
+            <div class="form-group sim-status-scope-wrap">
+              <label for="consentStatusScope">Candidate status scope</label>
+              <select id="consentStatusScope" class="mt-filter-sel" title="Which verification statuses are included"></select>
+              <span id="consentStatusScopeHint" class="select-all-hint">All candidates included.</span>
+            </div>
+          </div>
+          <div class="consent-action-row">
+            <button id="runConsentNoBtn" class="btn btn-primary btn-large">Run: candidate does not consent</button>
+            <button id="runConsentYesBtn" class="btn btn-large">Show if candidate consents</button>
+            <button id="consentUseMeBtn" class="btn btn-sm">Use my ID</button>
+          </div>
+          <div class="consent-help">
+            This does not predict real PHF consent behavior. It answers one question: if this candidate is removed from the consent pool for the selected programme, which seats and candidates change after rerunning the same placement algorithm?
+          </div>
+        </div>
+
+        <div id="consentResults" class="consent-placeholder">
+          Enter an Applicant ID, choose a programme, then run the no-consent comparison.
+        </div>
+      </div>
+
+      <aside class="card consent-history-card" aria-label="Consent what-if history">
+        <div class="consent-history-head">
+          <h3>Scenario record</h3>
+          <button id="clearConsentHistoryBtn" class="btn btn-sm">Clear</button>
+        </div>
+        <div id="consentHistoryList" class="consent-history-list"></div>
+      </aside>
+    </div>
   </section>
 
   <!-- ══════════════════════════════════════════
