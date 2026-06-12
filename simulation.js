@@ -38,6 +38,13 @@ const SIM = {
     applicantReport: null,
   },
 
+  consent: {
+    program:    'FCPS',
+    candidateId:'',
+    lastReport: null,
+    history:    [],
+  },
+
   marks: {
     options:        [],
     activeOptionId: 'portal',
@@ -80,6 +87,8 @@ const MY_ID_KEY           = 'mn_sim_my_id';
 const CUSTOM_KEY          = 'mn_sim_custom_cand';
 const MARKS_OPTION_KEY    = 'mn_marks_option_id';
 const SIM_STATUS_SCOPE_KEY = 'mn_sim_status_scope_id';
+const CONSENT_HISTORY_KEY = 'mn_consent_whatif_history';
+const MAX_CONSENT_HISTORY = 8;
 const MARKS_COMPONENT_FIELDS = [
   'mdcat', 'experience', 'matric', 'fsc', 'degree', 'houseJob',
   'research', 'position', 'hardAreas', 'attempts',
@@ -220,6 +229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderCandStats();
   setupSlotBrowser();
   setupSimulationTab();
+  setupConsentWhatIfTab();
   setupMarksSelectors();
   setupSimulationStatusScopeSelector();
   setupChat();
@@ -552,6 +562,7 @@ function setupTabs() {
       if (t === 'schedule')    renderScheduleTab();
       if (t === 'hospitals')   renderHospitalsTab();
       if (t === 'profiles')    renderProfilesTab();
+      if (t === 'consent')     renderConsentWhatIfTab();
       if (t === 'community') {
         CHAT.tabActive = true;
         _resetUnread();
@@ -2848,16 +2859,407 @@ function runSimulation() {
 
 function runSimulationForProgram(program) {
   const pool = simulationCandidatePool(program);
-  const cands = pool.candidates;
+  return runPlacementFromPool(program, pool);
+}
+
+function runPlacementFromPool(program, pool, excludedApplicantIds = new Set()) {
+  const excluded = new Set([...excludedApplicantIds].map(String));
+  const cands = pool.candidates.filter(c => !excluded.has(String(c.applicantId)));
   if (!cands.length) return null;
   const tree = buildSeatTree(program);
   const result = runPlacement(cands, tree, program, SIM.sim.parentBonus);
   result.statusScope = pool.scope;
   result.sourceCandidateCount = pool.sourceCandidateCount;
-  result.includedCandidateCount = pool.includedCandidateCount;
+  result.includedCandidateCount = cands.length;
   result.excludedByStatusCount = pool.excludedByStatusCount;
   result.missingStatusCount = pool.missingStatusCount;
+  result.excludedByConsentCount = pool.candidates.length - cands.length;
   return result;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CONSENT WHAT-IF TAB
+// ═══════════════════════════════════════════════════════════════════
+function setupConsentWhatIfTab() {
+  SIM.consent.history = loadConsentHistory();
+
+  const progSel = document.getElementById('consentProgram');
+  const idInput = document.getElementById('consentCandidateId');
+  if (progSel) progSel.value = SIM.consent.program;
+  if (idInput && SIM.myId) idInput.value = SIM.myId;
+
+  progSel?.addEventListener('change', e => {
+    SIM.consent.program = e.target.value;
+  });
+  idInput?.addEventListener('input', e => {
+    SIM.consent.candidateId = e.target.value.trim();
+  });
+  idInput?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') runConsentWhatIf('no-consent');
+  });
+
+  document.getElementById('runConsentNoBtn')?.addEventListener('click', () => runConsentWhatIf('no-consent'));
+  document.getElementById('runConsentYesBtn')?.addEventListener('click', () => runConsentWhatIf('consent'));
+  document.getElementById('consentUseMeBtn')?.addEventListener('click', () => {
+    if (!SIM.myId) { showToast('Find yourself first, then use this shortcut.', 'warning'); return; }
+    if (idInput) {
+      idInput.value = SIM.myId;
+      SIM.consent.candidateId = SIM.myId;
+    }
+  });
+  document.getElementById('clearConsentHistoryBtn')?.addEventListener('click', () => {
+    SIM.consent.history = [];
+    localStorage.removeItem(CONSENT_HISTORY_KEY);
+    renderConsentHistory();
+  });
+
+  renderConsentWhatIfTab();
+}
+
+function renderConsentWhatIfTab() {
+  const progSel = document.getElementById('consentProgram');
+  if (progSel) progSel.value = SIM.consent.program || 'FCPS';
+  renderConsentHistory();
+  if (SIM.consent.lastReport) renderConsentReport(SIM.consent.lastReport);
+}
+
+function loadConsentHistory() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(CONSENT_HISTORY_KEY) || '[]');
+    return Array.isArray(parsed) ? parsed.slice(0, MAX_CONSENT_HISTORY) : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function saveConsentHistory() {
+  localStorage.setItem(CONSENT_HISTORY_KEY, JSON.stringify(SIM.consent.history.slice(0, MAX_CONSENT_HISTORY)));
+}
+
+function addConsentHistory(report) {
+  SIM.consent.history = [
+    report,
+    ...SIM.consent.history.filter(r => r.id !== report.id),
+  ].slice(0, MAX_CONSENT_HISTORY);
+  saveConsentHistory();
+  renderConsentHistory();
+}
+
+function runConsentWhatIf(mode) {
+  const program = document.getElementById('consentProgram')?.value || SIM.consent.program || 'FCPS';
+  const candidateId = String(document.getElementById('consentCandidateId')?.value || SIM.consent.candidateId || '').trim();
+  if (!candidateId) {
+    showToast('Enter the Applicant ID to simulate consent or no consent.', 'warning');
+    return;
+  }
+
+  SIM.consent.program = program;
+  SIM.consent.candidateId = candidateId;
+
+  const sourceCandidate = allCandidates().find(c => String(c.applicantId) === candidateId);
+  if (!sourceCandidate) {
+    showToast(`Applicant ID ${candidateId} was not found in the candidate pool.`, 'warning');
+    return;
+  }
+  if (effectiveMark(sourceCandidate, program) == null) {
+    showToast(`${sourceCandidate.nameFull} is not in the ${program} pool.`, 'warning');
+    return;
+  }
+
+  const pool = simulationCandidatePool(program);
+  if (!pool.sourceCandidateCount) {
+    showToast(`No candidates for ${program}.`, 'warning');
+    return;
+  }
+  if (!pool.candidates.length) {
+    const scopeLabel = pool.scope?.label || 'selected status scope';
+    showToast(pool.statusUnavailable
+      ? 'Verification status data is not loaded yet. Try again shortly or use All candidates.'
+      : `No ${program} candidates match "${scopeLabel}".`,
+      'warning');
+    return;
+  }
+  if (!pool.candidates.some(c => String(c.applicantId) === candidateId)) {
+    showToast(`${sourceCandidate.nameFull} is outside the active status scope.`, 'warning');
+    return;
+  }
+
+  const btn = document.getElementById(mode === 'no-consent' ? 'runConsentNoBtn' : 'runConsentYesBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Running...'; }
+
+  setTimeout(() => {
+    try {
+      const baseline = runPlacementFromPool(program, pool);
+      const variant = mode === 'no-consent'
+        ? runPlacementFromPool(program, pool, new Set([candidateId]))
+        : baseline;
+      if (!baseline || !variant) throw new Error('No placement result could be generated.');
+
+      const report = buildConsentReport({ mode, program, candidateId, candidate: sourceCandidate, baseline, variant, pool });
+      SIM.consent.lastReport = report;
+      addConsentHistory(report);
+      renderConsentReport(report);
+    } catch (e) {
+      console.error(e);
+      showToast(`Consent what-if error: ${e.message}`, 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = mode === 'no-consent'
+          ? 'Run: candidate does not consent'
+          : 'Show if candidate consents';
+      }
+    }
+  }, 30);
+}
+
+function buildConsentReport({ mode, program, candidateId, candidate, baseline, variant, pool }) {
+  const baselineMap = buildPlacementRecordMap(baseline);
+  const variantMap = buildPlacementRecordMap(variant);
+  const keys = new Set([...baselineMap.keys(), ...variantMap.keys()]);
+  const changedCandidates = [];
+
+  for (const key of keys) {
+    const before = baselineMap.get(key) || null;
+    const after = variantMap.get(key) || null;
+    if (!placementChanged(before, after)) continue;
+    changedCandidates.push(buildConsentChangeRow(before, after, candidateId));
+  }
+
+  changedCandidates.sort((a, b) =>
+    (a.candidateId === candidateId ? -1 : b.candidateId === candidateId ? 1 : 0) ||
+    a.name.localeCompare(b.name)
+  );
+  const changedCandidateCount = changedCandidates.length;
+
+  const baselinePlacements = [...baselineMap.values()]
+    .filter(r => String(r.applicantId) === candidateId)
+    .sort((a, b) => trackSort(a.track) - trackSort(b.track));
+  const variantPlacements = [...variantMap.values()]
+    .filter(r => String(r.applicantId) === candidateId)
+    .sort((a, b) => trackSort(a.track) - trackSort(b.track));
+  const releasedSlots = mode === 'no-consent'
+    ? baselinePlacements.filter(r => r.placed).map(r => ({
+        ...r,
+        incoming: addedOccupantsForSlot(baseline, variant, r.q, r.s, r.h),
+      }))
+    : [];
+
+  return {
+    id: `${Date.now()}_${candidateId}_${program.replace(/[^a-z0-9]+/gi, '-')}`,
+    createdAt: Date.now(),
+    mode,
+    program,
+    candidateId,
+    candidateName: candidate.nameFull,
+    candidateMarks: effectiveMark(candidate, program),
+    marksBasis: getActiveMarksLabel(),
+    parentBonus: SIM.sim.parentBonus,
+    statusLabel: pool.scope?.label || 'All candidates',
+    baselinePlacedCount: baseline.candidates.filter(c => c.placed).length,
+    variantPlacedCount: variant.candidates.filter(c => c.placed).length,
+    baselineTotal: baseline.candidates.length,
+    variantTotal: variant.candidates.length,
+    baselinePlacements,
+    variantPlacements,
+    releasedSlots,
+    changedCandidateCount,
+    changedCandidates: changedCandidates.slice(0, 100),
+  };
+}
+
+function buildPlacementRecordMap(result) {
+  const map = new Map();
+  for (const c of result.candidates || []) {
+    const placedPref = c.placed
+      ? c._prefs?.find(p => p.quotaName === c._q && p.specialityName === c._s && p.hospitalName === c._h)
+      : null;
+    const rec = {
+      key: simRecordKey(c.applicantId, c._track),
+      applicantId: String(c.applicantId),
+      name: c.nameFull,
+      marksTotal: c.marksTotal,
+      track: c._track,
+      trackLabel: c._trackLabel || quotaTrackLabel(c._track),
+      placed: !!c.placed,
+      q: c._q,
+      s: c._s,
+      h: c._h,
+      prefNo: placedPref?.preferenceNo ?? null,
+    };
+    map.set(rec.key, rec);
+  }
+  return map;
+}
+
+function placementChanged(before, after) {
+  if (!before || !after) return true;
+  return before.placed !== after.placed ||
+    before.q !== after.q ||
+    before.s !== after.s ||
+    before.h !== after.h ||
+    before.prefNo !== after.prefNo;
+}
+
+function buildConsentChangeRow(before, after, targetCandidateId) {
+  const ref = after || before;
+  const isTarget = String(ref.applicantId) === String(targetCandidateId);
+  let type = 'move';
+  let label = 'Changed';
+  if (isTarget && before && !after) { type = 'remove'; label = 'No consent'; }
+  else if ((!before || !before.placed) && after?.placed) { type = 'gain'; label = 'Newly placed'; }
+  else if (before?.placed && after?.placed) { type = 'move'; label = 'Moved'; }
+  else if (before?.placed && (!after || !after.placed)) { type = 'remove'; label = 'No longer placed'; }
+
+  return {
+    candidateId: ref.applicantId,
+    name: ref.name,
+    trackLabel: ref.trackLabel,
+    marksTotal: ref.marksTotal,
+    type,
+    label,
+    before: before ? placementText(before) : 'Not in pool',
+    after: after ? placementText(after) : 'Removed from pool',
+  };
+}
+
+function placementText(rec) {
+  if (!rec) return 'Not in pool';
+  if (!rec.placed) return `${rec.trackLabel}: not placed`;
+  return `${rec.trackLabel}: ${rec.s} @ ${shortHospital(rec.h)} (${rec.q}${rec.prefNo ? `, Pref #${rec.prefNo}` : ''})`;
+}
+
+function shortHospital(name) {
+  return String(name || '').split(',')[0].trim() || 'Unknown hospital';
+}
+
+function addedOccupantsForSlot(baseline, variant, q, s, h) {
+  const before = slotOccupantKeys(baseline, q, s, h);
+  const sl = variant.seatTree?.[q]?.[s]?.[h];
+  if (!sl) return [];
+  return (sl.candidates || [])
+    .filter(c => !before.has(simRecordKey(c.applicantId, c._track)))
+    .map(c => ({
+      applicantId: String(c.applicantId),
+      name: c.nameFull,
+      marksTotal: c.marksTotal,
+      preferenceNo: c.preferenceNo,
+      trackLabel: c._trackLabel || quotaTrackLabel(c._track),
+    }));
+}
+
+function slotOccupantKeys(result, q, s, h) {
+  const sl = result.seatTree?.[q]?.[s]?.[h];
+  return new Set((sl?.candidates || []).map(c => simRecordKey(c.applicantId, c._track)));
+}
+
+function renderConsentReport(report) {
+  const container = document.getElementById('consentResults');
+  if (!container) return;
+  const noConsent = report.mode === 'no-consent';
+  const visibleTargetChanges = report.changedCandidates.filter(c => c.candidateId === report.candidateId).length;
+  const changedExcludingTarget = Math.max(0, (report.changedCandidateCount ?? report.changedCandidates.length) - visibleTargetChanges);
+  const placementRows = report.baselinePlacements.length
+    ? report.baselinePlacements.map(r => consentPlacementRowHtml(r, noConsent ? 'Baseline if consented' : 'Projected')).join('')
+    : '<p class="consent-empty">This candidate is not placed in the baseline run.</p>';
+  const releasedRows = report.releasedSlots.length
+    ? report.releasedSlots.map(slot => consentReleasedSlotHtml(slot)).join('')
+    : `<p class="consent-empty">${noConsent ? 'No occupied seat was released because this candidate was not placed.' : 'Consent keeps the normal allocation unchanged.'}</p>`;
+  const changeRows = report.changedCandidates.length
+    ? report.changedCandidates.slice(0, 60).map(consentChangeRowHtml).join('')
+    : '<p class="consent-empty">No placement changes detected.</p>';
+
+  container.className = 'consent-report';
+  container.innerHTML = `
+    <div class="consent-summary-grid">
+      <div><span class="consent-sum-val">${esc(report.program)}</span><span class="consent-sum-lbl">Programme</span></div>
+      <div><span class="consent-sum-val">${noConsent ? report.releasedSlots.length : 0}</span><span class="consent-sum-lbl">Released slots</span></div>
+      <div><span class="consent-sum-val">${changedExcludingTarget}</span><span class="consent-sum-lbl">Others changed</span></div>
+      <div><span class="consent-sum-val">${report.variantPlacedCount - report.baselinePlacedCount >= 0 ? '+' : ''}${report.variantPlacedCount - report.baselinePlacedCount}</span><span class="consent-sum-lbl">Placed count delta</span></div>
+    </div>
+    <div class="consent-report-card">
+      <h3>${esc(report.candidateName)} <span class="consent-impact-pill ${noConsent ? 'remove' : 'gain'}">${noConsent ? 'No consent scenario' : 'Consent scenario'}</span></h3>
+      <p style="margin:0 0 10px;color:var(--text-muted);font-size:0.8rem">
+        ID ${esc(report.candidateId)} &middot; ${esc(report.program)} marks ${fmtM(report.candidateMarks)} &middot;
+        Merit basis: ${esc(report.marksBasis)} &middot; Status: ${esc(report.statusLabel)}${report.parentBonus ? ' &middot; Parent bonus on' : ''}
+      </p>
+      <div class="consent-placement-list">${placementRows}</div>
+    </div>
+    <div class="consent-report-card">
+      <h3>Released seat and who moves in</h3>
+      <div class="consent-slot-list">${releasedRows}</div>
+    </div>
+    <div class="consent-report-card">
+      <h3>Changed subsequent list</h3>
+      <div class="consent-change-list">${changeRows}</div>
+      ${(report.changedCandidateCount ?? report.changedCandidates.length) > 60 ? '<p class="consent-empty">Showing first 60 changed records.</p>' : ''}
+    </div>
+  `;
+}
+
+function consentPlacementRowHtml(rec, label) {
+  return `<div class="consent-placement-row">
+    <div>
+      <span class="consent-row-title">${esc(placementText(rec))}</span>
+      <span class="consent-row-meta">${esc(label)} &middot; Marks ${fmtM(rec.marksTotal)}</span>
+    </div>
+    <span class="consent-impact-pill">${esc(rec.trackLabel)}</span>
+  </div>`;
+}
+
+function consentReleasedSlotHtml(slot) {
+  const incoming = slot.incoming?.length
+    ? slot.incoming.map(c => `${esc(c.name)} (${fmtM(c.marksTotal)}, P${c.preferenceNo || '?'})`).join('<br>')
+    : 'No new occupant found in this slot.';
+  return `<div class="consent-slot-row">
+    <div>
+      <span class="consent-row-title">${esc(slot.s)} @ ${esc(shortHospital(slot.h))}</span>
+      <span class="consent-row-meta">${esc(slot.q)} &middot; vacated by ${esc(slot.name)} &middot; incoming:<br>${incoming}</span>
+    </div>
+    <span class="consent-impact-pill move">${esc(slot.trackLabel)}</span>
+  </div>`;
+}
+
+function consentChangeRowHtml(change) {
+  return `<div class="consent-change-row">
+    <div>
+      <span class="consent-row-title">${esc(change.name)} <span style="color:var(--text-muted);font-weight:500">ID ${esc(change.candidateId)}</span></span>
+      <span class="consent-row-meta">Before: ${esc(change.before)}</span>
+      <span class="consent-row-meta">After: ${esc(change.after)}</span>
+    </div>
+    <span class="consent-impact-pill ${esc(change.type)}">${esc(change.label)}</span>
+  </div>`;
+}
+
+function renderConsentHistory() {
+  const list = document.getElementById('consentHistoryList');
+  if (!list) return;
+  if (!SIM.consent.history.length) {
+    list.innerHTML = '<div class="consent-history-empty">No scenarios yet. Run a consent/no-consent comparison and it will be kept here on this device.</div>';
+    return;
+  }
+  list.innerHTML = SIM.consent.history.map(r => {
+    const dt = new Date(r.createdAt).toLocaleString('en-PK', { dateStyle: 'short', timeStyle: 'short' });
+    const targetChanges = r.changedCandidates?.filter(c => c.candidateId === r.candidateId).length || 0;
+    const changed = Math.max(0, (r.changedCandidateCount ?? r.changedCandidates?.length ?? 0) - targetChanges);
+    return `<button class="consent-history-item" data-id="${esc(r.id)}" type="button">
+      <span class="consent-history-title">${esc(r.candidateName)}</span>
+      <span class="consent-history-meta">${esc(r.program)} &middot; ${r.mode === 'no-consent' ? 'No consent' : 'Consent'} &middot; ${esc(dt)}</span>
+      <span class="consent-history-impact">${r.releasedSlots?.length || 0} released &middot; ${changed} other change${changed === 1 ? '' : 's'}</span>
+    </button>`;
+  }).join('');
+  list.querySelectorAll('.consent-history-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const report = SIM.consent.history.find(r => r.id === btn.dataset.id);
+      if (!report) return;
+      SIM.consent.lastReport = report;
+      const progSel = document.getElementById('consentProgram');
+      const idInput = document.getElementById('consentCandidateId');
+      if (progSel) progSel.value = report.program;
+      if (idInput) idInput.value = report.candidateId;
+      renderConsentReport(report);
+    });
+  });
 }
 
 function renderSimResults() {
@@ -3771,6 +4173,7 @@ function syncMarksSelectorUI() {
   const selects = [
     document.getElementById('candMarksBasis'),
     document.getElementById('simMarksBasis'),
+    document.getElementById('consentMarksBasis'),
   ].filter(Boolean);
 
   for (const sel of selects) {
@@ -3811,6 +4214,7 @@ function setupMarksSelectors() {
   const handler = e => setActiveMarksOption(e.target.value);
   document.getElementById('candMarksBasis')?.addEventListener('change', handler);
   document.getElementById('simMarksBasis')?.addEventListener('change', handler);
+  document.getElementById('consentMarksBasis')?.addEventListener('change', handler);
   syncMarksSelectorUI();
   syncMarksNoticeUI();
   updateMarksBasisLabels();
@@ -3897,32 +4301,44 @@ function getActiveSimStatusScope() {
 }
 
 function syncSimulationStatusScopeUI() {
-  const wrap = document.querySelector('.sim-status-scope-wrap');
-  const sel = document.getElementById('simStatusScope');
-  const hint = document.getElementById('simStatusScopeHint');
-  if (!sel) return;
-  sel.innerHTML = SIM.sim.statusScopes.map(scope =>
-    `<option value="${esc(scope.id)}">${esc(scope.label)}</option>`
-  ).join('');
-  sel.value = SIM.sim.statusScopeId;
-  sel.disabled = !SIM.sim.showStatusScopeSelector || SIM.sim.statusScopes.length <= 1;
-  wrap?.classList.toggle('hidden', !SIM.sim.showStatusScopeSelector);
+  const selects = [
+    { sel: document.getElementById('simStatusScope'), hint: document.getElementById('simStatusScopeHint') },
+    { sel: document.getElementById('consentStatusScope'), hint: document.getElementById('consentStatusScopeHint') },
+  ].filter(item => item.sel);
+
   const scope = getActiveSimStatusScope();
-  if (hint) hint.textContent = scope.description || (scope.includeAll ? 'All candidates included.' : 'Filtered by verification status.');
+  for (const { sel, hint } of selects) {
+    sel.innerHTML = SIM.sim.statusScopes.map(scope =>
+      `<option value="${esc(scope.id)}">${esc(scope.label)}</option>`
+    ).join('');
+    sel.value = SIM.sim.statusScopeId;
+    sel.disabled = !SIM.sim.showStatusScopeSelector || SIM.sim.statusScopes.length <= 1;
+    if (hint) hint.textContent = scope.description || (scope.includeAll ? 'All candidates included.' : 'Filtered by verification status.');
+  }
+  document.querySelectorAll('.sim-status-scope-wrap').forEach(wrap => {
+    wrap.classList.toggle('hidden', !SIM.sim.showStatusScopeSelector);
+  });
 }
 
 function setupSimulationStatusScopeSelector() {
-  const sel = document.getElementById('simStatusScope');
-  sel?.addEventListener('change', e => {
+  const handler = e => {
     const next = e.target.value;
     if (!SIM.sim.statusScopes.some(scope => scope.id === next)) return;
     SIM.sim.statusScopeId = next;
     localStorage.setItem(SIM_STATUS_SCOPE_KEY, next);
     SIM.sim.result = null;
+    SIM.consent.lastReport = null;
     document.getElementById('simResults').innerHTML = '';
+    const consentResults = document.getElementById('consentResults');
+    if (consentResults) {
+      consentResults.className = 'consent-placeholder';
+      consentResults.textContent = 'Candidate status scope changed. Run the consent comparison again.';
+    }
     updateSimulationDownloadGate();
     syncSimulationStatusScopeUI();
-  });
+  };
+  document.getElementById('simStatusScope')?.addEventListener('change', handler);
+  document.getElementById('consentStatusScope')?.addEventListener('change', handler);
   syncSimulationStatusScopeUI();
 }
 
@@ -3977,7 +4393,13 @@ function onMarksOptionChanged(clearSim) {
   applyAndRenderCandidates();
   if (clearSim) {
     SIM.sim.result = null;
+    SIM.consent.lastReport = null;
     document.getElementById('simResults').innerHTML = '';
+    const consentResults = document.getElementById('consentResults');
+    if (consentResults) {
+      consentResults.className = 'consent-placeholder';
+      consentResults.textContent = 'Merit basis changed. Run the consent comparison again.';
+    }
   }
   if (SIM.sb.program) renderSlot();
 }
@@ -4061,6 +4483,7 @@ function handleSimURLParams() {
   if (tab === 'schedule')    renderScheduleTab();
   if (tab === 'hospitals')   renderHospitalsTab();
   if (tab === 'profiles')    renderProfilesTab();
+  if (tab === 'consent')     renderConsentWhatIfTab();
 }
 
 // ═══════════════════════════════════════════════════════════════════
