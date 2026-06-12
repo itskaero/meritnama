@@ -669,6 +669,8 @@ async function initDonorEntitlements() {
     const sessionEmail = getSessionEmail();
     SIM.donor.current = sessionEmail ? SIM.donor.byEmail.get(sessionEmail) || null : null;
     SIM.donor.loaded = true;
+    _renderAllChatMessages();
+    _renderOnlineMembers();
     updateSbDownloadGate();
     updateCandidateDownloadGate();
     updateSimulationDownloadGate();
@@ -679,6 +681,8 @@ async function initDonorEntitlements() {
   } catch (e) {
     console.warn('Donor entitlement load failed:', e);
     SIM.donor.loaded = true;
+    _renderAllChatMessages();
+    _renderOnlineMembers();
     updateSbDownloadGate();
     updateCandidateDownloadGate();
     updateSimulationDownloadGate();
@@ -4510,15 +4514,18 @@ const CHAT = {
   unsubscribe:        null,
   typingUnsubscribe:  null,
   pinUnsubscribe:     null,
+  roomPinsUnsubscribe:null,
   presenceUnsubscribe: null,
   messages:           [],
   _legacy:            [],
   typingUsers:        [],
+  typingByUid:        new Set(),
   onlineMembers:      [],
   roomCounts:         {},
   onlineCounts:       {},
   memberProfiles:     {},
   pinned:             null,
+  roomPins:           {},
   unreadCount:        0,
   popupOpen:          false,
   tabActive:          false,
@@ -4536,6 +4543,7 @@ const CHAT = {
   TYPING_COLLECTION:  'sim21_chat_typing',
   PRESENCE_COLLECTION:'sim21_room_presence',
   PIN_DOC:            'chat_pin',
+  ROOM_PINS_DOC:      'chat_room_pins',
   EVERYONE_TOKEN:     '@everyone',
   MUTE_EVERYONE_KEY:  'mn_chat_mute_everyone',
   ROOM_KEY:           'mn_chat_active_room',
@@ -4732,6 +4740,7 @@ function setupChat() {
   _startChatListener();
   _startTypingListener();
   _startChatPinListener();
+  _startRoomPinsListener();
   _startRoomPresence();
 }
 
@@ -4812,6 +4821,7 @@ function _switchChatRoom(roomId) {
   _renderRoomChrome();
   _renderAllChatMessages();
   _renderTypingIndicators();
+  _renderChatPinBanners();
   _startRoomPresence(prev);
   _chatScrollBottom('chatTabMessages');
   if (CHAT.popupOpen) _chatScrollBottom('chatPopupMessages');
@@ -4916,9 +4926,10 @@ function _startRoomPresence(previousRoomId) {
 }
 
 async function _hydrateOnlineMemberProfiles() {
-  const emails = CHAT.onlineMembers
-    .map(m => String(m.email || '').toLowerCase().trim())
-    .filter(email => email && CHAT.memberProfiles[email] === undefined);
+  const emails = [...new Set([
+    ...CHAT.onlineMembers.map(m => String(m.email || '').toLowerCase().trim()),
+    ...CHAT.messages.map(m => String(m.email || '').toLowerCase().trim()),
+  ].filter(email => email && CHAT.memberProfiles[email] === undefined))];
   if (!emails.length) return;
 
   let db;
@@ -4933,12 +4944,46 @@ async function _hydrateOnlineMemberProfiles() {
     }
   }));
   _renderOnlineMembers();
+  _renderAllChatMessages();
 }
 
 function _chatMemberProfile(member) {
   const email = String(member?.email || '').toLowerCase().trim();
   if (!email) return null;
   return CHAT.memberProfiles[email] || null;
+}
+
+function _chatProfileHasPublicInfo(profile) {
+  return !!(profile?.isPublic && (profile.name || profile.specialty || profile.hospital || profile.profilePicBase64));
+}
+
+function _chatIsVerifiedProfile(profile) {
+  return !!(profile?.applicantId || profile?.inducted || profile?.verified || profile?.isVerified);
+}
+
+function _chatIsContributor(email) {
+  const key = String(email || '').toLowerCase().trim();
+  return !!(key && SIM.donor?.byEmail?.has(key));
+}
+
+function _chatTrustBadges(email, profile) {
+  const badges = [];
+  if (_chatIsVerifiedProfile(profile)) {
+    badges.push('<span class="chat-trust-badge chat-trust-verified" title="Linked or verified profile">✓ Verified</span>');
+  }
+  if (_chatProfileHasPublicInfo(profile)) {
+    badges.push('<span class="chat-trust-badge chat-trust-profile" title="Public MeritNama profile">Profile</span>');
+  }
+  if (_chatIsContributor(email)) {
+    badges.push('<span class="chat-trust-badge chat-trust-contributor" title="MeritNama contributor">★ Contributor</span>');
+  }
+  return badges.join('');
+}
+
+function _chatProfileForEmail(email) {
+  const key = String(email || '').toLowerCase().trim();
+  if (!key) return null;
+  return CHAT.memberProfiles[key] || null;
 }
 
 function _chatMemberInitial(name) {
@@ -4961,14 +5006,25 @@ function _renderOnlineMembers() {
 
   list.innerHTML = CHAT.onlineMembers.map(member => {
     const profile = _chatMemberProfile(member);
+    const email = String(member.email || '').toLowerCase().trim();
     const name = profile?.name || member.name || member.email || 'Anonymous';
     const isOwn = member.uid === _chatUID();
+    const isTyping = CHAT.typingByUid.has(member.uid);
     const avatar = profile?.profilePicBase64
       ? `<img src="${profile.profilePicBase64}" alt="" />`
       : esc(_chatMemberInitial(name));
     const statusChip = profile?.inducted
       ? '<span class="chat-member-chip good">Inducted</span>'
       : '<span class="chat-member-chip">Applicant</span>';
+    const publicProfileChip = _chatProfileHasPublicInfo(profile)
+      ? '<span class="chat-member-chip">Profile</span>'
+      : '';
+    const contributorChip = _chatIsContributor(email)
+      ? '<span class="chat-member-chip contributor">Contributor</span>'
+      : '';
+    const typingChip = isTyping
+      ? '<span class="chat-member-chip typing">typing</span>'
+      : '';
     const specialtyChip = profile?.specialty
       ? `<span class="chat-member-chip">${esc(profile.specialty)}</span>`
       : '';
@@ -4976,11 +5032,11 @@ function _renderOnlineMembers() {
       ? `<span class="chat-member-chip">${esc(profile.hospital)}</span>`
       : '';
     return `
-      <div class="chat-member-card">
+      <div class="chat-member-card${isTyping ? ' typing' : ''}">
         <div class="chat-member-avatar">${avatar}<span class="chat-member-dot"></span></div>
         <div class="chat-member-main">
           <div class="chat-member-name">${esc(name)}${isOwn ? ' (you)' : ''}</div>
-          <div class="chat-member-meta">${statusChip}${specialtyChip}${hospitalChip}</div>
+          <div class="chat-member-meta">${_chatTrustBadges(email, profile)}${typingChip}${statusChip}${publicProfileChip}${contributorChip}${specialtyChip}${hospitalChip}</div>
         </div>
       </div>`;
   }).join('');
@@ -5469,6 +5525,7 @@ function _startChatListener() {
       }
       _renderAllChatMessages();
       _renderRoomCounts();
+      _hydrateOnlineMemberProfiles();
       if (isVisible) _chatScrollBottom('chatTabMessages');
       if (CHAT.popupOpen) _chatScrollBottom('chatPopupMessages');
     }, err => {
@@ -5640,6 +5697,7 @@ function _startTypingListener() {
   CHAT.typingUnsubscribe = db.collection(CHAT.TYPING_COLLECTION)
     .onSnapshot(snap => {
       const users = [];
+      const typingSet = new Set();
       const roomId = _chatActiveRoom().id;
       for (const doc of snap.docs) {
         const d = doc.data();
@@ -5647,18 +5705,22 @@ function _startTypingListener() {
         if (_chatRoomId(d.roomId || 'general') !== roomId) continue;
         const ts = d.updatedAt?.toMillis?.() ?? 0;
         if (ts && ts < cutoff()) continue;
-        users.push(d.name);
+        users.push({ uid: d.uid || doc.id, name: d.name });
+        typingSet.add(d.uid || doc.id);
       }
       CHAT.typingUsers = users.slice(0, 4);
+      CHAT.typingByUid = typingSet;
       _renderTypingIndicators();
+      _renderOnlineMembers();
     }, err => console.warn('Typing listener error:', err));
 }
 
 function _renderTypingIndicators() {
-  const text = CHAT.typingUsers.length
-    ? (CHAT.typingUsers.length === 1
-        ? `${CHAT.typingUsers[0]} is typing…`
-        : `${CHAT.typingUsers.slice(0, 2).join(', ')}${CHAT.typingUsers.length > 2 ? ' +' + (CHAT.typingUsers.length - 2) : ''} typing…`)
+  const names = CHAT.typingUsers.map(u => u.name || 'Someone');
+  const text = names.length
+    ? (names.length === 1
+        ? `${names[0]} is typing…`
+        : `${names.slice(0, 2).join(', ')}${names.length > 2 ? ' +' + (names.length - 2) : ''} typing…`)
     : '';
   ['chatTabTyping', 'chatPopupTyping'].forEach(id => {
     const el = document.getElementById(id);
@@ -5684,23 +5746,49 @@ function _startChatPinListener() {
     }, err => console.warn('Chat pin listener error:', err));
 }
 
+function _startRoomPinsListener() {
+  let db;
+  try { db = firebase.firestore(); } catch { return; }
+  if (CHAT.roomPinsUnsubscribe) CHAT.roomPinsUnsubscribe();
+  CHAT.roomPinsUnsubscribe = db.collection('notifications').doc(CHAT.ROOM_PINS_DOC)
+    .onSnapshot(snap => {
+      CHAT.roomPins = snap.exists ? (snap.data()?.rooms || {}) : {};
+      _renderChatPinBanners();
+    }, err => console.warn('Room pins listener error:', err));
+}
+
+function _chatActivePins() {
+  const pins = [];
+  const roomId = _chatActiveRoom().id;
+  const roomPin = CHAT.roomPins?.[roomId];
+  if (roomPin?.active !== false && roomPin?.text) {
+    pins.push({ ...roomPin, label: `${_chatActiveRoom().label} pinned post`, scope: 'room' });
+  }
+  if (CHAT.pinned?.text) {
+    pins.push({ ...CHAT.pinned, label: 'Portal pinned post', scope: 'global' });
+  }
+  return pins;
+}
+
 function _renderChatPinBanners() {
-  const pin = CHAT.pinned;
+  const pins = _chatActivePins();
   ['chatTabPin', 'chatPopupPin'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    if (!pin?.text) {
+    if (!pins.length) {
       el.classList.add('hidden');
       el.innerHTML = '';
       return;
     }
-    const by = pin.pinnedBy ? ` — ${esc(pin.pinnedBy)}` : '';
-    el.innerHTML = `
+    el.innerHTML = pins.map(pin => {
+      const by = pin.pinnedBy ? ` — ${esc(pin.pinnedBy)}` : '';
+      return `
       <div class="chat-pin-inner">
-        <span class="chat-pin-label">&#128204; Pinned</span>
+        <span class="chat-pin-label">&#128204; ${esc(pin.label || 'Pinned')}</span>
         <span class="chat-pin-text">${esc(pin.text).replace(/\n/g, '<br>')}</span>
         ${by ? `<span class="chat-pin-by">${by}</span>` : ''}
       </div>`;
+    }).join('');
     el.classList.remove('hidden');
   });
 }
@@ -5747,9 +5835,13 @@ function _renderChatMessages(containerId) {
     const isOwn  = msg.uid === uid;
     const relTm  = _relTime(msg.ts);
     const canReact = !String(msg.id).startsWith('_legacy_');
+    const authorEmail = String(msg.email || '').toLowerCase().trim();
+    const authorProfile = _chatProfileForEmail(authorEmail);
+    const badges = _chatTrustBadges(authorEmail, authorProfile);
     return `<div class="chat-msg ${isOwn ? 'chat-msg-own' : ''}" data-msg-id="${msg.id}">
       <div class="chat-msg-meta">
         <span class="chat-msg-name ${isOwn ? 'chat-msg-name-own' : ''}">${esc(msg.name || 'Anonymous')}</span>
+        ${badges}
         <span class="chat-msg-time">${relTm}</span>
         ${canReact ? `<button class="chat-mention-btn" data-id="${msg.id}" data-prefix="${containerId.includes('Popup') ? 'Popup' : 'Tab'}" title="Mention @${esc(msg.name || 'user')}">@</button>` : ''}
         ${canReact ? `<button class="chat-reply-btn" data-id="${msg.id}" title="Reply">&#8617;</button>` : ''}

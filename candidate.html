@@ -377,6 +377,122 @@
       font-size: 0.68rem; color: var(--text-muted); margin-top: 0.5rem; text-align: center;
     }
 
+    .profile-strength-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
+      gap: 1rem;
+      margin: -0.5rem 0 1.5rem;
+    }
+    .profile-strength-card {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(77,184,217,0.14);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+    }
+    .profile-strength-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .profile-strength-title {
+      color: var(--text);
+      font-size: 0.92rem;
+      font-weight: 800;
+    }
+    .profile-strength-score {
+      color: var(--neon-cyan);
+      font-size: 1.15rem;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+    .profile-strength-bar {
+      height: 8px;
+      border-radius: 100px;
+      background: rgba(255,255,255,0.06);
+      overflow: hidden;
+      margin-bottom: 0.7rem;
+    }
+    .profile-strength-fill {
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan), var(--neon-green));
+      transition: width 0.25s ease;
+    }
+    .profile-strength-summary {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+    .profile-trust-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+    .profile-trust-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.28rem;
+      padding: 0.28rem 0.65rem;
+      border-radius: 100px;
+      border: 1px solid rgba(77,184,217,0.18);
+      background: rgba(77,184,217,0.07);
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+    .profile-trust-chip.good {
+      color: var(--neon-green);
+      background: rgba(62,207,142,0.08);
+      border-color: rgba(62,207,142,0.22);
+    }
+    .profile-trust-chip.gold {
+      color: var(--neon-gold);
+      background: rgba(232,166,39,0.1);
+      border-color: rgba(232,166,39,0.28);
+    }
+    .profile-next-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-top: 0.75rem;
+    }
+    .profile-next-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      line-height: 1.35;
+    }
+    .profile-next-item.done {
+      color: var(--text);
+    }
+    .profile-next-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: var(--text-muted);
+      font-size: 0.62rem;
+      font-weight: 900;
+    }
+    .profile-next-item.done .profile-next-dot {
+      color: var(--neon-green);
+      background: rgba(62,207,142,0.08);
+      border-color: rgba(62,207,142,0.24);
+    }
+    @media (max-width: 720px) {
+      .profile-strength-panel { grid-template-columns: 1fr; }
+    }
+
     /* ── Form section dividers ── */
     .pf-section-head {
       grid-column: 1 / -1;
@@ -1186,6 +1302,24 @@
       </div>
     </div>
 
+    <div class="profile-strength-panel" id="profileStrengthPanel">
+      <div class="profile-strength-card">
+        <div class="profile-strength-head">
+          <div class="profile-strength-title">Profile strength</div>
+          <div class="profile-strength-score" id="profileStrengthScore">0%</div>
+        </div>
+        <div class="profile-strength-bar" aria-hidden="true">
+          <div class="profile-strength-fill" id="profileStrengthFill"></div>
+        </div>
+        <div class="profile-strength-summary" id="profileStrengthSummary">Complete your profile to unlock better community trust signals.</div>
+      </div>
+      <div class="profile-strength-card">
+        <div class="profile-strength-title" style="margin-bottom:0.65rem;">Trust signals</div>
+        <div class="profile-trust-grid" id="profileTrustGrid"></div>
+        <div class="profile-next-list" id="profileNextList"></div>
+      </div>
+    </div>
+
     <div class="profile-form" id="profileForm">
 
       <div class="pf-section-head">
@@ -1643,6 +1777,7 @@ const ANIM_DEFS = [
 
 let _profileHue = 205;
 let _profileAnim = 'anim-none';
+let _profileContributor = false;
 
 function setAnimLayer(animId, hue) {
   const layer = document.getElementById('profileAnimLayer');
@@ -1670,6 +1805,78 @@ function buildAnimPicker() {
   grid.querySelectorAll('.pf-anim-swatch').forEach(sw => {
     sw.addEventListener('click', () => setAnimLayer(sw.dataset.anim, _profileHue));
   });
+}
+
+function profileDraftFromForm(extra = {}) {
+  const previewEl = document.getElementById('photoUploadPreview');
+  return {
+    name: document.getElementById('pfName')?.value.trim() || extra.name || '',
+    specialty: document.getElementById('pfSpecialty')?.value.trim() || extra.specialty || '',
+    hospital: document.getElementById('pfHospital')?.value.trim() || extra.hospital || '',
+    applicantId: document.getElementById('pfApplicantId')?.value.trim() || extra.applicantId || '',
+    inducted: document.getElementById('pfInducted')?.value === 'inducted' || !!extra.inducted,
+    inductedSpecialty: document.getElementById('pfInductedSpecialty')?.value.trim() || extra.inductedSpecialty || '',
+    inductedHospital: document.getElementById('pfInductedHospital')?.value.trim() || extra.inductedHospital || '',
+    profilePicBase64: previewEl?._pendingB64 || localStorage.getItem('mn_profile_pic') || extra.profilePicBase64 || '',
+    isPublic: !!document.getElementById('pfPublic')?.checked || !!extra.isPublic,
+  };
+}
+
+function profileCompletionItems(p) {
+  return [
+    { key: 'identity', label: 'Add your display name', done: !!p.name },
+    { key: 'goal', label: 'Add specialty or hospital goal', done: !!(p.specialty || p.hospital) },
+    { key: 'record', label: 'Link Applicant ID for verification context', done: !!p.applicantId },
+    { key: 'photo', label: 'Add a profile photo/avatar', done: !!p.profilePicBase64 },
+    { key: 'visibility', label: 'Make profile public for community discovery', done: !!p.isPublic },
+    { key: 'training', label: 'Share applicant/inducted status', done: !!(p.inducted || p.specialty || p.hospital) },
+  ];
+}
+
+function renderProfileStrength(profile = null) {
+  const p = profile || profileDraftFromForm();
+  const items = profileCompletionItems(p);
+  const done = items.filter(i => i.done).length;
+  const pct = Math.round((done / items.length) * 100);
+
+  const scoreEl = document.getElementById('profileStrengthScore');
+  const fillEl = document.getElementById('profileStrengthFill');
+  const summaryEl = document.getElementById('profileStrengthSummary');
+  const trustEl = document.getElementById('profileTrustGrid');
+  const nextEl = document.getElementById('profileNextList');
+
+  if (scoreEl) scoreEl.textContent = `${pct}%`;
+  if (fillEl) fillEl.style.width = `${pct}%`;
+  if (summaryEl) {
+    const publicText = p.isPublic
+      ? 'Your profile can appear in community discovery.'
+      : 'Switch to public when you are ready to appear in community discovery.';
+    const verifyText = p.applicantId
+      ? 'Applicant ID is linked for stronger trust context.'
+      : 'Link your Applicant ID to strengthen verification context.';
+    summaryEl.textContent = `${done}/${items.length} essentials complete. ${verifyText} ${publicText}`;
+  }
+
+  if (trustEl) {
+    const trust = [
+      { label: p.applicantId || p.inducted ? 'Verified context' : 'Unverified context', good: !!(p.applicantId || p.inducted), icon: '✓' },
+      { label: p.isPublic ? 'Public profile' : 'Private profile', good: !!p.isPublic, icon: p.isPublic ? '👁' : '🔒' },
+      { label: _profileContributor ? 'Contributor' : 'No contribution linked', good: _profileContributor, gold: _profileContributor, icon: '★' },
+      { label: p.profilePicBase64 ? 'Photo added' : 'No photo yet', good: !!p.profilePicBase64, icon: '👤' },
+    ];
+    trustEl.innerHTML = trust.map(t =>
+      `<span class="profile-trust-chip${t.good ? ' good' : ''}${t.gold ? ' gold' : ''}">${t.icon} ${esc(t.label)}</span>`
+    ).join('');
+  }
+
+  if (nextEl) {
+    nextEl.innerHTML = items.map(item => `
+      <div class="profile-next-item${item.done ? ' done' : ''}">
+        <span class="profile-next-dot">${item.done ? '✓' : '•'}</span>
+        <span>${esc(item.label)}</span>
+      </div>
+    `).join('');
+  }
 }
 let _flatLookupIndex = null;
 async function fetchFlatLookupIndex() {
@@ -2041,6 +2248,7 @@ document.getElementById('pfPicFile').addEventListener('change', async function()
     prev._pendingHue  = hue;
     // Update animation layer hue immediately
     setAnimLayer(_profileAnim, hue);
+    renderProfileStrength(profileDraftFromForm());
   } catch (e) {
     console.warn('Image compress failed:', e);
     alert('Could not process image. Try a smaller file.');
@@ -2148,6 +2356,8 @@ async function loadProfile() {
     }
   } catch (e) { console.warn('Error loading profile:', e); }
 
+  renderProfileStrength(profileDraftFromForm());
+
   // Build picker even if no profile saved yet
   buildAnimPicker();
 }
@@ -2163,13 +2373,18 @@ async function loadMyContributions() {
       .get();
 
     if (snapshot.empty) {
+      _profileContributor = false;
+      renderProfileStrength(profileDraftFromForm());
       list.innerHTML = '<div class="contrib-empty">No contributions linked to your account yet.</div>';
       return;
     }
 
+    _profileContributor = true;
+    renderProfileStrength(profileDraftFromForm());
+
     const chips = document.getElementById('profileHeroChips');
     if (chips && !chips.querySelector('[data-supporter-chip]')) {
-      chips.innerHTML += '<span class="profile-hero-chip supporter" data-supporter-chip>★ MeritNama Supporter</span>';
+      chips.innerHTML += '<span class="profile-hero-chip supporter" data-supporter-chip>★ MeritNama Contributor</span>';
     }
 
     // Sort client-side by date descending (avoids requiring a composite Firestore index)
@@ -2197,6 +2412,7 @@ async function loadMyContributions() {
   } catch (e) {
     console.warn('Error loading contributions:', e);
     list.innerHTML = '<div class="contrib-empty">Could not load contributions.</div>';
+    renderProfileStrength(profileDraftFromForm());
   }
 }
 
@@ -2520,6 +2736,7 @@ async function saveProfile() {
       }
       addVerifiedBadge();
     }
+    renderProfileStrength(profileData);
 
     // Cache pic in localStorage so navbar can show it instantly
     if (profilePicBase64) {
@@ -2562,6 +2779,15 @@ document.getElementById('pfPublic')?.addEventListener('change', function() {
   if (label) label.textContent = this.checked
     ? 'Public — visible in community profiles'
     : 'Private — only you can see this profile';
+  renderProfileStrength(profileDraftFromForm());
+});
+
+[
+  'pfName', 'pfSpecialty', 'pfHospital', 'pfApplicantId', 'pfInducted',
+  'pfInductedSpecialty', 'pfInductedHospital',
+].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', () => renderProfileStrength(profileDraftFromForm()));
+  document.getElementById(id)?.addEventListener('change', () => renderProfileStrength(profileDraftFromForm()));
 });
 
 // ══ Probability Scoring ═══════════════════════════════════

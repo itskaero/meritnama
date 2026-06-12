@@ -200,6 +200,7 @@ service cloud.firestore {
     // induction_schedule fields: induction, source, steps[], updatedAt
     // profile_status fields: source, statusTypeId, statusTypeLabel, statusLabels, entries[], updatedAt
     // chat_pin fields: active, text, pinnedBy, updatedAt
+    // chat_room_pins fields: rooms: { [roomId]: { active, text, pinnedBy, updatedAt } }
     match /notifications/{docId} {
       allow read: if true;
       allow create, update: if true;   // admin dashboard writes; gated by PIN-based auth in client
