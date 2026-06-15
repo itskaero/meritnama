@@ -57,6 +57,24 @@
       body.mn-screen-guard-active {
         -webkit-touch-callout: none;
       }
+      #mnWatermark {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483646;
+        pointer-events: none;
+        background-repeat: repeat;
+        background-position: 0 0;
+        opacity: 0.06;
+        mix-blend-mode: difference;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      @media print {
+        #mnWatermark {
+          opacity: 0.12 !important;
+          mix-blend-mode: normal !important;
+        }
+      }
       #mnPrivacyShield {
         position: fixed;
         inset: 0;
@@ -292,6 +310,51 @@
       hash = Math.imul(hash, 16777619);
     }
     return (hash >>> 0).toString(36).toUpperCase().padStart(7, '0').slice(0, 7);
+  }
+
+  function buildWatermarkSvg(line1, line2) {
+    // A single tile that is repeated across the viewport. The text is rotated so
+    // it is hard to crop out of a screenshot, and kept faint so it stays subtle.
+    const tileW = 340;
+    const tileH = 200;
+    const safe1 = escapeHtml(line1 || '');
+    const safe2 = escapeHtml(line2 || '');
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${tileW}" height="${tileH}" viewBox="0 0 ${tileW} ${tileH}">` +
+        `<g transform="rotate(-30 ${tileW / 2} ${tileH / 2})" ` +
+          `fill="#808080" font-family="system-ui,-apple-system,Segoe UI,sans-serif" ` +
+          `font-size="14" font-weight="600" text-anchor="middle">` +
+          `<text x="${tileW / 2}" y="${tileH / 2 - 6}">${safe1}</text>` +
+          (safe2 ? `<text x="${tileW / 2}" y="${tileH / 2 + 14}" font-size="11" font-weight="400">${safe2}</text>` : '') +
+        `</g>` +
+      `</svg>`;
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+
+  function ensureWatermark() {
+    const email = getSessionEmail();
+    let layer = document.getElementById('mnWatermark');
+    if (!email) {
+      if (layer) layer.remove();
+      return;
+    }
+    if (!layer) {
+      layer = document.createElement('div');
+      layer.id = 'mnWatermark';
+      layer.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(layer);
+    }
+    const traceId = makeTraceId(email);
+    const signature = email + '|' + traceId;
+    if (layer.dataset.signature !== signature) {
+      layer.dataset.signature = signature;
+      layer.style.backgroundImage = `url("${buildWatermarkSvg(email, 'ID ' + traceId)}")`;
+    }
+    // Keep the watermark as the last child so it is not visually buried by
+    // content that mounts later in the DOM.
+    if (document.body.lastElementChild !== layer) {
+      document.body.appendChild(layer);
+    }
   }
 
   function isVisible(el) {
@@ -738,6 +801,7 @@
     ensureStyles();
     ensureShield();
     ensureWarningInbox();
+    ensureWatermark();
     document.body.classList.add('mn-screen-guard-active');
     writeUserActivity('page_load');
     subscribeWarnings();
@@ -773,6 +837,7 @@
     window.addEventListener('storage', function () {
       writeUserActivity('storage');
       subscribeWarnings();
+      ensureWatermark();
     });
     document.addEventListener('click', function () {
       setTimeout(function () { writeUserActivity('click'); }, 80);
@@ -780,6 +845,7 @@
     setInterval(function () {
       writeUserActivity('heartbeat');
       subscribeWarnings();
+      ensureWatermark();
     }, 10 * 1000);
   }
 
@@ -788,6 +854,7 @@
     showShield,
     getContext: collectPageContext,
     writeActivity: writeUserActivity,
+    refreshWatermark: ensureWatermark,
   };
 
   if (document.readyState === 'loading') {
