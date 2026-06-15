@@ -20,7 +20,7 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage(function (payload) {
   const title = payload.notification?.title || payload.data?.title || 'MeritNama Update';
   const body  = payload.notification?.body  || payload.data?.body  || 'Candidate data has been updated.';
-  const icon  = '/logo.svg';
+  const icon  = '/logo.png';
   const url   = payload.data?.url || '/';
 
   self.registration.showNotification(title, {

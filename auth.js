@@ -214,7 +214,7 @@
     gate.id = 'authGate';
     gate.innerHTML =
       '<div class="auth-card">' +
-        '<img src="logo.svg" class="auth-logo" alt="MeritNama" />' +
+        '<img src="logo.png" class="auth-logo" alt="MeritNama" />' +
         '<div class="auth-tabs" id="authTabs">' +
           '<button type="button" class="auth-tab active" data-auth-tab="login">Sign In</button>' +
           '<button type="button" class="auth-tab" data-auth-tab="request" id="authRequestTab" style="display:none;">Request Access</button>' +
