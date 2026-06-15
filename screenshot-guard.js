@@ -69,11 +69,23 @@
         user-select: none;
         -webkit-user-select: none;
       }
+      /* Scoped watermark injected into modals/overlays whose backdrop-filter
+         isolates them from the page-level overlay above. */
+      .mn-modal-watermark {
+        position: absolute;
+        inset: 0;
+        z-index: 2147483000;
+        pointer-events: none;
+        background-repeat: repeat;
+        background-position: 0 0;
+        opacity: 0.07;
+        border-radius: inherit;
+        user-select: none;
+        -webkit-user-select: none;
+      }
       @media print {
-        #mnWatermark {
-          opacity: 0.12 !important;
-          mix-blend-mode: normal !important;
-        }
+        #mnWatermark { opacity: 0.12 !important; mix-blend-mode: normal !important; }
+        .mn-modal-watermark { opacity: 0.14 !important; }
       }
       #mnPrivacyShield {
         position: fixed;
@@ -355,6 +367,90 @@
     if (document.body.lastElementChild !== layer) {
       document.body.appendChild(layer);
     }
+  }
+
+  function getVisibleModalRoots() {
+    const selectors = [
+      '.modal:not(.hidden)',
+      '.modal.open',
+      '.modal-overlay.open',
+      '.modal-overlay:not(.hidden)',
+      '.mentor-modal-overlay.open',
+      '.mentor-modal-overlay:not(.hidden)',
+      '[id*="Modal"]:not(.hidden)',
+      '[id*="modal"]:not(.hidden)',
+      '[role="dialog"]:not(.hidden)',
+    ];
+    const roots = [];
+    document.querySelectorAll(selectors.join(',')).forEach(function (el) {
+      if (el.id === 'mnWarningDialog' || el.id === 'mnPrivacyShield' || el.id === 'mnWatermark') return;
+      if (el.classList && el.classList.contains('mn-modal-watermark')) return;
+      if (!isVisible(el)) return;
+      roots.push(el);
+    });
+    // Keep only the outermost matched element of each modal (drop nested matches).
+    return roots.filter(function (el) {
+      return !roots.some(function (other) { return other !== el && other.contains(el); });
+    });
+  }
+
+  function findModalCard(root) {
+    const card = root.querySelector(
+      '.modal-box, .modal-card, [class*="modal-box"], [class*="modal-card"], [class*="-modal-box"], [class*="-modal-card"]'
+    );
+    if (card && isVisible(card)) return card;
+    for (const child of root.children) {
+      const cls = String(child.className || '').toLowerCase();
+      if (cls.includes('overlay') || cls.includes('backdrop')) continue;
+      if (child.classList && child.classList.contains('mn-modal-watermark')) continue;
+      if (isVisible(child)) return child;
+    }
+    return root;
+  }
+
+  function ensureModalWatermarks() {
+    const email = getSessionEmail();
+    const existing = document.querySelectorAll('.mn-modal-watermark');
+    if (!email) {
+      existing.forEach(function (n) { n.remove(); });
+      return;
+    }
+
+    const traceId = makeTraceId(email);
+    const signature = email + '|' + traceId;
+    const bg = `url("${buildWatermarkSvg(email, 'ID ' + traceId)}")`;
+    const targets = getVisibleModalRoots().map(findModalCard);
+    const targetSet = new Set(targets);
+
+    existing.forEach(function (mark) {
+      if (!targetSet.has(mark.parentElement) || !isVisible(mark.parentElement)) mark.remove();
+    });
+
+    targets.forEach(function (target) {
+      if (!target) return;
+      if (window.getComputedStyle(target).position === 'static') {
+        target.style.position = 'relative';
+      }
+      let mark = Array.prototype.find.call(target.children, function (c) {
+        return c.classList && c.classList.contains('mn-modal-watermark');
+      });
+      if (!mark) {
+        mark = document.createElement('div');
+        mark.className = 'mn-modal-watermark';
+        mark.setAttribute('aria-hidden', 'true');
+        target.appendChild(mark);
+      }
+      if (mark.dataset.signature !== signature) {
+        mark.dataset.signature = signature;
+        mark.style.backgroundImage = bg;
+      }
+      if (target.lastElementChild !== mark) target.appendChild(mark);
+    });
+  }
+
+  function refreshWatermarks() {
+    ensureWatermark();
+    ensureModalWatermarks();
   }
 
   function isVisible(el) {
@@ -801,7 +897,7 @@
     ensureStyles();
     ensureShield();
     ensureWarningInbox();
-    ensureWatermark();
+    refreshWatermarks();
     document.body.classList.add('mn-screen-guard-active');
     writeUserActivity('page_load');
     subscribeWarnings();
@@ -837,15 +933,18 @@
     window.addEventListener('storage', function () {
       writeUserActivity('storage');
       subscribeWarnings();
-      ensureWatermark();
+      refreshWatermarks();
     });
     document.addEventListener('click', function () {
       setTimeout(function () { writeUserActivity('click'); }, 80);
+      setTimeout(ensureModalWatermarks, 120);
     }, true);
+    // Catch modals that open without a direct click (programmatic, keyboard, etc.).
+    setInterval(ensureModalWatermarks, 1200);
     setInterval(function () {
       writeUserActivity('heartbeat');
       subscribeWarnings();
-      ensureWatermark();
+      refreshWatermarks();
     }, 10 * 1000);
   }
 
@@ -854,7 +953,7 @@
     showShield,
     getContext: collectPageContext,
     writeActivity: writeUserActivity,
-    refreshWatermark: ensureWatermark,
+    refreshWatermark: refreshWatermarks,
   };
 
   if (document.readyState === 'loading') {
