@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "mortality-review"
+  },
+  "targets": {
+    "mortality-review": {
+      "hosting": {
+        "main": [
+          "mortality-review"
+        ]
+      }
+    }
+  }
+}

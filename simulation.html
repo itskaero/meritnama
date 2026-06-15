@@ -2596,6 +2596,8 @@
         justify-content: flex-start;
       }
     }
+
+
   </style>
 </head>
 <body>
@@ -3840,7 +3842,7 @@
     document.querySelector('.tab-btn[data-tab="community"]')?.click();
   });
 
-  // Wire up Add Manually modal close + pref builder before simulation.js loads
+  // Wire up Add Manually modal close + pref builder before sim modules load
   document.getElementById('customModalOverlay')?.addEventListener('click', () =>
     document.getElementById('customModal')?.classList.add('hidden'));
   document.getElementById('customCancelBtn')?.addEventListener('click', () =>
@@ -3906,7 +3908,17 @@
 
 
 <script src="notifications.js"></script>
-<script src="simulation.js"></script>
+<script src="js/sim-core.js"></script>
+<script src="js/sim-data.js"></script>
+<script src="js/sim-nav.js"></script>
+<script src="js/sim-findme.js"></script>
+<script src="js/sim-candidates.js"></script>
+<script src="js/sim-slot-browser.js"></script>
+<script src="js/sim-placement.js"></script>
+<script src="js/sim-extras.js"></script>
+<script src="js/sim-profiles.js"></script>
+<script src="js/sim-chat.js"></script>
+<script src="js/sim-notifications.js"></script>
 <script src="access-request.js"></script>
 <script src="screenshot-guard.js"></script>
 <script src="auth.js"></script>
@@ -4014,5 +4026,7 @@
   });
 })();
 </script>
+<script src="js/sim-merit-list.js"></script>
+<script src="js/sim-consent.js"></script>
 </body>
 </html>

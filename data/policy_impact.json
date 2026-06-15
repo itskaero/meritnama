@@ -1,5 +1,6 @@
 {
-  "2020": {
+  "8": {
+    "induction_id": 8,
     "year": 2020,
     "policy_label": "2020 (Induction 8 -- Jul 2020)",
     "policy_notes": "Pre-March 2021 policy. Formula inferred -- PART-I dominates at 40 marks. Total: 95 marks.",
@@ -9,56 +10,77 @@
       "Total out of 95 -- a closing merit of 85.68 corresponds to ~90.2% of the maximum."
     ],
     "active_components": [
-      "Matric / SSC",
-      "Intermediate / HSSC",
-      "MBBS / BDS Aggregate",
-      "FCPS Part-I / MD / MS / MDS Part-I",
-      "House Job",
-      "Parent Institute",
-      "Service Experience",
-      "University-Level Positions"
+      "matric_ssc",
+      "intermediate_hssc",
+      "mbbs_bds_degree",
+      "part_1",
+      "house_job",
+      "parent_institute",
+      "experience",
+      "university_positions"
     ],
     "removed_components": [
-      "1st-Attempt MBBS Professionals",
-      "Hard Area Service",
-      "MDCAT Score",
-      "FCPS Part-I / JCAT (pass/fail)"
+      "attempts_in_mbbs",
+      "experience_hard_area",
+      "mdcat",
+      "fcps_jcat"
     ],
-    "total_marks": 95,
+    "total_marks": 95.0,
     "programs": {
       "FCPS": {
         "count": 363,
-        "mean": 67.6529,
-        "stddev": 9.2565,
+        "mean": 68.7998,
+        "stddev": 8.7457,
         "min": 44.0696,
-        "p25": 60.6057,
-        "p50": 69.025,
-        "p75": 75.4583,
-        "max": 84.55
-      },
-      "MD": {
-        "count": 132,
-        "mean": 64.2081,
-        "stddev": 8.1922,
-        "min": 43.2032,
-        "p25": 59.8325,
-        "p50": 65.0175,
-        "p75": 70.3458,
-        "max": 80.8275
+        "p25": 61.7,
+        "p50": 69.8625,
+        "p75": 76.1542,
+        "max": 85.6792
       },
       "MS": {
         "count": 174,
-        "mean": 58.4996,
-        "stddev": 7.7048,
-        "min": 40.4682,
-        "p25": 52.7296,
-        "p50": 58.7152,
-        "p75": 64.4892,
+        "mean": 63.7905,
+        "stddev": 7.6311,
+        "min": 43.2032,
+        "p25": 59.1683,
+        "p50": 64.9408,
+        "p75": 69.7933,
         "max": 77.7167
+      },
+      "MD": {
+        "count": 132,
+        "mean": 69.5103,
+        "stddev": 6.9777,
+        "min": 45.9,
+        "p25": 66.8367,
+        "p50": 70.4154,
+        "p75": 73.865,
+        "max": 81.2825
+      },
+      "MDS": {
+        "count": 5,
+        "mean": 65.2779,
+        "stddev": 5.8427,
+        "min": 59.1486,
+        "p25": 59.9195,
+        "p50": 64.96,
+        "p75": 70.691,
+        "max": 71.6706
+      },
+      "FCPS Dentistry": {
+        "count": 8,
+        "mean": 73.7263,
+        "stddev": 4.5753,
+        "min": 69.33,
+        "p25": 69.4686,
+        "p50": 73.5838,
+        "p75": 73.8235,
+        "max": 83.6457
       }
     }
   },
-  "2021": {
+  "9": {
+    "induction_id": 9,
     "year": 2021,
     "policy_label": "2021 (Inductions 9--10)",
     "policy_notes": "Original March 2021 PPM. PART-I (40 marks) + Matric/Inter/MBBS aggregate + house job + parent institute + experience + university positions. Total: 95 marks.",
@@ -70,56 +92,159 @@
       "Total out of 95, not 100. Observed max: 80.68 (Jan 2021), 80.68 (Jul 2021)."
     ],
     "active_components": [
-      "Matric / SSC",
-      "Intermediate / HSSC",
-      "MBBS / BDS Aggregate",
-      "FCPS Part-I / MD / MS / MDS Part-I",
-      "House Job",
-      "Parent Institute",
-      "Service Experience",
-      "University-Level Positions"
+      "matric_ssc",
+      "intermediate_hssc",
+      "mbbs_bds_degree",
+      "part_1",
+      "house_job",
+      "parent_institute",
+      "experience",
+      "university_positions"
     ],
     "removed_components": [
-      "1st-Attempt MBBS Professionals",
-      "Hard Area Service",
-      "MDCAT Score",
-      "FCPS Part-I / JCAT (pass/fail)"
+      "attempts_in_mbbs",
+      "experience_hard_area",
+      "mdcat",
+      "fcps_jcat"
     ],
-    "total_marks": 95,
+    "total_marks": 95.0,
     "programs": {
       "FCPS": {
-        "count": 412,
-        "mean": 64.2573,
-        "stddev": 8.4341,
+        "count": 375,
+        "mean": 65.8599,
+        "stddev": 7.6612,
         "min": 42.0348,
-        "p25": 58.4458,
-        "p50": 64.9875,
-        "p75": 71.1571,
+        "p25": 59.8958,
+        "p50": 66.9,
+        "p75": 71.85,
         "max": 80.4042
       },
-      "MD": {
-        "count": 150,
-        "mean": 55.5819,
-        "stddev": 8.0377,
-        "min": 40.9,
-        "p25": 49.4733,
-        "p50": 53.8317,
-        "p75": 62.2733,
-        "max": 77.1858
-      },
       "MS": {
-        "count": 187,
-        "mean": 53.2291,
-        "stddev": 6.8506,
-        "min": 37.5379,
-        "p25": 48.3925,
-        "p50": 53.424,
-        "p75": 57.1475,
+        "count": 159,
+        "mean": 58.4672,
+        "stddev": 7.2867,
+        "min": 42.8902,
+        "p25": 52.9352,
+        "p50": 59.0417,
+        "p75": 64.1917,
         "max": 74.1033
+      },
+      "MD": {
+        "count": 137,
+        "mean": 61.9171,
+        "stddev": 8.0215,
+        "min": 40.9,
+        "p25": 58.4117,
+        "p50": 62.7404,
+        "p75": 67.5763,
+        "max": 82.275
+      },
+      "MDS": {
+        "count": 6,
+        "mean": 59.9441,
+        "stddev": 4.6287,
+        "min": 53.2457,
+        "p25": 57.4233,
+        "p50": 59.5314,
+        "p75": 60.2829,
+        "max": 67.0843
+      },
+      "FCPS Dentistry": {
+        "count": 12,
+        "mean": 66.856,
+        "stddev": 2.5896,
+        "min": 63.7714,
+        "p25": 65.1571,
+        "p50": 65.5111,
+        "p75": 68.0467,
+        "max": 71.9786
       }
     }
   },
-  "2022": {
+  "10": {
+    "induction_id": 10,
+    "year": 2021,
+    "policy_label": "2021 (Inductions 9--10)",
+    "policy_notes": "Original March 2021 PPM. PART-I (40 marks) + Matric/Inter/MBBS aggregate + house job + parent institute + experience + university positions. Total: 95 marks.",
+    "policy_tidbits": [
+      "PART-I exam result is the largest single component at 40 marks -- FCPS-I pass awarded full 40 marks.",
+      "Matric (5) + Intermediate (7) = 12 marks -- early academic record matters.",
+      "MBBS aggregate (20 marks) rewards consistent professional exam performance.",
+      "University positions: 0.6 pts/position (MBBS), 0.75 pts/position (BDS) at university level only.",
+      "Total out of 95, not 100. Observed max: 80.68 (Jan 2021), 80.68 (Jul 2021)."
+    ],
+    "active_components": [
+      "matric_ssc",
+      "intermediate_hssc",
+      "mbbs_bds_degree",
+      "part_1",
+      "house_job",
+      "parent_institute",
+      "experience",
+      "university_positions"
+    ],
+    "removed_components": [
+      "attempts_in_mbbs",
+      "experience_hard_area",
+      "mdcat",
+      "fcps_jcat"
+    ],
+    "total_marks": 95.0,
+    "programs": {
+      "FCPS": {
+        "count": 220,
+        "mean": 65.7297,
+        "stddev": 8.5195,
+        "min": 44.502,
+        "p25": 59.302,
+        "p50": 67.4841,
+        "p75": 72.628,
+        "max": 80.35
+      },
+      "MS": {
+        "count": 115,
+        "mean": 62.1207,
+        "stddev": 7.2495,
+        "min": 40.9209,
+        "p25": 59.1733,
+        "p50": 63.5583,
+        "p75": 67.1692,
+        "max": 75.1307
+      },
+      "MD": {
+        "count": 81,
+        "mean": 65.9937,
+        "stddev": 7.0255,
+        "min": 45.6723,
+        "p25": 65.2375,
+        "p50": 67.4875,
+        "p75": 70.1558,
+        "max": 76.4417
+      },
+      "MDS": {
+        "count": 2,
+        "mean": 56.3543,
+        "stddev": 8.3883,
+        "min": 50.4229,
+        "p25": 50.4229,
+        "p50": 50.4229,
+        "p75": 50.4229,
+        "max": 62.2857
+      },
+      "FCPS Dentistry": {
+        "count": 2,
+        "mean": 61.8403,
+        "stddev": 10.7052,
+        "min": 54.2706,
+        "p25": 54.2706,
+        "p50": 54.2706,
+        "p75": 54.2706,
+        "max": 69.41
+      }
+    }
+  },
+  "11": {
+    "induction_id": 11,
     "year": 2022,
     "policy_label": "2022 (Inductions 11--12)",
     "policy_notes": "Same March 2021 PPM formula. Total: 95 marks. Observed max: 77.93 (Jan 2022), 80.61 (Jul 2022).",
@@ -129,56 +254,157 @@
       "Jan 2022 observed max: 77.93. Jul 2022 observed max: 80.61."
     ],
     "active_components": [
-      "Matric / SSC",
-      "Intermediate / HSSC",
-      "MBBS / BDS Aggregate",
-      "FCPS Part-I / MD / MS / MDS Part-I",
-      "House Job",
-      "Parent Institute",
-      "Service Experience",
-      "University-Level Positions"
+      "matric_ssc",
+      "intermediate_hssc",
+      "mbbs_bds_degree",
+      "part_1",
+      "house_job",
+      "parent_institute",
+      "experience",
+      "university_positions"
     ],
     "removed_components": [
-      "1st-Attempt MBBS Professionals",
-      "Hard Area Service",
-      "MDCAT Score",
-      "FCPS Part-I / JCAT (pass/fail)"
+      "attempts_in_mbbs",
+      "experience_hard_area",
+      "mdcat",
+      "fcps_jcat"
     ],
-    "total_marks": 95,
+    "total_marks": 95.0,
     "programs": {
       "FCPS": {
-        "count": 419,
-        "mean": 61.6796,
-        "stddev": 8.5764,
-        "min": 43.6,
-        "p25": 54.3958,
-        "p50": 64.6542,
-        "p75": 68.6667,
-        "max": 76.0917
-      },
-      "MD": {
-        "count": 172,
-        "mean": 56.3384,
-        "stddev": 7.7631,
-        "min": 39.0574,
-        "p25": 50.7075,
-        "p50": 55.4026,
-        "p75": 62.3683,
-        "max": 73.6058
+        "count": 357,
+        "mean": 64.6031,
+        "stddev": 7.5306,
+        "min": 44.4542,
+        "p25": 59.3542,
+        "p50": 66.4708,
+        "p75": 70.517,
+        "max": 76.3625
       },
       "MS": {
-        "count": 217,
-        "mean": 52.3579,
-        "stddev": 6.1233,
-        "min": 37.2901,
-        "p25": 48.3725,
-        "p50": 51.218,
-        "p75": 57.8375,
-        "max": 68.025
+        "count": 183,
+        "mean": 59.9374,
+        "stddev": 5.5351,
+        "min": 41.536,
+        "p25": 57.0668,
+        "p50": 60.5417,
+        "p75": 63.475,
+        "max": 73.5158
+      },
+      "MD": {
+        "count": 142,
+        "mean": 61.5998,
+        "stddev": 6.9749,
+        "min": 39.0574,
+        "p25": 59.8487,
+        "p50": 62.1008,
+        "p75": 65.8492,
+        "max": 75.5855
+      },
+      "MDS": {
+        "count": 5,
+        "mean": 67.6507,
+        "stddev": 1.017,
+        "min": 65.9771,
+        "p25": 67.6629,
+        "p50": 67.7505,
+        "p75": 68.2,
+        "max": 68.6629
+      },
+      "FCPS Dentistry": {
+        "count": 11,
+        "mean": 68.2557,
+        "stddev": 7.3219,
+        "min": 50.4253,
+        "p25": 68.4857,
+        "p50": 68.88,
+        "p75": 73.2941,
+        "max": 74.8714
       }
     }
   },
-  "2023": {
+  "12": {
+    "induction_id": 12,
+    "year": 2022,
+    "policy_label": "2022 (Inductions 11--12)",
+    "policy_notes": "Same March 2021 PPM formula. Total: 95 marks. Observed max: 77.93 (Jan 2022), 80.61 (Jul 2022).",
+    "policy_tidbits": [
+      "Formula identical to 2021 -- consistent year-on-year for inductions 9--14.",
+      "PART-I (40 marks) + Matric + Inter + MBBS aggregate dominates the formula.",
+      "Jan 2022 observed max: 77.93. Jul 2022 observed max: 80.61."
+    ],
+    "active_components": [
+      "matric_ssc",
+      "intermediate_hssc",
+      "mbbs_bds_degree",
+      "part_1",
+      "house_job",
+      "parent_institute",
+      "experience",
+      "university_positions"
+    ],
+    "removed_components": [
+      "attempts_in_mbbs",
+      "experience_hard_area",
+      "mdcat",
+      "fcps_jcat"
+    ],
+    "total_marks": 95.0,
+    "programs": {
+      "FCPS": {
+        "count": 357,
+        "mean": 63.806,
+        "stddev": 7.9236,
+        "min": 43.6,
+        "p25": 57.7333,
+        "p50": 66.3816,
+        "p75": 69.7208,
+        "max": 77.35
+      },
+      "MS": {
+        "count": 192,
+        "mean": 59.0389,
+        "stddev": 6.3674,
+        "min": 38.8234,
+        "p25": 56.2692,
+        "p50": 60.2208,
+        "p75": 62.975,
+        "max": 73.6058
+      },
+      "MD": {
+        "count": 143,
+        "mean": 63.0232,
+        "stddev": 5.8619,
+        "min": 44.499,
+        "p25": 60.4533,
+        "p50": 63.37,
+        "p75": 66.0889,
+        "max": 76.0333
+      },
+      "MDS": {
+        "count": 8,
+        "mean": 64.2351,
+        "stddev": 3.5795,
+        "min": 59.4082,
+        "p25": 59.4714,
+        "p50": 63.8962,
+        "p75": 67.045,
+        "max": 69.2971
+      },
+      "FCPS Dentistry": {
+        "count": 13,
+        "mean": 69.5357,
+        "stddev": 3.9163,
+        "min": 59.1771,
+        "p25": 68.16,
+        "p50": 69.4778,
+        "p75": 72.2686,
+        "max": 75.3714
+      }
+    }
+  },
+  "13": {
+    "induction_id": 13,
     "year": 2023,
     "policy_label": "2023 (Inductions 13--14)",
     "policy_notes": "Same formula as 2021--2022. Highest observed max in PART-I era: 87.94 (Jan 2023). Total: 95 marks.",
@@ -188,56 +414,157 @@
       "Jul 2023 observed max: 84.98 -- slight decrease from Jan 2023."
     ],
     "active_components": [
-      "Matric / SSC",
-      "Intermediate / HSSC",
-      "MBBS / BDS Aggregate",
-      "FCPS Part-I / MD / MS / MDS Part-I",
-      "House Job",
-      "Parent Institute",
-      "Service Experience",
-      "University-Level Positions"
+      "matric_ssc",
+      "intermediate_hssc",
+      "mbbs_bds_degree",
+      "part_1",
+      "house_job",
+      "parent_institute",
+      "experience",
+      "university_positions"
     ],
     "removed_components": [
-      "1st-Attempt MBBS Professionals",
-      "Hard Area Service",
-      "MDCAT Score",
-      "FCPS Part-I / JCAT (pass/fail)"
+      "attempts_in_mbbs",
+      "experience_hard_area",
+      "mdcat",
+      "fcps_jcat"
     ],
-    "total_marks": 95,
+    "total_marks": 95.0,
     "programs": {
       "FCPS": {
-        "count": 425,
-        "mean": 73.7189,
-        "stddev": 6.9943,
+        "count": 364,
+        "mean": 73.6923,
+        "stddev": 8.0885,
         "min": 53.6148,
-        "p25": 70.659,
-        "p50": 74.7526,
-        "p75": 78.275,
-        "max": 84.9806
-      },
-      "MD": {
-        "count": 180,
-        "mean": 58.5663,
-        "stddev": 7.0343,
-        "min": 38.8529,
-        "p25": 56.96,
-        "p50": 59.8613,
-        "p75": 62.9837,
-        "max": 70.9119
+        "p25": 67.3208,
+        "p50": 76.2417,
+        "p75": 79.4625,
+        "max": 87.55
       },
       "MS": {
-        "count": 214,
-        "mean": 56.5688,
-        "stddev": 6.047,
+        "count": 184,
+        "mean": 57.5404,
+        "stddev": 6.338,
         "min": 38.8529,
-        "p25": 54.9537,
-        "p50": 58.095,
-        "p75": 60.1157,
-        "max": 68.1292
+        "p25": 52.8975,
+        "p50": 57.8517,
+        "p75": 62.127,
+        "max": 73.3658
+      },
+      "MD": {
+        "count": 146,
+        "mean": 60.0101,
+        "stddev": 6.8448,
+        "min": 41.7558,
+        "p25": 56.2253,
+        "p50": 61.5217,
+        "p75": 64.5867,
+        "max": 72.1708
+      },
+      "MDS": {
+        "count": 9,
+        "mean": 53.1213,
+        "stddev": 3.4693,
+        "min": 48.1314,
+        "p25": 49.9829,
+        "p50": 54.1733,
+        "p75": 55.4857,
+        "max": 57.2571
+      },
+      "FCPS Dentistry": {
+        "count": 14,
+        "mean": 75.9126,
+        "stddev": 6.9138,
+        "min": 56.4032,
+        "p25": 76.3171,
+        "p50": 77.9171,
+        "p75": 78.4857,
+        "max": 82.6229
       }
     }
   },
-  "2024": {
+  "14": {
+    "induction_id": 14,
+    "year": 2023,
+    "policy_label": "2023 (Inductions 13--14)",
+    "policy_notes": "Same formula as 2021--2022. Highest observed max in PART-I era: 87.94 (Jan 2023). Total: 95 marks.",
+    "policy_tidbits": [
+      "Highest observed max merit in PART-I era: 87.94 in Jan 2023 -- most competitive PART-I cohort.",
+      "Formula unchanged from previous two years -- strong cross-year comparability.",
+      "Jul 2023 observed max: 84.98 -- slight decrease from Jan 2023."
+    ],
+    "active_components": [
+      "matric_ssc",
+      "intermediate_hssc",
+      "mbbs_bds_degree",
+      "part_1",
+      "house_job",
+      "parent_institute",
+      "experience",
+      "university_positions"
+    ],
+    "removed_components": [
+      "attempts_in_mbbs",
+      "experience_hard_area",
+      "mdcat",
+      "fcps_jcat"
+    ],
+    "total_marks": 95.0,
+    "programs": {
+      "FCPS": {
+        "count": 355,
+        "mean": 76.2991,
+        "stddev": 4.4738,
+        "min": 62.8179,
+        "p25": 73.6669,
+        "p50": 76.587,
+        "p75": 79.5762,
+        "max": 84.9806
+      },
+      "MS": {
+        "count": 178,
+        "mean": 61.4935,
+        "stddev": 3.9009,
+        "min": 46.6696,
+        "p25": 59.3537,
+        "p50": 61.4947,
+        "p75": 64.0832,
+        "max": 72.2476
+      },
+      "MD": {
+        "count": 146,
+        "mean": 62.9735,
+        "stddev": 4.2259,
+        "min": 47.9243,
+        "p25": 60.4777,
+        "p50": 63.1604,
+        "p75": 65.4258,
+        "max": 70.9163
+      },
+      "MDS": {
+        "count": 9,
+        "mean": 61.8191,
+        "stddev": 5.7337,
+        "min": 49.2143,
+        "p25": 60.8116,
+        "p50": 62.1511,
+        "p75": 63.6877,
+        "max": 68.7418
+      },
+      "FCPS Dentistry": {
+        "count": 14,
+        "mean": 77.4243,
+        "stddev": 3.6364,
+        "min": 68.3572,
+        "p25": 75.2652,
+        "p50": 76.4086,
+        "p75": 79.7204,
+        "max": 81.9883
+      }
+    }
+  },
+  "15": {
+    "induction_id": 15,
     "year": 2024,
     "policy_label": "2024 (Inductions 15--16)",
     "policy_notes": "May 2024 PPM superseded all prior policies but maintained the same formula at 95 marks. Jan 2024 amendment (attempts_in_mbbs) was short-lived.",
@@ -248,56 +575,158 @@
       "Observed max 2024: 85.92 out of 95 -- consistent with prior PART-I era years."
     ],
     "active_components": [
-      "Matric / SSC",
-      "Intermediate / HSSC",
-      "MBBS / BDS Aggregate",
-      "FCPS Part-I / MD / MS / MDS Part-I",
-      "House Job",
-      "Parent Institute",
-      "Service Experience",
-      "University-Level Positions"
+      "matric_ssc",
+      "intermediate_hssc",
+      "mbbs_bds_degree",
+      "part_1",
+      "house_job",
+      "parent_institute",
+      "experience",
+      "university_positions"
     ],
     "removed_components": [
-      "1st-Attempt MBBS Professionals (Ind 15 only)",
-      "Hard Area Service",
-      "MDCAT Score",
-      "FCPS Part-I / JCAT (pass/fail)"
+      "attempts_in_mbbs",
+      "experience_hard_area",
+      "mdcat",
+      "fcps_jcat"
     ],
-    "total_marks": 95,
+    "total_marks": 95.0,
     "programs": {
       "FCPS": {
-        "count": 443,
-        "mean": 74.8149,
-        "stddev": 4.447,
+        "count": 397,
+        "mean": 76.9077,
+        "stddev": 4.3373,
         "min": 52.9928,
-        "p25": 71.5977,
-        "p50": 75.4364,
-        "p75": 76.9638,
+        "p25": 75.0668,
+        "p50": 76.6258,
+        "p75": 79.2546,
         "max": 85.7476
       },
-      "MD": {
-        "count": 175,
-        "mean": 63.2686,
-        "stddev": 4.2351,
-        "min": 49.4808,
-        "p25": 61.7386,
-        "p50": 63.5382,
-        "p75": 65.2438,
-        "max": 73.3458
-      },
       "MS": {
-        "count": 220,
-        "mean": 60.9681,
-        "stddev": 4.0642,
-        "min": 47.6157,
-        "p25": 59.883,
-        "p50": 61.5635,
-        "p75": 63.5081,
-        "max": 69.3616
+        "count": 195,
+        "mean": 63.4429,
+        "stddev": 3.5584,
+        "min": 50.4125,
+        "p25": 61.8483,
+        "p50": 63.5064,
+        "p75": 65.3383,
+        "max": 73.6408
+      },
+      "MD": {
+        "count": 158,
+        "mean": 64.9233,
+        "stddev": 3.6875,
+        "min": 49.5987,
+        "p25": 63.1425,
+        "p50": 64.6525,
+        "p75": 67.0862,
+        "max": 75.2217
+      },
+      "MDS": {
+        "count": 10,
+        "mean": 63.521,
+        "stddev": 4.8726,
+        "min": 56.5377,
+        "p25": 61.0748,
+        "p50": 63.2214,
+        "p75": 64.1167,
+        "max": 71.8898
+      },
+      "FCPS Dentistry": {
+        "count": 13,
+        "mean": 80.3482,
+        "stddev": 2.7132,
+        "min": 77.2882,
+        "p25": 78.5468,
+        "p50": 79.6306,
+        "p75": 81.5239,
+        "max": 84.8795
       }
     }
   },
-  "2025": {
+  "16": {
+    "induction_id": 16,
+    "year": 2024,
+    "policy_label": "2024 (Inductions 15--16)",
+    "policy_notes": "May 2024 PPM superseded all prior policies but maintained the same formula at 95 marks. Jan 2024 amendment (attempts_in_mbbs) was short-lived.",
+    "policy_tidbits": [
+      "New PPM issued May 2024 officially repealed March 2021 policy, but scoring formula is unchanged.",
+      "Jan 2024 amendment briefly added 'Attempts in MBBS' (5 marks, total 100) -- then removed in May 2024 PPM.",
+      "To model Jan 2024 (Ind 15): enable 'attempts_in_mbbs' and set total_marks to 100.",
+      "Observed max 2024: 85.92 out of 95 -- consistent with prior PART-I era years."
+    ],
+    "active_components": [
+      "matric_ssc",
+      "intermediate_hssc",
+      "mbbs_bds_degree",
+      "part_1",
+      "house_job",
+      "parent_institute",
+      "experience",
+      "university_positions"
+    ],
+    "removed_components": [
+      "attempts_in_mbbs",
+      "experience_hard_area",
+      "mdcat",
+      "fcps_jcat"
+    ],
+    "total_marks": 95.0,
+    "programs": {
+      "FCPS": {
+        "count": 392,
+        "mean": 75.8831,
+        "stddev": 4.0012,
+        "min": 63.372,
+        "p25": 74.5213,
+        "p50": 75.9758,
+        "p75": 77.6647,
+        "max": 85.1589
+      },
+      "MS": {
+        "count": 197,
+        "mean": 64.121,
+        "stddev": 3.5917,
+        "min": 52.8606,
+        "p25": 62.7749,
+        "p50": 64.414,
+        "p75": 66.1594,
+        "max": 72.3616
+      },
+      "MD": {
+        "count": 145,
+        "mean": 65.7858,
+        "stddev": 3.5508,
+        "min": 49.4808,
+        "p25": 63.8825,
+        "p50": 66.0341,
+        "p75": 67.8282,
+        "max": 73.3458
+      },
+      "MDS": {
+        "count": 8,
+        "mean": 62.1931,
+        "stddev": 2.3728,
+        "min": 58.2866,
+        "p25": 59.0221,
+        "p50": 62.3603,
+        "p75": 64.0092,
+        "max": 64.5777
+      },
+      "FCPS Dentistry": {
+        "count": 13,
+        "mean": 77.1088,
+        "stddev": 2.9246,
+        "min": 74.0312,
+        "p25": 75.5178,
+        "p50": 76.2985,
+        "p75": 77.3775,
+        "max": 83.3553
+      }
+    }
+  },
+  "17": {
+    "induction_id": 17,
     "year": 2025,
     "policy_label": "2025 (Inductions 17--19)",
     "policy_notes": "MAJOR change: PART-I (40 marks) REMOVED. Hard Area Service (5 marks) added. Total drops from 95 -> 60 marks. Raw scores NOT comparable to prior years -- use Centile view.",
@@ -309,96 +738,262 @@
       "Hard Area and Experience both to be reduced/discontinued from Jan 2026 (Ind 20)."
     ],
     "active_components": [
-      "Matric / SSC",
-      "Intermediate / HSSC",
-      "MBBS / BDS Aggregate",
-      "House Job",
-      "Parent Institute",
-      "Service Experience",
-      "Hard Area Service (BHUs/RHCs)",
-      "University-Level Positions"
+      "matric_ssc",
+      "intermediate_hssc",
+      "mbbs_bds_degree",
+      "house_job",
+      "parent_institute",
+      "experience",
+      "experience_hard_area",
+      "university_positions"
     ],
     "removed_components": [
-      "FCPS Part-I / MD / MS / MDS Part-I",
-      "1st-Attempt MBBS Professionals",
-      "MDCAT Score",
-      "FCPS Part-I / JCAT (pass/fail)"
+      "part_1",
+      "attempts_in_mbbs",
+      "mdcat",
+      "fcps_jcat"
     ],
-    "total_marks": 60,
+    "total_marks": 60.0,
     "programs": {
       "FCPS": {
-        "count": 436,
-        "mean": 34.821,
-        "stddev": 4.3852,
+        "count": 379,
+        "mean": 36.5583,
+        "stddev": 4.095,
         "min": 20.7401,
-        "p25": 31.5126,
-        "p50": 35.4172,
-        "p75": 37.0384,
-        "max": 46.5739
-      },
-      "MD": {
-        "count": 162,
-        "mean": 34.3467,
-        "stddev": 3.5673,
-        "min": 23.8579,
-        "p25": 32.3028,
-        "p50": 35.1963,
-        "p75": 36.0767,
-        "max": 46.532
+        "p25": 35.0489,
+        "p50": 36.4936,
+        "p75": 38.557,
+        "max": 46.4956
       },
       "MS": {
-        "count": 186,
-        "mean": 31.3811,
-        "stddev": 3.9074,
-        "min": 23.9084,
-        "p25": 28.6222,
-        "p50": 30.2069,
-        "p75": 34.7123,
-        "max": 44.1368
+        "count": 11,
+        "mean": 31.3516,
+        "stddev": 3.759,
+        "min": 26.1869,
+        "p25": 27.3858,
+        "p50": 31.4816,
+        "p75": 33.2439,
+        "max": 37.1747
+      },
+      "MD": {
+        "count": 35,
+        "mean": 34.0344,
+        "stddev": 3.0336,
+        "min": 27.47,
+        "p25": 31.5195,
+        "p50": 34.9837,
+        "p75": 36.2433,
+        "max": 40.1936
+      },
+      "FCPS Dentistry": {
+        "count": 15,
+        "mean": 36.7914,
+        "stddev": 1.8758,
+        "min": 32.1277,
+        "p25": 36.8114,
+        "p50": 37.1199,
+        "p75": 37.4894,
+        "max": 39.7565
       }
     }
   },
-  "2026": {
-    "year": 2026,
-    "policy_label": "2026 (Induction 21 - June / July 2026)",
-    "policy_notes": "Slightly changed from Induction 20 (Dec/Jan 2026) . Matric/Inter/PART-I/Parent Institute all removed. Experience Marks discontinued. Total: 30 marks.",
+  "18": {
+    "induction_id": 18,
+    "year": 2025,
+    "policy_label": "2025 (Inductions 17--19)",
+    "policy_notes": "MAJOR change: PART-I (40 marks) REMOVED. Hard Area Service (5 marks) added. Total drops from 95 -> 60 marks. Raw scores NOT comparable to prior years -- use Centile view.",
     "policy_tidbits": [
-      "Complete overhaul: total drops from 60 to 30 marks. Formula components restructured.",
+      "Biggest formula change in PRP history: PART-I exam removed entirely (was 40/95 marks = 42% of total).",
+      "New component: Hard Area Service -- 1.25 pts per 3 months at notified BHUs/RHCs, max 5 pts (1 year).",
+      "Total maximum is now 60 marks -- raw scores directly incomparable to 2021--2024 data.",
+      "Use Centile view (% of max) for cross-year comparison: observed max ~46.6 = 77.7% of 60.",
+      "Hard Area and Experience both to be reduced/discontinued from Jan 2026 (Ind 20)."
+    ],
+    "active_components": [
+      "matric_ssc",
+      "intermediate_hssc",
+      "mbbs_bds_degree",
+      "house_job",
+      "parent_institute",
+      "experience",
+      "experience_hard_area",
+      "university_positions"
+    ],
+    "removed_components": [
+      "part_1",
+      "attempts_in_mbbs",
+      "mdcat",
+      "fcps_jcat"
+    ],
+    "total_marks": 60.0,
+    "programs": {
+      "MS": {
+        "count": 151,
+        "mean": 33.4122,
+        "stddev": 2.9953,
+        "min": 25.502,
+        "p25": 30.795,
+        "p50": 34.2831,
+        "p75": 35.4415,
+        "max": 43.1981
+      },
+      "MD": {
+        "count": 125,
+        "mean": 35.5663,
+        "stddev": 3.2396,
+        "min": 25.3103,
+        "p25": 35.0495,
+        "p50": 36.0201,
+        "p75": 36.7951,
+        "max": 44.3294
+      },
+      "MDS": {
+        "count": 6,
+        "mean": 32.8367,
+        "stddev": 3.9164,
+        "min": 26.8828,
+        "p25": 30.024,
+        "p50": 31.785,
+        "p75": 35.9599,
+        "max": 36.3499
+      }
+    }
+  },
+  "19": {
+    "induction_id": 19,
+    "year": 2025,
+    "policy_label": "2025 (Inductions 17--19)",
+    "policy_notes": "MAJOR change: PART-I (40 marks) REMOVED. Hard Area Service (5 marks) added. Total drops from 95 -> 60 marks. Raw scores NOT comparable to prior years -- use Centile view.",
+    "policy_tidbits": [
+      "Biggest formula change in PRP history: PART-I exam removed entirely (was 40/95 marks = 42% of total).",
+      "New component: Hard Area Service -- 1.25 pts per 3 months at notified BHUs/RHCs, max 5 pts (1 year).",
+      "Total maximum is now 60 marks -- raw scores directly incomparable to 2021--2024 data.",
+      "Use Centile view (% of max) for cross-year comparison: observed max ~46.6 = 77.7% of 60.",
+      "Hard Area and Experience both to be reduced/discontinued from Jan 2026 (Ind 20)."
+    ],
+    "active_components": [
+      "matric_ssc",
+      "intermediate_hssc",
+      "mbbs_bds_degree",
+      "house_job",
+      "parent_institute",
+      "experience",
+      "experience_hard_area",
+      "university_positions"
+    ],
+    "removed_components": [
+      "part_1",
+      "attempts_in_mbbs",
+      "mdcat",
+      "fcps_jcat"
+    ],
+    "total_marks": 60.0,
+    "programs": {
+      "FCPS": {
+        "count": 397,
+        "mean": 35.8931,
+        "stddev": 3.7172,
+        "min": 22.0918,
+        "p25": 34.4373,
+        "p50": 36.0178,
+        "p75": 37.5069,
+        "max": 46.5739
+      },
+      "MS": {
+        "count": 150,
+        "mean": 32.788,
+        "stddev": 4.0286,
+        "min": 23.9084,
+        "p25": 29.7003,
+        "p50": 32.946,
+        "p75": 35.416,
+        "max": 44.1368
+      },
+      "MD": {
+        "count": 138,
+        "mean": 36.0107,
+        "stddev": 3.2522,
+        "min": 26.6933,
+        "p25": 35.0645,
+        "p50": 36.1585,
+        "p75": 37.1221,
+        "max": 46.532
+      },
+      "MDS": {
+        "count": 8,
+        "mean": 34.0173,
+        "stddev": 2.9334,
+        "min": 30.3186,
+        "p25": 30.5282,
+        "p50": 35.7331,
+        "p75": 36.1907,
+        "max": 36.4327
+      },
+      "FCPS Dentistry": {
+        "count": 15,
+        "mean": 35.8988,
+        "stddev": 3.2683,
+        "min": 29.8742,
+        "p25": 33.6601,
+        "p50": 36.2969,
+        "p75": 36.6926,
+        "max": 43.492
+      }
+    }
+  },
+  "20": {
+    "induction_id": 20,
+    "year": 2026,
+    "policy_label": "2026 (Induction 20 -- Dec 2025/Jan 2026)",
+    "policy_notes": "Completely new formula from November 2025. Matric/Inter/PART-I/Parent Institute all removed. MDCAT (2 pts, percentage-based) and FCPS/JCAT (5 pts, attempt/pct-tiered) introduced. Total: 35 marks.",
+    "policy_tidbits": [
+      "Complete overhaul: total drops from 60 to 35 marks. Formula components restructured.",
       "MDCAT introduced (2 marks) -- benefits recent graduates who scored well on MDCAT.",
       "FCPS/JCAT: now 5 marks pass/fail (was 40 marks score-based in 2020--2024) -- massive reduction.",
       "Matric + Intermediate removed -- 12 marks that no longer matter for merit.",
       "Parent institute bonus removed -- where you graduated no longer gives marks.",
-      "Hard Area service  and Experience marks discontinued -- rural service no longer rewarded."
+      "Hard Area service discontinued -- rural service no longer rewarded.",
+      "Observed max 2026: 29.07 out of 35 = 83.1% of maximum achievable."
     ],
     "active_components": [
-      "MDCAT Score",
-      "MBBS / BDS Degree Aggregate",
-      "University-Level Positions",
-      "House Job",
-      "FCPS Part-I / JCAT (pass/fail)"
+      "mdcat",
+      "mbbs_bds_degree",
+      "experience",
+      "university_positions",
+      "house_job",
+      "fcps_jcat"
     ],
     "removed_components": [
-      "Service Experience",
-      "Matric / SSC",
-      "Intermediate / HSSC",
-      "FCPS Part-I score-based (40 marks era)",
-      "Parent Institute",
-      "Hard Area Service",
-      "1st-Attempt MBBS Professionals"
+      "matric_ssc",
+      "intermediate_hssc",
+      "part_1",
+      "parent_institute",
+      "experience_hard_area",
+      "attempts_in_mbbs"
     ],
-    "total_marks": 30,
+    "total_marks": 35.0,
     "programs": {
       "FCPS": {
-        "count": 430,
-        "mean": 24.0384,
-        "stddev": 2.1081,
+        "count": 429,
+        "mean": 24.2229,
+        "stddev": 2.0063,
         "min": 13.9594,
-        "p25": 22.9348,
-        "p50": 23.7939,
-        "p75": 25.2613,
+        "p25": 23.118,
+        "p50": 23.9129,
+        "p75": 25.4725,
         "max": 29.0715
       },
-      "MDD": {
+      "MS": {
+        "count": 193,
+        "mean": 22.369,
+        "stddev": 1.9838,
+        "min": 13.3686,
+        "p25": 21.125,
+        "p50": 22.0127,
+        "p75": 23.5027,
+        "max": 27.7649
+      },
+      "MD": {
         "count": 149,
         "mean": 24.7789,
         "stddev": 1.7547,
@@ -408,25 +1003,25 @@
         "p75": 26.0042,
         "max": 28.8365
       },
-      "MS": {
-        "count": 194,
-        "mean": 21.774,
-        "stddev": 1.9867,
-        "min": 13.3686,
-        "p25": 20.5374,
-        "p50": 21.4426,
-        "p75": 22.6786,
-        "max": 27.7649
+      "MDS": {
+        "count": 13,
+        "mean": 22.9808,
+        "stddev": 2.1615,
+        "min": 18.1507,
+        "p25": 22.2922,
+        "p50": 22.9286,
+        "p75": 23.1357,
+        "max": 28.2726
       },
-      "MD": {
-        "count": 149,
-        "mean": 24.3154,
-        "stddev": 1.7878,
-        "min": 17.46,
-        "p25": 23.491,
-        "p50": 24.266,
-        "p75": 25.545,
-        "max": 27.436
+      "FCPS Dentistry": {
+        "count": 19,
+        "mean": 24.4682,
+        "stddev": 1.1832,
+        "min": 22.3771,
+        "p25": 23.9286,
+        "p50": 24.1357,
+        "p75": 25.3914,
+        "max": 27.2726
       }
     }
   }

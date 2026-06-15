@@ -1,0 +1,157 @@
+{
+ "Table": [
+  {
+   "id": 15,
+   "projId": 1,
+   "inductionId": 16,
+   "name": "PHF/24/JUL/01",
+   "displayName": "Jul 2024",
+   "startDate": "2024-04-20T00:00:00",
+   "endDate": "2024-07-20T00:00:00",
+   "isCompleted": true,
+   "isActive": 0,
+   "sortOrder": 16,
+   "status": true,
+   "dated": "2024-04-20T00:00:00",
+   "adminId": 1
+  }
+ ],
+ "Table1": [
+  {
+   "Column1": 1
+  }
+ ],
+ "Table2": [
+  {
+   "Column1": 1
+  }
+ ],
+ "Table3": [
+  {
+   "colKey": "Sr",
+   "colValue": "rowNo",
+   "sortOrder": 1
+  },
+  {
+   "colKey": "Program",
+   "colValue": "typeName",
+   "sortOrder": 10
+  },
+  {
+   "colKey": "ApplicantId",
+   "colValue": "applicantId",
+   "sortOrder": 11
+  },
+  {
+   "colKey": "Name",
+   "colValue": "nameFull",
+   "sortOrder": 15
+  },
+  {
+   "colKey": "PMDC No",
+   "colValue": "pmdcNo",
+   "sortOrder": 17
+  },
+  {
+   "colKey": "Contact Number",
+   "colValue": "contactNumber",
+   "sortOrder": 22
+  },
+  {
+   "colKey": "Cnic/ Pasport No",
+   "colValue": "cnic",
+   "sortOrder": 28
+  },
+  {
+   "colKey": "Country",
+   "colValue": "country",
+   "sortOrder": 28
+  },
+  {
+   "colKey": "Maric",
+   "colValue": "matric",
+   "sortOrder": 22
+  },
+  {
+   "colKey": "intermediate",
+   "colValue": "fsc",
+   "sortOrder": 37
+  },
+  {
+   "colKey": "Degree",
+   "colValue": "degree",
+   "sortOrder": 42
+  },
+  {
+   "colKey": "House Job",
+   "colValue": "houseJob",
+   "sortOrder": 52
+  },
+  {
+   "colKey": "Exprience",
+   "colValue": "experience",
+   "sortOrder": 57
+  },
+  {
+   "colKey": "Position ",
+   "colValue": "position",
+   "sortOrder": 72
+  },
+  {
+   "colKey": "Program ",
+   "colValue": "marksProgram",
+   "sortOrder": 112
+  },
+  {
+   "colKey": "Maric",
+   "colValue": "matric",
+   "sortOrder": 22
+  },
+  {
+   "colKey": "intermediate",
+   "colValue": "fsc",
+   "sortOrder": 37
+  },
+  {
+   "colKey": "Degree",
+   "colValue": "degree",
+   "sortOrder": 42
+  },
+  {
+   "colKey": "House Job",
+   "colValue": "houseJob",
+   "sortOrder": 52
+  },
+  {
+   "colKey": "Exprience",
+   "colValue": "experience",
+   "sortOrder": 57
+  },
+  {
+   "colKey": "Position ",
+   "colValue": "position",
+   "sortOrder": 72
+  },
+  {
+   "colKey": "Program ",
+   "colValue": "marksProgram",
+   "sortOrder": 112
+  },
+  {
+   "colKey": "Aggrigate Marks",
+   "colValue": "marksTotal",
+   "sortOrder": 200
+  },
+  {
+   "colKey": "Status",
+   "colValue": "status",
+   "sortOrder": 201
+  }
+ ],
+ "Table4": [
+  {
+   "Column1": 1
+  }
+ ],
+ "Table5": []
+}

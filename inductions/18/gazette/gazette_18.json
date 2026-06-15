@@ -1,0 +1,122 @@
+{
+ "Table": [
+  {
+   "id": 22,
+   "projId": 1,
+   "inductionId": 18,
+   "name": "PHF/25/FEB/01",
+   "displayName": "Feb 2025",
+   "startDate": "2024-10-21T00:00:00",
+   "endDate": "2024-10-21T00:00:00",
+   "isCompleted": true,
+   "isActive": 0,
+   "sortOrder": 18,
+   "status": true,
+   "dated": "2024-10-21T00:00:00",
+   "adminId": 1
+  }
+ ],
+ "Table1": [
+  {
+   "Column1": 1
+  }
+ ],
+ "Table2": [
+  {
+   "Column1": 1
+  }
+ ],
+ "Table3": [
+  {
+   "colKey": "Sr",
+   "colValue": "rowNo",
+   "sortOrder": 1
+  },
+  {
+   "colKey": "Program",
+   "colValue": "typeName",
+   "sortOrder": 10
+  },
+  {
+   "colKey": "ApplicantId",
+   "colValue": "applicantId",
+   "sortOrder": 11
+  },
+  {
+   "colKey": "Name",
+   "colValue": "nameFull",
+   "sortOrder": 15
+  },
+  {
+   "colKey": "PMDC No",
+   "colValue": "pmdcNo",
+   "sortOrder": 17
+  },
+  {
+   "colKey": "Contact Number",
+   "colValue": "contactNumber",
+   "sortOrder": 22
+  },
+  {
+   "colKey": "Cnic/ Pasport No",
+   "colValue": "cnic",
+   "sortOrder": 28
+  },
+  {
+   "colKey": "Country",
+   "colValue": "country",
+   "sortOrder": 28
+  },
+  {
+   "colKey": "Maric",
+   "colValue": "matric",
+   "sortOrder": 22
+  },
+  {
+   "colKey": "intermediate",
+   "colValue": "fsc",
+   "sortOrder": 37
+  },
+  {
+   "colKey": "Degree",
+   "colValue": "degree",
+   "sortOrder": 42
+  },
+  {
+   "colKey": "House Job",
+   "colValue": "houseJob",
+   "sortOrder": 52
+  },
+  {
+   "colKey": "Exprience",
+   "colValue": "experience",
+   "sortOrder": 57
+  },
+  {
+   "colKey": "Hard Area",
+   "colValue": "hardArea",
+   "sortOrder": 62
+  },
+  {
+   "colKey": "Position ",
+   "colValue": "position",
+   "sortOrder": 72
+  },
+  {
+   "colKey": "Aggrigate Marks",
+   "colValue": "marksTotal",
+   "sortOrder": 200
+  },
+  {
+   "colKey": "Status",
+   "colValue": "status",
+   "sortOrder": 201
+  }
+ ],
+ "Table4": [
+  {
+   "Column1": 1
+  }
+ ],
+ "Table5": []
+}

@@ -1,0 +1,35 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "firebase-config.template.js",
+      "firebase-messaging-sw.template.js",
+      "firestore.rules",
+      "firestore.indexes.json",
+      ".git/**",
+      ".github/**",
+      "node_modules/**",
+      "scripts/**",
+      "officialMeritList/**",
+      "officialGazette/**",
+      "*.md"
+    ],
+    "rewrites": [
+      { "source": "**", "destination": "/index.html" }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(json|js|css)",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        ]
+      }
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}

@@ -52,7 +52,7 @@
   <button class="tab-btn" data-tab="reverse">&#128269; What Do I Need?</button>
   <button class="tab-btn" data-tab="calculator">&#129518; Calculator</button>
   <button class="tab-btn" data-tab="compare">&#9878; Compare</button>
-  <button class="tab-btn" data-tab="current">&#128203; Current Merit</button>
+  <button class="tab-btn" data-tab="current">&#128203; Previous Merit Lists</button>
   <a href="simulation.html" class="tab-btn">&#127973; Induction Portal</a>
   <a href="accreditation.html" class="tab-btn">&#9989; Accreditation</a>
   <button class="tab-btn" data-tab="policy">&#128196; Policy</button>
@@ -158,9 +158,17 @@
       </div>
       <div class="start-path-list">
         <div class="start-path-item"><strong>Merit Table</strong><span>Browse historical cutoffs by specialty, hospital, program, and quota.</span></div>
-        <div class="start-path-item"><strong>Current Merit</strong><span>Track opening and closing merits from the current induction cycle.</span></div>
+        <div class="start-path-item"><strong>Previous Merit Lists</strong><span>Browse opening and closing merits from completed induction cycles.</span></div>
         <div class="start-path-item"><strong>Accreditation</strong><span>Check training recognition before shortlisting hospitals.</span></div>
         <div class="start-path-item"><strong>Discussion</strong><span>Ask the community about hospitals, preferences, and updates.</span></div>
+      </div>
+    </div>
+
+    <div class="start-previous-merits card" style="margin-top: 24px;">
+      <h3>All Previous Induction Cycles</h3>
+      <p style="color:var(--text-muted);margin-bottom:14px">Closing merit trends across every induction — see how the landscape changes.</p>
+      <div class="induction-summary-grid" id="inductionSummaryGrid">
+        <div style="text-align:center;padding:20px;color:var(--text-muted)">Loading induction data&hellip;</div>
       </div>
     </div>
 
@@ -183,6 +191,7 @@
         <select id="mtQuota" class="mt-filter-sel">
           <option value="">All Quotas</option>
         </select>
+        <select id="mtInduction" class="mt-filter-sel"></select>
         <input type="text" id="mtSpecSearch" placeholder="Specialty&hellip;"  class="mt-filter-input" />
         <input type="text" id="mtHospSearch" placeholder="Hospital&hellip;"   class="mt-filter-input" />
         <div class="mt-display-toggle">
@@ -398,13 +407,29 @@
   ============================================================ -->
   <section class="tab-content" id="tab-current">
     <div class="section-header">
-      <h2>Current Merit List</h2>
-      <p>Merit data for the current induction cycle. Update <code>data/current_merit.json</code> to refresh this page with new data.</p>
+      <h2>Past Merit Lists</h2>
+      <p>Browse candidate-level merit data from previous induction cycles, organized by round.</p>
+    </div>
+
+    <div class="card filter-card">
+      <div class="input-grid" style="grid-template-columns:1fr 1fr auto;">
+        <div class="form-group">
+          <label>Induction Cycle</label>
+          <select id="curInduction"><option value="">Select induction</option></select>
+        </div>
+        <div class="form-group">
+          <label>Round</label>
+          <select id="curRound"><option value="">Select round</option></select>
+        </div>
+        <div class="form-group" style="align-self:flex-end;">
+          <button class="btn btn-primary" id="curLoadBtn">Load</button>
+        </div>
+      </div>
     </div>
 
     <div id="currentMeta" class="current-meta-card hidden"></div>
 
-    <div class="card filter-card">
+    <div class="card filter-card" id="curFilters" style="display:none;">
       <div class="input-grid">
         <div class="form-group">
           <label>Program</label>
@@ -415,12 +440,8 @@
           <select id="curQuota"><option value="">All Quotas</option></select>
         </div>
         <div class="form-group">
-          <label>Round</label>
-          <select id="curRound"><option value="">All Rounds</option></select>
-        </div>
-        <div class="form-group">
           <label>Search</label>
-          <input type="text" id="curSearch" placeholder="Specialty or hospital&hellip;" />
+          <input type="text" id="curSearch" placeholder="Name, PMDC, specialty or hospital&hellip;" />
         </div>
       </div>
     </div>
@@ -429,19 +450,20 @@
       <table class="data-table" id="currentTable">
         <thead>
           <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>PMDC</th>
             <th>Specialty</th>
             <th>Hospital</th>
             <th>Program</th>
             <th>Quota</th>
-            <th>Round</th>
-            <th>Opening Merit</th>
-            <th>Closing Merit</th>
-            <th>Seats</th>
-            <th>vs Last Year</th>
+            <th>Marks</th>
+            <th>Pref</th>
+            <th>Consent</th>
           </tr>
         </thead>
         <tbody id="currentTableBody">
-          <tr><td colspan="9" class="cur-loading-cell">Loading current merit data&hellip;</td></tr>
+          <tr><td colspan="10" class="cur-loading-cell">Select an induction cycle and round to view merit data.</td></tr>
         </tbody>
       </table>
     </div>
@@ -584,7 +606,7 @@
         <div class="guide-step-num">4</div>
         <div class="guide-step-body">
           <h3>Monitor the current induction</h3>
-          <p><strong>Current Merit</strong> shows live opening and closing merits from the ongoing cycle (updated via <code>data/current_merit.json</code>) with a vs-last-year delta so you can track how this cycle compares in real time.</p>
+          <p><strong>Previous Merit Lists</strong> shows opening and closing merits from completed induction cycles (loaded from <code>data/current_merit.json</code>) with a vs-last-year delta so you can see historical trends.</p>
         </div>
       </div>
     </div>
@@ -808,7 +830,7 @@
       </details>
 
       <details class="guide-faq-item">
-        <summary>How do I update the Current Merit page?</summary>
+        <summary>How do I update the Previous Merit Lists page?</summary>
         <p>Open <code>data/current_merit.json</code> in any text editor. Update the <code>meta</code> block (date, status) and add records to the <code>records</code> array. Each record needs: <code>specialty</code>, <code>hospital</code>, <code>program</code>, <code>quota</code>, <code>round</code>, <code>opening_merit</code>, <code>closing_merit</code>, and <code>seats</code>. Save and reload &#8212; no build step required.</p>
       </details>
 
@@ -858,7 +880,11 @@
 </footer>
 
 <script src="charts.js"></script>
-<script src="app.js"></script>
+<script src="js/app-core.js"></script>
+<script src="js/app-tabs.js"></script>
+<script src="js/app-predict-calc.js"></script>
+<script src="js/app-policy-compare.js"></script>
+<script src="js/app-notif-init.js"></script>
 <script src="access-request.js"></script>
 <script src="screenshot-guard.js"></script>
 <script src="auth.js"></script>

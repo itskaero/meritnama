@@ -1,0 +1,172 @@
+{
+ "Table": [
+  {
+   "id": 7,
+   "projId": 1,
+   "inductionId": 8,
+   "name": "PHF/20/JUL/01",
+   "displayName": "Jul 2020",
+   "startDate": "2020-11-06T11:09:45.207",
+   "endDate": "2020-09-30T11:09:45.207",
+   "isCompleted": true,
+   "isActive": 0,
+   "sortOrder": 8,
+   "status": true,
+   "dated": "2020-08-19T11:09:45.207",
+   "adminId": 1
+  }
+ ],
+ "Table1": [
+  {
+   "Column1": 1
+  }
+ ],
+ "Table2": [
+  {
+   "Column1": 1
+  }
+ ],
+ "Table3": [
+  {
+   "colKey": "Sr",
+   "colValue": "rowNo",
+   "sortOrder": 1
+  },
+  {
+   "colKey": "Program",
+   "colValue": "type",
+   "sortOrder": 6
+  },
+  {
+   "colKey": "Quota",
+   "colValue": "quota",
+   "sortOrder": 11
+  },
+  {
+   "colKey": "Speciality",
+   "colValue": "speciality",
+   "sortOrder": 16
+  },
+  {
+   "colKey": "Institute",
+   "colValue": "institute",
+   "sortOrder": 21
+  },
+  {
+   "colKey": "Hospital",
+   "colValue": "hospital",
+   "sortOrder": 26
+  },
+  {
+   "colKey": "Total Seats",
+   "colValue": "seats",
+   "sortOrder": 31
+  },
+  {
+   "colKey": "Marks",
+   "colValue": "marks",
+   "sortOrder": 36
+  },
+  {
+   "colKey": "ApplicantId",
+   "colValue": "applicantId",
+   "sortOrder": 41
+  },
+  {
+   "colKey": "Name",
+   "colValue": "name",
+   "sortOrder": 46
+  },
+  {
+   "colKey": "Type",
+   "colValue": "relationType",
+   "sortOrder": 47
+  },
+  {
+   "colKey": "Relation",
+   "colValue": "relation",
+   "sortOrder": 48
+  },
+  {
+   "colKey": "PMDC No",
+   "colValue": "pmdcNo",
+   "sortOrder": 51
+  },
+  {
+   "colKey": "EmailId",
+   "colValue": "emailId",
+   "sortOrder": 56
+  },
+  {
+   "colKey": "Contact Number",
+   "colValue": "contactNumber",
+   "sortOrder": 61
+  },
+  {
+   "colKey": "Cnic/ Pasport No",
+   "colValue": "cnic",
+   "sortOrder": 71
+  },
+  {
+   "colKey": "Preference No",
+   "colValue": "preferenceNo",
+   "sortOrder": 76
+  },
+  {
+   "colKey": "Consent",
+   "colValue": "consent",
+   "sortOrder": 81
+  },
+  {
+   "colKey": "Employment Info",
+   "colValue": "empInfo",
+   "sortOrder": 101
+  },
+  {
+   "colKey": "Type",
+   "colValue": "empType",
+   "sortOrder": 106
+  },
+  {
+   "colKey": "Province",
+   "colValue": "empProvince",
+   "sortOrder": 111
+  },
+  {
+   "colKey": "Mode",
+   "colValue": "mode",
+   "sortOrder": 113
+  },
+  {
+   "colKey": "Working Mode",
+   "colValue": "wmode",
+   "sortOrder": 116
+  },
+  {
+   "colKey": "BPS",
+   "colValue": "bps",
+   "sortOrder": 119
+  },
+  {
+   "colKey": "Department",
+   "colValue": "dept",
+   "sortOrder": 121
+  },
+  {
+   "colKey": "Designation",
+   "colValue": "desg",
+   "sortOrder": 123
+  },
+  {
+   "colKey": "Date Of Joining",
+   "colValue": "doj",
+   "sortOrder": 125
+  }
+ ],
+ "Table4": [
+  {
+   "Column1": 1
+  }
+ ],
+ "Table5": []
+}

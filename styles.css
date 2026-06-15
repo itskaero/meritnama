@@ -9,6 +9,7 @@
   --neon-green:  #3ecf8e;   /* muted teal-green, was #3ecf8e */
   --neon-gold:   #e8a627;   /* warm amber, was #e8a627 */
   --neon-pink:   #d44f7e;   /* muted rose, was #d44f7e */
+  --neon-red:    #dc3c3c;   /* soft alert red, was #dc3c3c */
 
   /* ── Backgrounds (deep navy, not pure black) ── */
   --bg-deep:   #0d1626;
@@ -2362,6 +2363,11 @@ tr.clickable-row.active { background: rgba(77,184,217,0.12); outline: 1px solid 
   min-width: 120px;
 }
 .mt-filter-sel:focus { outline: none; border-color: var(--neon-cyan); }
+.mt-filter-sel option,
+select option {
+  background: var(--bg-deep);
+  color: var(--text);
+}
 
 .mt-filter-input {
   padding: 7px 12px;
@@ -3481,3 +3487,51 @@ tr.clickable-row.active { background: rgba(77,184,217,0.12); outline: 1px solid 
   border-color: var(--neon-cyan);
   outline: none;
 }
+
+/* ── Induction Summary Grid ── */
+.induction-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+.induction-summary-card {
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.induction-summary-card:hover {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 16px rgba(77,184,217,0.08);
+}
+.induction-summary-card .is-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.induction-summary-card .is-id {
+  font-size: 1.05rem; font-weight: 800;
+}
+.induction-summary-card .is-badge {
+  font-size: 0.6rem; font-weight: 800; letter-spacing: 0.06em;
+  text-transform: uppercase; padding: 2px 8px; border-radius: 100px;
+}
+.induction-summary-card .is-badge.active-pol { background: rgba(62,207,142,0.15); color: var(--neon-green); }
+.induction-summary-card .is-badge.old-pol { background: rgba(124,101,196,0.15); color: var(--neon-purple); }
+.induction-summary-card .is-total {
+  font-size: 1.5rem; font-weight: 800; margin: 4px 0;
+  color: var(--neon-cyan);
+}
+.induction-summary-card .is-total-label {
+  font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.induction-summary-card .is-components {
+  margin-top: 8px; padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.induction-summary-card .is-component {
+  font-size: 0.72rem; color: var(--text-muted);
+  display: flex; justify-content: space-between;
+}
+.induction-summary-card .is-component.included { color: var(--text); }
+.induction-summary-card .is-component.removed { text-decoration: line-through; opacity: 0.5; }
