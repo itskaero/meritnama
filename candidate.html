@@ -582,6 +582,144 @@
     .profile-status.success { color: var(--neon-green); }
     .profile-status.error { color: var(--danger); }
 
+    /* Candidate grievance inbox */
+    .grievance-card h3 {
+      font-size: 1rem;
+      color: var(--neon-cyan);
+      margin: 0 0 0.35rem;
+    }
+    .grievance-card .grievance-sub {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+    .grievance-grid {
+      display: grid;
+      grid-template-columns: minmax(150px, 0.5fr) minmax(220px, 1fr);
+      gap: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    .grievance-grid .full { grid-column: 1 / -1; }
+    .grievance-field label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.3rem;
+    }
+    .grievance-field input,
+    .grievance-field textarea {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-input);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      outline: none;
+      resize: vertical;
+    }
+    .grievance-field input:focus,
+    .grievance-field textarea:focus { border-color: var(--border-active); }
+    .grievance-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.2rem;
+    }
+    .grievance-send-btn {
+      padding: 0.65rem 1rem;
+      border: 0;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+      color: #fff;
+      font-family: var(--font);
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .grievance-send-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .grievance-status {
+      min-height: 1.1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .grievance-status.success { color: var(--neon-green); }
+    .grievance-status.error { color: var(--danger); }
+    .grievance-inbox-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      margin-bottom: 0.85rem;
+    }
+    .grievance-inbox-title {
+      color: var(--text);
+      font-weight: 900;
+      font-size: 0.9rem;
+    }
+    .grievance-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      border: 1px solid rgba(245,200,66,0.28);
+      border-radius: 999px;
+      background: rgba(245,200,66,0.08);
+      color: var(--neon-gold);
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.18rem 0.6rem;
+    }
+    .grievance-thread {
+      border: 1px solid rgba(77,184,217,0.14);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,0.025);
+      padding: 0.85rem 0.95rem;
+      margin-bottom: 0.75rem;
+    }
+    .grievance-thread.unread {
+      border-color: rgba(245,200,66,0.35);
+      box-shadow: 0 0 0 1px rgba(245,200,66,0.1);
+    }
+    .grievance-thread h4 {
+      color: var(--text);
+      font-size: 0.9rem;
+      margin: 0 0 0.3rem;
+    }
+    .grievance-meta {
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      margin-bottom: 0.5rem;
+    }
+    .grievance-question,
+    .grievance-reply {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      margin: 0.35rem 0;
+    }
+    .grievance-reply {
+      color: var(--text);
+      border-left: 3px solid rgba(62,207,142,0.5);
+      padding-left: 0.75rem;
+    }
+    .grievance-empty {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      padding: 0.5rem 0;
+    }
+    @media (max-width: 620px) {
+      .grievance-grid { grid-template-columns: 1fr; }
+      .grievance-grid .full { grid-column: auto; }
+    }
+
     /* Contributions on profile */
     .profile-contributions {
       margin-top: 0.5rem;
@@ -1464,6 +1602,39 @@
 
       <button class="profile-save-btn" id="profileSaveBtn">Save Profile</button>
       <div class="profile-status" id="profileStatus"></div>
+    </div>
+  </div>
+
+  <!-- Candidate inbox and grievance responder -->
+  <div class="profile-card grievance-card" id="grievanceCard">
+    <h3>&#128233; Inbox &amp; message to site admin</h3>
+    <p class="grievance-sub">
+      Send a grievance-related question to the site admin. The grievance responder prepares a draft from the published grievance data, then an admin reviews, edits if needed, and approves the reply before it appears here and in your site inbox.
+    </p>
+    <div class="grievance-grid">
+      <div class="grievance-field">
+        <label for="grApplicantId">Applicant ID</label>
+        <input type="number" id="grApplicantId" min="1" placeholder="e.g. 38882" />
+      </div>
+      <div class="grievance-field">
+        <label for="grSubject">Subject</label>
+        <input type="text" id="grSubject" maxlength="140" placeholder="e.g. Grievance status / rejected application" />
+      </div>
+      <div class="grievance-field full">
+        <label for="grMessage">Message to grievance responder</label>
+        <textarea id="grMessage" rows="4" maxlength="1200" placeholder="Write your question. Include what changed on the portal, what you need clarified, and any grievance subject/status visible to you."></textarea>
+      </div>
+    </div>
+    <div class="grievance-actions">
+      <button class="grievance-send-btn" id="grSendBtn" type="button">Send to admin</button>
+      <div class="grievance-status" id="grStatus"></div>
+    </div>
+    <div class="grievance-inbox-head">
+      <div class="grievance-inbox-title">My inbox</div>
+      <span class="grievance-badge" id="grInboxBadge">Loading...</span>
+    </div>
+    <div id="grInboxList">
+      <div class="grievance-empty">Loading inbox...</div>
     </div>
   </div>
 
@@ -3550,12 +3721,159 @@ document.getElementById('requestMentorBtn')?.addEventListener('click', async () 
   }
 });
 
+// ══ Grievance responder inbox ═════════════════════════════
+let grievanceUnsubscribe = null;
+let grievanceThreads = [];
+
+function setGrievanceStatus(message, type = '') {
+  const el = document.getElementById('grStatus');
+  if (!el) return;
+  el.textContent = message || '';
+  el.className = 'grievance-status' + (type ? ' ' + type : '');
+}
+
+function formatGrievanceDate(value) {
+  const d = value?.toDate ? value.toDate() : (value ? new Date(value) : null);
+  if (!d || Number.isNaN(d.getTime())) return 'Just now';
+  return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function grievanceStatusLabel(status) {
+  if (status === 'approved') return 'Replied';
+  if (status === 'needs_edit') return 'Under admin edit';
+  if (status === 'archived') return 'Closed';
+  return 'Pending admin approval';
+}
+
+function renderGrievanceInbox() {
+  const list = document.getElementById('grInboxList');
+  const badge = document.getElementById('grInboxBadge');
+  if (!list) return;
+
+  const sorted = grievanceThreads.slice().sort((a, b) => {
+    const ad = a.createdAt?.toDate?.()?.getTime?.() || Date.parse(a.createdAt || '') || 0;
+    const bd = b.createdAt?.toDate?.()?.getTime?.() || Date.parse(b.createdAt || '') || 0;
+    return bd - ad;
+  });
+  const approvedUnread = sorted.filter(t => t.status === 'approved' && t.adminResponse && !t.candidateReadAt).length;
+  const pending = sorted.filter(t => (t.status || 'pending') === 'pending' || t.status === 'needs_edit').length;
+  if (badge) {
+    badge.textContent = approvedUnread
+      ? `${approvedUnread} new`
+      : `${sorted.length} thread${sorted.length === 1 ? '' : 's'}${pending ? ' · ' + pending + ' pending' : ''}`;
+  }
+
+  if (!sorted.length) {
+    list.innerHTML = '<div class="grievance-empty">No grievance messages yet. Send a question above to start a thread.</div>';
+    return;
+  }
+
+  list.innerHTML = sorted.map(t => {
+    const isApproved = t.status === 'approved' && t.adminResponse;
+    const unread = isApproved && !t.candidateReadAt;
+    const meta = [
+      `Applicant ID: ${esc(t.applicantId || 'not set')}`,
+      formatGrievanceDate(t.createdAt),
+      grievanceStatusLabel(t.status || 'pending'),
+    ].join(' · ');
+    const reply = isApproved
+      ? `<div class="grievance-reply"><strong>Admin-approved response:</strong>\n${esc(t.adminResponse)}</div>`
+      : '<div class="grievance-reply" style="border-left-color:rgba(245,200,66,0.45);color:var(--text-muted);">Waiting for admin approval. You will see the reply here after review.</div>';
+    return `<article class="grievance-thread${unread ? ' unread' : ''}">
+      <h4>${esc(t.subject || 'Grievance message')}</h4>
+      <div class="grievance-meta">${esc(meta)}</div>
+      <div class="grievance-question"><strong>Your message:</strong>\n${esc(t.message || '')}</div>
+      ${reply}
+    </article>`;
+  }).join('');
+
+  sorted
+    .filter(t => t.status === 'approved' && t.adminResponse && !t.candidateReadAt)
+    .slice(0, 10)
+    .forEach(t => markGrievanceRead(t.id));
+}
+
+function subscribeGrievanceInbox() {
+  const email = getSessionEmail();
+  if (!email) return;
+  if (grievanceUnsubscribe) grievanceUnsubscribe();
+  const list = document.getElementById('grInboxList');
+  if (list) list.innerHTML = '<div class="grievance-empty">Loading inbox...</div>';
+  grievanceUnsubscribe = db.collection('grievance_messages')
+    .where('candidateEmail', '==', email)
+    .limit(50)
+    .onSnapshot(snap => {
+      grievanceThreads = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderGrievanceInbox();
+    }, err => {
+      console.warn('Grievance inbox unavailable:', err);
+      if (list) list.innerHTML = `<div class="grievance-empty">Could not load inbox: ${esc(err.message || err)}</div>`;
+    });
+}
+
+function markGrievanceRead(id) {
+  if (!id) return;
+  db.collection('grievance_messages').doc(id).set({
+    candidateReadAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true }).catch(() => {});
+}
+
+async function submitGrievanceMessage() {
+  const email = getSessionEmail();
+  if (!email) return;
+  const btn = document.getElementById('grSendBtn');
+  const applicantId = document.getElementById('grApplicantId')?.value?.trim() || document.getElementById('pfApplicantId')?.value?.trim() || '';
+  const subject = document.getElementById('grSubject')?.value?.trim() || 'Grievance question';
+  const message = document.getElementById('grMessage')?.value?.trim() || '';
+  const candidateName = document.getElementById('pfName')?.value?.trim() || document.getElementById('profileDisplayName')?.textContent?.trim() || email;
+  if (!message) {
+    setGrievanceStatus('Please write a message for admin review.', 'error');
+    return;
+  }
+  if (message.length < 10) {
+    setGrievanceStatus('Please add a little more detail before sending.', 'error');
+    return;
+  }
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+  setGrievanceStatus('Sending to grievance responder...');
+  try {
+    await db.collection('grievance_messages').add({
+      candidateEmail: email,
+      candidateName,
+      applicantId,
+      subject,
+      message: message.slice(0, 1200),
+      status: 'pending',
+      source: 'candidate_profile',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    document.getElementById('grMessage').value = '';
+    setGrievanceStatus('Message sent. Admin will review and approve the responder draft before it appears in your inbox.', 'success');
+  } catch (err) {
+    setGrievanceStatus('Send failed: ' + err.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Send to admin'; }
+  }
+}
+
 // Init
 loadDataLists();
-loadProfile();
+loadProfile().then(() => {
+  const pfApplicantId = document.getElementById('pfApplicantId')?.value || '';
+  const grApplicantId = document.getElementById('grApplicantId');
+  if (grApplicantId && pfApplicantId && !grApplicantId.value) grApplicantId.value = pfApplicantId;
+});
 loadMyContributions();
 document.getElementById('invitePin').value = generateInvitePin();
 loadInvitePanel();
+document.getElementById('grSendBtn')?.addEventListener('click', submitGrievanceMessage);
+document.getElementById('pfApplicantId')?.addEventListener('input', function () {
+  const grApplicantId = document.getElementById('grApplicantId');
+  if (grApplicantId && !grApplicantId.value) grApplicantId.value = this.value;
+});
+subscribeGrievanceInbox();
 </script>
 <script src="access-request.js"></script>
 <script src="screenshot-guard.js"></script>

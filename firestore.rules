@@ -43,6 +43,15 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Candidate grievance responder messages — candidates create questions,
+    // admin reviews/edits/approves responder drafts, candidates read approved replies.
+    // Current project uses client-side PIN gating, so access is trust-gated in UI.
+    match /grievance_messages/{messageId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if false;
+    }
+
     // User activity history — clients append location context; admin dashboard reads history.
     match /user_activity_logs/{activityId} {
       allow create: if true;
