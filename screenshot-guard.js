@@ -19,6 +19,9 @@
     warningUnsubscribe: null,
     warningEmail: '',
     warnings: [],
+    grievanceUnsubscribe: null,
+    grievanceEmail: '',
+    grievances: [],
     lastActivitySignature: '',
     lastActivityAt: 0,
   };
@@ -729,15 +732,15 @@
     btn = document.createElement('button');
     btn.id = 'mnWarningInboxBtn';
     btn.type = 'button';
-    btn.innerHTML = '<span>Admin inbox</span><span class="mn-warning-count">0</span>';
+    btn.innerHTML = '<span>Inbox</span><span class="mn-warning-count">0</span>';
 
     dialog = document.createElement('div');
     dialog.id = 'mnWarningDialog';
     dialog.setAttribute('role', 'dialog');
-    dialog.setAttribute('aria-label', 'Admin warnings');
+    dialog.setAttribute('aria-label', 'Inbox messages');
     dialog.innerHTML =
       '<div class="mn-warning-head">' +
-        '<div class="mn-warning-title">Admin messages</div>' +
+        '<div class="mn-warning-title">Inbox messages</div>' +
         '<button class="mn-warning-close" type="button" aria-label="Close">&times;</button>' +
       '</div>' +
       '<div class="mn-warning-list"><div class="mn-warning-empty">No messages.</div></div>';
@@ -756,6 +759,11 @@
       const readBtn = e.target.closest('[data-warning-read]');
       if (readBtn) {
         markWarningRead(readBtn.getAttribute('data-warning-read'));
+        return;
+      }
+      const grievanceReadBtn = e.target.closest('[data-grievance-read]');
+      if (grievanceReadBtn) {
+        markGrievanceRead(grievanceReadBtn.getAttribute('data-grievance-read'));
         return;
       }
       const replyBtn = e.target.closest('[data-warning-reply]');
@@ -791,18 +799,28 @@
         const bd = b.createdAt?.toDate?.()?.getTime?.() || Date.parse(b.createdAt || '') || 0;
         return bd - ad;
       });
-    const unread = activeWarnings.filter(w => !w.readAt).length;
-    btn.classList.toggle('visible', activeWarnings.length > 0);
+    const activeGrievances = state.grievances
+      .filter(g => g.status === 'approved' && g.adminResponse)
+      .sort((a, b) => {
+        const ad = a.approvedAt?.toDate?.()?.getTime?.() || a.createdAt?.toDate?.()?.getTime?.() || Date.parse(a.approvedAt || a.createdAt || '') || 0;
+        const bd = b.approvedAt?.toDate?.()?.getTime?.() || b.createdAt?.toDate?.()?.getTime?.() || Date.parse(b.approvedAt || b.createdAt || '') || 0;
+        return bd - ad;
+      });
+    const unreadWarnings = activeWarnings.filter(w => !w.readAt).length;
+    const unreadGrievances = activeGrievances.filter(g => !g.candidateReadAt).length;
+    const unread = unreadWarnings + unreadGrievances;
+    const total = activeWarnings.length + activeGrievances.length;
+    btn.classList.toggle('visible', total > 0);
     const count = btn.querySelector('.mn-warning-count');
-    if (count) count.textContent = unread || activeWarnings.length;
-    btn.title = unread ? `${unread} unread admin message${unread === 1 ? '' : 's'}` : 'Admin messages';
+    if (count) count.textContent = unread || total;
+    btn.title = unread ? `${unread} unread inbox message${unread === 1 ? '' : 's'}` : 'Inbox messages';
 
     if (!list) return;
-    if (!activeWarnings.length) {
+    if (!total) {
       list.innerHTML = '<div class="mn-warning-empty">No messages.</div>';
       return;
     }
-    list.innerHTML = activeWarnings.map(w => {
+    const warningHtml = activeWarnings.map(w => {
       const severity = ['info', 'success', 'warning', 'danger'].includes(w.severity) ? w.severity : 'warning';
       const title = w.title || (severity === 'danger' ? 'Important warning' : 'Admin message');
       const readClass = w.readAt ? ' read' : '';
@@ -825,6 +843,23 @@
         </div>
       </article>`;
     }).join('');
+    const grievanceHtml = activeGrievances.map(g => {
+      const readClass = g.candidateReadAt ? ' read' : '';
+      const meta = [
+        g.applicantId ? `Applicant ID ${g.applicantId}` : '',
+        warningDate(g.approvedAt || g.createdAt) || 'Just now',
+      ].filter(Boolean).join(' · ');
+      return `<article class="mn-warning-item success${readClass}">
+        <h4>${escapeHtml(g.subject || g.sourceLabel || 'Inbox response')}</h4>
+        <p>${escapeHtml(g.adminResponse || '')}</p>
+        <div class="mn-warning-replies">${escapeHtml(g.sourceLabel || 'Data responder')} · Your message: ${escapeHtml(String(g.message || '').slice(0, 120))}</div>
+        <div class="mn-warning-meta">
+          <span>${escapeHtml(meta)}</span>
+          ${g.candidateReadAt ? '<span>Read</span>' : `<button class="mn-warning-read-btn" type="button" data-grievance-read="${escapeHtml(g.id)}">Mark read</button>`}
+        </div>
+      </article>`;
+    }).join('');
+    list.innerHTML = grievanceHtml + warningHtml;
   }
 
   function subscribeWarnings() {
@@ -855,12 +890,50 @@
       });
   }
 
+  function subscribeGrievances() {
+    const email = getSessionEmail();
+    const db = getDb();
+    if (!email || !db) {
+      if (state.grievanceUnsubscribe) {
+        state.grievanceUnsubscribe();
+        state.grievanceUnsubscribe = null;
+      }
+      state.grievances = [];
+      renderWarnings();
+      return;
+    }
+    if (state.grievanceEmail === email && state.grievanceUnsubscribe) return;
+    if (state.grievanceUnsubscribe) state.grievanceUnsubscribe();
+    state.grievanceEmail = email;
+    state.grievanceUnsubscribe = db.collection('inbox_requests')
+      .where('candidateEmail', '==', email)
+      .limit(50)
+      .onSnapshot(function (snap) {
+        state.grievances = snap.docs.map(function (doc) {
+          return { id: doc.id, ...doc.data() };
+        });
+        renderWarnings();
+      }, function (err) {
+        console.warn('[MeritNama] Inbox request feed unavailable:', err && err.message ? err.message : err);
+      });
+  }
+
   function markWarningRead(id) {
     if (!id) return;
     const db = getDb();
     if (!db) return;
     db.collection('user_warnings').doc(id).set({
       readAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }, { merge: true }).catch(function () {});
+  }
+
+  function markGrievanceRead(id) {
+    if (!id) return;
+    const db = getDb();
+    if (!db) return;
+    db.collection('inbox_requests').doc(id).set({
+      candidateReadAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }, { merge: true }).catch(function () {});
   }
@@ -891,6 +964,10 @@
 
   function markVisibleWarningsRead() {
     state.warnings.filter(w => !w.readAt).slice(0, 10).forEach(w => markWarningRead(w.id));
+    state.grievances
+      .filter(g => g.status === 'approved' && g.adminResponse && !g.candidateReadAt)
+      .slice(0, 10)
+      .forEach(g => markGrievanceRead(g.id));
   }
 
   function init() {
@@ -901,6 +978,7 @@
     document.body.classList.add('mn-screen-guard-active');
     writeUserActivity('page_load');
     subscribeWarnings();
+    subscribeGrievances();
 
     document.addEventListener('keydown', onKeyEvent, true);
     document.addEventListener('keyup', function (e) {
@@ -933,6 +1011,7 @@
     window.addEventListener('storage', function () {
       writeUserActivity('storage');
       subscribeWarnings();
+      subscribeGrievances();
       refreshWatermarks();
     });
     document.addEventListener('click', function () {
@@ -944,6 +1023,7 @@
     setInterval(function () {
       writeUserActivity('heartbeat');
       subscribeWarnings();
+      subscribeGrievances();
       refreshWatermarks();
     }, 10 * 1000);
   }
