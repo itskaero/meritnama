@@ -700,7 +700,7 @@
       <button class="sidebar-link" data-tab="profiles"><span class="nav-icon">🪪</span> Profiles <span class="nav-badge" id="navBadgeProfiles">—</span></button>
       <button class="sidebar-link" data-tab="mentorship"><span class="nav-icon">🎓</span> Mentorship <span class="nav-badge" id="navBadgeMentors">—</span></button>
       <button class="sidebar-link" data-tab="warnings"><span class="nav-icon">&#9888;</span> User Warnings</button>
-      <button class="sidebar-link" data-tab="grievances"><span class="nav-icon">&#128233;</span> Grievances <span class="nav-badge" id="navBadgeGrievances">—</span></button>
+      <button class="sidebar-link" data-tab="grievances"><span class="nav-icon">&#128233;</span> Inbox Requests <span class="nav-badge" id="navBadgeGrievances">—</span></button>
       <div class="sidebar-section">Finance</div>
       <button class="sidebar-link" data-tab="contributions"><span class="nav-icon">💰</span> Contributions</button>
       <div class="sidebar-section">Site</div>
@@ -805,7 +805,7 @@
       <button class="tab-btn" data-tab="logs">Access Logs</button>
       <button class="tab-btn" data-tab="screenshots">Screenshot Logs</button>
       <button class="tab-btn" data-tab="warnings">User Warnings</button>
-      <button class="tab-btn" data-tab="grievances">Grievances</button>
+      <button class="tab-btn" data-tab="grievances">Inbox Requests</button>
       <button class="tab-btn" data-tab="users">Authorized Users</button>
       <button class="tab-btn" data-tab="contributions">Contributions</button>
       <button class="tab-btn" data-tab="mentorship">Mentorship</button>
@@ -951,21 +951,21 @@
       </div>
     </div>
 
-    <!-- ── Tab: Candidate Grievances ────────────────── -->
+    <!-- ── Tab: Candidate Inbox Requests ─────────────── -->
     <div id="tab-grievances" style="display:none;">
       <div class="panel" style="margin-bottom:1rem;">
         <div class="panel-head">
           <div>
-            <div class="panel-title">Grievance responder review</div>
+            <div class="panel-title">Inbox request responder review</div>
             <div class="panel-sub">
-              Candidate questions appear here. The responder drafts from <code>data/grievance_applications.json</code>; approve only after reviewing/editing the response.
+              Candidate questions appear here. Each request type is configured in <code>data/responder_sources.json</code>; the responder drafts from the selected JSON database, and admin approves only after reviewing/editing.
             </div>
           </div>
         </div>
         <div class="stats-row" style="margin-bottom:0;">
           <div class="stat-card"><div class="stat-value" id="grStatPending">—</div><div class="stat-label">Pending</div></div>
           <div class="stat-card"><div class="stat-value green" id="grStatApproved">—</div><div class="stat-label">Approved</div></div>
-          <div class="stat-card"><div class="stat-value" id="grStatDataRows">—</div><div class="stat-label">Data rows</div></div>
+          <div class="stat-card"><div class="stat-value" id="grStatDataRows">—</div><div class="stat-label">Configured data rows</div></div>
         </div>
       </div>
       <div class="controls" style="align-items:center;flex-wrap:wrap;gap:0.5rem;">
@@ -974,7 +974,7 @@
           <option value="approved">Approved</option>
           <option value="all">All</option>
         </select>
-        <input type="text" id="filterGrievances" placeholder="Search asker, applicant ID, subject, message…" style="min-width:260px;" />
+        <input type="text" id="filterGrievances" placeholder="Search asker, request type, applicant ID, subject, message…" style="min-width:260px;" />
         <button id="refreshGrievancesBtn">&#x21BB; Refresh</button>
         <span id="grievancesCount" style="font-size:0.78rem;color:var(--text-muted);">Loading…</span>
       </div>
@@ -985,7 +985,7 @@
               <th>Asked</th>
               <th>Who asked?</th>
               <th>Question</th>
-              <th>Responder data</th>
+              <th>Source data</th>
               <th>Status</th>
               <th>Draft / approval</th>
             </tr>
@@ -1727,7 +1727,7 @@ const TAB_META = {
   logs:          { title: 'Access Logs',        sub: 'Login attempts and portal access history' },
   screenshots:   { title: 'Screenshot Logs',    sub: 'Blocked screenshot and print attempts by signed-in users' },
   warnings:      { title: 'User Warnings',      sub: 'Send and review admin inbox messages for users' },
-  grievances:    { title: 'Grievances',         sub: 'Review candidate grievance questions and approve responder drafts' },
+  grievances:    { title: 'Inbox Requests',     sub: 'Review candidate messages and approve data-responder drafts' },
   users:         { title: 'Authorized Users',   sub: 'Manage portal access and credentials' },
   'access-requests': { title: 'Access Requests', sub: 'Candidate self-service requests — approve to grant access' },
   profiles:      { title: 'User Profiles',      sub: 'Applicant and trainee profile data' },
@@ -1741,6 +1741,8 @@ let allScreenshotLogs = [];
 let allWarnings = [];
 let allGrievances = [];
 let grievanceDataRecords = [];
+let responderSourcesAdmin = [];
+const responderDatasetCacheAdmin = {};
 let authUserMeta = { byEmail: {}, inviteesByInviter: {} };
 let overviewMetricsCache = {};
 let sessionTimerInterval = null;
@@ -2484,11 +2486,20 @@ async function archiveWarning(id) {
 }
 
 async function loadGrievanceDataAdmin() {
-  if (grievanceDataRecords.length) return grievanceDataRecords;
-  const res = await fetch('data/grievance_applications.json', { cache: 'no-store' });
-  if (!res.ok) throw new Error(`Could not load grievance data (${res.status})`);
+  if (responderSourcesAdmin.length) return grievanceDataRecords;
+  const res = await fetch('data/responder_sources.json', { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Could not load responder source config (${res.status})`);
   const payload = await res.json();
-  grievanceDataRecords = Array.isArray(payload) ? payload : (payload.records || []);
+  responderSourcesAdmin = Array.isArray(payload) ? payload : (payload.sources || []);
+  grievanceDataRecords = [];
+  for (const source of responderSourcesAdmin) {
+    try {
+      const records = await loadResponderRecordsAdmin(source);
+      grievanceDataRecords.push(...records);
+    } catch (e) {
+      console.warn('Responder dataset load failed:', source.id, e);
+    }
+  }
   return grievanceDataRecords;
 }
 
@@ -2500,90 +2511,124 @@ function normalizeSearchText(value) {
     .trim();
 }
 
-function grievanceTokens(value) {
-  const stop = new Set(['the','and','for','with','from','this','that','regarding','grievance','application','apply','applied','please','kindly','issue']);
-  return normalizeSearchText(value).split(' ').filter(t => t.length > 2 && !stop.has(t));
+function responderSourceAdmin(id) {
+  return responderSourcesAdmin.find(s => s.id === id) || null;
 }
 
-function grievanceStatusText(status) {
+function adminValueAtPath(obj, path) {
+  if (!path) return obj;
+  return String(path).split('.').reduce((acc, key) => acc == null ? acc : acc[key], obj);
+}
+
+async function loadResponderRecordsAdmin(source) {
+  if (!source?.id || !source.dataset) return [];
+  if (responderDatasetCacheAdmin[source.id]) return responderDatasetCacheAdmin[source.id];
+  const res = await fetch(source.dataset, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Could not load ${source.dataset} (${res.status})`);
+  const payload = await res.json();
+  const records = adminValueAtPath(payload, source.recordsPath || '') || payload.records || payload;
+  responderDatasetCacheAdmin[source.id] = Array.isArray(records) ? records : [];
+  return responderDatasetCacheAdmin[source.id];
+}
+
+function sourceStatusText(source, status) {
   const s = String(status || '').trim();
-  if (!s || s === '-') return 'No final decision recorded';
+  const empty = Array.isArray(source?.emptyStatusValues) ? source.emptyStatusValues.map(String) : ['', '-'];
+  if (empty.includes(s)) return source?.response?.emptyStatusText || 'No final decision recorded';
   return s;
 }
 
-function findGrievanceDataMatch(ticket) {
-  const records = grievanceDataRecords || [];
-  const applicantId = String(ticket.applicantId || '').trim();
-  const hay = `${ticket.subject || ''} ${ticket.message || ''}`;
-  if (applicantId) {
-    const exact = records.find(r => String(r.applicantId || '').trim() === applicantId);
-    if (exact) return { record: exact, confidence: 'high', reason: 'Exact Applicant ID match' };
-  }
-  const terms = new Set(grievanceTokens(hay));
-  if (!terms.size) return { record: null, confidence: 'low', reason: 'No searchable terms' };
-  let best = null;
-  let bestScore = 0;
-  for (const r of records) {
-    const recTerms = new Set(grievanceTokens(`${r.subject || ''} ${r.name || ''}`));
-    let score = 0;
-    terms.forEach(t => { if (recTerms.has(t)) score += 1; });
-    if (score > bestScore) {
-      bestScore = score;
-      best = r;
-    }
-  }
-  if (best && bestScore >= 2) {
-    return { record: best, confidence: bestScore >= 4 ? 'medium' : 'low', reason: `${bestScore} keyword matches` };
-  }
-  return { record: null, confidence: 'low', reason: 'No data match' };
+async function findGrievanceDataMatch(ticket) {
+  const source = responderSourceAdmin(ticket.sourceId || ticket.requestType) || responderSourcesAdmin[0] || null;
+  if (!source) return { source: null, record: null, confidence: 'low', reason: 'No responder source configured' };
+  const records = await loadResponderRecordsAdmin(source);
+  const matchField = ticket.matchField || source.match?.field || 'applicantId';
+  const lookupValue = String(ticket.lookupValue || ticket.applicantId || '').trim();
+  if (!lookupValue) return { source, record: null, confidence: 'low', reason: 'No lookup value provided' };
+  const exact = records.find(r => String(r?.[matchField] ?? '').trim() === lookupValue);
+  if (exact) return { source, record: exact, confidence: 'high', reason: `Exact ${source.match?.label || matchField} match` };
+  return { source, record: null, confidence: 'low', reason: `${source.match?.label || matchField} not found in selected JSON database` };
 }
 
-function buildGrievanceResponderDraft(ticket) {
-  const match = findGrievanceDataMatch(ticket);
-  const r = match.record;
-  if (!r) {
+function templateReplace(template, values) {
+  return String(template || '').replace(/\{([a-zA-Z0-9_]+)\}/g, (_, key) => values[key] == null ? '' : String(values[key]));
+}
+
+function compactRecordSnapshot(source, record) {
+  if (!record) return null;
+  const fields = Array.isArray(source?.displayFields) ? source.displayFields : [];
+  if (!fields.length) return { ...record };
+  const out = {};
+  fields.forEach(f => { out[f.field] = record[f.field] ?? ''; });
+  return out;
+}
+
+function buildGrievanceResponderDraftSync(ticket) {
+  const source = responderSourceAdmin(ticket.sourceId || ticket.requestType) || responderSourcesAdmin[0] || null;
+  const record = ticket.matchedRecord || null;
+  if (!source || !record) {
     return {
       response: [
-        'We received your grievance question and could not find a confident matching row in the available grievance verification data.',
-        'Please re-check your Applicant ID and the exact grievance subject/status on the official portal. If the official portal has a newer update, rely on that official status.',
-        'This message has been reviewed by admin before being sent.'
+        'The selected data responder could not find a matching row for this request.',
+        'Do not approve this response until the request type and lookup value have been corrected.'
       ].join('\n\n'),
-      confidence: match.confidence,
-      reason: match.reason,
+      confidence: 'low',
+      reason: source ? 'No matching row in selected JSON database' : 'No responder source configured',
       matchedRecord: null,
+      source,
     };
   }
+  return buildResponderDraftFromRecord(ticket, source, record, 'high', `Exact ${source.match?.label || source.match?.field || 'lookup'} match`);
+}
 
-  const status = grievanceStatusText(r.status);
-  const attendance = String(r.attendance || '').trim();
-  const subject = String(r.subject || '').trim();
-  const decisionLine = status === 'Accepted'
-    ? 'The available grievance verification data marks this grievance as Accepted.'
-    : status === 'Pending'
-      ? 'The available grievance verification data marks this grievance as Pending.'
-      : 'The available grievance verification data does not show a final accepted/rejected decision for this row.';
-  const attendanceLine = attendance
-    ? (attendance.toLowerCase() === 'absent'
-      ? 'The attendance/hearing field is recorded as Absent.'
-      : `The attendance/hearing field is recorded as ${attendance}.`)
-    : '';
+async function buildGrievanceResponderDraft(ticket) {
+  const match = findGrievanceDataMatch(ticket);
+  return match.then(m => {
+    if (!m.record) {
+      return {
+        response: [
+          `We could not find ${m.source?.match?.label || 'the lookup value'} "${ticket.lookupValue || ticket.applicantId || ''}" in "${m.source?.label || 'the selected database'}".`,
+          'Please re-check the request type and lookup value. Admin should not approve a data-based response until a matching row exists.'
+        ].join('\n\n'),
+        confidence: m.confidence,
+        reason: m.reason,
+        matchedRecord: null,
+        source: m.source,
+      };
+    }
+    return buildResponderDraftFromRecord(ticket, m.source, m.record, m.confidence, m.reason);
+  });
+}
+
+function buildResponderDraftFromRecord(ticket, source, record, confidence, reason) {
+  const matchField = ticket.matchField || source.match?.field || 'applicantId';
+  const matchLabel = ticket.matchLabel || source.match?.label || matchField;
+  const matchValue = record?.[matchField] ?? ticket.lookupValue ?? ticket.applicantId ?? '';
+  const titleField = source.titleField || 'subject';
+  const statusField = source.statusField || 'status';
+  const statusValue = sourceStatusText(source, record?.[statusField]);
+  const values = {
+    matchLabel,
+    matchValue,
+    statusLabel: source.displayFields?.find(f => f.field === statusField)?.label || statusField,
+    statusValue,
+    subject: record?.[titleField] || '',
+    attendance: record?.attendance || '',
+    sourceLabel: source.label || source.id,
+  };
+  const responseCfg = source.response || {};
+  const lines = [
+    templateReplace(responseCfg.intro || 'We matched your request to {matchLabel} {matchValue}.', values),
+    templateReplace(responseCfg.statusLine || 'The available data shows {statusLabel}: {statusValue}.', values),
+    templateReplace(responseCfg.extraLine || '', values),
+    templateReplace(responseCfg.footer || 'This response was reviewed and approved by admin before delivery.', values),
+  ].filter(line => String(line || '').trim());
   return {
-    response: [
-      `We matched your message to Applicant ID ${r.applicantId || ticket.applicantId || 'not available'}${subject ? ` with subject "${subject}"` : ''}.`,
-      [decisionLine, attendanceLine].filter(Boolean).join(' '),
-      'Please verify the final outcome on the official PHF/PRP portal, because MeritNama can only explain the data snapshot available to this site. This response was reviewed and approved by admin before delivery.'
-    ].join('\n\n'),
-    confidence: match.confidence,
-    reason: match.reason,
-    matchedRecord: {
-      rowNum: r.rowNum || null,
-      applicantId: r.applicantId || '',
-      name: r.name || '',
-      subject: r.subject || '',
-      status: r.status || '',
-      attendance: r.attendance || '',
-      applyDateIso: r.applyDateIso || '',
-    },
+    response: lines.join('\n\n'),
+    confidence,
+    reason,
+    matchedRecord: compactRecordSnapshot(source, record),
+    source,
   };
 }
 
@@ -2600,9 +2645,22 @@ function grievanceAdminStatusBadge(status) {
   return '<span class="badge-fail">Pending</span>';
 }
 
+function renderResponderRecordSummary(source, record) {
+  const fields = Array.isArray(source?.displayFields) && source.displayFields.length
+    ? source.displayFields.slice(0, 6)
+    : Object.keys(record || {}).slice(0, 6).map(field => ({ field, label: field }));
+  return fields.map(f => {
+    const value = record?.[f.field];
+    if (value == null || value === '') return '';
+    const label = f.label || f.field;
+    const display = f.field === source?.statusField ? sourceStatusText(source, value) : value;
+    return `<div><span style="color:var(--text-muted);">${escapeHtml(label)}:</span> <strong>${escapeHtml(String(display))}</strong></div>`;
+  }).filter(Boolean).join('');
+}
+
 async function refreshGrievanceBadge() {
   try {
-    const snap = await db.collection('grievance_messages').limit(200).get();
+    const snap = await db.collection('inbox_requests').limit(200).get();
     const pending = snap.docs.filter(d => {
       const status = d.data().status || 'pending';
       return status === 'pending' || status === 'needs_edit';
@@ -2616,11 +2674,11 @@ async function refreshGrievanceBadge() {
 async function loadGrievances() {
   const tbody = document.getElementById('grievancesBody');
   const countEl = document.getElementById('grievancesCount');
-  if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading grievances…</td></tr>';
+  if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading inbox requests…</td></tr>';
   if (countEl) countEl.textContent = 'Loading…';
   try {
     await loadGrievanceDataAdmin();
-    const snap = await db.collection('grievance_messages')
+    const snap = await db.collection('inbox_requests')
       .orderBy('createdAt', 'desc')
       .limit(250)
       .get();
@@ -2629,7 +2687,7 @@ async function loadGrievances() {
     refreshGrievanceBadge();
   } catch (err) {
     allGrievances = [];
-    if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Failed to load grievances: ${escapeHtml(err.message)}</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Failed to load inbox requests: ${escapeHtml(err.message)}</td></tr>`;
     if (countEl) countEl.textContent = '';
   }
 }
@@ -2652,7 +2710,9 @@ function renderGrievancesAdmin() {
     list = list.filter(g =>
       String(g.candidateEmail || '').toLowerCase().includes(q) ||
       String(g.candidateName || '').toLowerCase().includes(q) ||
+      String(g.sourceLabel || g.requestType || '').toLowerCase().includes(q) ||
       String(g.applicantId || '').toLowerCase().includes(q) ||
+      String(g.lookupValue || '').toLowerCase().includes(q) ||
       String(g.subject || '').toLowerCase().includes(q) ||
       String(g.message || '').toLowerCase().includes(q) ||
       String(g.adminResponse || '').toLowerCase().includes(q)
@@ -2669,20 +2729,22 @@ function renderGrievancesAdmin() {
   setText('grStatDataRows', grievanceDataRecords.length || '0');
   if (countEl) countEl.textContent = `${list.length} shown · ${allGrievances.length} total`;
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No grievance messages match.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No inbox requests match.</td></tr>';
     return;
   }
 
   tbody.innerHTML = list.map(g => {
-    const generated = buildGrievanceResponderDraft(g);
+    const generated = buildGrievanceResponderDraftSync(g);
     const responseText = g.adminResponse || g.adminDraft || generated.response;
     const matched = generated.matchedRecord;
+    const src = generated.source || responderSourceAdmin(g.sourceId || g.requestType) || {};
     const matchHtml = matched
-      ? `<strong>${escapeHtml(generated.confidence)} confidence</strong><div class="invite-meta-sub">${escapeHtml(generated.reason)}</div>
-         <div style="font-size:0.74rem;margin-top:0.35rem;">Row ${escapeHtml(String(matched.rowNum || '—'))} · App ${escapeHtml(String(matched.applicantId || '—'))}<br>${escapeHtml(matched.subject || '—')}<br>Status: <strong>${escapeHtml(grievanceStatusText(matched.status))}</strong>${matched.attendance ? ` · ${escapeHtml(matched.attendance)}` : ''}</div>`
-      : `<strong>${escapeHtml(generated.confidence)} confidence</strong><div class="invite-meta-sub">${escapeHtml(generated.reason)}</div><span style="color:var(--muted);">No matching row</span>`;
-    const asker = `${escapeHtml(g.candidateName || '—')}<div class="invite-meta-sub">${escapeHtml(g.candidateEmail || '—')}</div>${g.applicantId ? `<code style="font-size:0.75rem;">${escapeHtml(String(g.applicantId))}</code>` : ''}`;
-    const question = `<strong>${escapeHtml(g.subject || 'Grievance question')}</strong><div class="request-message-cell" title="${escapeHtml(g.message || '')}">${escapeHtml(String(g.message || '').slice(0, 220))}${String(g.message || '').length > 220 ? '…' : ''}</div>`;
+      ? `<strong>${escapeHtml(src.label || g.sourceLabel || g.requestType || 'Data source')}</strong><div class="invite-meta-sub">${escapeHtml(generated.reason)}</div>
+         <div style="font-size:0.74rem;margin-top:0.35rem;">${renderResponderRecordSummary(src, matched)}</div>`
+      : `<strong>${escapeHtml(src.label || g.sourceLabel || g.requestType || 'Data source')}</strong><div class="invite-meta-sub">${escapeHtml(generated.reason)}</div><span style="color:var(--muted);">No matching row</span>`;
+    const lookup = g.lookupValue || g.applicantId || '';
+    const asker = `${escapeHtml(g.candidateName || '—')}<div class="invite-meta-sub">${escapeHtml(g.candidateEmail || '—')}</div>${lookup ? `<code style="font-size:0.75rem;">${escapeHtml(g.matchLabel || 'Lookup')}: ${escapeHtml(String(lookup))}</code>` : ''}`;
+    const question = `<strong>${escapeHtml(g.subject || 'Inbox request')}</strong><div class="invite-meta-sub">${escapeHtml(g.sourceLabel || src.label || g.requestType || 'Data responder')}</div><div class="request-message-cell" title="${escapeHtml(g.message || '')}">${escapeHtml(String(g.message || '').slice(0, 220))}${String(g.message || '').length > 220 ? '…' : ''}</div>`;
     const disabled = g.status === 'approved' ? 'disabled' : '';
     const action = g.status === 'approved'
       ? `<textarea data-grievance-response="${escapeHtml(g.id)}" rows="7" disabled style="width:100%;min-width:320px;resize:vertical;padding:8px;background:rgba(255,255,255,0.035);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.78rem;">${escapeHtml(responseText)}</textarea>
@@ -2722,9 +2784,9 @@ async function approveGrievanceResponse(id) {
     showAdminToast('Response cannot be empty.', 'error');
     return;
   }
-  const generated = buildGrievanceResponderDraft(item);
+  const generated = await buildGrievanceResponderDraft(item);
   try {
-    await db.collection('grievance_messages').doc(id).set({
+    await db.collection('inbox_requests').doc(id).set({
       status: 'approved',
       adminResponse: response.slice(0, 2000),
       responderDraft: generated.response,
@@ -2732,14 +2794,14 @@ async function approveGrievanceResponse(id) {
         confidence: generated.confidence,
         reason: generated.reason,
         matchedRecord: generated.matchedRecord,
-        source: 'data/grievance_applications.json',
+        source: generated.source?.dataset || item.sourceDataset || '',
       },
       approvedBy: getAdminSessionEmail() || 'admin',
       approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
       candidateReadAt: null,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
-    showAdminToast('Grievance response approved and sent to inbox.', 'success');
+    showAdminToast('Response approved and sent to inbox.', 'success');
     await loadGrievances();
   } catch (err) {
     showAdminToast('Approval failed: ' + err.message, 'error');
@@ -4703,8 +4765,10 @@ document.getElementById('grievancesBody')?.addEventListener('click', function (e
     const id = redraftBtn.getAttribute('data-grievance-redraft');
     const item = allGrievances.find(g => g.id === id);
     if (item) {
-      setGrievanceTextarea(id, buildGrievanceResponderDraft(item).response);
-      showAdminToast('Data draft restored.', 'success');
+      buildGrievanceResponderDraft(item).then(draft => {
+        setGrievanceTextarea(id, draft.response);
+        showAdminToast('Data draft restored.', 'success');
+      }).catch(err => showAdminToast('Draft failed: ' + err.message, 'error'));
     }
     return;
   }

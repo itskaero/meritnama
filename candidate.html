@@ -611,6 +611,7 @@
       margin-bottom: 0.3rem;
     }
     .grievance-field input,
+    .grievance-field select,
     .grievance-field textarea {
       width: 100%;
       padding: 0.65rem 0.9rem;
@@ -624,7 +625,9 @@
       resize: vertical;
     }
     .grievance-field input:focus,
+    .grievance-field select:focus,
     .grievance-field textarea:focus { border-color: var(--border-active); }
+    .grievance-field select option { background: #0d1626; color: var(--text); }
     .grievance-actions {
       display: flex;
       align-items: center;
@@ -1605,24 +1608,31 @@
     </div>
   </div>
 
-  <!-- Candidate inbox and grievance responder -->
+  <!-- Candidate inbox and modular data responder -->
   <div class="profile-card grievance-card" id="grievanceCard">
     <h3>&#128233; Inbox &amp; message to site admin</h3>
     <p class="grievance-sub">
-      Send a grievance-related question to the site admin. The grievance responder prepares a draft from the published grievance data, then an admin reviews, edits if needed, and approves the reply before it appears here and in your site inbox.
+      Choose a data-backed responder, enter the Applicant ID you want checked, and send a message to admin. The system validates the ID against the selected JSON database, drafts a response from that source, and admin reviews/edits before approving it to your inbox.
     </p>
     <div class="grievance-grid">
+      <div class="grievance-field full">
+        <label for="grSource">Request type</label>
+        <select id="grSource">
+          <option value="">Loading responder options...</option>
+        </select>
+        <p id="grSourceHint" style="font-size:0.74rem;color:var(--text-muted);margin-top:0.35rem;"></p>
+      </div>
       <div class="grievance-field">
         <label for="grApplicantId">Applicant ID</label>
-        <input type="number" id="grApplicantId" min="1" placeholder="e.g. 38882" />
+        <input type="number" id="grApplicantId" min="1" placeholder="Enter any applicant ID in the selected database" />
       </div>
       <div class="grievance-field">
         <label for="grSubject">Subject</label>
-        <input type="text" id="grSubject" maxlength="140" placeholder="e.g. Grievance status / rejected application" />
+        <input type="text" id="grSubject" maxlength="140" placeholder="e.g. Please check this applicant status" />
       </div>
       <div class="grievance-field full">
-        <label for="grMessage">Message to grievance responder</label>
-        <textarea id="grMessage" rows="4" maxlength="1200" placeholder="Write your question. Include what changed on the portal, what you need clarified, and any grievance subject/status visible to you."></textarea>
+        <label for="grMessage">Message to admin</label>
+        <textarea id="grMessage" rows="4" maxlength="1200" placeholder="Write your question. You can ask about your own Applicant ID or another Applicant ID, as long as it exists in the selected JSON database."></textarea>
       </div>
     </div>
     <div class="grievance-actions">
@@ -3721,9 +3731,12 @@ document.getElementById('requestMentorBtn')?.addEventListener('click', async () 
   }
 });
 
-// ══ Grievance responder inbox ═════════════════════════════
+// ══ Modular inbox requests / data responder ══════════════
+const INBOX_REQUEST_COLLECTION = 'inbox_requests';
 let grievanceUnsubscribe = null;
 let grievanceThreads = [];
+let responderSources = [];
+const responderDatasetCache = {};
 
 function setGrievanceStatus(message, type = '') {
   const el = document.getElementById('grStatus');
@@ -3745,6 +3758,75 @@ function grievanceStatusLabel(status) {
   return 'Pending admin approval';
 }
 
+async function loadResponderSources() {
+  if (responderSources.length) return responderSources;
+  const res = await fetch('data/responder_sources.json', { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Responder options unavailable (${res.status})`);
+  const payload = await res.json();
+  responderSources = Array.isArray(payload) ? payload : (payload.sources || []);
+  return responderSources;
+}
+
+function responderSourceById(id) {
+  return responderSources.find(s => s.id === id) || null;
+}
+
+function valueAtPath(obj, path) {
+  if (!path) return obj;
+  return String(path).split('.').reduce((acc, key) => acc == null ? acc : acc[key], obj);
+}
+
+async function loadResponderDataset(source) {
+  if (!source?.dataset) throw new Error('Selected responder has no dataset configured.');
+  if (responderDatasetCache[source.id]) return responderDatasetCache[source.id];
+  const res = await fetch(source.dataset, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Selected database could not be loaded (${res.status}).`);
+  const payload = await res.json();
+  const records = valueAtPath(payload, source.recordsPath || '') || payload.records || payload;
+  responderDatasetCache[source.id] = Array.isArray(records) ? records : [];
+  return responderDatasetCache[source.id];
+}
+
+function recordMatchesSource(source, record, lookupValue) {
+  const field = source?.match?.field || 'applicantId';
+  return String(record?.[field] ?? '').trim() === String(lookupValue || '').trim();
+}
+
+async function findResponderRecord(source, lookupValue) {
+  const records = await loadResponderDataset(source);
+  return records.find(r => recordMatchesSource(source, r, lookupValue)) || null;
+}
+
+function populateResponderSourceSelect() {
+  const select = document.getElementById('grSource');
+  if (!select) return;
+  select.innerHTML = responderSources.length
+    ? responderSources.map(s => `<option value="${esc(s.id)}">${esc(s.label || s.id)}</option>`).join('')
+    : '<option value="">No responder sources configured</option>';
+  updateResponderSourceHint();
+}
+
+function updateResponderSourceHint() {
+  const select = document.getElementById('grSource');
+  const hint = document.getElementById('grSourceHint');
+  const applicant = document.getElementById('grApplicantId');
+  const source = responderSourceById(select?.value || '');
+  if (hint) hint.textContent = source?.description || 'Select what database/admin responder should answer from.';
+  if (applicant && source?.match?.label) applicant.placeholder = `Enter ${source.match.label} from selected database`;
+}
+
+async function initResponderSources() {
+  const select = document.getElementById('grSource');
+  try {
+    await loadResponderSources();
+    populateResponderSourceSelect();
+  } catch (e) {
+    if (select) select.innerHTML = '<option value="">Responder options unavailable</option>';
+    setGrievanceStatus(e.message, 'error');
+  }
+  select?.addEventListener('change', updateResponderSourceHint);
+}
+
 function renderGrievanceInbox() {
   const list = document.getElementById('grInboxList');
   const badge = document.getElementById('grInboxBadge');
@@ -3764,7 +3846,7 @@ function renderGrievanceInbox() {
   }
 
   if (!sorted.length) {
-    list.innerHTML = '<div class="grievance-empty">No grievance messages yet. Send a question above to start a thread.</div>';
+    list.innerHTML = '<div class="grievance-empty">No inbox requests yet. Send a message above to start a thread.</div>';
     return;
   }
 
@@ -3772,7 +3854,8 @@ function renderGrievanceInbox() {
     const isApproved = t.status === 'approved' && t.adminResponse;
     const unread = isApproved && !t.candidateReadAt;
     const meta = [
-      `Applicant ID: ${esc(t.applicantId || 'not set')}`,
+      esc(t.sourceLabel || t.requestType || 'Data responder'),
+      `${esc(t.matchLabel || 'Applicant ID')}: ${esc(t.lookupValue || t.applicantId || 'not set')}`,
       formatGrievanceDate(t.createdAt),
       grievanceStatusLabel(t.status || 'pending'),
     ].join(' · ');
@@ -3780,7 +3863,7 @@ function renderGrievanceInbox() {
       ? `<div class="grievance-reply"><strong>Admin-approved response:</strong>\n${esc(t.adminResponse)}</div>`
       : '<div class="grievance-reply" style="border-left-color:rgba(245,200,66,0.45);color:var(--text-muted);">Waiting for admin approval. You will see the reply here after review.</div>';
     return `<article class="grievance-thread${unread ? ' unread' : ''}">
-      <h4>${esc(t.subject || 'Grievance message')}</h4>
+      <h4>${esc(t.subject || 'Inbox request')}</h4>
       <div class="grievance-meta">${esc(meta)}</div>
       <div class="grievance-question"><strong>Your message:</strong>\n${esc(t.message || '')}</div>
       ${reply}
@@ -3799,21 +3882,21 @@ function subscribeGrievanceInbox() {
   if (grievanceUnsubscribe) grievanceUnsubscribe();
   const list = document.getElementById('grInboxList');
   if (list) list.innerHTML = '<div class="grievance-empty">Loading inbox...</div>';
-  grievanceUnsubscribe = db.collection('grievance_messages')
+  grievanceUnsubscribe = db.collection(INBOX_REQUEST_COLLECTION)
     .where('candidateEmail', '==', email)
     .limit(50)
     .onSnapshot(snap => {
       grievanceThreads = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       renderGrievanceInbox();
     }, err => {
-      console.warn('Grievance inbox unavailable:', err);
+      console.warn('Inbox request feed unavailable:', err);
       if (list) list.innerHTML = `<div class="grievance-empty">Could not load inbox: ${esc(err.message || err)}</div>`;
     });
 }
 
 function markGrievanceRead(id) {
   if (!id) return;
-  db.collection('grievance_messages').doc(id).set({
+  db.collection(INBOX_REQUEST_COLLECTION).doc(id).set({
     candidateReadAt: firebase.firestore.FieldValue.serverTimestamp(),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
   }, { merge: true }).catch(() => {});
@@ -3823,10 +3906,20 @@ async function submitGrievanceMessage() {
   const email = getSessionEmail();
   if (!email) return;
   const btn = document.getElementById('grSendBtn');
-  const applicantId = document.getElementById('grApplicantId')?.value?.trim() || document.getElementById('pfApplicantId')?.value?.trim() || '';
-  const subject = document.getElementById('grSubject')?.value?.trim() || 'Grievance question';
+  const sourceId = document.getElementById('grSource')?.value || '';
+  const source = responderSourceById(sourceId);
+  const lookupValue = document.getElementById('grApplicantId')?.value?.trim() || '';
+  const subject = document.getElementById('grSubject')?.value?.trim() || 'Inbox request';
   const message = document.getElementById('grMessage')?.value?.trim() || '';
   const candidateName = document.getElementById('pfName')?.value?.trim() || document.getElementById('profileDisplayName')?.textContent?.trim() || email;
+  if (!source) {
+    setGrievanceStatus('Select a request type first.', 'error');
+    return;
+  }
+  if (!lookupValue) {
+    setGrievanceStatus(`Enter ${source.match?.label || 'the lookup value'} to check.`, 'error');
+    return;
+  }
   if (!message) {
     setGrievanceStatus('Please write a message for admin review.', 'error');
     return;
@@ -3836,14 +3929,27 @@ async function submitGrievanceMessage() {
     return;
   }
   if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
-  setGrievanceStatus('Sending to grievance responder...');
+  setGrievanceStatus('Checking selected JSON database...');
   try {
-    await db.collection('grievance_messages').add({
+    const matchedRecord = await findResponderRecord(source, lookupValue);
+    if (!matchedRecord) {
+      throw new Error(`${source.match?.label || 'Lookup value'} ${lookupValue} does not exist in "${source.label || source.id}".`);
+    }
+    setGrievanceStatus('Sending to admin...');
+    await db.collection(INBOX_REQUEST_COLLECTION).add({
       candidateEmail: email,
       candidateName,
-      applicantId,
+      requestType: source.id,
+      sourceId: source.id,
+      sourceLabel: source.label || source.id,
+      sourceDataset: source.dataset || '',
+      matchField: source.match?.field || 'applicantId',
+      matchLabel: source.match?.label || 'Applicant ID',
+      lookupValue,
+      applicantId: source.match?.field === 'applicantId' ? lookupValue : '',
       subject,
       message: message.slice(0, 1200),
+      matchedRecord,
       status: 'pending',
       source: 'candidate_profile',
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -3860,19 +3966,12 @@ async function submitGrievanceMessage() {
 
 // Init
 loadDataLists();
-loadProfile().then(() => {
-  const pfApplicantId = document.getElementById('pfApplicantId')?.value || '';
-  const grApplicantId = document.getElementById('grApplicantId');
-  if (grApplicantId && pfApplicantId && !grApplicantId.value) grApplicantId.value = pfApplicantId;
-});
+loadProfile();
 loadMyContributions();
 document.getElementById('invitePin').value = generateInvitePin();
 loadInvitePanel();
 document.getElementById('grSendBtn')?.addEventListener('click', submitGrievanceMessage);
-document.getElementById('pfApplicantId')?.addEventListener('input', function () {
-  const grApplicantId = document.getElementById('grApplicantId');
-  if (grApplicantId && !grApplicantId.value) grApplicantId.value = this.value;
-});
+initResponderSources();
 subscribeGrievanceInbox();
 </script>
 <script src="access-request.js"></script>

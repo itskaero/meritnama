@@ -850,9 +850,9 @@
         warningDate(g.approvedAt || g.createdAt) || 'Just now',
       ].filter(Boolean).join(' · ');
       return `<article class="mn-warning-item success${readClass}">
-        <h4>${escapeHtml(g.subject || 'Grievance response')}</h4>
+        <h4>${escapeHtml(g.subject || g.sourceLabel || 'Inbox response')}</h4>
         <p>${escapeHtml(g.adminResponse || '')}</p>
-        <div class="mn-warning-replies">Your message: ${escapeHtml(String(g.message || '').slice(0, 120))}</div>
+        <div class="mn-warning-replies">${escapeHtml(g.sourceLabel || 'Data responder')} · Your message: ${escapeHtml(String(g.message || '').slice(0, 120))}</div>
         <div class="mn-warning-meta">
           <span>${escapeHtml(meta)}</span>
           ${g.candidateReadAt ? '<span>Read</span>' : `<button class="mn-warning-read-btn" type="button" data-grievance-read="${escapeHtml(g.id)}">Mark read</button>`}
@@ -905,7 +905,7 @@
     if (state.grievanceEmail === email && state.grievanceUnsubscribe) return;
     if (state.grievanceUnsubscribe) state.grievanceUnsubscribe();
     state.grievanceEmail = email;
-    state.grievanceUnsubscribe = db.collection('grievance_messages')
+    state.grievanceUnsubscribe = db.collection('inbox_requests')
       .where('candidateEmail', '==', email)
       .limit(50)
       .onSnapshot(function (snap) {
@@ -914,7 +914,7 @@
         });
         renderWarnings();
       }, function (err) {
-        console.warn('[MeritNama] Grievance inbox unavailable:', err && err.message ? err.message : err);
+        console.warn('[MeritNama] Inbox request feed unavailable:', err && err.message ? err.message : err);
       });
   }
 
@@ -932,7 +932,7 @@
     if (!id) return;
     const db = getDb();
     if (!db) return;
-    db.collection('grievance_messages').doc(id).set({
+    db.collection('inbox_requests').doc(id).set({
       candidateReadAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }, { merge: true }).catch(function () {});
