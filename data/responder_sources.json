@@ -3,9 +3,9 @@
   "sources": [
     {
       "id": "grievance_verification",
-      "label": "Grievance verification status",
-      "description": "Check grievance verification status by Applicant ID from the uploaded grievance verification dataset.",
-      "dataset": "data/grievance_applications.json",
+      "label": "Grievance verification outcome",
+      "description": "Check the final verification outcome for a grievance by Applicant ID — includes status, resolution comments, and hearing details.",
+      "dataset": "data/grievance_verification.json",
       "recordsPath": "records",
       "match": {
         "field": "applicantId",
@@ -13,23 +13,24 @@
         "inputType": "number",
         "required": true
       },
-      "titleField": "subject",
+      "titleField": "title",
       "statusField": "status",
       "emptyStatusValues": ["", "-"],
       "displayFields": [
-        { "field": "rowNum", "label": "Row" },
+        { "field": "rowNo", "label": "Row" },
         { "field": "applicantId", "label": "Applicant ID" },
         { "field": "name", "label": "Name" },
-        { "field": "subject", "label": "Subject" },
+        { "field": "title", "label": "Title" },
         { "field": "status", "label": "Status" },
-        { "field": "attendance", "label": "Attendance / hearing" },
-        { "field": "applyDateIso", "label": "Applied at" }
+        { "field": "comments", "label": "Comments" },
+        { "field": "dated", "label": "Filed at" },
+        { "field": "datedStatus", "label": "Last updated" }
       ],
       "response": {
         "intro": "We matched your request to {matchLabel} {matchValue}.",
-        "statusLine": "The available data shows {statusLabel}: {statusValue}.",
-        "emptyStatusText": "No final decision recorded",
-        "extraLine": "Dataset subject: {subject}. Attendance/hearing: {attendance}.",
+        "statusLine": "Verification status: {statusValue}.",
+        "emptyStatusText": "No verification outcome recorded",
+        "extraLine": "Title: {title}\nComments: {comments}\nFiled: {dated}\nStatus: {statusValue}",
         "footer": "Please verify the final outcome on the official PHF/PRP portal, because MeritNama can only explain the data snapshot available to this site. This response was reviewed and approved by admin before delivery."
       }
     }

@@ -86,6 +86,23 @@
         </div>`,
     }));
 
+    frag.appendChild(buildSection({
+      id: 'cand-verification-config',
+      icon: '\u{1F50D}',
+      title: 'Candidate Verification Data',
+      desc: 'Controls whether grievance verification records appear in the candidate detail modal (candidate pool tab). Stored in <code>notifications/candidate_verification_config</code>.',
+      html: `
+        <label class="toggle-row" style="margin-bottom:0.75rem;">
+          <input type="checkbox" id="candVerifEnabled" checked />
+          <span style="font-weight:600;">Show grievance verification data in candidate modal</span>
+          <span style="font-size:0.78rem;color:var(--text-muted);margin-left:0.5rem;">(when enabled, verification records from grievance_verification.json appear when viewing a candidate in the pool tab)</span>
+        </label>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+          <button id="candVerifSaveBtn" class="btn-primary" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save Verification Setting</button>
+          <span id="candVerifStatus" style="font-size:0.8rem;color:var(--text-muted);align-self:center;"></span>
+        </div>`,
+    }));
+
     // Insert before the last child (usually the script area)
     container.appendChild(frag);
 
@@ -99,6 +116,9 @@
 
       const simReloadBtn = document.getElementById('simModeReloadBtn');
       if (simReloadBtn) simReloadBtn.addEventListener('click', loadSimModeConfig);
+
+      const candVerifBtn = document.getElementById('candVerifSaveBtn');
+      if (candVerifBtn) candVerifBtn.addEventListener('click', saveCandVerifConfig);
     }, 100);
   }
 
@@ -191,9 +211,42 @@
     }
   }
 
+  // ── Candidate Verification Config ──
+
+  function setCandVerifStatus(msg, color) {
+    const el = document.getElementById('candVerifStatus');
+    if (el) { el.textContent = msg; if (color) el.style.color = color; }
+  }
+
+  async function loadCandVerifConfig() {
+    try {
+      const snap = await db.collection('notifications').doc('candidate_verification_config').get();
+      const enabled = snap.exists ? snap.data().enabled !== false : true;
+      const cb = document.getElementById('candVerifEnabled');
+      if (cb) cb.checked = enabled;
+      setCandVerifStatus('Loaded verification config.', 'var(--neon-green)');
+    } catch (e) {
+      console.error('[AdminToggles] Error loading verification config:', e);
+      setCandVerifStatus('Error loading: ' + e.message, 'var(--neon-pink)');
+    }
+  }
+
+  async function saveCandVerifConfig() {
+    const cb = document.getElementById('candVerifEnabled');
+    if (!cb) return;
+    setCandVerifStatus('Saving...');
+    try {
+      await db.collection('notifications').doc('candidate_verification_config').set({ enabled: cb.checked }, { merge: true });
+      setCandVerifStatus('Verification config saved. Candidate pool updates live.', 'var(--neon-green)');
+    } catch (e) {
+      setCandVerifStatus('Error saving: ' + e.message, 'var(--neon-pink)');
+    }
+  }
+
   function loadConfigs() {
     loadWatermarkConfig();
     loadSimModeConfig();
+    loadCandVerifConfig();
   }
 
   // ── Start ──

@@ -2615,14 +2615,29 @@ function buildResponderDraftFromRecord(ticket, source, record, confidence, reaso
     subject: record?.[titleField] || '',
     attendance: record?.attendance || '',
     sourceLabel: source.label || source.id,
+    ...record,
   };
   const responseCfg = source.response || {};
-  const lines = [
-    templateReplace(responseCfg.intro || 'We matched your request to {matchLabel} {matchValue}.', values),
-    templateReplace(responseCfg.statusLine || 'The available data shows {statusLabel}: {statusValue}.', values),
-    templateReplace(responseCfg.extraLine || '', values),
-    templateReplace(responseCfg.footer || 'This response was reviewed and approved by admin before delivery.', values),
-  ].filter(line => String(line || '').trim());
+  var draftLines = [
+    { tmpl: responseCfg.intro || 'We matched your request to {matchLabel} {matchValue}.', check: true },
+    { tmpl: responseCfg.statusLine || 'The available data shows {statusLabel}: {statusValue}.', check: true },
+    { tmpl: responseCfg.extraLine || '', check: true },
+    { tmpl: responseCfg.footer || 'This response was reviewed and approved by admin before delivery.', check: true },
+  ];
+  const lines = draftLines.filter(function(entry) {
+    if (!entry.tmpl) return false;
+    if (entry.check) {
+      var refs = entry.tmpl.match(/\{(\w+)\}/g);
+      if (refs) {
+        var hasContent = refs.some(function(m) {
+          var key = m.slice(1, -1);
+          return values[key] != null && String(values[key]).trim().length > 0;
+        });
+        if (!hasContent) return false;
+      }
+    }
+    return true;
+  }).map(function(entry) { return templateReplace(entry.tmpl, values); });
   return {
     response: lines.join('\n\n'),
     confidence,

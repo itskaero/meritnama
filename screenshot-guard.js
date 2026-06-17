@@ -67,7 +67,7 @@
         pointer-events: none;
         background-repeat: repeat;
         background-position: 0 0;
-        opacity: 0.06;
+        opacity: 0.16;
         mix-blend-mode: difference;
         user-select: none;
         -webkit-user-select: none;
@@ -81,14 +81,14 @@
         pointer-events: none;
         background-repeat: repeat;
         background-position: 0 0;
-        opacity: 0.07;
+        opacity: 0.18;
         border-radius: inherit;
         user-select: none;
         -webkit-user-select: none;
       }
       @media print {
-        #mnWatermark { opacity: 0.12 !important; mix-blend-mode: normal !important; }
-        .mn-modal-watermark { opacity: 0.14 !important; }
+        #mnWatermark { opacity: 0.18 !important; mix-blend-mode: normal !important; }
+        .mn-modal-watermark { opacity: 0.20 !important; }
       }
       #mnPrivacyShield {
         position: fixed;
@@ -328,8 +328,6 @@
   }
 
   function buildWatermarkSvg(line1, line2) {
-    // A single tile that is repeated across the viewport. The text is rotated so
-    // it is hard to crop out of a screenshot, and kept faint so it stays subtle.
     const tileW = 340;
     const tileH = 200;
     const safe1 = escapeHtml(line1 || '');
@@ -338,9 +336,9 @@
       `<svg xmlns="http://www.w3.org/2000/svg" width="${tileW}" height="${tileH}" viewBox="0 0 ${tileW} ${tileH}">` +
         `<g transform="rotate(-30 ${tileW / 2} ${tileH / 2})" ` +
           `fill="#808080" font-family="system-ui,-apple-system,Segoe UI,sans-serif" ` +
-          `font-size="14" font-weight="600" text-anchor="middle">` +
+          `font-size="16" font-weight="600" text-anchor="middle">` +
           `<text x="${tileW / 2}" y="${tileH / 2 - 6}">${safe1}</text>` +
-          (safe2 ? `<text x="${tileW / 2}" y="${tileH / 2 + 14}" font-size="11" font-weight="400">${safe2}</text>` : '') +
+          (safe2 ? `<text x="${tileW / 2}" y="${tileH / 2 + 14}" font-size="13" font-weight="400">${safe2}</text>` : '') +
         `</g>` +
       `</svg>`;
     return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);

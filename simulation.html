@@ -634,6 +634,51 @@
     .marks-exp-val {
       text-align: right; font-variant-numeric: tabular-nums; color: var(--neon-cyan, #4db8d9);
     }
+    .grievance-records {
+      border: 1px solid rgba(232,166,39,0.25); border-radius: var(--radius, 10px);
+      padding: 10px 14px; margin-bottom: 18px; margin-top: 0.75rem; font-size: 0.82rem;
+      background: rgba(232,166,39,0.03);
+    }
+    .grievance-records summary {
+      cursor: pointer; user-select: none; color: var(--neon-gold, #e8a627); font-weight: 600;
+    }
+    .grievance-records summary::before {
+      content: "⚖\FE0E "; color: var(--neon-gold, #e8a627);
+    }
+    .grievance-records .grievance-hint {
+      opacity: 0.5; font-size: 0.75rem; font-weight: 400; color: var(--text-muted);
+    }
+    .grievance-body {
+      display: flex; flex-direction: column; gap: 8px; margin-top: 10px;
+    }
+    .grievance-record {
+      border: 1px solid rgba(232,166,39,0.12); border-radius: 8px;
+      padding: 10px 12px; background: rgba(255,255,255,0.015);
+    }
+    .grievance-record > div {
+      line-height: 1.6; font-size: 0.8rem;
+    }
+    .grievance-record strong {
+      color: var(--text-muted); font-weight: 600;
+    }
+    .grievance-status-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .grievance-status-badge.accepted {
+      background: rgba(62,207,142,0.12); color: var(--neon-green, #3ecf8e);
+      border: 1px solid rgba(62,207,142,0.2);
+    }
+    .grievance-status-badge.pending {
+      background: rgba(232,166,39,0.1); color: var(--neon-gold, #e8a627);
+      border: 1px solid rgba(232,166,39,0.18);
+    }
+    .grievance-status-badge.other {
+      background: rgba(255,255,255,0.04); color: var(--text-muted);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
     .marks-exp-section-title {
       font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
       color: var(--text-muted); margin: 0 0 6px;
@@ -2615,7 +2660,7 @@
 <header class="site-header">
   <div class="header-inner">
     <div class="logo-area">
-      <a href="index.html"><img src="logo.png" class="logo-img" alt="MeritNama" /></a>
+      <a href="app.html"><img src="logo.png" class="logo-img" alt="MeritNama" /></a>
     </div>
     <div class="header-meta" id="headerMeta">
       <span class="badge badge-info" id="dataStatus">Loading&hellip;</span>
@@ -2645,7 +2690,7 @@
 <!-- ═══════════ NAV ═══════════ -->
 <nav class="tab-nav sim-tab-nav" id="mainNav">
   <div class="sim-nav-section sim-nav-back">
-    <a href="index.html" class="tab-btn back-btn">&#8592; Historical Data</a>
+    <a href="app.html" class="tab-btn back-btn">&#8592; Historical Data</a>
   </div>
   <div class="sim-nav-section sim-nav-primary" aria-label="Primary induction tools">
     <span class="sim-nav-label">Start</span>
@@ -2681,7 +2726,7 @@
   &middot;
   <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a>
   &middot;
-  <span class="author-bar-note">Induction Portal live simulation &mdash; <a href="index.html">historical merit data &rarr;</a></span>
+  <span class="author-bar-note">Induction Portal live simulation &mdash; <a href="app.html">historical merit data &rarr;</a></span>
 </div>
 
 <!-- ═══════════ DATA UPDATE TICKER ═══════════ -->
@@ -3748,7 +3793,7 @@
 </div>
 
 <footer class="site-footer">
-  <p>MeritNama &middot; Induction 21 &middot; <a href="index.html">Historical Data &rarr;</a></p>
+  <p>MeritNama &middot; Induction 21 &middot; <a href="app.html">Historical Data &rarr;</a></p>
   <p style="margin-top:4px;font-size:0.72rem;opacity:0.5">
     Preference data sourced from the PHF public API. PII removed. Simulation results are estimates only &mdash; not official.
     Placements depend on seat counts and pool completeness.

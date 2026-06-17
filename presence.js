@@ -11,7 +11,8 @@
 
   const PAGE_TITLES = {
     '/':                'Main Dashboard',
-    '/index.html':      'Main Dashboard',
+    '/app.html':        'Main Dashboard',
+    '/index.html':      'Landing',
     '/reviews.html':    'Reviews & Forum',
     '/simulation.html': 'Merit Simulation',
     '/request-access.html': 'Request Access',

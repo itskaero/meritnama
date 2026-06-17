@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MeritNama &#8211; Residency Induction Analytics</title>
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="auth.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>firebase.initializeApp(firebaseConfig);</script>
+</head>
+<body>
+
+<!-- ======= HEADER ======= -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <img src="logo.png" class="logo-img" alt="Meritnama" />
+      <!--<div>
+        <h1>MeritNama</h1>
+        <p class="header-sub">PRP Induction Analytics</p>
+      </div>-->
+    </div>
+    <div class="header-meta" id="headerMeta">
+      <span class="badge badge-info" id="dataStatus">Loading data&hellip;</span>
+      <button class="notif-bell-btn" id="notifBellBtn" title="Subscribe to data updates" aria-label="Subscribe to data updates">
+        <svg class="bell-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="17" height="17">
+          <path d="M18 8A6 6 0 1 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="bell-label" id="bellLabel">Alerts</span>
+        <span class="bell-dot" id="bellDot" style="display:none;"></span>
+      </button>
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ======= NAV ======= -->
+<nav class="tab-nav" id="mainNav">
+  <button class="tab-btn active" data-tab="start">&#127891; Start Here</button>
+  <button class="tab-btn" data-tab="merit">&#128202; Merit Table</button>
+  <button class="tab-btn" data-tab="predictor">&#127919; My Prediction</button>
+  <button class="tab-btn" data-tab="reverse">&#128269; What Do I Need?</button>
+  <button class="tab-btn" data-tab="calculator">&#129518; Calculator</button>
+  <button class="tab-btn" data-tab="compare">&#9878; Compare</button>
+  <button class="tab-btn" data-tab="current">&#128203; Previous Merit Lists</button>
+  <a href="simulation.html" class="tab-btn">&#127973; Induction Portal</a>
+  <a href="accreditation.html" class="tab-btn">&#9989; Accreditation</a>
+  <button class="tab-btn" data-tab="policy">&#128196; Policy</button>
+  <button class="tab-btn" data-tab="guide">&#10067; Guide</button>
+  <a href="reviews.html" class="tab-btn">&#128172; Discussion</a>
+  <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
+</nav>
+
+<!-- ======= LIVE UPDATE BANNER ======= -->
+<div id="liveUpdateBanner" class="live-update-banner" style="display:none;" role="alert" aria-live="polite">
+  <span class="lub-icon" id="lubIcon">&#128276;</span>
+  <span class="lub-text" id="lubText"></span>
+  <a class="lub-link" id="lubLink" href="#" style="display:none;"></a>
+  <button class="lub-close" id="lubClose" aria-label="Dismiss">&times;</button>
+</div>
+<div class="author-bar">
+  Independent, community-built tool by
+  <a href="https://github.com/itskaero" target="_blank" rel="noopener">@itskaero</a>
+  &middot;
+  <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a>
+  &middot;
+  <span class="author-bar-note">Evolved from <em>prpdatastat</em> &mdash; now trend-based from official PHF gazette &amp; merit lists</span>
+</div>
+
+<!-- ======= VERSE BANNER ======= -->
+<div class="daily-verse hidden" id="dailyVerse"></div>
+
+<!-- ======= LOADING ======= -->
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-box">
+    <div class="loading-brand">
+      <img src="logo.png" class="loading-logo-img" alt="Meritnama" />
+      <h2>MeritNama</h2>
+      <p>PRP Induction Analytics</p>
+    </div>
+    <div class="loading-progress-wrap">
+      <div class="loading-progress-bar" id="loadingBar"></div>
+    </div>
+    <p class="loading-stage" id="loadingDetail">Initialising&hellip;</p>
+    <p class="loading-tip"   id="loadingTip"></p>
+  </div>
+</div>
+
+<main class="main-content">
+
+  <!-- ============================================================
+       TAB 0 : START HERE
+  ============================================================ -->
+  <section class="tab-content active" id="tab-start">
+    <div class="start-hero">
+      <div class="start-hero-copy">
+        <span class="start-kicker">New to MeritNama?</span>
+        <h2>Start here to understand the portal, your merit, and your options.</h2>
+        <p>Use this dashboard as a step-by-step companion: calculate your score, compare it with historical closing merits, explore current induction data, and then move into the live Induction Portal tools.</p>
+        <div class="start-actions">
+          <button class="btn btn-primary btn-large" data-tab="calculator">Calculate my merit</button>
+          <button class="btn btn-large" data-tab="guide">Read the full guide</button>
+          <a class="btn btn-large" href="simulation.html">Open Induction Portal</a>
+        </div>
+      </div>
+      <div class="start-hero-panel">
+        <div class="start-panel-label">Recommended first session</div>
+        <ol class="start-checklist">
+          <li>Calculate or enter your merit score.</li>
+          <li>Run My Prediction for Safe, Target, and Reach options.</li>
+          <li>Use What Do I Need? for specific specialty goals.</li>
+          <li>Open the Induction Portal guide before using live simulation tools.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="start-grid">
+      <article class="start-card">
+        <div class="start-card-icon">&#129518;</div>
+        <h3>1. Calculate your merit</h3>
+        <p>Use the active policy calculator to estimate your score from marks, experience, publications, and other components.</p>
+        <button class="start-link" data-tab="calculator">Go to Calculator &rarr;</button>
+      </article>
+      <article class="start-card">
+        <div class="start-card-icon">&#127919;</div>
+        <h3>2. Get a personal prediction</h3>
+        <p>Compare your score against historical cutoffs and get Safe, Target, and Reach options with trend confidence.</p>
+        <button class="start-link" data-tab="predictor">Analyze my score &rarr;</button>
+      </article>
+      <article class="start-card">
+        <div class="start-card-icon">&#128269;</div>
+        <h3>3. Check a target seat</h3>
+        <p>Pick a program, quota, specialty, and hospital to see what score has historically been required.</p>
+        <button class="start-link" data-tab="reverse">Use What Do I Need? &rarr;</button>
+      </article>
+      <article class="start-card">
+        <div class="start-card-icon">&#127973;</div>
+        <h3>4. Learn the induction portal</h3>
+        <p>Open the portal guide to understand candidate pool, preferences, seat allocation, schedules, hospitals, and chat.</p>
+        <a class="start-link" href="simulation.html">Open portal guide &rarr;</a>
+      </article>
+    </div>
+
+    <div class="start-path card">
+      <div>
+        <h3>What each main area is for</h3>
+        <p>Follow this map if you recently joined and are unsure where to begin.</p>
+      </div>
+      <div class="start-path-list">
+        <div class="start-path-item"><strong>Merit Table</strong><span>Browse historical cutoffs by specialty, hospital, program, and quota.</span></div>
+        <div class="start-path-item"><strong>Previous Merit Lists</strong><span>Browse opening and closing merits from completed induction cycles.</span></div>
+        <div class="start-path-item"><strong>Accreditation</strong><span>Check training recognition before shortlisting hospitals.</span></div>
+        <div class="start-path-item"><strong>Discussion</strong><span>Ask the community about hospitals, preferences, and updates.</span></div>
+      </div>
+    </div>
+
+    <div class="start-previous-merits card" style="margin-top: 24px;">
+      <h3>All Previous Induction Cycles</h3>
+      <p style="color:var(--text-muted);margin-bottom:14px">Closing merit trends across every induction — see how the landscape changes.</p>
+      <div class="induction-summary-grid" id="inductionSummaryGrid">
+        <div style="text-align:center;padding:20px;color:var(--text-muted)">Loading induction data&hellip;</div>
+      </div>
+    </div>
+
+    <div class="guide-warning start-disclaimer">
+      <strong>&#9888;&#65039; Important:</strong> MeritNama is an independent community tool. Use it for orientation and planning, then verify eligibility, schedule, seat counts, and official merit lists directly with PHF / PMDC / PGMI sources.
+    </div>
+  </section>
+
+  <!-- ============================================================
+       TAB 1 : MERIT TABLE
+  ============================================================ -->
+  <section class="tab-content" id="tab-merit">
+
+    <!-- Toolbar row -->
+    <div class="mt-toolbar">
+      <div class="mt-filters">
+        <select id="mtProgram" class="mt-filter-sel">
+          <option value="">All Programs</option>
+        </select>
+        <select id="mtQuota" class="mt-filter-sel">
+          <option value="">All Quotas</option>
+        </select>
+        <select id="mtInduction" class="mt-filter-sel"></select>
+        <input type="text" id="mtSpecSearch" placeholder="Specialty&hellip;"  class="mt-filter-input" />
+        <input type="text" id="mtHospSearch" placeholder="Hospital&hellip;"   class="mt-filter-input" />
+        <div class="mt-display-toggle">
+          <button class="mt-toggle-btn active" data-view="pct">% of Max</button>
+          <button class="mt-toggle-btn"        data-view="raw">Raw</button>
+        </div>
+      </div>
+      <span class="mt-count" id="mtCount"></span>
+    </div>
+
+    <!-- Two-pane layout: table + sidebar -->
+    <div class="mt-layout" id="mtLayout">
+
+      <div class="mt-main" id="mtMain">
+        <div class="table-wrap mt-table-wrap">
+          <table class="data-table mt-table" id="mtTable">
+            <thead id="mtHead"></thead>
+            <tbody id="mtBody">
+              <tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text-muted)">Loading&hellip;</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Slide-in sidebar detail panel -->
+      <aside class="mt-sidebar hidden" id="mtSidebar">
+        <div class="mt-sidebar-inner">
+          <button class="mt-sidebar-close" id="mtSidebarClose" title="Close">&times;</button>
+          <div id="mtSidebarContent"></div>
+          <div class="mt-sidebar-chart-wrap">
+            <canvas id="mtSidebarChart" height="200"></canvas>
+          </div>
+        </div>
+      </aside>
+
+    </div><!-- /mt-layout -->
+  </section>
+
+  <!-- ============================================================
+       TAB 2 : MY PREDICTION
+  ============================================================ -->
+  <section class="tab-content" id="tab-predictor">
+    <div class="section-header">
+      <h2>My Prediction</h2>
+      <p>Enter your merit score to see your percentile ranking and a personalised list of safe, target, and reach options &#8212; with year-on-year trend and confidence for each combination.</p>
+    </div>
+
+    <!-- Input card -->
+    <div class="card input-card">
+      <div class="input-grid">
+        <div class="form-group">
+          <label for="predMerit">Merit Score</label>
+          <input type="number" id="predMerit" placeholder="e.g. 28.5" step="0.01" min="0" max="200" />
+          <span class="pred-merit-pct hidden" id="predMeritPct"></span>
+        </div>
+        <div class="form-group">
+          <label for="predProgram">Program</label>
+          <select id="predProgram"><option value="">All Programs</option></select>
+          <span class="select-all-hint" id="predProgramHint">All programs included &mdash; results may overlap</span>
+        </div>
+        <div class="form-group">
+          <label for="predQuota">Quota</label>
+          <select id="predQuota"><option value="">All Quotas</option></select>
+          <span class="select-all-hint" id="predQuotaHint">All quotas included &mdash; same hospital may appear in multiple columns</span>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-large" id="predBtn">Analyze My Score</button>
+      <div id="predRecentBar" class="recent-scores-bar hidden">
+        <span class="recent-label">Recent:</span>
+        <div id="predRecentList" class="recent-chips"></div>
+        <button class="recent-clear" id="predClearRecent">&times; Clear</button>
+      </div>
+    </div>
+
+    <!-- Percentile hero (revealed after analysis) -->
+    <div id="predHero" class="pred-hero hidden">
+      <div class="pred-hero-left">
+        <div class="pred-pct-wrap">
+          <div class="pred-pct-number" id="predPctNum">&ndash;</div>
+          <div class="pred-pct-label">Percentile</div>
+        </div>
+        <div class="pred-hero-band" id="predBandVal">&ndash;</div>
+        <div class="pred-conf-note" id="predConfNote"></div>
+      </div>
+      <div class="pred-hero-right">
+        <div class="pred-hero-stats">
+          <div class="pred-hero-stat">
+            <div class="pred-hero-val pred-hero-safe-val"   id="predSafeCount">&ndash;</div>
+            <div class="pred-hero-lbl">&#128737; Safe</div>
+          </div>
+          <div class="pred-hero-stat">
+            <div class="pred-hero-val pred-hero-target-val" id="predTargetCount">&ndash;</div>
+            <div class="pred-hero-lbl">&#127919; Target</div>
+          </div>
+          <div class="pred-hero-stat">
+            <div class="pred-hero-val pred-hero-reach-val"  id="predReachCount">&ndash;</div>
+            <div class="pred-hero-lbl">&#128640; Reach</div>
+          </div>
+        </div>
+        <div class="pred-dist-wrap">
+          <canvas id="predDistChart" height="110"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Policy notice -->
+    <div id="predPolicyNotice" class="policy-notice hidden"></div>
+
+    <!-- Results section -->
+    <div id="predResults" class="hidden">
+      <!-- How to read a card -->
+      <div class="pred-legend">
+        <div class="pred-legend-title">How to read a card</div>
+        <div class="pred-legend-items">
+          <span class="pred-legend-item"><span class="pred-legend-swatch swatch-safe"></span> Safe &mdash; your score comfortably exceeds avg</span>
+          <span class="pred-legend-item"><span class="pred-legend-swatch swatch-target"></span> Target &mdash; within &plusmn;5% of avg, worth applying</span>
+          <span class="pred-legend-item"><span class="pred-legend-swatch swatch-reach"></span> Reach &mdash; avg is higher, but trend may help</span>
+        </div>
+        <div class="pred-legend-row">
+          <code class="pred-legend-ex">Avg: 49.3%</code><span> Historical average closing merit (as % of max marks)</span>
+        </div>
+        <div class="pred-legend-row">
+          <code class="pred-legend-ex delta-safe">+25.1%</code><span> Your score minus avg &mdash; <span class="delta-safe">green</span> = above avg, <span class="delta-reach">amber</span> = below avg</span>
+        </div>
+        <div class="pred-legend-row">
+          <code class="pred-legend-ex trend-falling">&#8595; 47.8&ndash;50.8%</code><span> Projected range for next induction &mdash; <span class="trend-falling">&#8595; falling</span> or <span class="trend-rising">&#8593; rising</span> trend</span>
+        </div>
+        <div class="pred-legend-row">
+          <code class="pred-legend-ex conf-low">Low</code> <code class="pred-legend-ex conf-medium">Medium</code> <code class="pred-legend-ex conf-high">High</code><span> Confidence based on years of data available (4+ yrs = High)</span>
+        </div>
+      </div>
+      <!-- Quota warning -->
+      <div id="predQuotaWarn" class="pred-quota-warn hidden">
+        &#9888;&#65039; <strong>No quota selected.</strong> The same hospital may appear in multiple columns because each provincial quota has a different historical average. Select a quota for a focused view.
+      </div>
+      <div class="pred-results-toolbar">
+        <div class="tab-pills">
+          <button class="pill active" data-filter="all">All</button>
+          <button class="pill" data-filter="safe">&#128737; Safe</button>
+          <button class="pill" data-filter="target">&#127919; Target</button>
+          <button class="pill" data-filter="reach">&#128640; Reach</button>
+        </div>
+        <input type="text" id="predSearch" placeholder="Filter specialty / hospital&hellip;" class="search-input" />
+      </div>
+      <div id="predBuckets" class="pred-buckets pred-buckets-3col"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       TAB 3 : CALCULATOR
+  ============================================================ -->
+  <section class="tab-content" id="tab-calculator">
+    <div class="section-header">
+      <h2>Merit Calculator</h2>
+      <p>Estimate your merit score from individual components. Your saved score auto-fills the Prediction tab.</p>
+    </div>
+
+    <div id="calcSavedBanner" class="calc-saved-banner hidden">
+      <span class="calc-saved-label">&#9989; Saved Merit:</span>
+      <strong class="calc-saved-score" id="calcSavedScore"></strong>
+      <span class="calc-saved-policy" id="calcSavedPolicy"></span>
+      <div class="calc-saved-actions">
+        <button class="btn btn-sm" id="calcUseSaved">Use in Predictor &rarr;</button>
+        <button class="btn btn-sm btn-danger-soft" id="calcClearSaved">&times; Clear</button>
+      </div>
+    </div>
+
+    <div class="card calc-policy-info" id="calcPolicyInfo">
+      <div class="calc-policy-header">
+        <span class="badge badge-info calc-policy-badge" id="calcPolicyBadge">Loading&hellip;</span>
+        <strong id="calcPolicyLabel"></strong>
+        <span class="calc-policy-note" id="calcPolicyNote"></span>
+      </div>
+      <p class="calc-policy-warning hidden" id="calcPolicyWarning">
+        &#9888;&#65039; This is the <em>expected</em> policy for the upcoming induction and has <strong>not yet been officially confirmed</strong> by PHF.
+      </p>
+    </div>
+
+    <div class="card" id="calcFormCard">
+      <form id="calcForm" class="calc-form">
+        <p class="calc-form-loading">Loading policy&hellip;</p>
+      </form>
+      <div class="calc-actions">
+        <button class="btn btn-primary btn-large" id="calcRunBtn">Calculate Merit</button>
+        <button class="btn" id="calcResetBtn">Reset</button>
+      </div>
+    </div>
+
+    <div id="calcResult" class="calc-result-box hidden">
+      <div class="calc-result-score">
+        <div>
+          <span class="calc-result-label">Estimated Merit Score</span>
+          <div class="calc-result-value-row">
+            <span class="calc-result-value" id="calcResultValue">&mdash;</span>
+            <span class="calc-result-out"   id="calcResultOut">/ 100</span>
+          </div>
+        </div>
+        <div class="calc-result-badge" id="calcResultBand"></div>
+      </div>
+      <div class="calc-result-breakdown" id="calcBreakdown"></div>
+      <div class="calc-result-actions">
+        <button class="btn btn-primary" id="calcSaveBtn">&#128190; Save &amp; Analyze</button>
+      </div>
+    </div>
+
+    <div class="guide-warning calc-disclaimer">
+      <strong>&#9888;&#65039; Disclaimer:</strong> This calculator is based on publicly known PHF policy components. Your actual merit calculated by PHF may differ due to rounding, verification steps, or policy updates. Always verify your official score directly with PHF.
+    </div>
+  </section>
+
+  <!-- ============================================================
+       TAB 4 : CURRENT MERIT
+  ============================================================ -->
+  <section class="tab-content" id="tab-current">
+    <div class="section-header">
+      <h2>Past Merit Lists</h2>
+      <p>Browse candidate-level merit data from previous induction cycles, organized by round.</p>
+    </div>
+
+    <div class="card filter-card">
+      <div class="input-grid" style="grid-template-columns:1fr 1fr auto;">
+        <div class="form-group">
+          <label>Induction Cycle</label>
+          <select id="curInduction"><option value="">Select induction</option></select>
+        </div>
+        <div class="form-group">
+          <label>Round</label>
+          <select id="curRound"><option value="">Select round</option></select>
+        </div>
+        <div class="form-group" style="align-self:flex-end;">
+          <button class="btn btn-primary" id="curLoadBtn">Load</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="currentMeta" class="current-meta-card hidden"></div>
+
+    <div class="card filter-card" id="curFilters" style="display:none;">
+      <div class="input-grid">
+        <div class="form-group">
+          <label>Program</label>
+          <select id="curProgram"><option value="">All Programs</option></select>
+        </div>
+        <div class="form-group">
+          <label>Quota</label>
+          <select id="curQuota"><option value="">All Quotas</option></select>
+        </div>
+        <div class="form-group">
+          <label>Search</label>
+          <input type="text" id="curSearch" placeholder="Name, PMDC, specialty or hospital&hellip;" />
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table" id="currentTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>PMDC</th>
+            <th>Specialty</th>
+            <th>Hospital</th>
+            <th>Program</th>
+            <th>Quota</th>
+            <th>Marks</th>
+            <th>Pref</th>
+            <th>Consent</th>
+          </tr>
+        </thead>
+        <tbody id="currentTableBody">
+          <tr><td colspan="10" class="cur-loading-cell">Select an induction cycle and round to view merit data.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p id="currentCaption" class="table-caption"></p>
+  </section>
+
+  <!-- ============================================================
+       TAB 5 : POLICY HISTORY
+  ============================================================ -->
+  <section class="tab-content" id="tab-policy">
+    <div class="section-header">
+      <h2>Scoring Policy History</h2>
+      <p>How the PRP merit formula evolved across induction cycles &mdash; and why normalization is essential for meaningful cross-year analysis.</p>
+    </div>
+
+    <div class="card policy-percentile-callout">
+      <h3>&#128208; Cross-Year Normalization</h3>
+      <p>Total marks and included components changed significantly across cycles (e.g. 95 marks in Induction 14 vs 100 in Induction 18). A closing merit of <strong>32</strong> in one cycle is not the same as <strong>32</strong> in another. MeritNama converts every score to <strong>% of that year&#8217;s maximum</strong>, making all historical trends and comparisons fair. This is what <em>% of Max</em> means everywhere in the app.</p>
+      <p style="margin-top:8px">The <strong>active policy</strong> (used to normalize your input in the Prediction tab) is shown in the <strong>Calculator</strong> tab.</p>
+    </div>
+
+    <div class="card">
+      <h3>Component Comparison Across Induction Cycles</h3>
+      <div class="table-wrap">
+        <table class="data-table" id="policyComparisonTable">
+          <tbody><tr><td style="color:var(--text-muted)">Loading&hellip;</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="policyTimeline" class="policy-timeline"></div>
+  </section>
+
+  <!-- ============================================================
+       TAB: REVERSE SCORE CALCULATOR ("What Do I Need?")
+  ============================================================ -->
+  <section class="tab-content" id="tab-reverse">
+    <div class="section-header">
+      <h2>&#128269; What Score Do I Need?</h2>
+      <p>Select a target specialty and hospital to find out what minimum merit score is historically required. Shows the average closing merit, latest cutoff, and projected range for the next induction.</p>
+    </div>
+
+    <div class="card input-card">
+      <div class="input-grid">
+        <div class="form-group">
+          <label for="revProgram">Program</label>
+          <select id="revProgram"><option value="">Select Program</option></select>
+        </div>
+        <div class="form-group">
+          <label for="revQuota">Quota</label>
+          <select id="revQuota"><option value="">Select Quota</option></select>
+        </div>
+        <div class="form-group">
+          <label for="revSpecialty">Specialty</label>
+          <select id="revSpecialty"><option value="">Select Specialty</option></select>
+        </div>
+        <div class="form-group">
+          <label for="revHospital">Hospital (optional)</label>
+          <select id="revHospital"><option value="">All Hospitals</option></select>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-large" id="revBtn">Show Requirements</button>
+    </div>
+
+    <div id="revResults" class="hidden">
+      <div id="revResultsContent"></div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       TAB: SPECIALTY COMPARISON TOOL
+  ============================================================ -->
+  <section class="tab-content" id="tab-compare">
+    <div class="section-header">
+      <h2>&#9878; Compare Specialties</h2>
+      <p>Select up to 3 specialty&#8211;hospital combinations to compare side-by-side on key metrics: average merit, trend, volatility, seats, and competition.</p>
+    </div>
+
+    <div class="card">
+      <div id="compareSlots" class="compare-slots">
+        <div class="compare-slot" id="compareSlot1">
+          <label class="compare-slot-label">Slot 1</label>
+          <select class="compare-sel" id="cmpSpec1"><option value="">Select specialty &ndash; hospital</option></select>
+        </div>
+        <div class="compare-slot" id="compareSlot2">
+          <label class="compare-slot-label">Slot 2</label>
+          <select class="compare-sel" id="cmpSpec2"><option value="">Select specialty &ndash; hospital</option></select>
+        </div>
+        <div class="compare-slot" id="compareSlot3">
+          <label class="compare-slot-label">Slot 3</label>
+          <select class="compare-sel" id="cmpSpec3"><option value="">Select specialty &ndash; hospital</option></select>
+        </div>
+      </div>
+      <div style="margin-top:1rem">
+        <label for="cmpProgram" style="font-size:0.8rem;color:var(--text-muted);margin-right:0.5rem;">Program:</label>
+        <select id="cmpProgram" style="font-size:0.85rem;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);">
+          <option value="FCPS">FCPS</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="cmpBtn" style="margin-top:1rem">Compare</button>
+    </div>
+
+    <div id="cmpResults" class="hidden"></div>
+  </section>
+
+  <!-- ============================================================
+       TAB 6 : GUIDE
+  ============================================================ -->
+  <section class="tab-content" id="tab-guide">
+    <div class="section-header">
+      <h2>How to Use MeritNama</h2>
+      <p>A complete reference for every term, metric, and feature in the app. Start here if you&#8217;re new.</p>
+    </div>
+
+    <!-- Quick-start steps -->
+    <div class="guide-quickstart">
+      <div class="guide-step">
+        <div class="guide-step-num">1</div>
+        <div class="guide-step-body">
+          <h3>Calculate your merit score</h3>
+          <p>Go to <strong>Calculator</strong> and fill in your MBBS marks, experience, publications, and other components. Hit <em>Calculate Merit</em> &#8212; your score is computed against the active PHF policy. Hit <em>Save &amp; Analyze</em> to jump straight to step 2.</p>
+        </div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-step-num">2</div>
+        <div class="guide-step-body">
+          <h3>See your percentile &amp; options</h3>
+          <p>In <strong>My Prediction</strong>, your score is normalised to <em>% of the policy maximum</em> and ranked against all historical closing merits. You get a percentile, a merit band, and a personalised Safe / Target / Reach list with trend projections for every specialty&#8211;hospital combination.</p>
+        </div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-step-num">3</div>
+        <div class="guide-step-body">
+          <h3>Explore the Merit Table</h3>
+          <p><strong>Merit Table</strong> shows every specialty &#215; hospital &#215; program &#215; quota combination with year-by-year closing merits (last 5 cycles). Click any row to open the detail sidebar with a full trend chart, percentile history, and seat counts.</p>
+        </div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-step-num">4</div>
+        <div class="guide-step-body">
+          <h3>Monitor the current induction</h3>
+          <p><strong>Previous Merit Lists</strong> shows opening and closing merits from completed induction cycles (loaded from <code>data/current_merit.json</code>) with a vs-last-year delta so you can see historical trends.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Glossary -->
+    <h2 class="guide-section-title">&#128218; Glossary of Terms</h2>
+    <div class="guide-glossary">
+
+      <div class="guide-term" id="g-pct-of-max">
+        <div class="guide-term-header">
+          <span class="guide-term-name">% of Max</span>
+          <span class="guide-term-tag">Normalisation</span>
+        </div>
+        <div class="guide-term-body">
+          <p>The PHF scoring formula has changed across induction cycles. The maximum possible merit was <strong>95 marks</strong> in Induction 14 but <strong>100 marks</strong> in Induction 18. A closing merit of 32 in one year is therefore <em>more competitive</em> than 32 in another.</p>
+          <p>To compare across years fairly, MeritNama converts every closing merit to a percentage of that year&#8217;s maximum:</p>
+          <div class="guide-formula">
+            % of Max = (Closing Merit &divide; Year&#8217;s Total Maximum Marks) &times; 100
+          </div>
+          <p>This is the default display mode in the Merit Table and is used for all prediction calculations. Switch to <strong>Raw</strong> using the toggle on the Merit Table toolbar if you want to see actual numbers.</p>
+          <div class="guide-example">
+            <strong>Example:</strong> A closing merit of 76 in Induction 18 (max 100) = <strong>76.0% of Max</strong>. The same raw score in Induction 14 (max 95) = 80.0% of Max &#8212; meaningfully more competitive.
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-term" id="g-closing-merit">
+        <div class="guide-term-header">
+          <span class="guide-term-name">Closing Merit (Cutoff)</span>
+          <span class="guide-term-tag">Core Data</span>
+        </div>
+        <div class="guide-term-body">
+          <p>The <strong>lowest</strong> merit score of any candidate who was actually allocated a seat in a given specialty, hospital, program, and quota combination during a specific induction round. It is the &#8220;cutoff&#8221; &#8212; if your merit is at or above this number you would have qualified for that seat.</p>
+          <p>Closing merits are sourced directly from official PHF merit lists and gazette notifications.</p>
+          <div class="guide-example">
+            <strong>Example:</strong> If the closing merit for General Surgery at Hospital X is 74.5 and your score is 75.0, you would have gotten that seat.
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-term" id="g-opening-merit">
+        <div class="guide-term-header">
+          <span class="guide-term-name">Opening Merit</span>
+          <span class="guide-term-tag">Core Data</span>
+        </div>
+        <div class="guide-term-body">
+          <p>The <strong>highest</strong> merit score among all candidates allocated a seat in that combination &#8212; i.e. the <em>first</em> candidate selected. Together, opening and closing merit define the full score range of admitted candidates.</p>
+          <div class="guide-example">
+            <strong>Example:</strong> Opening 82.0, Closing 74.5 means all admitted candidates scored between 74.5 and 82.0. A narrow gap means tight competition; a wide gap means more spread.
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-term" id="g-percentile">
+        <div class="guide-term-header">
+          <span class="guide-term-name">Percentile (in My Prediction)</span>
+          <span class="guide-term-tag">My Prediction</span>
+        </div>
+        <div class="guide-term-body">
+          <p>Your percentile in My Prediction answers: <em>&#8220;What fraction of all specialty&#8211;hospital combinations have a historical average closing merit below my score?&#8221;</em></p>
+          <div class="guide-formula">
+            Percentile = (Combinations with avg closing % of Max &lt; your % of Max) &divide; (All combinations) &times; 100
+          </div>
+          <ul class="guide-list">
+            <li><strong>90th percentile</strong> &#8594; your score exceeds 90% of historical averages. Almost everything is accessible.</li>
+            <li><strong>50th percentile</strong> &#8594; you are at the median. Half of options are within reach, half are above you.</li>
+            <li><strong>20th percentile</strong> &#8594; most competitive specialties are above your score, but many options remain.</li>
+          </ul>
+          <p class="guide-note">&#8505; Percentile is computed on normalised <em>% of Max</em> values so it stays meaningful even when the policy formula changes between cycles.</p>
+        </div>
+      </div>
+
+      <div class="guide-term" id="g-trend">
+        <div class="guide-term-header">
+          <span class="guide-term-name">Trend</span>
+          <span class="guide-term-tag">Prediction &amp; Table</span>
+        </div>
+        <div class="guide-term-body">
+          <p>The overall direction of a specialty&#8217;s closing merit over recent induction cycles, computed from the slope of its <em>% of Max</em> values over time.</p>
+          <div class="guide-trend-demo"><span class="trend-rising">&#8593; Rising</span> &#8212; Closing merit is increasing cycle-over-cycle. Demand is growing. Getting harder to secure a seat.</div>
+          <div class="guide-trend-demo"><span class="trend-falling">&#8595; Falling</span> &#8212; Closing merit is decreasing. Reduced competition, more seats, or shifting preferences. Could be an opportunity if you&#8217;re borderline.</div>
+          <div class="guide-trend-demo"><span class="trend-stable">&#8594; Stable</span> &#8212; No significant directional change. Historical averages are a reliable predictor.</div>
+          <div class="guide-example">
+            <strong>Why it matters:</strong> If a specialty is <em>Rising</em> and your score is borderline, you might just miss it next cycle. If it&#8217;s <em>Falling</em> and you&#8217;re below the average, it could still come within reach.
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-term" id="g-confidence">
+        <div class="guide-term-header">
+          <span class="guide-term-name">Confidence</span>
+          <span class="guide-term-tag">Prediction &amp; Table</span>
+        </div>
+        <div class="guide-term-body">
+          <p>How reliable the historical pattern is for a given combination, based on how many years of data are available.</p>
+          <div class="guide-conf-demo"><span class="conf-high">High</span> &#8212; 4 or more years of data. The pattern is well-established and the trend line is meaningful.</div>
+          <div class="guide-conf-demo"><span class="conf-medium">Medium</span> &#8212; 2&#8211;3 years of data. Some evidence, but treat predictions with extra caution.</div>
+          <div class="guide-conf-demo"><span class="conf-low">Low</span> &#8212; Only 1 year of data. The &#8220;average&#8221; is a single data point. Treat any prediction here as speculative.</div>
+          <p class="guide-note">&#8505; The percentage of your Safe/Target/Reach options that have <strong>High</strong> confidence is shown below your percentile in My Prediction.</p>
+        </div>
+      </div>
+
+      <div class="guide-term" id="g-volatility">
+        <div class="guide-term-header">
+          <span class="guide-term-name">Volatility</span>
+          <span class="guide-term-tag">Merit Table Sidebar</span>
+        </div>
+        <div class="guide-term-body">
+          <p>How much the closing merit for a combination has <em>varied</em> across cycles, measured as the standard deviation of its <em>% of Max</em> values.</p>
+          <div class="guide-conf-demo"><span class="vol-low">Low</span> &#8212; Std dev &lt;2%. Very predictable. If you&#8217;re above the average, you&#8217;re likely to get in.</div>
+          <div class="guide-conf-demo"><span class="vol-medium">Medium</span> &#8212; Std dev 2&#8211;5%. Some year-to-year swings. Consider the full range, not just the average.</div>
+          <div class="guide-conf-demo"><span class="vol-high">High</span> &#8212; Std dev &gt;5%. Merit can shift dramatically between cycles. Factor in the projection range, not just the average.</div>
+          <div class="guide-example">
+            <strong>Practical tip:</strong> A <em>Low Volatility</em> option with an average slightly above your score is often safer than a <em>High Volatility</em> option with an average below your score.
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-term" id="g-safe-target-reach">
+        <div class="guide-term-header">
+          <span class="guide-term-name">Safe / Target / Reach</span>
+          <span class="guide-term-tag">My Prediction</span>
+        </div>
+        <div class="guide-term-body">
+          <p>Each specialty&#8211;hospital option is classified into one of three buckets based on how your normalised % of Max compares to its historical average closing merit (also in % of Max).</p>
+          <div class="guide-bucket-demo"><span class="pred-bucket-tag pred-bucket-tag-safe">SAFE</span> Your % of Max is <strong>&ge;3 points above</strong> the historical average. You comfortably exceed the average cutoff.</div>
+          <div class="guide-bucket-demo"><span class="pred-bucket-tag pred-bucket-tag-target">TARGET</span> Your % of Max is <strong>within &minus;5 to +3 points</strong> of the average. You are right in the competitive zone. Trend and volatility matter most here.</div>
+          <div class="guide-bucket-demo"><span class="pred-bucket-tag pred-bucket-tag-reach">REACH</span> Your % of Max is <strong>5&#8211;15 points below</strong> the average. Below average but not impossible &#8212; especially if the trend is Falling or volatility is High.</div>
+          <p class="guide-note">&#8505; Combinations where your score is more than 15% of Max below the average are excluded entirely from results &#8212; they are not realistic options.</p>
+        </div>
+      </div>
+
+      <div class="guide-term" id="g-trend-projection">
+        <div class="guide-term-header">
+          <span class="guide-term-name">Trend Projection (e.g. &#8593; 41&#8211;49%)</span>
+          <span class="guide-term-tag">My Prediction</span>
+        </div>
+        <div class="guide-term-body">
+          <p>Each prediction item shows a projected range for the <em>next</em> induction cycle. This is a qualitative estimate, not a precise forecast, based on the current trend direction and volatility.</p>
+          <div class="guide-formula">Projected range = Latest % of Max &plusmn; trend shift &plusmn; volatility spread</div>
+          <ul class="guide-list">
+            <li>Rising trend adds ~2 points to base; Falling subtracts ~2 points; Stable is neutral.</li>
+            <li>High volatility widens the range by &plusmn;6 points; Low narrows it to &plusmn;1.5 points.</li>
+          </ul>
+          <div class="guide-example">
+            <strong>Example:</strong> Latest closing 72%, Rising trend, Medium volatility &#8594; projected <strong>&#8593; 71&#8211;77%</strong>. If your score is 73%, this is a borderline Target moving toward a Reach.
+          </div>
+          <p class="guide-note">&#8505; These projections are not guarantees. PHF policy changes, seat allocation decisions, and applicant pool composition all affect the actual cutoff in ways historical data cannot predict.</p>
+        </div>
+      </div>
+
+      <div class="guide-term" id="g-merit-band">
+        <div class="guide-term-header">
+          <span class="guide-term-name">Merit Band</span>
+          <span class="guide-term-tag">My Prediction</span>
+        </div>
+        <div class="guide-term-body">
+          <p>A qualitative label for where your score sits relative to all historical closing merits.</p>
+          <table class="guide-band-table data-table">
+            <thead><tr><th>Band</th><th>Percentile</th><th>What it means</th></tr></thead>
+            <tbody>
+              <tr><td>&#127942; Top Tier</td><td>80th+</td><td>Exceptional &#8212; nearly every specialty is accessible.</td></tr>
+              <tr><td>&#11088; High</td><td>60th&#8211;79th</td><td>Strong &#8212; most competitive specialties are within reach.</td></tr>
+              <tr><td>&#128202; Mid Range</td><td>40th&#8211;59th</td><td>Average &#8212; focus on moderate-demand specialties.</td></tr>
+              <tr><td>&#128203; Low</td><td>Below 40th</td><td>Below average for competitive options; many specialties still available.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="guide-term" id="g-quota">
+        <div class="guide-term-header">
+          <span class="guide-term-name">Quota</span>
+          <span class="guide-term-tag">Core Data</span>
+        </div>
+        <div class="guide-term-body">
+          <p>PHF allocates seats under different <strong>quota categories</strong>. Each quota has its own merit list and cutoff, so the same specialty and hospital can have very different closing merits for different quotas. Common quotas include <strong>Open Merit</strong>, <strong>Women</strong>, <strong>Disabled</strong>, <strong>Minority</strong>, and provincial sub-quotas.</p>
+          <p>Always filter by the quota you are eligible for before reading prediction results.</p>
+        </div>
+      </div>
+
+      <div class="guide-term" id="g-induction">
+        <div class="guide-term-header">
+          <span class="guide-term-name">Induction / Cycle Number</span>
+          <span class="guide-term-tag">Core Data</span>
+        </div>
+        <div class="guide-term-body">
+          <p>PHF numbers its induction cycles sequentially (e.g. Induction&nbsp;9, Induction&nbsp;18, Induction&nbsp;21). MeritNama holds data from Induction&nbsp;9 through the most recently processed cycle. Each cycle corresponds roughly to one year of admissions.</p>
+        </div>
+      </div>
+
+    </div><!-- /guide-glossary -->
+
+    <!-- FAQ -->
+    <h2 class="guide-section-title">&#10067; Frequently Asked Questions</h2>
+    <div class="guide-faq">
+
+      <details class="guide-faq-item">
+        <summary>Why does my raw score look different from the historical values in the table?</summary>
+        <p>Historical values are <em>closing merits</em> from official PHF gazettes &#8212; actual scores of the last candidate admitted. Your score from the Calculator uses the <em>currently active</em> policy, which may differ from older cycles. That&#8217;s why % of Max is the default: it makes cross-year comparison fair. Switch the Merit Table toggle to <em>Raw</em> to see actual numbers.</p>
+      </details>
+
+      <details class="guide-faq-item">
+        <summary>What&#8217;s the difference between the Merit Table and My Prediction?</summary>
+        <p>The <strong>Merit Table</strong> is a browse / explore view &#8212; all combinations, sortable, filterable, with full history in a sidebar. <strong>My Prediction</strong> is personalised &#8212; you enter your score and it ranks every option relative to <em>you</em>. Think of the Merit Table as a data explorer and My Prediction as a decision tool.</p>
+      </details>
+
+      <details class="guide-faq-item">
+        <summary>How accurate are the predictions?</summary>
+        <p>Predictions are based entirely on historical patterns. They assume the next cycle behaves similarly to past cycles, adjusted for trend. In practice, cutoffs shift due to total applicant numbers, seat changes, policy updates, and the specific applicant mix. Treat <strong>Safe</strong> as highly likely but not guaranteed, <strong>Target</strong> as competitive, and <strong>Reach</strong> as worth considering only if the trend is Falling. Always check the <strong>Confidence</strong> label &#8212; predictions with only 1&#8211;2 years of data are far less reliable.</p>
+      </details>
+
+      <details class="guide-faq-item">
+        <summary>Why is the percentile based on % of Max and not raw merit?</summary>
+        <p>Raw merit scores cannot be compared across years because the maximum changed. A 72 out of 100 (72%) is less competitive than a 72 out of 95 (75.8%). By normalising to % of Max first, your percentile fairly represents your standing across the entire multi-year dataset.</p>
+      </details>
+
+      <details class="guide-faq-item">
+        <summary>What does &#8220;Opening Merit&#8221; tell me and when does it matter?</summary>
+        <p>Opening Merit is the score of the <em>first</em> candidate allocated &#8212; the top scorer in the batch. A narrow opening&#8211;closing gap means the batch was tight; a wide gap means there was more spread. Opening merit matters most when you&#8217;re trying to understand if a seat &#8220;opened up&#8221; early in the round or only at the end.</p>
+      </details>
+
+      <details class="guide-faq-item">
+        <summary>How do I update the Previous Merit Lists page?</summary>
+        <p>Open <code>data/current_merit.json</code> in any text editor. Update the <code>meta</code> block (date, status) and add records to the <code>records</code> array. Each record needs: <code>specialty</code>, <code>hospital</code>, <code>program</code>, <code>quota</code>, <code>round</code>, <code>opening_merit</code>, <code>closing_merit</code>, and <code>seats</code>. Save and reload &#8212; no build step required.</p>
+      </details>
+
+      <details class="guide-faq-item">
+        <summary>What does the &#8220;Expected &#8212; Not Confirmed&#8221; warning on the Calculator mean?</summary>
+        <p>When PHF has not yet released the official scoring policy for the upcoming induction, the Calculator uses the <em>expected</em> policy (typically the most recent confirmed one). Your calculated score may differ from what PHF actually uses. The warning disappears once the confirmed policy is loaded into the data file.</p>
+      </details>
+
+    </div><!-- /guide-faq -->
+
+    <div class="guide-about">
+      <div class="guide-about-header">
+        <span class="guide-about-icon">&#128104;&#8205;&#128187;</span>
+        <div>
+          <strong>About the Author</strong>
+          <span class="guide-about-handle"><a href="https://github.com/itskaero" target="_blank" rel="noopener">@itskaero</a> &middot; <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a></span>
+        </div>
+      </div>
+      <p>MeritNama started as <strong>prpdatastat</strong> &mdash; a tool that built estimated merit lists by reading candidate preferences from an exposed PHF API. It worked, but it risked getting blocked and raised data-access concerns.</p>
+      <p>The current approach flips the model: instead of scraping live candidate data, MeritNama analyses <strong>historical trends from official gazette notifications and published merit lists</strong>. That data is public, stable, and impossible to block. Predictions are trend-based rather than crowd-sourced &mdash; safer for everyone, and more transparent about what it can and can&#8217;t know.</p>
+    </div>
+
+    <div class="guide-warning" style="margin-top:32px">
+      <strong>&#9888;&#65039; Important Disclaimer</strong><br />
+      MeritNama is an independent, community-built tool. It is <strong>not affiliated with PHF, PGMI, or any government body</strong>. All data is sourced from publicly available official merit lists and gazette notifications. Predictions are provided for informational purposes only. <strong>Never make application decisions based solely on this tool.</strong> Always verify closing merits and eligibility criteria directly with PHF.
+    </div>
+
+  </section><!-- /tab-guide -->
+
+
+</main>
+
+<!-- Tooltip popup -->
+<div class="tooltip-popup hidden" id="tooltipEl">
+  <div class="tooltip-title"></div>
+  <div class="tooltip-body"></div>
+  <div class="tooltip-example"></div>
+</div>
+
+<!-- Back to top -->
+<button class="back-to-top" id="backToTop" title="Back to top">&#8593;</button>
+
+<footer class="site-footer">
+  <p>MeritNama &middot; Data from official PHF merit lists &middot; <span id="footerStats"></span></p>
+  <p style="margin-top:4px;font-size:0.73rem">All predictions are based on historical data only. Always verify with official PHF / PGMI sources before making application decisions.</p>
+  <p style="margin-top:6px;font-size:0.72rem;opacity:0.55">Built by <a href="https://github.com/itskaero" target="_blank" rel="noopener" style="color:inherit">@itskaero</a> &middot; <a href="mailto:itskaero@gmail.com" style="color:inherit">itskaero@gmail.com</a></p>
+</footer>
+
+<script src="charts.js"></script>
+<script src="js/app-core.js"></script>
+<script src="js/app-tabs.js"></script>
+<script src="js/app-predict-calc.js"></script>
+<script src="js/app-policy-compare.js"></script>
+<script src="js/app-notif-init.js"></script>
+<script src="access-request.js"></script>
+<script src="screenshot-guard.js"></script>
+<script src="auth.js"></script>
+<script src="presence.js"></script>
+</body>
+</html>

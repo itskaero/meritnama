@@ -656,6 +656,8 @@ function openCandidateDetail(idStr) {
 
     ${_renderMarksExplanationHtml(c)}
 
+    ${candVerifEnabled && candVerifRecords ? getCandidateVerificationHtml(idStr) : '<div id="verif-placeholder" style="display:none"></div>'}
+
     ${progs.map(prog => {
       const prefs = (c.preference[prog] || []).slice().sort((a, b) => a.preferenceNo - b.preferenceNo);
       if (!prefs.length) return '';
@@ -691,8 +693,118 @@ function openCandidateDetail(idStr) {
   });
 
   modal.classList.remove('hidden');
+
+  // If verification data wasn't loaded by the time template rendered, insert later
+  if (candVerifEnabled && !candVerifRecords) {
+    var _pendingId = idStr;
+    ensureCandVerifRecords().then(function () {
+      // Check this modal still shows the same applicant (user may have opened another)
+      var bodyEl = document.getElementById('candidateModalBody');
+      if (!bodyEl || !bodyEl.innerHTML.includes('ID: ' + _pendingId + ' ')) return;
+      var vHtml = getCandidateVerificationHtml(_pendingId);
+      if (vHtml) {
+        var ph = document.getElementById('verif-placeholder');
+        if (ph) ph.insertAdjacentHTML('afterend', vHtml);
+        if (ph) ph.remove();
+      }
+    });
+  }
 }
 
 function closeModal() {
   document.getElementById('candidateModal')?.classList.add('hidden');
 }
+
+// ── Candidate verification data (grievance records) ──
+
+var candVerifEnabled = true;
+var candVerifRecords = null;
+var candVerifDataLoading = false;
+
+function subscribeCandVerifConfig() {
+  try {
+    var db = firebase.firestore();
+    db.collection('notifications').doc('candidate_verification_config').onSnapshot(function (snap) {
+      candVerifEnabled = snap.exists ? snap.data().enabled !== false : true;
+    }, function () {
+      candVerifEnabled = true;
+    });
+  } catch (_) {}
+}
+
+function ensureCandVerifRecords() {
+  if (candVerifRecords) return Promise.resolve(candVerifRecords);
+  if (candVerifDataLoading) return candVerifDataLoading;
+  candVerifDataLoading = fetch('data/grievance_verification.json', { cache: 'no-store' })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      candVerifRecords = data.records || data;
+      candVerifDataLoading = false;
+      return candVerifRecords;
+    })
+    .catch(function () {
+      candVerifRecords = [];
+      candVerifDataLoading = false;
+      return [];
+    });
+  return candVerifDataLoading;
+}
+
+function getCandidateVerificationHtml(idStr) {
+  if (!candVerifEnabled || !candVerifRecords) return '';
+  var matches = candVerifRecords.filter(function (r) {
+    return String(r.applicantId) === String(idStr);
+  });
+  if (!matches.length) return '';
+  var sid = 'verif-spoiler-' + idStr;
+  var rows = matches.map(function (r) {
+    var title = esc(r.title || '');
+    var comments = esc(r.comments || '');
+    var rawStatus = (r.status || '').trim().toLowerCase();
+    var status = esc(r.status || 'No verification outcome recorded');
+    var dated = esc(r.dated || '');
+    var name = esc(r.name || '');
+    var relation = esc(r.relation || '');
+    var badgeCls = rawStatus === 'accepted' ? 'accepted' : rawStatus === 'pending' ? 'pending' : 'other';
+    return '<div class="grievance-record">' +
+      (title ? '<div><strong>Title:</strong> ' + title + '</div>' : '') +
+      (comments ? '<div><strong>Comments:</strong> ' + comments + '</div>' : '') +
+      (dated ? '<div><strong>Filed:</strong> ' + dated + '</div>' : '') +
+      '<div><strong>Status:</strong> <span class="grievance-status-badge ' + badgeCls + '">' + status + '</span></div>' +
+      (name ? '<div><strong>Filed by:</strong> ' + name + '</div>' : '') +
+      (relation ? '<div><strong>Relation:</strong> ' + relation + '</div>' : '') +
+      '</div>';
+  }).join('');
+  return '<details class="grievance-records verif-spoiler" id="' + sid + '">' +
+    '<summary>' +
+      '<span class="verif-spoiler-label">Grievance / verification records (' + matches.length + ')</span>' +
+      ' <span class="verif-spoiler-hint grievance-hint">— click to reveal</span>' +
+    '</summary>' +
+    '<div class="grievance-body">' + rows + '</div></details>';
+}
+
+// Register one global click handler for all verification spoilers (auto-hide)
+document.addEventListener('click', function (e) {
+  var det = e.target.closest('.verif-spoiler');
+  if (!det) return;
+  // Clear any existing timer for this spoiler
+  if (det._verifTimer) clearTimeout(det._verifTimer);
+  // Auto-hide after 12 seconds when open
+  if (det.open) {
+    var hint = det.querySelector('.verif-spoiler-hint');
+    if (hint) hint.textContent = '— auto-hide in 12s';
+    det._verifTimer = setTimeout(function () {
+      det.removeAttribute('open');
+      if (hint) hint.textContent = '— click to reveal';
+      det._verifTimer = null;
+    }, 12000);
+  } else {
+    var hint2 = det.querySelector('.verif-spoiler-hint');
+    if (hint2) hint2.textContent = '— click to reveal';
+    if (det._verifTimer) { clearTimeout(det._verifTimer); det._verifTimer = null; }
+  }
+});
+
+subscribeCandVerifConfig();
+// Warm the cache so verification data is ready when user opens a modal
+ensureCandVerifRecords();
