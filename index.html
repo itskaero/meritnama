@@ -420,7 +420,7 @@ footer{
   // ── Logout button ──
   var logoutBtn=document.getElementById('logoutBtn');
   if(logoutBtn){
-    try{var _s=JSON.parse(localStorage.getItem('meritnama_auth_session'));if(_s&&_s.email)logoutBtn.style.display='';}catch(_e){}
+    try{var _s=JSON.parse(localStorage.getItem('meritnama_auth_session'));if(_s&&_s.email)logoutBtn.style.display='block';}catch(_e){}
     logoutBtn.addEventListener('click',function(){
       localStorage.removeItem('meritnama_auth_session');
       window.location.reload();

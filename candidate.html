@@ -2754,6 +2754,16 @@ async function submitInvite() {
     return;
   }
 
+  // Check admin invite block
+  try {
+    var cfgSnap = await db.collection('notifications').doc('access_config').get();
+    if (cfgSnap.exists && cfgSnap.data().blockInvites === true) {
+      setInviteControlsDisabled(false);
+      setInviteStatus('New user invitations are currently disabled by admin.', 'error');
+      return;
+    }
+  } catch (_) {}
+
   setInviteControlsDisabled(true);
   setInviteStatus('Creating invite...', '');
 

@@ -2643,7 +2643,17 @@
       }
     }
 
-
+    .logout-btn{
+      font-size:12px; padding:5px 12px; border:1px solid rgba(224,84,112,.3);
+      border-radius:6px; background:rgba(224,84,112,.06);
+      color:#e05470; font-weight:600;
+      font-family:'IBM Plex Mono',monospace;
+      cursor:pointer; transition:all .2s; display:none;
+    }
+    .logout-btn:hover{
+      background:rgba(224,84,112,.14);
+      border-color:#e05470;
+    }
   </style>
 </head>
 <body>
@@ -2663,6 +2673,7 @@
       <a href="app.html"><img src="logo.png" class="logo-img" alt="MeritNama" /></a>
     </div>
     <div class="header-meta" id="headerMeta">
+      <button class="logout-btn" id="logoutBtn" style="display:none;">&#x23FB; Logout</button>
       <span class="badge badge-info" id="dataStatus">Loading&hellip;</span>
       <button class="notif-bell-btn" id="notifBellBtn" title="Subscribe to data updates" aria-label="Subscribe to data updates">
         <svg class="bell-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="17" height="17">
@@ -4070,6 +4081,19 @@
       else await subscribePush();
     });
   });
+})();
+
+// ── Logout button ──
+(function(){
+  var logoutBtn=document.getElementById('logoutBtn');
+  if(logoutBtn){
+    try{var _s=JSON.parse(localStorage.getItem('meritnama_auth_session'));if(_s&&_s.email)logoutBtn.style.display='inline-flex';}catch(_e){}
+    logoutBtn.addEventListener('click',function(){
+      localStorage.removeItem('meritnama_auth_session');
+      localStorage.removeItem('mn_profile_pic');
+      window.location.reload();
+    });
+  }
 })();
 </script>
 <script src="js/sim-merit-list.js"></script>

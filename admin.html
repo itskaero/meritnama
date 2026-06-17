@@ -1534,6 +1534,9 @@
         <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
           <input type="checkbox" id="accessCfgOptional" checked style="accent-color:var(--accent);" /> Payment optional (not required for approval)
         </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
+          <input type="checkbox" id="accessCfgBlockInvites" style="accent-color:var(--neon-pink);" /> Block all new user invitations
+        </label>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;max-width:760px;margin-top:0.75rem;">
         <div class="modal-field" style="margin:0;">
@@ -3148,6 +3151,7 @@ const ACCESS_CFG_DEFAULTS = {
   requestClosedMessage: 'Access requests are currently closed by admin. Please sign in if you already have credentials or check back later.',
   showOnRequestPage: true,
   paymentOptional: true,
+  blockInvites: false,
   accessPriceMinPKR: 250,
   accessPriceMaxPKR: 670,
   accessPriceMinUSD: 0.9,
@@ -3430,6 +3434,7 @@ function fillAccessConfigForm(cfg) {
   document.getElementById('accessCfgEnabled').checked = normalized.requestAccessEnabled !== false;
   document.getElementById('accessCfgShow').checked = normalized.showOnRequestPage !== false;
   document.getElementById('accessCfgOptional').checked = normalized.paymentOptional !== false;
+  document.getElementById('accessCfgBlockInvites').checked = normalized.blockInvites === true;
   document.getElementById('accessCfgPriceMinPKR').value = normalized.accessPriceMinPKR ?? 250;
   document.getElementById('accessCfgPriceMaxPKR').value = normalized.accessPriceMaxPKR ?? 670;
   document.getElementById('accessCfgPriceMinUSD').value = normalized.accessPriceMinUSD ?? 0.9;
@@ -3465,6 +3470,7 @@ async function saveAccessConfigEditor() {
     requestClosedMessage: document.getElementById('accessCfgClosedMessage').value.trim(),
     showOnRequestPage: document.getElementById('accessCfgShow').checked,
     paymentOptional: document.getElementById('accessCfgOptional').checked,
+    blockInvites: document.getElementById('accessCfgBlockInvites').checked,
     showAccountTitle: false,
     accessPriceMinPKR: minPkr,
     accessPriceMaxPKR: maxPkr,

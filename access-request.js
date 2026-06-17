@@ -8,6 +8,7 @@
     requestAccessEnabled: true,
     requestClosedMessage: 'Access requests are currently closed by admin. Please sign in if you already have credentials or check back later.',
     showOnRequestPage: true,
+    blockInvites: false,
     paymentOptional: true,
     accessPriceMinPKR: 250,
     accessPriceMaxPKR: 670,
@@ -101,6 +102,16 @@
     if (!verified.ok) return verified;
 
     var email = verified.email;
+
+    // Block all new invitations when toggled
+    if (config.blockInvites === true) {
+      return { ok: false, error: 'New user invitations are currently disabled.' };
+    }
+
+    // Enforce payment when flagged as required
+    if (config.paymentOptional === false && !payload.paymentDeclared) {
+      return { ok: false, error: 'Payment is required before approval. Please complete the payment and include the transaction reference.' };
+    }
 
     var existingUser = await db.collection('authorized_users').doc(email).get();
     if (existingUser.exists) {

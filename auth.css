@@ -78,6 +78,8 @@
   flex-direction: column;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   color: #c8daf0;
+  overflow-y: auto;
+  padding: 1rem 0;
 }
 
 #authGate .auth-card {
