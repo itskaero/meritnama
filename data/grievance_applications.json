@@ -30,7 +30,7 @@
       "applyDateSerial": 46187.5506293171,
       "applyDateIso": "2026-06-14T13:12:54",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 4,
@@ -79,8 +79,8 @@
       "subject": "Part 1 result date correction ",
       "applyDateSerial": 46187.5858815972,
       "applyDateIso": "2026-06-14T14:03:40",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 9,
@@ -149,8 +149,8 @@
       "subject": "Image not readable for degree and domicile",
       "applyDateSerial": 46187.6194976852,
       "applyDateIso": "2026-06-14T14:52:04",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 16,
@@ -200,7 +200,7 @@
       "applyDateSerial": 46187.6280853357,
       "applyDateIso": "2026-06-14T15:04:26",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 21,
@@ -229,8 +229,8 @@
       "subject": "Request for review of mdcat results ",
       "applyDateSerial": 46187.633809838,
       "applyDateIso": "2026-06-14T15:12:41",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 24,
@@ -250,7 +250,7 @@
       "applyDateSerial": 46187.637840706,
       "applyDateIso": "2026-06-14T15:18:29",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 26,
@@ -300,7 +300,7 @@
       "applyDateSerial": 46187.6460281597,
       "applyDateIso": "2026-06-14T15:30:16",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 31,
@@ -550,7 +550,7 @@
       "applyDateSerial": 46187.6909861458,
       "applyDateIso": "2026-06-14T16:35:01",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 56,
@@ -640,7 +640,7 @@
       "applyDateSerial": 46187.7008028588,
       "applyDateIso": "2026-06-14T16:49:09",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 65,
@@ -669,8 +669,8 @@
       "subject": "FCPS image not readable",
       "applyDateSerial": 46187.7079483796,
       "applyDateIso": "2026-06-14T16:59:26",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 68,
@@ -759,8 +759,8 @@
       "subject": "Degree year: Invalid document ",
       "applyDateSerial": 46187.7288352662,
       "applyDateIso": "2026-06-14T17:29:31",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 77,
@@ -769,8 +769,8 @@
       "subject": "MDCAT result certificate",
       "applyDateSerial": 46187.7332055556,
       "applyDateIso": "2026-06-14T17:35:48",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 78,
@@ -829,8 +829,8 @@
       "subject": "rejection of documents",
       "applyDateSerial": 46187.7531854977,
       "applyDateIso": "2026-06-14T18:04:35",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 84,
@@ -850,7 +850,7 @@
       "applyDateSerial": 46187.7634445949,
       "applyDateIso": "2026-06-14T18:19:21",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 86,
@@ -880,7 +880,7 @@
       "applyDateSerial": 46187.7955164352,
       "applyDateIso": "2026-06-14T19:05:32",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 89,
@@ -919,8 +919,8 @@
       "subject": "pmdc number correction",
       "applyDateSerial": 46187.810203044,
       "applyDateIso": "2026-06-14T19:26:41",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 93,
@@ -930,7 +930,7 @@
       "applyDateSerial": 46187.8412756134,
       "applyDateIso": "2026-06-14T20:11:26",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 94,
@@ -949,8 +949,8 @@
       "subject": "For mdcat result and fcps certificate",
       "applyDateSerial": 46187.8448649653,
       "applyDateIso": "2026-06-14T20:16:36",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 96,
@@ -1079,8 +1079,8 @@
       "subject": "Fcps discipline not correct",
       "applyDateSerial": 46187.8758702546,
       "applyDateIso": "2026-06-14T21:01:15",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 109,
@@ -1089,8 +1089,8 @@
       "subject": "MDCAT marks correction",
       "applyDateSerial": 46187.8782101042,
       "applyDateIso": "2026-06-14T21:04:37",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 110,
@@ -1159,8 +1159,8 @@
       "subject": "for approval of MDCAT , MS result cards and front picture of NIC",
       "applyDateSerial": 46187.9195435995,
       "applyDateIso": "2026-06-14T22:04:08",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 117,
@@ -1189,8 +1189,8 @@
       "subject": "Application for Grievance",
       "applyDateSerial": 46187.9244544792,
       "applyDateIso": "2026-06-14T22:11:12",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 120,
@@ -1219,8 +1219,8 @@
       "subject": "Provision of missing attempt certificate",
       "applyDateSerial": 46187.9320554398,
       "applyDateIso": "2026-06-14T22:22:09",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 123,
@@ -1230,7 +1230,7 @@
       "applyDateSerial": 46187.9366439468,
       "applyDateIso": "2026-06-14T22:28:46",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 124,
@@ -1259,8 +1259,8 @@
       "subject": "License renewal applied. ",
       "applyDateSerial": 46187.9451736111,
       "applyDateIso": "2026-06-14T22:41:02",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 127,
@@ -1269,8 +1269,8 @@
       "subject": "Domicile got rejected ,",
       "applyDateSerial": 46187.9480981481,
       "applyDateIso": "2026-06-14T22:45:15",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 128,
@@ -1329,8 +1329,8 @@
       "subject": "House Job Marks Correction",
       "applyDateSerial": 46187.959093287,
       "applyDateIso": "2026-06-14T23:01:05",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 134,
@@ -1359,8 +1359,8 @@
       "subject": "correction of 4th year DMC picture",
       "applyDateSerial": 46187.9650532407,
       "applyDateIso": "2026-06-14T23:09:40",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 137,
@@ -1390,7 +1390,7 @@
       "applyDateSerial": 46187.9723825579,
       "applyDateIso": "2026-06-14T23:20:13",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 140,
@@ -1409,8 +1409,8 @@
       "subject": "Apply for Grievance for invalid PMDC number and FCPS discipline",
       "applyDateSerial": 46187.9758793981,
       "applyDateIso": "2026-06-14T23:25:15",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 142,
@@ -1420,7 +1420,7 @@
       "applyDateSerial": 46187.9768782407,
       "applyDateIso": "2026-06-14T23:26:42",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 143,
@@ -1440,7 +1440,7 @@
       "applyDateSerial": 46187.9830769676,
       "applyDateIso": "2026-06-14T23:35:37",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 145,
@@ -1489,8 +1489,8 @@
       "subject": "To remove objections through grievance",
       "applyDateSerial": 46187.9927883102,
       "applyDateIso": "2026-06-14T23:49:36",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 150,
@@ -1499,8 +1499,8 @@
       "subject": "Grievance regarding application rejection due to MdCAT result verification",
       "applyDateSerial": 46188.0006126157,
       "applyDateIso": "2026-06-15T00:00:52",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 151,
@@ -1520,7 +1520,7 @@
       "applyDateSerial": 46188.0043858796,
       "applyDateIso": "2026-06-15T00:06:18",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 153,
@@ -1540,7 +1540,7 @@
       "applyDateSerial": 46188.0089385764,
       "applyDateIso": "2026-06-15T00:12:52",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 155,
@@ -1579,8 +1579,8 @@
       "subject": "ATTEMPT CERTIFICATE FOR FCPS PART 1",
       "applyDateSerial": 46188.0167970718,
       "applyDateIso": "2026-06-15T00:24:11",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 159,
@@ -1590,7 +1590,7 @@
       "applyDateSerial": 46188.0205165856,
       "applyDateIso": "2026-06-15T00:29:32",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 160,
@@ -1619,8 +1619,8 @@
       "subject": "Appearing in grievance committee for application rejection ",
       "applyDateSerial": 46188.0281815972,
       "applyDateIso": "2026-06-15T00:40:34",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 163,
@@ -1679,8 +1679,8 @@
       "subject": "FCPS: IMAGE IS NOT READABLE ",
       "applyDateSerial": 46188.09084375,
       "applyDateIso": "2026-06-15T02:10:48",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 169,
@@ -1699,8 +1699,8 @@
       "subject": "Mdcat results card / Cpsp certificate issue",
       "applyDateSerial": 46188.1387292014,
       "applyDateIso": "2026-06-15T03:19:46",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 171,
@@ -1719,8 +1719,8 @@
       "subject": "Request to appear on Grievance ",
       "applyDateSerial": 46188.1812895486,
       "applyDateIso": "2026-06-15T04:21:03",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 173,
@@ -1840,7 +1840,7 @@
       "applyDateSerial": 46188.3808622338,
       "applyDateIso": "2026-06-15T09:08:26",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 188,
@@ -1970,7 +1970,7 @@
       "applyDateSerial": 46188.4126780903,
       "applyDateIso": "2026-06-15T09:54:15",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 198,
@@ -2029,8 +2029,8 @@
       "subject": "Application to appear in grievance for profile image related issue ",
       "applyDateSerial": 46188.4354019676,
       "applyDateIso": "2026-06-15T10:26:58",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 204,
@@ -2089,8 +2089,8 @@
       "subject": "Grievance",
       "applyDateSerial": 46188.4549850694,
       "applyDateIso": "2026-06-15T10:55:10",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 210,
@@ -2139,8 +2139,8 @@
       "subject": "PMDC Expire ",
       "applyDateSerial": 46188.4775511574,
       "applyDateIso": "2026-06-15T11:27:40",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 215,
@@ -2169,8 +2169,8 @@
       "subject": "PMDC Expired Date incorrect ",
       "applyDateSerial": 46188.4866824884,
       "applyDateIso": "2026-06-15T11:40:49",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 218,
@@ -2209,8 +2209,8 @@
       "subject": "Objections on Rejection of application ( domicile not original) ( fcps image is not readable) ( fcps attempt certificate not attached)",
       "applyDateSerial": 46188.4979984954,
       "applyDateIso": "2026-06-15T11:57:07",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 222,
@@ -2229,8 +2229,8 @@
       "subject": "response to rejection",
       "applyDateSerial": 46188.5055002662,
       "applyDateIso": "2026-06-15T12:07:55",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 224,
@@ -2250,7 +2250,7 @@
       "applyDateSerial": 46188.5115968403,
       "applyDateIso": "2026-06-15T12:16:41",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 226,
@@ -2260,7 +2260,7 @@
       "applyDateSerial": 46188.5120993056,
       "applyDateIso": "2026-06-15T12:17:25",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 227,
@@ -2349,8 +2349,8 @@
       "subject": "Invalid mdcat ",
       "applyDateSerial": 46188.5745352199,
       "applyDateIso": "2026-06-15T13:47:19",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 236,
@@ -2379,8 +2379,8 @@
       "subject": "Rectification of objection (expired CNIC)on application for induction July 2026 PRP level-lll",
       "applyDateSerial": 46188.5999648958,
       "applyDateIso": "2026-06-15T14:23:56",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 239,
@@ -2409,8 +2409,8 @@
       "subject": "Correction of PMDC Number and FCPS Passing Date",
       "applyDateSerial": 46188.6032716435,
       "applyDateIso": "2026-06-15T14:28:42",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 242,
@@ -2449,8 +2449,8 @@
       "subject": "MDCAT result card picture not clear",
       "applyDateSerial": 46188.6140076736,
       "applyDateIso": "2026-06-15T14:44:10",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 246,
@@ -2460,7 +2460,7 @@
       "applyDateSerial": 46188.6188615741,
       "applyDateIso": "2026-06-15T14:51:09",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 247,
@@ -2499,8 +2499,8 @@
       "subject": "Grievance Regarding Objection on FCPS Attempt Number – PG Induction Application",
       "applyDateSerial": 46188.6423653125,
       "applyDateIso": "2026-06-15T15:25:00",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 251,
@@ -2510,7 +2510,7 @@
       "applyDateSerial": 46188.6473943634,
       "applyDateIso": "2026-06-15T15:32:14",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 252,
@@ -2530,7 +2530,7 @@
       "applyDateSerial": 46188.6501156597,
       "applyDateIso": "2026-06-15T15:36:09",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 254,
@@ -2599,8 +2599,8 @@
       "subject": "Request To Appear On Grievance",
       "applyDateSerial": 46188.6580871528,
       "applyDateIso": "2026-06-15T15:47:38",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 261,
@@ -2790,7 +2790,7 @@
       "applyDateSerial": 46188.6832312153,
       "applyDateIso": "2026-06-15T16:23:51",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 280,
@@ -2799,8 +2799,8 @@
       "subject": "Request for Consideration of FCPS Part-I Attempt Certificate",
       "applyDateSerial": 46188.6833609144,
       "applyDateIso": "2026-06-15T16:24:02",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 281,
@@ -2840,7 +2840,7 @@
       "applyDateSerial": 46188.7033934028,
       "applyDateIso": "2026-06-15T16:52:53",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 285,
@@ -2859,8 +2859,8 @@
       "subject": "Failed to upload fcps certificate ",
       "applyDateSerial": 46188.7095227199,
       "applyDateIso": "2026-06-15T17:01:42",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 287,
@@ -2879,8 +2879,8 @@
       "subject": "Application Rejection ",
       "applyDateSerial": 46188.7130533218,
       "applyDateIso": "2026-06-15T17:06:47",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 289,
@@ -3019,8 +3019,8 @@
       "subject": "Applying for grievance",
       "applyDateSerial": 46188.7641042014,
       "applyDateIso": "2026-06-15T18:20:18",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 303,
@@ -3039,8 +3039,8 @@
       "subject": " Rejection of my application through CIP Invalid PMDC",
       "applyDateSerial": 46188.7733578356,
       "applyDateIso": "2026-06-15T18:33:38",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 305,
@@ -3060,7 +3060,7 @@
       "applyDateSerial": 46188.7863434838,
       "applyDateIso": "2026-06-15T18:52:20",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 307,
@@ -3090,7 +3090,7 @@
       "applyDateSerial": 46188.808618206,
       "applyDateIso": "2026-06-15T19:24:24",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 310,
@@ -3140,7 +3140,7 @@
       "applyDateSerial": 46188.833549456,
       "applyDateIso": "2026-06-15T20:00:18",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 315,
@@ -3249,8 +3249,8 @@
       "subject": "Accurate FCPS 1 Attempt ",
       "applyDateSerial": 46188.8557015857,
       "applyDateIso": "2026-06-15T20:32:12",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 326,
@@ -3260,7 +3260,7 @@
       "applyDateSerial": 46188.8625962963,
       "applyDateIso": "2026-06-15T20:42:08",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 327,
@@ -3269,8 +3269,8 @@
       "subject": "request for review of rejected form no. 29716 for July 26 induction",
       "applyDateSerial": 46188.8665580208,
       "applyDateIso": "2026-06-15T20:47:50",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 328,
@@ -3360,7 +3360,7 @@
       "applyDateSerial": 46188.9120221065,
       "applyDateIso": "2026-06-15T21:53:18",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 337,
@@ -3419,8 +3419,8 @@
       "subject": "Request For appearing in grievance to verify rejected MDCAT certificate.",
       "applyDateSerial": 46188.921687037,
       "applyDateIso": "2026-06-15T22:07:13",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 343,
@@ -3459,8 +3459,8 @@
       "subject": "Mdcat:invalid/fake image",
       "applyDateSerial": 46188.9376042014,
       "applyDateIso": "2026-06-15T22:30:09",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 347,
@@ -3640,7 +3640,7 @@
       "applyDateSerial": 46189.0311035069,
       "applyDateIso": "2026-06-16T00:44:47",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 365,
@@ -3699,8 +3699,8 @@
       "subject": "Incorrect discipline ",
       "applyDateSerial": 46189.0596755787,
       "applyDateIso": "2026-06-16T01:25:55",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 371,
@@ -3769,8 +3769,8 @@
       "subject": "Mdcat result card not available on official portal",
       "applyDateSerial": 46189.3371676273,
       "applyDateIso": "2026-06-16T08:05:31",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 378,
@@ -3859,8 +3859,8 @@
       "subject": "Grievance Regarding Attempt marks",
       "applyDateSerial": 46189.4334098032,
       "applyDateIso": "2026-06-16T10:24:06",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 387,
@@ -3869,8 +3869,8 @@
       "subject": "Rejection on basis of \"FCPS image Not readable\"",
       "applyDateSerial": 46189.4402287037,
       "applyDateIso": "2026-06-16T10:33:55",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 388,
@@ -3919,8 +3919,8 @@
       "subject": "House job dates mismatched ",
       "applyDateSerial": 46189.462403588,
       "applyDateIso": "2026-06-16T11:05:51",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 393,
@@ -3930,7 +3930,7 @@
       "applyDateSerial": 46189.4653127662,
       "applyDateIso": "2026-06-16T11:10:03",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 394,
@@ -3959,8 +3959,8 @@
       "subject": "invalid MCAT result",
       "applyDateSerial": 46189.4914412384,
       "applyDateIso": "2026-06-16T11:47:40",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 397,
@@ -4000,7 +4000,7 @@
       "applyDateSerial": 46189.5046868056,
       "applyDateIso": "2026-06-16T12:06:44",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 401,
@@ -4010,7 +4010,7 @@
       "applyDateSerial": 46189.5135544329,
       "applyDateIso": "2026-06-16T12:19:31",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 402,
@@ -4059,8 +4059,8 @@
       "subject": "graduation degree issue not readable",
       "applyDateSerial": 46189.5430271181,
       "applyDateIso": "2026-06-16T13:01:57",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 407,
@@ -4069,8 +4069,8 @@
       "subject": "Mdcat result verification issue",
       "applyDateSerial": 46189.5510363773,
       "applyDateIso": "2026-06-16T13:13:29",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 408,
@@ -4119,8 +4119,8 @@
       "subject": "Invalid PMDC ",
       "applyDateSerial": 46189.5863643171,
       "applyDateIso": "2026-06-16T14:04:21",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 413,
@@ -4229,8 +4229,8 @@
       "subject": "Grievance Regarding Rejection of Degree Certificate Attachment – Request for Reverification",
       "applyDateSerial": 46189.7059724537,
       "applyDateIso": "2026-06-16T16:56:36",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 424,
@@ -4240,7 +4240,7 @@
       "applyDateSerial": 46189.7075331366,
       "applyDateIso": "2026-06-16T16:58:50",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "rowNum": 425,
@@ -4249,8 +4249,8 @@
       "subject": "Grievance Committee",
       "applyDateSerial": 46189.7166991551,
       "applyDateIso": "2026-06-16T17:12:02",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 426,
@@ -4259,8 +4259,8 @@
       "subject": "Applying for grievance ",
       "applyDateSerial": 46189.7314226042,
       "applyDateIso": "2026-06-16T17:33:14",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 427,
@@ -4269,8 +4269,8 @@
       "subject": "MD marks issue",
       "applyDateSerial": 46189.7361747685,
       "applyDateIso": "2026-06-16T17:40:05",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 428,
@@ -4289,8 +4289,8 @@
       "subject": "Correction of Candidate Status and Removal of Rejection – PRP July 2026 Induction",
       "applyDateSerial": 46189.773697419,
       "applyDateIso": "2026-06-16T18:34:07",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 430,
@@ -4309,8 +4309,8 @@
       "subject": "Application got rejected due to attempt certificate not attached",
       "applyDateSerial": 46189.873046794,
       "applyDateIso": "2026-06-16T20:57:11",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "rowNum": 432,
@@ -4380,7 +4380,7 @@
       "applyDateSerial": 46189.9448320949,
       "applyDateIso": "2026-06-16T22:40:33",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "applicantId": 32328,
@@ -4485,7 +4485,7 @@
       "name": "Fazeeha Manzoor D/O Manzoor Hussain",
       "subject": "Request for Appearance Before Grievance Committee for Correction of CNIC,PMDC certificate,FCPS discipline ",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "applicantId": 34408,
@@ -4555,14 +4555,14 @@
       "name": "Sehrish Zafar D/O Muhammad Zafar Iqbal",
       "subject": "Application Rejected",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "applicantId": 37869,
       "name": "Menahil Aslam D/O Muhammad Nadeem Aslam",
       "subject": "Pathology",
       "attendance": "17/06/2026",
-      "status": "-"
+      "status": "Accepted"
     },
     {
       "applicantId": 31328,
@@ -4575,13 +4575,103 @@
       "applicantId": 32899,
       "name": "Rabia Ijaz D/O Ijaz Ahmad",
       "subject": "Grievance for rejection of part 1 certificate",
-      "attendance": "Absent",
-      "status": "-"
+      "attendance": "17/06/2026",
+      "status": "Accepted"
     },
     {
       "applicantId": 34389,
       "name": "Muhammad Muqaddas S/O Zulfiqar Ali",
       "subject": "Fcps Atempt certificate not Attached",
+      "attendance": "Absent",
+      "status": "-"
+    },
+    {
+      "rowNum": 468,
+      "applicantId": 29988,
+      "name": "Warda Yasin D/O ghulam yasin khan",
+      "subject": "jcat fcps part 1 result not readable with PMDC number issue ",
+      "applyDateSerial": 46190.5525940972,
+      "attendance": "Absent",
+      "status": "-"
+    },
+    {
+      "rowNum": 469,
+      "applicantId": 34573,
+      "name": "Abdul Shokoor S/O Abdul Salam",
+      "subject": "Grievance Application for Reconsideration – July 2026 Induction",
+      "applyDateSerial": 46190.5530752662,
+      "attendance": "Absent",
+      "status": "-"
+    },
+    {
+      "rowNum": 470,
+      "applicantId": 36157,
+      "name": "Bareera Hashmi D/O Tariq Sami Hashmi",
+      "subject": "Application rejected",
+      "applyDateSerial": 46190.5594998032,
+      "attendance": "17/06/2026",
+      "status": "Accepted"
+    },
+    {
+      "rowNum": 471,
+      "applicantId": 34397,
+      "name": "Muhammad Abdul Ur Rehman S/O Muhammad Arshad",
+      "subject": "PMDC expired date is incorrect",
+      "applyDateSerial": 46190.5694603819,
+      "attendance": "17/06/2026",
+      "status": "Accepted"
+    },
+    {
+      "rowNum": 472,
+      "applicantId": 36691,
+      "name": "Muhammad Nauman Zahid S/O ZAHID KARIM",
+      "subject": "application for grievance to correct fcps attempt and MDCAT certificate",
+      "applyDateSerial": 46190.5774040162,
+      "attendance": "Absent",
+      "status": "-"
+    },
+    {
+      "rowNum": 473,
+      "applicantId": 36675,
+      "name": "Hameed Ullah S/O Allah Meer",
+      "subject": "Objection on MDCAT & Part-1 FCPS Attempt Result",
+      "applyDateSerial": 46190.5935146181,
+      "attendance": "17/06/2026",
+      "status": "-"
+    },
+    {
+      "rowNum": 474,
+      "applicantId": 37409,
+      "name": "Muhammad Waqas Iqbal S/O MUHAMMAD IQBAL",
+      "subject": "For reconsideration of domicile verification ",
+      "applyDateSerial": 46190.6033885417,
+      "attendance": "17/06/2026",
+      "status": "Accepted"
+    },
+    {
+      "rowNum": 475,
+      "applicantId": 36494,
+      "name": "Fajar Bari D/O Ghulam Bari",
+      "subject": "application for grievance regarding rejections",
+      "applyDateSerial": 46190.6069389236,
+      "attendance": "Absent",
+      "status": "-"
+    },
+    {
+      "rowNum": 476,
+      "applicantId": 38127,
+      "name": "Mariam Anwar D/O Anwar AHMED Khan",
+      "subject": "Anaesthesia",
+      "applyDateSerial": 46190.642106713,
+      "attendance": "Absent",
+      "status": "-"
+    },
+    {
+      "rowNum": 477,
+      "applicantId": 34815,
+      "name": "Maria Batool D/O MUHAMMAD TUFAIL",
+      "subject": "Fcps level 3 induction in gynaecology and obstetrics",
+      "applyDateSerial": 46190.6522207523,
       "attendance": "Absent",
       "status": "-"
     }
