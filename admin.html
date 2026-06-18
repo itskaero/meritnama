@@ -3259,6 +3259,9 @@ async function loadAccessRequests() {
         const tb = b.requestedAt?.toDate?.()?.getTime() || 0;
         return tb - ta;
       });
+    if (!authUserMeta.byEmail || !Object.keys(authUserMeta.byEmail).length) {
+      try { await loadAuthUserMeta(); } catch (_) {}
+    }
     renderAccessRequests();
     updateAccessRequestBadge();
   } catch (err) {
@@ -3335,11 +3338,16 @@ function renderAccessRequests() {
         ? `<span class="badge badge-danger" title="${escapeHtml(r.emailError || 'Not sent')}">Failed</span>`
         : '—');
     let actions = '';
+    const alreadyHasAccess = authUserMeta.byEmail && !!authUserMeta.byEmail[r.email];
     if (r.status === 'pending') {
-      actions = `
+      if (alreadyHasAccess) {
+        actions = `<span style="color:var(--success);font-size:0.75rem;">Has access</span>`;
+      } else {
+        actions = `
         <button class="action-btn" data-action="approve-req" data-email="${escapeHtml(r.email)}">Approve</button>
         <button class="action-btn" data-action="reject-req" data-email="${escapeHtml(r.email)}">Reject</button>
         <button class="action-btn" data-action="send-payment-due" data-email="${escapeHtml(r.email)}" title="Send payment due email">Payment Due</button>`;
+      }
     } else if (r.status === 'approved') {
       actions = `<button class="action-btn" data-action="copy-req-pin" data-email="${escapeHtml(r.email)}">Copy PIN</button>`;
       if (!r.emailSent && r.approvedPin) {
@@ -3389,7 +3397,7 @@ async function approveAccessRequest(email) {
   } catch (_) {}
 
   if (paymentRequired) {
-    if (!confirm(`Approve ${email}?\n\nPayment is REQUIRED. The applicant will receive a payment_due email and must submit proof before full access is granted.`)) return;
+    if (!confirm(`Approve ${email}?\n\nPayment is REQUIRED. A welcome email with PIN will be sent. Use the "Payment Due" button separately to send a payment reminder.`)) return;
   } else {
     if (!confirm(`Approve access for ${email}?\n\nA PIN will be generated and a welcome email attempted.`)) return;
   }
@@ -3402,7 +3410,7 @@ async function approveAccessRequest(email) {
       pin,
       level: 'Standard User',
       inviteLimit: 2,
-      sendEmail: !paymentRequired,
+      sendEmail: true,
       applicantId: req.applicantId,
       inviteSource: 'access_request',
     });
@@ -3412,37 +3420,20 @@ async function approveAccessRequest(email) {
       reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
       reviewedBy: getAdminSessionEmail() || null,
       approvedPin: pin,
+      emailSent: !!result.emailSent,
+      emailError: result.emailError || null,
     };
 
     if (paymentRequired) {
       updateData.paymentVerified = false;
-      updateData.emailSent = false;
-      updateData.emailError = null;
-    } else {
-      updateData.emailSent = !!result.emailSent;
-      updateData.emailError = result.emailError || null;
     }
 
     await db.collection('access_requests').doc(email).update(updateData);
 
-    if (paymentRequired) {
-      // Send payment_due email
-      try {
-        await sendPaymentDueEmail(req.nameFull || email, email, req.applicantId || '');
-        await db.collection('access_requests').doc(email).update({
-          paymentDueSent: true,
-          paymentDueSentAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-        showAdminToast(`Approved ${email} — payment_due email sent.`, 'success');
-      } catch (emailErr) {
-        showAdminToast(`Approved ${email} — but payment_due email failed. PIN: ${pin}`, 'error');
-      }
+    if (result.emailSent) {
+      showAdminToast(`Approved ${email} — welcome email sent.`, 'success');
     } else {
-      if (result.emailSent) {
-        showAdminToast(`Approved ${email} — welcome email sent.`, 'success');
-      } else {
-        showAdminToast(`Approved ${email} — email failed. PIN: ${pin}`, 'error');
-      }
+      showAdminToast(`Approved ${email} — email failed. PIN: ${pin}`, 'error');
     }
     await loadAccessRequests();
     await loadUsers();

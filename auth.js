@@ -452,9 +452,23 @@
         if (!file) { proofPhotoPreview.style.display = 'none'; proofPhotoBase64 = ''; return; }
         var reader = new FileReader();
         reader.onload = function (e) {
-          proofPhotoBase64 = e.target.result;
-          proofPhotoPreview.style.display = 'block';
-          proofPhotoPreview.innerHTML = '<img src="' + proofPhotoBase64 + '" style="max-width:100%;max-height:190px;display:block;border-radius:6px;" alt="Payment proof" />';
+          var img = new Image();
+          img.onload = function () {
+            var MAX = 800;
+            var w = img.width, h = img.height;
+            if (w > MAX || h > MAX) {
+              if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+              else { w = Math.round(w * MAX / h); h = MAX; }
+            }
+            var c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            var ctx = c.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            proofPhotoBase64 = c.toDataURL('image/jpeg', 0.7);
+            proofPhotoPreview.style.display = 'block';
+            proofPhotoPreview.innerHTML = '<img src="' + proofPhotoBase64 + '" style="max-width:100%;max-height:190px;display:block;border-radius:6px;" alt="Payment proof" />';
+          };
+          img.src = e.target.result;
         };
         reader.readAsDataURL(file);
       });
