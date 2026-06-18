@@ -109,8 +109,13 @@
     }
 
     // Enforce payment when flagged as required
-    if (config.paymentOptional === false && !payload.paymentDeclared) {
-      return { ok: false, error: 'Payment is required before approval. Please complete the payment and include the transaction reference.' };
+    var minPkr = config.accessPriceMinPKR || DEFAULT_ACCESS_CONFIG.accessPriceMinPKR;
+    if (config.paymentOptional === false) {
+      payload.paymentDeclared = true;
+      var amount = normalizePaymentAmount(payload.paymentAmountPKR);
+      if (!amount || amount < minPkr) {
+        return { ok: false, error: 'Minimum payment is PKR ' + minPkr.toLocaleString() + '. Please enter the amount you are sending.' };
+      }
     }
 
     var existingUser = await db.collection('authorized_users').doc(email).get();
@@ -146,6 +151,13 @@
       emailError: null,
       userAgent: navigator.userAgent.substring(0, 200),
     }, { merge: false });
+
+    // Auto-send payment_due email when payment is required
+    if (config.paymentOptional === false) {
+      try {
+        await sendPaymentDueEmail(db, verified.nameFull || payload.name || email, email, verified.applicantId);
+      } catch (_) { /* non-blocking */ }
+    }
 
     return { ok: true, email: email, applicantId: verified.applicantId, nameFull: verified.nameFull };
   }
@@ -216,32 +228,35 @@
 
   function renderPaymentBlock(config, applicantId) {
     if (!config || !config.showOnRequestPage) return '';
-    var priceLine = '';
     var range = formatPriceRange(config);
+    var isRequired = config.paymentOptional === false;
+    var badge = isRequired
+      ? '<span class="auth-pay-badge required">Required</span>'
+      : '<span class="auth-pay-badge">Optional</span>';
+    var priceHtml = '';
     if (range.minPkr || range.maxPkr) {
-      priceLine = '<p class="auth-pay-price">Suggested contribution: <strong>' + range.pkrPart + '</strong> <span class="auth-pay-usd">(≈ ' + range.usdPart + ' USD)</span></p>' +
-        '<p class="auth-pay-min">Minimum <strong>PKR ' + range.minPkr.toLocaleString() + '</strong> — pay any amount in this range.</p>';
+      priceHtml = ' <span class="auth-pay-range">' + range.pkrPart + ' <span class="auth-pay-usd">(' + range.usdPart + ' USD)</span></span>';
     }
-    var optional = config.paymentOptional
-      ? '<span class="auth-pay-badge">Optional</span>'
-      : '<span class="auth-pay-badge required">Required before approval</span>';
-    var refHint = applicantId
-      ? 'If you pay, include Applicant ID <code>' + escHtml(applicantId) + '</code> in the payment note when possible, then paste the banking app transaction/reference number below.'
-      : 'If you pay, paste the transaction/reference number from your banking app below after verification.';
+    var country = config.country || 'PK';
+    var bankLine = '';
+    if (config.bankName) {
+      bankLine = ' &middot; <span class="auth-pay-bank">' + escHtml(config.bankName) + '</span>';
+    }
     return (
       '<div class="auth-pay-box">' +
-        '<div class="auth-pay-head">' + optional + ' Support / access fee</div>' +
-        priceLine +
-        '<p class="auth-pay-note">' + escHtml(config.paymentNote || '') + '</p>' +
-        '<div class="auth-pay-row"><span>Account</span><code class="auth-pay-val" data-copy="' + escAttr(formatAccountNumber(config.accountNumber)) + '">' + escHtml(config.accountNumber || '—') + '</code></div>' +
-        (config.bankName ? '<div class="auth-pay-row"><span>Bank</span><span>' + escHtml(config.bankName) + '</span></div>' : '') +
-        '<p class="auth-pay-ref"><strong>Transaction reference:</strong> ' + refHint + '</p>' +
-        '<p class="auth-pay-ref-help">Use this only for a real payment transaction/reference number. For access issues, complaints, or other queries, use the Message to admin box below.</p>' +
-        '<label class="auth-pay-check"><input type="checkbox" id="authPayDeclared" /> I have sent payment (or will send soon)</label>' +
-        '<label class="auth-pay-input-label" for="authPayAmountPKR">Amount being sent (PKR, optional)</label>' +
-        '<input type="number" id="authPayAmountPKR" class="auth-pay-ref-input" placeholder="e.g. 250" min="0" step="1" inputmode="numeric" />' +
-        '<label class="auth-pay-input-label" for="authPayRef">Transaction/reference number (optional)</label>' +
-        '<input type="text" id="authPayRef" class="auth-pay-ref-input" placeholder="Payment transaction/reference number only (optional)" maxlength="120" />' +
+        '<div class="auth-pay-head">' + badge + ' Payment' + priceHtml + '</div>' +
+        '<div class="auth-pay-account">' +
+          '<span class="auth-pay-label">Account</span>' +
+          '<code class="auth-pay-val" data-copy="' + escAttr(formatAccountNumber(config.accountNumber)) + '">' + escHtml(config.accountNumber || '—') + '</code>' +
+          bankLine +
+        '</div>' +
+        (isRequired ? '' : '<label class="auth-pay-check">' +
+          '<input type="checkbox" id="authPayDeclared" /> I want to contribute' +
+        '</label>') +
+        '<div class="auth-pay-details">' +
+          '<input type="number" id="authPayAmountPKR" class="auth-pay-input" placeholder="Amount PKR" min="0" step="1" inputmode="numeric"' + (isRequired ? ' required' : '') + ' />' +
+          '<input type="text" id="authPayRef" class="auth-pay-input" placeholder="Transaction ref (optional)" maxlength="120" />' +
+        '</div>' +
       '</div>'
     );
   }
@@ -254,6 +269,68 @@
 
   function escAttr(s) {
     return escHtml(s).replace(/'/g, '&#39;');
+  }
+
+  async function sendPaymentDueEmail(dbInstance, name, email, applicantId) {
+    try {
+      await dbInstance.collection('mail').add({
+        to: [email],
+        template: {
+          name: 'payment_due',
+          data: {
+            name: name || email,
+            email: email,
+            applicantId: applicantId || '',
+            portalUrl: 'https://itskaero.github.io/meritnama/',
+            logoUrl: 'https://itskaero.github.io/meritnama/logo.png',
+          },
+        },
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        source: 'payment_due_auto',
+      });
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }
+
+  async function submitPaymentProof(dbInstance, email, photoBase64, textMessage) {
+    var e = String(email || '').trim().toLowerCase();
+    if (!e) return { ok: false, error: 'Email is required.' };
+    var existingReq = await dbInstance.collection('access_requests').doc(e).get();
+    if (!existingReq.exists) {
+      return { ok: false, error: 'No access request found for this email.' };
+    }
+    var existingData = existingReq.data();
+    if (existingData.status === 'approved' && !existingData.paymentVerified) {
+      // Update the existing request doc with proof data
+      await dbInstance.collection('access_requests').doc(e).update({
+        paymentProof: {
+          photoBase64: photoBase64 || null,
+          textMessage: String(textMessage || '').trim(),
+          submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        },
+        paymentProofSubmitted: true,
+        paymentProofSubmittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      return { ok: true, email: e };
+    }
+    if (existingData.status === 'pending') {
+      await dbInstance.collection('access_requests').doc(e).update({
+        paymentProof: {
+          photoBase64: photoBase64 || null,
+          textMessage: String(textMessage || '').trim(),
+          submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        },
+        paymentProofSubmitted: true,
+        paymentProofSubmittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      return { ok: true, email: e };
+    }
+    if (existingData.paymentVerified) {
+      return { ok: false, error: 'Payment already verified for this email.' };
+    }
+    return { ok: false, error: 'Cannot submit payment proof for this request.' };
   }
 
   global.MNAccessRequest = {
@@ -270,5 +347,7 @@
     formatPriceRange: formatPriceRange,
     normalizePaymentConfig: normalizePaymentConfig,
     formatAccountNumber: formatAccountNumber,
+    sendPaymentDueEmail: sendPaymentDueEmail,
+    submitPaymentProof: submitPaymentProof,
   };
 })(window);

@@ -218,6 +218,7 @@
         '<div class="auth-tabs" id="authTabs">' +
           '<button type="button" class="auth-tab active" data-auth-tab="login">Sign In</button>' +
           '<button type="button" class="auth-tab" data-auth-tab="request" id="authRequestTab" style="display:none;">Request Access</button>' +
+          '<button type="button" class="auth-tab" data-auth-tab="proof" id="authProofTab" style="display:none;">Submit Payment</button>' +
         '</div>' +
         '<div class="auth-panel active" id="authPanelLogin">' +
           '<h2>Private Access</h2>' +
@@ -255,6 +256,26 @@
           '<p class="auth-error" id="reqError"></p>' +
           '<p class="auth-success" id="reqSuccess" style="display:none;"></p>' +
         '</div>' +
+        '<div class="auth-panel" id="authPanelProof">' +
+          '<h2>Submit Payment Proof</h2>' +
+          '<p class="auth-subtitle">Upload a screenshot or photo of your payment transaction and/or add a message.</p>' +
+          '<div class="auth-field">' +
+            '<label for="proofEmail">Email used for access request</label>' +
+            '<input type="email" id="proofEmail" placeholder="your@email.com" autocomplete="email" />' +
+          '</div>' +
+          '<div class="auth-field">' +
+            '<label for="proofPhoto">Upload payment screenshot/photo</label>' +
+            '<input type="file" id="proofPhoto" accept="image/*" capture="environment" style="font-size:0.85rem;padding:0.5rem 0;" />' +
+            '<div id="proofPhotoPreview" style="display:none;margin-top:0.5rem;border:1px solid rgba(77,184,217,0.2);border-radius:8px;overflow:hidden;max-width:100%;max-height:200px;"></div>' +
+          '</div>' +
+          '<div class="auth-field">' +
+            '<label for="proofMessage">Message <span style="text-transform:none;font-weight:400;">(optional)</span></label>' +
+            '<textarea id="proofMessage" maxlength="600" placeholder="Any details about your payment..."></textarea>' +
+          '</div>' +
+          '<button class="auth-btn" id="proofSubmit">Submit Proof</button>' +
+          '<p class="auth-error" id="proofError"></p>' +
+          '<p class="auth-success" id="proofSuccess" style="display:none;"></p>' +
+        '</div>' +
         '<p class="auth-footer">Access is invite-only. Approved requests receive credentials by email.</p>' +
         '<p class="auth-link-row"><a href="request-access.html" id="authRequestFullLink" style="display:none;">Open full request page</a><span id="authRequestLinkSep" style="display:none;"> &middot; </span><a href="donate.html">Support MeritNama</a></p>' +
       '</div>';
@@ -267,7 +288,8 @@
           t.classList.toggle('active', t.getAttribute('data-auth-tab') === name);
         });
         gate.querySelectorAll('.auth-panel').forEach(function (p) { p.classList.remove('active'); });
-        var panel = document.getElementById(name === 'login' ? 'authPanelLogin' : 'authPanelRequest');
+        var panelMap = { login: 'authPanelLogin', request: 'authPanelRequest', proof: 'authPanelProof' };
+        var panel = document.getElementById(panelMap[name] || 'authPanelLogin');
         if (panel) panel.classList.add('active');
       });
     });
@@ -281,6 +303,7 @@
       var errorEl    = document.getElementById('authError');
 
       configureRequestAccess(db, gate);
+      initProofPanel(db, gate);
 
       async function getUserIP() {
         try {
@@ -409,6 +432,75 @@
       setRequestAccessVisible(gate, cfg.requestAccessEnabled !== false);
       if (cfg.requestAccessEnabled !== false) initRequestPanel(db, gate, cfg);
     });
+  }
+
+  function initProofPanel(db, gate) {
+    const proofTab = document.getElementById('authProofTab');
+    if (proofTab) proofTab.style.display = '';
+    var proofEmail = document.getElementById('proofEmail');
+    var proofPhoto = document.getElementById('proofPhoto');
+    var proofPhotoPreview = document.getElementById('proofPhotoPreview');
+    var proofMessage = document.getElementById('proofMessage');
+    var proofBtn = document.getElementById('proofSubmit');
+    var proofErr = document.getElementById('proofError');
+    var proofOk = document.getElementById('proofSuccess');
+    var proofPhotoBase64 = '';
+
+    if (proofPhoto) {
+      proofPhoto.addEventListener('change', function () {
+        var file = proofPhoto.files[0];
+        if (!file) { proofPhotoPreview.style.display = 'none'; proofPhotoBase64 = ''; return; }
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          proofPhotoBase64 = e.target.result;
+          proofPhotoPreview.style.display = 'block';
+          proofPhotoPreview.innerHTML = '<img src="' + proofPhotoBase64 + '" style="max-width:100%;max-height:190px;display:block;border-radius:6px;" alt="Payment proof" />';
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if (proofBtn) {
+      proofBtn.addEventListener('click', async function () {
+        proofErr.textContent = '';
+        if (proofOk) { proofOk.style.display = 'none'; proofOk.textContent = ''; }
+        var email = String(proofEmail ? proofEmail.value : '').trim().toLowerCase();
+        if (!email) {
+          proofErr.textContent = 'Enter your email used for the access request.';
+          return;
+        }
+        proofBtn.disabled = true;
+        proofBtn.textContent = 'Submitting\u2026';
+        try {
+          var AR = window.MNAccessRequest;
+          if (!AR || !AR.submitPaymentProof) {
+            proofErr.textContent = 'Service unavailable. Try again later.';
+            return;
+          }
+          var result = await AR.submitPaymentProof(db, email, proofPhotoBase64, proofMessage ? proofMessage.value : '');
+          if (!result.ok) {
+            proofErr.textContent = result.error || 'Failed to submit.';
+            return;
+          }
+          if (proofOk) {
+            proofOk.style.display = 'block';
+            proofOk.textContent = 'Payment proof submitted for ' + result.email + '. The admin will review it.';
+          }
+          proofBtn.textContent = 'Submitted';
+          if (proofPhoto) { proofPhoto.value = ''; proofPhotoBase64 = ''; }
+          if (proofPhotoPreview) proofPhotoPreview.style.display = 'none';
+          if (proofMessage) proofMessage.value = '';
+        } catch (err) {
+          proofErr.textContent = 'Could not submit. Try again.';
+          console.error(err);
+        } finally {
+          if (proofBtn.textContent === 'Submitting\u2026') {
+            proofBtn.disabled = false;
+            proofBtn.textContent = 'Submit Proof';
+          }
+        }
+      });
+    }
   }
 
   function initRequestPanel(db, gate, initialConfig) {

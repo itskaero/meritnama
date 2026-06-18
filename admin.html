@@ -385,6 +385,28 @@
     .modal-status.success { color: var(--success); }
     .modal-status.error   { color: var(--danger); }
 
+    .photo-lightbox {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1100; backdrop-filter: blur(8px);
+      cursor: zoom-out;
+    }
+    .photo-lightbox.open { display: flex; }
+    .photo-lightbox img {
+      max-width: 94vw; max-height: 94vh;
+      border-radius: 8px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.8);
+      object-fit: contain;
+      cursor: default;
+    }
+    .photo-lightbox .close-btn {
+      position: fixed; top: 1rem; right: 1.5rem;
+      font-size: 2rem; color: #fff; cursor: pointer;
+      opacity: 0.7; transition: opacity 0.2s; line-height: 1;
+      z-index: 1110; background: none; border: none;
+    }
+    .photo-lightbox .close-btn:hover { opacity: 1; }
 
     /* ── Tab Navigation ──────────────────────────────── */
     .tab-nav {
@@ -1117,6 +1139,7 @@
               <th>App ID</th>
               <th>Payment</th>
               <th>Message</th>
+              <th>Proof</th>
               <th>Status</th>
               <th>Requested</th>
               <th>Email</th>
@@ -1124,7 +1147,7 @@
             </tr>
           </thead>
           <tbody id="requestsBody">
-            <tr><td colspan="9" class="empty-state">Loading requests…</td></tr>
+            <tr><td colspan="10" class="empty-state">Loading requests…</td></tr>
           </tbody>
         </table>
       </div>
@@ -1633,6 +1656,11 @@
 </div>
 
 <!-- Contribution Modal -->
+<div class="photo-lightbox" id="photoLightbox" onclick="closePhotoModal(event)">
+  <button class="close-btn" onclick="closePhotoModal()">&times;</button>
+  <img id="photoLightboxImg" src="" alt="Payment proof" />
+</div>
+
 <div class="modal-overlay" id="addContribModal">
   <div class="modal-card">
     <div class="modal-title" id="contribModalTitle">Add Contribution</div>
@@ -1756,6 +1784,20 @@ function setText(id, val) {
   if (el) el.textContent = val;
 }
 
+function showPhotoModal(id) {
+  var dataEl = document.getElementById(id + '_data');
+  var imgEl = document.getElementById('photoLightboxImg');
+  var lightbox = document.getElementById('photoLightbox');
+  if (!dataEl || !imgEl || !lightbox) return;
+  imgEl.src = dataEl.textContent;
+  lightbox.classList.add('open');
+}
+function closePhotoModal(event) {
+  if (event && event.target !== document.getElementById('photoLightbox') && event.target.tagName !== 'IMG') return;
+  var lightbox = document.getElementById('photoLightbox');
+  if (lightbox) lightbox.classList.remove('open');
+}
+
 function showAdminToast(msg, type = 'info') {
   const el = document.getElementById('adminToast');
   if (!el) return;
@@ -1804,6 +1846,7 @@ const PORTAL_URL = 'https://itskaero.github.io/meritnama/';
 const LOGO_URL   = 'https://itskaero.github.io/meritnama/logo.png';
 const FIREBASE_MAIL_COLLECTION = 'mail';
 const WELCOME_EMAIL_TEMPLATE = 'welcome_access';
+const PAYMENT_DUE_EMAIL_TEMPLATE = 'payment_due';
 
 async function sendWelcomeEmail(name, email, pin, accessLevel) {
   return db.collection(FIREBASE_MAIL_COLLECTION).add({
@@ -1821,6 +1864,24 @@ async function sendWelcomeEmail(name, email, pin, accessLevel) {
     },
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     source: 'admin_portal_access',
+  });
+}
+
+async function sendPaymentDueEmail(name, email, applicantId) {
+  return db.collection(FIREBASE_MAIL_COLLECTION).add({
+    to: [email],
+    template: {
+      name: PAYMENT_DUE_EMAIL_TEMPLATE,
+      data: {
+        name: name || email,
+        email,
+        applicantId: applicantId || '',
+        portalUrl: PORTAL_URL,
+        logoUrl: LOGO_URL,
+      },
+    },
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    source: 'admin_payment_due',
   });
 }
 
@@ -3228,7 +3289,7 @@ function renderAccessRequests() {
   if (countEl) countEl.textContent = `${rows.length} shown · ${allAccessRequests.filter(r => r.status === 'pending').length} pending`;
 
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No matching requests.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">No matching requests.</td></tr>';
     return;
   }
 
@@ -3241,6 +3302,30 @@ function renderAccessRequests() {
     const pay = (r.paymentDeclared || paymentMeta.length)
       ? `${r.paymentDeclared ? 'Yes' : '<span style="opacity:0.75">Not declared</span>'}${r.paymentVerified ? '<div><span class="badge badge-success" style="margin-top:4px;">Verified</span></div>' : ''}${paymentMeta.length ? `<div class="invite-meta-sub">${paymentMeta.join('<br>')}</div>` : ''}`
       : '<span style="opacity:0.55">—</span>';
+
+    // Payment proof display
+    let proofHtml = '<span style="opacity:0.55">—</span>';
+    if (r.paymentProof) {
+      var proofParts = [];
+      if (r.paymentProof.photoBase64) {
+        var photoId = 'pp_' + escapeHtml(r.email).replace(/[^a-zA-Z0-9]/g, '_');
+        var dataId = photoId + '_data';
+        proofParts.push('<a href="javascript:void(0)" onclick="showPhotoModal(\'' + photoId + '\')" id="' + photoId + '" style="color:var(--accent);text-decoration:underline;">View Photo</a>');
+        proofParts.push('<div id="' + dataId + '" style="display:none;">' + escapeHtml(r.paymentProof.photoBase64) + '</div>');
+      }
+      if (r.paymentProof.textMessage) {
+        var shortMsg = r.paymentProof.textMessage.length > 80 ? r.paymentProof.textMessage.slice(0, 78) + '…' : r.paymentProof.textMessage;
+        proofParts.push('<span title="' + escapeHtml(r.paymentProof.textMessage) + '">' + escapeHtml(shortMsg) + '</span>');
+      }
+      if (r.paymentProof.submittedAt) {
+        var d = r.paymentProof.submittedAt.toDate ? r.paymentProof.submittedAt.toDate() : null;
+        if (d) proofParts.push('<span class="invite-meta-sub">' + d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) + '</span>');
+      }
+      proofHtml = proofParts.join('<br>') || '<span style="opacity:0.55">—</span>';
+    } else if (r.paymentProofSubmitted) {
+      proofHtml = '<span style="color:var(--success);">Submitted</span>';
+    }
+
     const adminMessage = r.message
       ? `<div class="request-message-cell">${escapeHtml(r.message)}</div>`
       : '<span style="opacity:0.55">—</span>';
@@ -3253,13 +3338,17 @@ function renderAccessRequests() {
     if (r.status === 'pending') {
       actions = `
         <button class="action-btn" data-action="approve-req" data-email="${escapeHtml(r.email)}">Approve</button>
-        <button class="action-btn" data-action="reject-req" data-email="${escapeHtml(r.email)}">Reject</button>`;
+        <button class="action-btn" data-action="reject-req" data-email="${escapeHtml(r.email)}">Reject</button>
+        <button class="action-btn" data-action="send-payment-due" data-email="${escapeHtml(r.email)}" title="Send payment due email">Payment Due</button>`;
     } else if (r.status === 'approved') {
       actions = `<button class="action-btn" data-action="copy-req-pin" data-email="${escapeHtml(r.email)}">Copy PIN</button>`;
       if (!r.emailSent && r.approvedPin) {
         actions += ` <button class="action-btn" data-action="resend-req" data-email="${escapeHtml(r.email)}">Send email</button>`;
       }
-      if ((r.paymentDeclared || r.paymentReference || r.paymentAmountPKR) && !r.paymentVerified) {
+      if (!r.paymentVerified) {
+        actions += ` <button class="action-btn" data-action="send-payment-due" data-email="${escapeHtml(r.email)}" title="Send payment due email">Payment Due</button>`;
+      }
+      if ((r.paymentDeclared || r.paymentReference || r.paymentAmountPKR || r.paymentProof) && !r.paymentVerified) {
         actions += ` <button class="action-btn" data-action="verify-payment" data-email="${escapeHtml(r.email)}">Verify payment</button>`;
       }
     }
@@ -3269,6 +3358,7 @@ function renderAccessRequests() {
       <td><code>${escapeHtml(String(r.applicantId || '—'))}</code></td>
       <td>${pay}</td>
       <td>${adminMessage}</td>
+      <td style="font-size:0.78rem;max-width:160px;overflow:hidden;">${proofHtml}</td>
       <td>${requestStatusBadge(r.status)}</td>
       <td>${formatRequestDate(r.requestedAt)}</td>
       <td>${emailCol}</td>
@@ -3286,7 +3376,23 @@ function updateAccessRequestBadge() {
 async function approveAccessRequest(email) {
   const req = allAccessRequests.find(r => r.email === email);
   if (!req || req.status !== 'pending') return;
-  if (!confirm(`Approve access for ${email}?\n\nA PIN will be generated and a welcome email attempted.`)) return;
+
+  // Check if payment is required (paymentOptional === false)
+  var configSnap;
+  var paymentRequired = false;
+  try {
+    configSnap = await db.collection('notifications').doc('access_config').get();
+    if (configSnap.exists) {
+      var cfg = configSnap.data();
+      if (cfg.paymentOptional === false) paymentRequired = true;
+    }
+  } catch (_) {}
+
+  if (paymentRequired) {
+    if (!confirm(`Approve ${email}?\n\nPayment is REQUIRED. The applicant will receive a payment_due email and must submit proof before full access is granted.`)) return;
+  } else {
+    if (!confirm(`Approve access for ${email}?\n\nA PIN will be generated and a welcome email attempted.`)) return;
+  }
 
   const pin = generateAccessPin();
   try {
@@ -3296,24 +3402,47 @@ async function approveAccessRequest(email) {
       pin,
       level: 'Standard User',
       inviteLimit: 2,
-      sendEmail: true,
+      sendEmail: !paymentRequired,
       applicantId: req.applicantId,
       inviteSource: 'access_request',
     });
 
-    await db.collection('access_requests').doc(email).update({
+    var updateData = {
       status: 'approved',
       reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
       reviewedBy: getAdminSessionEmail() || null,
       approvedPin: pin,
-      emailSent: !!result.emailSent,
-      emailError: result.emailError || null,
-    });
+    };
 
-    if (result.emailSent) {
-      showAdminToast(`Approved ${email} — welcome email sent.`, 'success');
+    if (paymentRequired) {
+      updateData.paymentVerified = false;
+      updateData.emailSent = false;
+      updateData.emailError = null;
     } else {
-      showAdminToast(`Approved ${email} — email failed. PIN: ${pin}`, 'error');
+      updateData.emailSent = !!result.emailSent;
+      updateData.emailError = result.emailError || null;
+    }
+
+    await db.collection('access_requests').doc(email).update(updateData);
+
+    if (paymentRequired) {
+      // Send payment_due email
+      try {
+        await sendPaymentDueEmail(req.nameFull || email, email, req.applicantId || '');
+        await db.collection('access_requests').doc(email).update({
+          paymentDueSent: true,
+          paymentDueSentAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        showAdminToast(`Approved ${email} — payment_due email sent.`, 'success');
+      } catch (emailErr) {
+        showAdminToast(`Approved ${email} — but payment_due email failed. PIN: ${pin}`, 'error');
+      }
+    } else {
+      if (result.emailSent) {
+        showAdminToast(`Approved ${email} — welcome email sent.`, 'success');
+      } else {
+        showAdminToast(`Approved ${email} — email failed. PIN: ${pin}`, 'error');
+      }
     }
     await loadAccessRequests();
     await loadUsers();
@@ -3362,6 +3491,24 @@ async function resendAccessRequestEmail(email) {
   }
 }
 
+async function sendPaymentDueToRequest(email) {
+  const req = allAccessRequests.find(r => r.email === email);
+  if (!req) return;
+  var name = req.nameFull || email;
+  var applicantId = req.applicantId || '';
+  try {
+    await sendPaymentDueEmail(name, email, applicantId);
+    await db.collection('access_requests').doc(email).update({
+      paymentDueSent: true,
+      paymentDueSentAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    showAdminToast('Payment due email sent to ' + email, 'success');
+    await loadAccessRequests();
+  } catch (err) {
+    showAdminToast('Failed: ' + (err?.message || String(err)), 'error');
+  }
+}
+
 async function verifyAccessRequestPayment(email) {
   const req = allAccessRequests.find(r => r.email === email);
   if (!req) return;
@@ -3395,6 +3542,20 @@ async function verifyAccessRequestPayment(email) {
       paymentVerifiedBy: getAdminSessionEmail() || null,
       contributionId: ref.id,
     });
+
+    // Send welcome email if it hasn't been sent yet (payment-required flow)
+    if (req.approvedPin && !req.emailSent) {
+      try {
+        await sendWelcomeEmail(req.nameFull || email, email, req.approvedPin, 'Standard User');
+        await db.collection('access_requests').doc(email).update({
+          emailSent: true,
+          emailError: null,
+        });
+      } catch (emailErr) {
+        showAdminToast('Welcome email failed after verification. PIN: ' + req.approvedPin, 'error');
+      }
+    }
+
     showAdminToast('Payment verified and contribution added.', 'success');
     await loadAccessRequests();
     if (document.getElementById('tab-contributions')?.style.display !== 'none') await loadContributions();
@@ -5194,6 +5355,7 @@ document.getElementById('requestsBody')?.addEventListener('click', function (e) 
   else if (action === 'resend-req') resendAccessRequestEmail(email);
   else if (action === 'copy-req-pin') copyAccessRequestPin(email);
   else if (action === 'verify-payment') verifyAccessRequestPayment(email);
+  else if (action === 'send-payment-due') sendPaymentDueToRequest(email);
 });
 
 if (getAdminSession()) {

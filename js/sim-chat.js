@@ -1,5 +1,24 @@
+// ── Chat photo lightbox ──────────────────────────────────────────────
+
+function showChatPhoto(imgEl) {
+  var lightbox = document.getElementById('chatPhotoLightbox');
+  var lightboxImg = document.getElementById('chatPhotoLightboxImg');
+  if (!lightbox || !lightboxImg) return;
+  lightboxImg.src = imgEl.src;
+  lightbox.classList.add('open');
+}
+
+function closeChatPhoto(event) {
+  var lightbox = document.getElementById('chatPhotoLightbox');
+  if (!lightbox) return;
+  if (event && event.target !== lightbox && event.target.id !== 'chatPhotoLightboxImg') return;
+  lightbox.classList.remove('open');
+  var img = document.getElementById('chatPhotoLightboxImg');
+  if (img) img.src = '';
+}
+
 // ═══════════════════════════════════════════════════════════════════
-// COMMUNITY CHAT
+// END COMMUNITY CHAT
 // ═══════════════════════════════════════════════════════════════════
 
 const CHAT = {
@@ -995,7 +1014,8 @@ function _chatMessageBodyHtml(msg) {
   if (msg.text) parts.push(_chatFormatMessageText(msg.text));
   const imageSrc = msg.imageData || msg.imageUrl;
   if (imageSrc) {
-    parts.push(`<a href="${esc(imageSrc)}" target="_blank" rel="noopener"><img class="chat-msg-image" src="${esc(imageSrc)}" alt="Shared image" loading="lazy" /></a>`);
+    const imgId = 'cimg_' + String(Math.random()).slice(2, 10);
+    parts.push(`<img class="chat-msg-image" src="${esc(imageSrc)}" alt="Shared image" loading="lazy" onclick="showChatPhoto(this)" id="${imgId}" />`);
   }
   const fileSrc = msg.fileData || msg.fileUrl;
   if (fileSrc) {

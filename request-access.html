@@ -276,8 +276,8 @@
       <div class="req-step">
         <div class="req-step-num">2</div>
         <div class="req-step-body">
-          <strong>Optional support</strong>
-          <span>Contributions help cover data-fetch costs. Payment is optional and not required for approval.</span>
+          <strong>Payment</strong>
+          <span>If payment is required, submit the requested amount and note the transaction reference. You can later upload proof of payment.</span>
         </div>
       </div>
       <div class="req-step">
@@ -323,6 +323,33 @@
         <p class="auth-success" id="reqSuccess" style="display:none;"></p>
 
         <p class="req-signin-link">Approved already? <a href="app.html">Unlock the portal &rarr;</a></p>
+      </div>
+    </section>
+
+    <section class="req-panel" id="proofPanel" style="display:none;">
+      <div class="req-panel-head">
+        <span aria-hidden="true">&#128230;</span>
+        <h2>Submit payment proof</h2>
+        <span class="req-panel-badge" style="background:rgba(83,204,153,0.10);border-color:rgba(83,204,153,0.25);color:var(--success);">Payment</span>
+      </div>
+      <div class="req-panel-body req-access-form">
+        <p class="req-panel-intro">Already submitted a request and were asked to pay? Submit your payment proof here.</p>
+        <div class="auth-field">
+          <label for="proofEmailStandalone">Email used in request</label>
+          <input type="email" id="proofEmailStandalone" placeholder="same email as your access request" autocomplete="email" />
+        </div>
+        <div class="auth-field">
+          <label for="proofPhotoStandalone">Payment screenshot (optional)</label>
+          <input type="file" id="proofPhotoStandalone" accept="image/*" capture="environment" />
+          <div id="proofPhotoPreviewStandalone" style="display:none;margin-top:8px;"></div>
+        </div>
+        <div class="auth-field">
+          <label for="proofMessageStandalone">Payment details / message <span style="text-transform:none;font-weight:400;">(optional)</span></label>
+          <textarea id="proofMessageStandalone" maxlength="1000" placeholder="Transaction ID, reference number, any notes about your payment"></textarea>
+        </div>
+        <button class="auth-btn" id="proofSubmitStandalone" type="button">Submit Proof</button>
+        <p class="auth-error" id="proofErrorStandalone"></p>
+        <p class="auth-success" id="proofSuccessStandalone" style="display:none;"></p>
       </div>
     </section>
 
@@ -395,6 +422,10 @@
     wireCopy(document.body);
   });
 
+  // Always show proof panel (users who were asked to pay can still submit proof even if requests are closed)
+  var proofPanel = document.getElementById('proofPanel');
+  if (proofPanel) proofPanel.style.display = '';
+
   async function runVerify() {
     if (reqPrev) { reqPrev.classList.remove('visible'); reqPrev.textContent = ''; }
     if (!reqEmail.value.trim() || !reqId.value.trim()) return;
@@ -418,6 +449,67 @@
 
   reqEmail.addEventListener('input', scheduleVerify);
   reqId.addEventListener('input', scheduleVerify);
+
+  // --- Payment proof (standalone) ---
+  var proofPhotoStandalone = document.getElementById('proofPhotoStandalone');
+  var proofPhotoPreviewStandalone = document.getElementById('proofPhotoPreviewStandalone');
+  var proofPhotoBase64Standalone = '';
+  if (proofPhotoStandalone) {
+    proofPhotoStandalone.addEventListener('change', function () {
+      var file = proofPhotoStandalone.files[0];
+      if (!file) { proofPhotoPreviewStandalone.style.display = 'none'; proofPhotoBase64Standalone = ''; return; }
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        proofPhotoBase64Standalone = e.target.result;
+        proofPhotoPreviewStandalone.style.display = 'block';
+        proofPhotoPreviewStandalone.innerHTML = '<img src="' + proofPhotoBase64Standalone + '" style="max-width:100%;max-height:190px;display:block;border-radius:6px;" alt="Payment proof" />';
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  var proofBtnStandalone = document.getElementById('proofSubmitStandalone');
+  var proofErrStandalone = document.getElementById('proofErrorStandalone');
+  var proofOkStandalone = document.getElementById('proofSuccessStandalone');
+  var proofEmailStandalone = document.getElementById('proofEmailStandalone');
+  var proofMessageStandalone = document.getElementById('proofMessageStandalone');
+
+  if (proofBtnStandalone) {
+    proofBtnStandalone.addEventListener('click', async function () {
+      if (proofErrStandalone) proofErrStandalone.textContent = '';
+      if (proofOkStandalone) { proofOkStandalone.style.display = 'none'; proofOkStandalone.textContent = ''; }
+      var email = String(proofEmailStandalone ? proofEmailStandalone.value : '').trim().toLowerCase();
+      if (!email) {
+        if (proofErrStandalone) proofErrStandalone.textContent = 'Enter your email used for the access request.';
+        return;
+      }
+      proofBtnStandalone.disabled = true;
+      proofBtnStandalone.textContent = 'Submitting\u2026';
+      try {
+        var result = await AR.submitPaymentProof(db, email, proofPhotoBase64Standalone, proofMessageStandalone ? proofMessageStandalone.value : '');
+        if (!result.ok) {
+          if (proofErrStandalone) proofErrStandalone.textContent = result.error || 'Failed to submit.';
+          return;
+        }
+        if (proofOkStandalone) {
+          proofOkStandalone.style.display = 'block';
+          proofOkStandalone.textContent = 'Payment proof submitted for ' + result.email + '. The admin will review it.';
+        }
+        proofBtnStandalone.textContent = 'Submitted';
+        if (proofPhotoStandalone) { proofPhotoStandalone.value = ''; proofPhotoBase64Standalone = ''; }
+        if (proofPhotoPreviewStandalone) proofPhotoPreviewStandalone.style.display = 'none';
+        if (proofMessageStandalone) proofMessageStandalone.value = '';
+      } catch (err) {
+        if (proofErrStandalone) proofErrStandalone.textContent = 'Could not submit. Try again.';
+        console.error(err);
+      } finally {
+        if (proofBtnStandalone.textContent === 'Submitting\u2026') {
+          proofBtnStandalone.disabled = false;
+          proofBtnStandalone.textContent = 'Submit Proof';
+        }
+      }
+    });
+  }
 
   reqBtn.addEventListener('click', async function () {
     reqErr.textContent = '';

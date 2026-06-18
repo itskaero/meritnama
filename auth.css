@@ -305,81 +305,34 @@
   color: #f5c842;
 }
 
-#authGate .auth-pay-price { margin: 0 0 0.35rem; color: #94a8c4; }
-#authGate .auth-pay-usd { font-weight: 400; font-size: 0.88em; opacity: 0.9; }
-#authGate .auth-pay-min { margin: 0 0 0.45rem; font-size: 0.72rem; color: #6b84a8; }
-#authGate .auth-pay-note { margin: 0 0 0.65rem; color: #6b84a8; line-height: 1.4; }
-
-#authGate .auth-pay-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.35rem;
-  color: #94a8c4;
+#authGate .auth-pay-range {
+  font-weight: 400; font-size: 0.88em; opacity: 0.85; margin-left: auto;
 }
+#authGate .auth-pay-usd { font-weight: 400; font-size: 0.88em; opacity: 0.75; }
 
+#authGate .auth-pay-account {
+  display: flex; align-items: center; gap: 0.5rem;
+  margin-bottom: 0.55rem; color: #94a8c4; font-size: 0.78rem;
+}
+#authGate .auth-pay-label { opacity: 0.7; }
 #authGate .auth-pay-val {
-  font-family: 'Courier New', monospace;
-  font-size: 0.82rem;
-  color: #e2ecf8;
-  cursor: pointer;
+  font-family: 'Courier New', monospace; font-size: 0.82rem;
+  color: #e2ecf8; cursor: pointer;
 }
-
-#authGate .auth-pay-ref {
-  margin: 0.55rem 0 0.65rem;
-  font-size: 0.72rem;
-  color: #6b84a8;
-}
-
-#authGate .auth-pay-ref strong,
-.req-access-form .auth-pay-ref strong {
-  color: #94a8c4;
-}
-
-#authGate .auth-pay-ref-help,
-.req-access-form .auth-pay-ref-help {
-  margin: -0.35rem 0 0.65rem;
-  font-size: 0.71rem;
-  color: #7f93b0;
-  line-height: 1.4;
-}
-
-#authGate .auth-pay-ref code {
-  background: rgba(77, 184, 217, 0.1);
-  padding: 0.1rem 0.35rem;
-  border-radius: 4px;
-}
+#authGate .auth-pay-bank { color: #6b84a8; }
 
 #authGate .auth-pay-check {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-size: 0.78rem;
-  color: #94a8c4;
-  margin-bottom: 0.5rem;
-  cursor: pointer;
+  display: flex; align-items: center; gap: 0.45rem;
+  font-size: 0.78rem; color: #94a8c4; margin-bottom: 0.5rem; cursor: pointer;
 }
 
-#authGate .auth-pay-input-label,
-.req-access-form .auth-pay-input-label {
-  display: block;
-  margin: 0.45rem 0 0.25rem;
-  font-size: 0.68rem;
-  color: #6b84a8;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  text-align: left;
+#authGate .auth-pay-details {
+  display: flex; gap: 0.5rem; align-items: center;
 }
-
-#authGate .auth-pay-ref-input {
-  width: 100%;
-  padding: 0.55rem 0.75rem;
-  border: 1px solid rgba(77, 184, 217, 0.18);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  color: #c8daf0;
-  font-size: 0.82rem;
+#authGate .auth-pay-input {
+  flex: 1; min-width: 0; padding: 0.5rem 0.7rem;
+  border: 1px solid rgba(77, 184, 217, 0.18); border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04); color: #c8daf0; font-size: 0.82rem;
 }
 
 #authGate .auth-link-row {
@@ -601,16 +554,12 @@ body.auth-locked > *:not(#authGate):not(#authVerifying):not(script):not(link):no
 .req-access-form .auth-pay-head { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: #c8daf0; margin-bottom: 0.5rem; }
 .req-access-form .auth-pay-badge { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.15rem 0.45rem; border-radius: 999px; background: rgba(77, 184, 217, 0.12); color: #4db8d9; }
 .req-access-form .auth-pay-badge.required { background: rgba(232, 166, 39, 0.15); color: #f5c842; }
-.req-access-form .auth-pay-price { margin: 0 0 0.35rem; color: #94a8c4; }
-.req-access-form .auth-pay-usd { font-weight: 400; font-size: 0.88em; opacity: 0.9; }
-.req-access-form .auth-pay-min { margin: 0 0 0.45rem; font-size: 0.72rem; color: #6b84a8; }
-.req-access-form .auth-pay-note { margin: 0 0 0.65rem; color: #6b84a8; line-height: 1.4; }
-.req-access-form .auth-pay-row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; color: #94a8c4; }
+.req-access-form .auth-pay-range { font-weight: 400; font-size: 0.88em; opacity: 0.85; margin-left: auto; }
+.req-access-form .auth-pay-usd { font-weight: 400; font-size: 0.88em; opacity: 0.75; }
+.req-access-form .auth-pay-account { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.55rem; color: #94a8c4; font-size: 0.78rem; }
+.req-access-form .auth-pay-label { opacity: 0.7; }
 .req-access-form .auth-pay-val { font-family: 'Courier New', monospace; font-size: 0.82rem; color: #e2ecf8; cursor: pointer; }
-.req-access-form .auth-pay-ref { margin: 0.55rem 0 0.65rem; font-size: 0.72rem; color: #6b84a8; }
-.req-access-form .auth-pay-ref code { background: rgba(77, 184, 217, 0.1); padding: 0.1rem 0.35rem; border-radius: 4px; }
+.req-access-form .auth-pay-bank { color: #6b84a8; }
 .req-access-form .auth-pay-check { display: flex; align-items: center; gap: 0.45rem; font-size: 0.78rem; color: #94a8c4; margin-bottom: 0.5rem; cursor: pointer; }
-.req-access-form .auth-pay-ref-input {
-  width: 100%; padding: 0.55rem 0.75rem; border: 1px solid rgba(77, 184, 217, 0.18);
-  border-radius: 8px; background: rgba(255, 255, 255, 0.04); color: #c8daf0; font-size: 0.82rem;
-}
+.req-access-form .auth-pay-details { display: flex; gap: 0.5rem; align-items: center; }
+.req-access-form .auth-pay-input { flex: 1; min-width: 0; padding: 0.5rem 0.7rem; border: 1px solid rgba(77, 184, 217, 0.18); border-radius: 8px; background: rgba(255, 255, 255, 0.04); color: #c8daf0; font-size: 0.82rem; }
