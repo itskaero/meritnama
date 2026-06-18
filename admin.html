@@ -725,6 +725,9 @@
       <button class="sidebar-link" data-tab="grievances"><span class="nav-icon">&#128233;</span> Inbox Requests <span class="nav-badge" id="navBadgeGrievances">—</span></button>
       <div class="sidebar-section">Finance</div>
       <button class="sidebar-link" data-tab="contributions"><span class="nav-icon">💰</span> Contributions</button>
+      <div class="sidebar-section">Audit</div>
+      <button class="sidebar-link" data-tab="download-logs"><span class="nav-icon">&#11015;</span> Download Logs</button>
+      <button class="sidebar-link" data-tab="user-activity"><span class="nav-icon">&#128100;</span> User Activity</button>
       <div class="sidebar-section">Site</div>
       <button class="sidebar-link" data-tab="broadcast"><span class="nav-icon">📢</span> Broadcast &amp; Config</button>
     </nav>
@@ -1381,98 +1384,87 @@
         </div>
       </details>
 
+      </details>
+    </div>
+
+    <!-- ── Tab: Download Logs ──────────────────────── -->
+    <div id="tab-download-logs" style="display:none;">
+      <div class="controls">
+        <input type="text" id="filterDownloadEmail" placeholder="Filter by email…" />
+        <input type="text" id="filterDownloadType" placeholder="Filter by report type…" />
+        <span id="downloadLogsCount" class="header-pill" style="font-size:0.72rem;">—</span>
+        <button id="refreshDownloadLogsBtn">&#x21BB; Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Email</th>
+              <th>Report Type</th>
+              <th>Filters</th>
+              <th>User Agent</th>
+            </tr>
+          </thead>
+          <tbody id="downloadLogsBody">
+            <tr><td colspan="5" class="empty-state">Loading download logs…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      
+    </div>
+
+    <!-- ── Tab: User Activity ───────────────────────── -->
+    <div id="tab-user-activity" style="display:none;">
+      <div class="panel" style="margin-bottom:1rem;">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Search user activity</div>
+            <div class="panel-sub">Enter an email to view all logs aggregated from access, download, screenshot, and activity sources</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+          <input type="email" id="uaEmail" placeholder="user@example.com" style="min-width:280px;padding:0.65rem 0.9rem;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.04);color:var(--text);font-size:0.9rem;font-family:var(--font);outline:none;" />
+          <button id="uaSearchBtn" style="padding:0.65rem 1.2rem;border:none;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:600;cursor:pointer;font-size:0.9rem;">Search</button>
+          <span id="uaStatus" style="font-size:0.8rem;color:var(--text-muted);"></span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Type</th>
+              <th>Details</th>
+              <th>Location</th>
+              <th>Metadata</th>
+            </tr>
+          </thead>
+          <tbody id="uaBody">
+            <tr><td colspan="5" class="empty-state">Enter an email and click Search to view activity.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      </div>
+
+    
+    <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+
+    <div id="universal-configs">
       <details class="broadcast-section">
         <summary>📊 Simulation Merit Formulas</summary>
         <div class="broadcast-section-body">
       <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
         Configure how base merit marks are calculated on the simulation page (candidate pool, slot browser, and allocation).
         Stored in <code>notifications/marks_config</code>. Users pick from these options unless you hide the selector.
-        Use adjustments when portal <code>marksTotal</code> includes or excludes components inconsistently (e.g. MDCAT).
-        Per-programme dict fields: <code>programAttempt</code> (FCPS), <code>programPercentage</code> (MD/MS), <code>programMarks</code>, and <code>adjusted</code> (all programmes).
-        Bare names use the active simulation programme; dotted keys like <code>programPercentage.MD</code> target a specific programme.
-        Missing subkeys resolve to 0. Adjustment fields can be typed or picked from suggestions.
       </p>
-      <datalist id="marksFormulaFieldList"></datalist>
-
       <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem;">
         <button id="marksCfgLoadBtn" style="padding:8px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Load Config</button>
         <button id="marksCfgDefaultsBtn" style="padding:8px 16px;background:rgba(245,200,66,0.12);color:#f5c842;border:1px solid rgba(245,200,66,0.28);border-radius:8px;cursor:pointer;font-weight:600;">Reset to Defaults</button>
         <button id="marksCfgSaveBtn" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save Config</button>
       </div>
-
-      <div style="display:flex;gap:1rem;flex-wrap:wrap;max-width:760px;margin-bottom:1rem;">
-        <div class="modal-field" style="flex:1;min-width:200px;">
-          <label>Default option for new visitors</label>
-          <select id="marksCfgDefault" style="width:100%;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;">
-            <option value="portal">Portal total (marksTotal)</option>
-            <option value="minus-mdcat">marksTotal − MDCAT</option>
-            <option value="plus-mdcat">marksTotal + MDCAT</option>
-            <option value="minus-experience">marksTotal − Experience</option>
-            <option value="degree-housejob">Degree + House Job</option>
-          </select>
-        </div>
-        <div class="modal-field" style="flex:0 0 auto;display:flex;align-items:flex-end;padding-bottom:2px;">
-          <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:500;cursor:pointer;">
-            <input type="checkbox" id="marksCfgShowSelector" checked style="accent-color:var(--accent);" />
-            Show selector on simulation page
-          </label>
-        </div>
-      </div>
-
-      <div class="modal-field" style="max-width:760px;margin-bottom:1rem;border:1px solid rgba(77,184,217,0.25);border-radius:8px;padding:1rem;background:rgba(77,184,217,0.04);">
-        <div style="font-size:0.82rem;font-weight:700;color:var(--neon-cyan);margin-bottom:0.65rem;">Candidate notice (simulation page)</div>
-        <p style="font-size:0.75rem;color:var(--text-muted);margin:0 0 0.75rem;">Shown as a highlighted banner near merit filters so candidates understand how marks are calculated.</p>
-        <div class="modal-field" style="margin:0 0 0.65rem;">
-          <label>Notice title</label>
-          <input type="text" id="marksCfgNoticeTitle" placeholder="About merit marks" />
-        </div>
-        <div class="modal-field" style="margin:0 0 0.65rem;">
-          <label>Notice message</label>
-          <textarea id="marksCfgNotice" rows="4" spellcheck="true" style="width:100%;resize:vertical;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.82rem;line-height:1.45;" placeholder="Optional fallback when a formula has no per-option notice. Per-option notices (Official / Adjusted) take priority and update when users switch the Merit basis dropdown."></textarea>
-        </div>
-        <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:500;cursor:pointer;font-size:0.82rem;">
-          <input type="checkbox" id="marksCfgShowNotice" checked style="accent-color:var(--accent);" />
-          Show notice banner on simulation page
-        </label>
-      </div>
-
-      <div id="marksCfgList" style="max-width:760px;margin-bottom:1rem;"></div>
-
-      <div class="modal-field" style="max-width:760px;border:1px solid var(--border);border-radius:8px;padding:1rem;background:rgba(255,255,255,0.02);">
-        <div style="font-size:0.82rem;font-weight:700;color:var(--accent);margin-bottom:0.75rem;">Add formula option</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-          <div class="modal-field" style="margin:0;">
-            <label>ID <span style="font-weight:400;">(slug, unique)</span></label>
-            <input type="text" id="marksNewId" placeholder="e.g. minus-mdcat" />
-          </div>
-          <div class="modal-field" style="margin:0;">
-            <label>Label <span style="font-weight:400;">(shown to users)</span></label>
-            <input type="text" id="marksNewLabel" placeholder="e.g. marksTotal − MDCAT" />
-          </div>
-          <div class="modal-field" style="margin:0;">
-            <label>Base</label>
-            <select id="marksNewBase" style="width:100%;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;">
-              <option value="marksTotal">marksTotal (portal aggregate)</option>
-              <option value="sum">Sum of components</option>
-            </select>
-          </div>
-          <div class="modal-field" style="margin:0;" id="marksNewSumWrap">
-            <label>Sum fields <span style="font-weight:400;">(comma-separated)</span></label>
-            <input type="text" id="marksNewSumFields" placeholder="degree, houseJob, programPercentage" />
-          </div>
-        </div>
-        <div class="modal-field" style="margin:0.75rem 0 0;">
-          <label>Adjustments <span style="font-weight:400;">(optional add/subtract on base)</span></label>
-          <div id="marksNewAdjRows" style="display:flex;flex-direction:column;gap:6px;margin-top:6px;"></div>
-          <button type="button" id="marksNewAdjAddBtn" style="margin-top:8px;padding:6px 12px;background:rgba(77,184,217,0.1);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.25);border-radius:6px;cursor:pointer;font-size:0.78rem;">+ Add adjustment</button>
-        </div>
-        <div class="modal-field" style="margin:0.75rem 0 0;">
-          <label>Option notice <span style="font-weight:400;">(shown when this formula is selected; optional)</span></label>
-          <textarea id="marksNewNotice" rows="3" spellcheck="true" style="width:100%;resize:vertical;padding:8px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;line-height:1.45;" placeholder="Explain what this merit view means for candidates…"></textarea>
-        </div>
-        <button type="button" id="marksNewAddBtn" style="margin-top:1rem;padding:8px 16px;background:rgba(62,207,142,0.15);color:var(--success);border:1px solid rgba(62,207,142,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Add to list</button>
-      </div>
-
       <div id="marksCfgStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
         </div>
       </details>
@@ -1482,54 +1474,11 @@
         <div class="broadcast-section-body">
       <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
         Controls which profile verification statuses can be included in the <strong>Seat Allocation</strong> simulation.
-        Stored in <code>notifications/simulation_config</code>. Hide the selector to force one admin-chosen scope for everyone.
       </p>
-
       <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem;">
         <button id="simCfgLoadBtn" style="padding:8px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Load Config</button>
         <button id="simCfgDefaultsBtn" style="padding:8px 16px;background:rgba(245,200,66,0.12);color:#f5c842;border:1px solid rgba(245,200,66,0.28);border-radius:8px;cursor:pointer;font-weight:600;">Reset Defaults</button>
         <button id="simCfgSaveBtn" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save Config</button>
-      </div>
-
-      <div style="display:flex;gap:1rem;flex-wrap:wrap;max-width:760px;margin-bottom:1rem;">
-        <div class="modal-field" style="flex:1;min-width:220px;">
-          <label>Default scope for new visitors</label>
-          <select id="simCfgDefaultScope" style="width:100%;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;"></select>
-        </div>
-        <div class="modal-field" style="flex:0 0 auto;display:flex;align-items:flex-end;padding-bottom:2px;">
-          <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:500;cursor:pointer;">
-            <input type="checkbox" id="simCfgShowSelector" checked style="accent-color:var(--accent);" />
-            Show status selector on simulation page
-          </label>
-        </div>
-      </div>
-
-      <div id="simCfgScopes" style="max-width:760px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.6rem;"></div>
-
-      <div style="max-width:760px;margin-top:1rem;border:1px solid var(--border);border-radius:8px;padding:1rem;background:rgba(255,255,255,0.02);">
-        <div style="font-size:0.82rem;font-weight:700;color:var(--accent);margin-bottom:0.75rem;">Add custom status scope</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-          <div class="modal-field" style="margin:0;">
-            <label>ID <span style="font-weight:400;">(slug, unique)</span></label>
-            <input type="text" id="simCfgCustomId" placeholder="e.g. accepted-rejected" />
-          </div>
-          <div class="modal-field" style="margin:0;">
-            <label>Label <span style="font-weight:400;">(shown to users)</span></label>
-            <input type="text" id="simCfgCustomLabel" placeholder="e.g. Accepted + Rejected" />
-          </div>
-          <div class="modal-field" style="margin:0;">
-            <label>Status IDs <span style="font-weight:400;">(comma-separated)</span></label>
-            <input type="text" id="simCfgCustomStatusIds" placeholder="e.g. 1,2" />
-          </div>
-          <div class="modal-field" style="margin:0;">
-            <label>Description <span style="font-weight:400;">(optional)</span></label>
-            <input type="text" id="simCfgCustomDescription" placeholder="Shown as helper text on simulation page" />
-          </div>
-        </div>
-        <p style="font-size:0.72rem;color:var(--text-muted);margin:0.7rem 0 0;">
-          Common verification status IDs: <code>1</code> Accepted, <code>11</code> Pending, <code>2</code> Rejected. You can combine any IDs present in the imported profile-status data.
-        </p>
-        <button type="button" id="simCfgCustomAddBtn" style="margin-top:0.85rem;padding:8px 16px;background:rgba(62,207,142,0.15);color:var(--success);border:1px solid rgba(62,207,142,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Add Custom Scope</button>
       </div>
       <div id="simCfgStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
         </div>
@@ -1538,62 +1487,10 @@
       <details class="broadcast-section">
         <summary>🔐 Access Request &amp; Payment Config</summary>
         <div class="broadcast-section-body">
-      <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
-        Controls the <a href="request-access.html" target="_blank" rel="noopener" style="color:var(--neon-cyan);">request access</a> page, auth gate request tab, and payment/support block.
-        Stored in <code>notifications/access_config</code>. Account title and extra payment IDs are not shown to candidates.
-      </p>
       <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem;">
         <button id="accessCfgLoadBtn" style="padding:8px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Load Config</button>
         <button id="accessCfgDefaultsBtn" style="padding:8px 16px;background:rgba(245,200,66,0.12);color:#f5c842;border:1px solid rgba(245,200,66,0.28);border-radius:8px;cursor:pointer;font-weight:600;">Reset Defaults</button>
         <button id="accessCfgSaveBtn" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save Config</button>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.75rem;max-width:760px;">
-        <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
-          <input type="checkbox" id="accessCfgEnabled" checked style="accent-color:var(--accent);" /> Enable request access form
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
-          <input type="checkbox" id="accessCfgShow" checked style="accent-color:var(--accent);" /> Show payment/support block
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
-          <input type="checkbox" id="accessCfgOptional" checked style="accent-color:var(--accent);" /> Payment optional (not required for approval)
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
-          <input type="checkbox" id="accessCfgBlockInvites" style="accent-color:var(--neon-pink);" /> Block all new user invitations
-        </label>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;max-width:760px;margin-top:0.75rem;">
-        <div class="modal-field" style="margin:0;">
-          <label>Min price (PKR)</label>
-          <input type="number" id="accessCfgPriceMinPKR" min="0" step="1" value="250" />
-        </div>
-        <div class="modal-field" style="margin:0;">
-          <label>Max price (PKR)</label>
-          <input type="number" id="accessCfgPriceMaxPKR" min="0" step="1" value="670" />
-        </div>
-        <div class="modal-field" style="margin:0;">
-          <label>Min price (USD)</label>
-          <input type="number" id="accessCfgPriceMinUSD" min="0" step="0.01" value="0.9" />
-        </div>
-        <div class="modal-field" style="margin:0;">
-          <label>Max price (USD)</label>
-          <input type="number" id="accessCfgPriceMaxUSD" min="0" step="0.01" value="2.4" />
-        </div>
-        <div class="modal-field" style="margin:0;">
-          <label>Account / IBAN number</label>
-          <input type="text" id="accessCfgAccount" placeholder="0891-2007-4774" />
-        </div>
-        <div class="modal-field" style="margin:0;grid-column:1/-1;">
-          <label>Bank name</label>
-          <input type="text" id="accessCfgBank" placeholder="Mashreq Pakistan" />
-        </div>
-        <div class="modal-field" style="margin:0;grid-column:1/-1;">
-          <label>Closed message <span style="text-transform:none;font-weight:400;">(shown when request access is disabled)</span></label>
-          <textarea id="accessCfgClosedMessage" rows="2" style="width:100%;resize:vertical;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;"></textarea>
-        </div>
-        <div class="modal-field" style="margin:0;grid-column:1/-1;">
-          <label>Payment note (shown to candidates)</label>
-          <textarea id="accessCfgNote" rows="3" style="width:100%;resize:vertical;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;"></textarea>
-        </div>
       </div>
       <div id="accessCfgStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
         </div>
@@ -1604,14 +1501,11 @@
         <div class="broadcast-section-body">
       <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;">
         Users who clicked "Alerts" → allowed browser notifications. Their FCM tokens are stored in <code>push_subscriptions</code>.
-        To send a push to closed browsers, use <a href="https://console.firebase.google.com" target="_blank" rel="noopener" style="color:var(--neon-cyan);">Firebase Console → Cloud Messaging</a>.
       </p>
       <div style="font-size:0.9rem;">Subscriber count: <strong id="bcSubCount" style="color:var(--neon-cyan);">loading…</strong></div>
         </div>
       </details>
-    </div>
-
-    </div><!-- /dash-content -->
+    </div></div><!-- /dash-content -->
   </main>
 </div>
 
@@ -1765,10 +1659,13 @@ const TAB_META = {
   mentorship:    { title: 'Mentorship',         sub: 'Mentors and mentorship requests' },
   contributions: { title: 'Contributions',      sub: 'Financial contribution records' },
   broadcast:     { title: 'Broadcast & Config', sub: 'Live banners, simulation feed, merit formulas' },
+  'download-logs': { title: 'Download Logs', sub: 'PDF and report download audit trail' },
+  'user-activity': { title: 'User Activity', sub: 'Aggregated activity per user across all log sources' },
 };
 
 let allLogs = [];
 let allScreenshotLogs = [];
+let allDownloadLogs = [];
 let allWarnings = [];
 let allGrievances = [];
 let grievanceDataRecords = [];
@@ -3059,6 +2956,184 @@ function closeUserHistoryModal() {
   document.getElementById('userHistoryModal')?.classList.remove('open');
 }
 
+// ── DOWNLOAD LOGS ─────────────────────────────────────────────────────────────
+async function loadDownloadLogs() {
+  const tbody = document.getElementById('downloadLogsBody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Loading download logs…</td></tr>';
+  try {
+    const snapshot = await db.collection('download_logs')
+      .orderBy('createdAt', 'desc')
+      .limit(500)
+      .get();
+    allDownloadLogs = snapshot.docs.map(doc => {
+      const d = doc.data();
+      const ts = d.createdAt?.toDate?.() || d.timestamp?.toDate?.() || null;
+      return {
+        id: doc.id,
+        email: d.email || 'unknown',
+        reportType: d.reportType || '—',
+        filters: d.filters || null,
+        userAgent: d.userAgent || '—',
+        timestamp: ts && !Number.isNaN(ts.getTime()) ? ts : null,
+      };
+    });
+    renderDownloadLogs();
+  } catch (err) {
+    allDownloadLogs = [];
+    if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Failed to load: ${escapeHtml(err.message)}</td></tr>`;
+    const countEl = document.getElementById('downloadLogsCount');
+    if (countEl) countEl.textContent = '0';
+  }
+}
+
+function renderDownloadLogs() {
+  const emailQ = document.getElementById('filterDownloadEmail')?.value?.toLowerCase().trim() || '';
+  const typeQ = document.getElementById('filterDownloadType')?.value?.toLowerCase().trim() || '';
+  const tbody = document.getElementById('downloadLogsBody');
+  const countEl = document.getElementById('downloadLogsCount');
+  if (!tbody) return;
+
+  let filtered = allDownloadLogs;
+  if (emailQ) filtered = filtered.filter(l => String(l.email || '').toLowerCase().includes(emailQ));
+  if (typeQ) filtered = filtered.filter(l => String(l.reportType || '').toLowerCase().includes(typeQ));
+
+  if (countEl) countEl.textContent = `${filtered.length} of ${allDownloadLogs.length}`;
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No download logs found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(l => {
+    const time = l.timestamp
+      ? l.timestamp.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' })
+      : '—';
+    const ua = l.userAgent.length > 70 ? l.userAgent.substring(0, 70) + '…' : l.userAgent;
+    let filtersHtml = '—';
+    if (l.filters && l.filters !== '—') {
+      try {
+        var fObj = typeof l.filters === 'string' ? JSON.parse(l.filters) : l.filters;
+        var fParts = [];
+        for (var fk in fObj) {
+          if (Object.prototype.hasOwnProperty.call(fObj, fk) && fObj[fk] !== null && fObj[fk] !== undefined) {
+            var fv = String(fObj[fk]);
+            if (fv.length > 40) fv = fv.substring(0, 38) + '…';
+            fParts.push('<span style="background:rgba(77,184,217,0.08);border-radius:4px;padding:0.1rem 0.4rem;margin:0.15rem;display:inline-block;font-size:0.68rem;"><strong>' + escapeHtml(fk) + '</strong>: ' + escapeHtml(fv) + '</span>');
+          }
+        }
+        if (fParts.length) filtersHtml = fParts.join('');
+      } catch (_) { filtersHtml = escapeHtml(l.filters); }
+    }
+    return `<tr>
+      <td>${escapeHtml(time)}</td>
+      <td>${escapeHtml(l.email)}</td>
+      <td>${escapeHtml(l.reportType)}</td>
+      <td style="max-width:320px;line-height:1.6;">${filtersHtml}</td>
+      <td title="${escapeHtml(l.userAgent)}">${escapeHtml(ua)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── USER ACTIVITY (aggregated) ─────────────────────────────────────────────────
+async function loadUserActivity(email) {
+  email = (email || '').toLowerCase().trim();
+  const tbody = document.getElementById('uaBody');
+  const status = document.getElementById('uaStatus');
+  if (!tbody) return;
+  if (!email) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Enter an email and click Search to view activity.</td></tr>';
+    if (status) status.textContent = '';
+    return;
+  }
+  tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Loading activity…</td></tr>';
+  if (status) status.textContent = 'Fetching logs for ' + email + '…';
+
+  try {
+    const [accessSnap, activitySnap, screenshotSnap, downloadSnap] = await Promise.all([
+      db.collection('access_logs').where('email', '==', email).limit(100).get().catch(() => ({ docs: [] })),
+      db.collection('user_activity_logs').where('email', '==', email).limit(100).get().catch(() => ({ docs: [] })),
+      db.collection('screenshot_logs').where('email', '==', email).limit(100).get().catch(() => ({ docs: [] })),
+      db.collection('download_logs').where('email', '==', email).limit(100).get().catch(() => ({ docs: [] })),
+    ]);
+
+    const rows = [];
+
+    accessSnap.docs.forEach(doc => {
+      const d = doc.data();
+      rows.push({
+        ts: d.timestamp?.toDate?.() || null,
+        type: 'Access',
+        details: d.success ? 'Successful login' : 'Failed login',
+        location: d.page || '—',
+        meta: d.ip ? 'IP: ' + d.ip : '—',
+      });
+    });
+
+    activitySnap.docs.forEach(doc => {
+      const d = doc.data();
+      rows.push({
+        ts: d.createdAt?.toDate?.() || d.updatedAt?.toDate?.() || null,
+        type: 'Activity',
+        details: d.reason || 'Page view',
+        location: d.pageLabel || d.title || d.path || d.page || '—',
+        meta: d.activeTabLabel ? 'Tab: ' + d.activeTabLabel : (d.applicantId ? 'App ID: ' + d.applicantId : '—'),
+      });
+    });
+
+    screenshotSnap.docs.forEach(doc => {
+      const d = doc.data();
+      rows.push({
+        ts: d.createdAt?.toDate?.() || d.timestamp?.toDate?.() || (d.clientAt ? new Date(d.clientAt) : null),
+        type: 'Screenshot',
+        details: (d.eventType || 'screenshot_attempt').replace(/_/g, ' '),
+        location: d.path || d.page || '—',
+        meta: d.traceId ? 'Trace: MN-' + d.traceId : (d.applicantId ? 'App ID: ' + d.applicantId : '—'),
+      });
+    });
+
+    downloadSnap.docs.forEach(doc => {
+      const d = doc.data();
+      rows.push({
+        ts: d.createdAt?.toDate?.() || d.timestamp?.toDate?.() || null,
+        type: 'Download',
+        details: d.reportType || 'Report download',
+        location: '—',
+        meta: d.filters ? Object.keys(d.filters).slice(0, 3).join(', ') : '—',
+      });
+    });
+
+    rows.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+
+    if (status) status.textContent = `${rows.length} events found for ${email}`;
+
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No activity found for this user.</td></tr>';
+      return;
+    }
+
+    const typeStyles = {
+      Access: 'background:rgba(62,207,142,0.1);color:var(--success);border:1px solid rgba(62,207,142,0.2);',
+      Activity: 'background:rgba(107,132,168,0.1);color:var(--text-muted);border:1px solid rgba(107,132,168,0.2);',
+      Screenshot: 'background:rgba(224,84,112,0.1);color:var(--danger);border:1px solid rgba(224,84,112,0.2);',
+      Download: 'background:rgba(77,184,217,0.1);color:var(--accent);border:1px solid rgba(77,184,217,0.2);',
+    };
+    tbody.innerHTML = rows.map(r => {
+      const time = r.ts
+        ? r.ts.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' })
+        : '—';
+      const tStyle = typeStyles[r.type] || typeStyles.Activity;
+      return `<tr>
+        <td>${escapeHtml(time)}</td>
+        <td><span style="display:inline-flex;align-items:center;padding:0.15rem 0.55rem;border-radius:6px;font-size:0.7rem;font-weight:600;text-transform:capitalize;${tStyle}">${escapeHtml(r.type)}</span></td>
+        <td>${escapeHtml(r.details)}</td>
+        <td style="max-width:220px;overflow:hidden;" title="${escapeHtml(r.location)}">${escapeHtml(r.location)}</td>
+        <td style="font-size:0.75rem;">${escapeHtml(r.meta)}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Failed to load: ${escapeHtml(err.message)}</td></tr>`;
+    if (status) status.textContent = 'Error loading activity.';
+  }
+}
+
 async function openUserHistory(email) {
   email = (email || '').toLowerCase().trim();
   if (!email) return;
@@ -3644,7 +3719,7 @@ async function saveAccessConfigEditor() {
 }
 
 function switchTab(tab) {
-  const tabs = ['overview', 'logs', 'screenshots', 'warnings', 'grievances', 'users', 'access-requests', 'contributions', 'mentorship', 'broadcast', 'profiles'];
+  const tabs = ['overview', 'logs', 'screenshots', 'warnings', 'grievances', 'users', 'access-requests', 'contributions', 'mentorship', 'broadcast', 'profiles', 'download-logs', 'user-activity'];
   for (const t of tabs) {
     const el = document.getElementById('tab-' + t);
     if (el) el.style.display = tab === t ? '' : 'none';
@@ -3668,6 +3743,8 @@ function switchTab(tab) {
   if (tab === 'profiles')      loadProfiles();
   if (tab === 'logs')          loadLogs();
   if (tab === 'screenshots')   loadScreenshotLogs();
+  if (tab === 'download-logs') loadDownloadLogs();
+  if (tab === 'user-activity') {} // loaded on search
   if (tab === 'warnings')      loadWarnings();
   if (tab === 'grievances')    loadGrievances();
 }
@@ -4844,6 +4921,8 @@ async function refreshAllAdminData() {
     if (tab === 'contributions') await loadContributions();
     if (tab === 'profiles') await loadProfiles();
     if (tab === 'mentorship') await loadMentorship();
+    if (tab === 'broadcast') await loadBroadcast();
+    if (tab === 'download-logs') await loadDownloadLogs();
     showAdminToast('Data refreshed.', 'success');
   } catch (e) {
     showAdminToast('Refresh failed: ' + e.message, 'error');
@@ -4916,6 +4995,19 @@ document.getElementById('logsBody')?.addEventListener('click', function (e) {
 document.getElementById('refreshScreenshotLogsBtn')?.addEventListener('click', loadScreenshotLogs);
 document.getElementById('filterScreenshotEmail')?.addEventListener('input', renderScreenshotLogs);
 document.getElementById('filterScreenshotType')?.addEventListener('change', renderScreenshotLogs);
+document.getElementById('refreshDownloadLogsBtn')?.addEventListener('click', loadDownloadLogs);
+document.getElementById('filterDownloadEmail')?.addEventListener('input', renderDownloadLogs);
+document.getElementById('filterDownloadType')?.addEventListener('input', renderDownloadLogs);
+document.getElementById('uaSearchBtn')?.addEventListener('click', function () {
+  const email = document.getElementById('uaEmail')?.value || '';
+  loadUserActivity(email);
+});
+document.getElementById('uaEmail')?.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') {
+    const email = document.getElementById('uaEmail')?.value || '';
+    loadUserActivity(email);
+  }
+});
 document.getElementById('screenshotLogsBody')?.addEventListener('click', function (e) {
   const btn = e.target.closest('[data-warning-email]');
   if (!btn) return;

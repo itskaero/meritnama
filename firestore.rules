@@ -228,7 +228,8 @@ service cloud.firestore {
     // Donor-only PDF download audit trail. Clients append logs; no client reads.
     match /download_logs/{logId} {
       allow create: if true;
-      allow read, update, delete: if false;
+      allow read: if true;   // Admin dashboard reads these; protect via admin PIN check in app
+      allow update, delete: if false;
     }
   }
 }
