@@ -2690,8 +2690,26 @@
       border-color:#e05470;
     }
     .select-all-hint {
-      display: block; font-size: 0.72rem; color: var(--text-muted);
-      margin-top: 3px;
+      display: flex; align-items: center; gap: 5px;
+      margin-top: 4px; font-size: 0.72rem; color: var(--text-muted);
+    }
+    .select-all-hint .hint-icon {
+      font-size: 0.65rem; opacity: 0.6;
+    }
+    .select-all-hint .hint-count {
+      display: inline-block;
+      background: rgba(77,184,217,0.12); color: var(--neon-cyan);
+      font-weight: 700; font-size: 0.7rem;
+      padding: 1px 7px; border-radius: 100px;
+      border: 1px solid rgba(77,184,217,0.2);
+      letter-spacing: 0.02em;
+    }
+    .select-all-hint .hint-count.pending {
+      background: rgba(232,166,39,0.1); color: var(--neon-gold);
+      border-color: rgba(232,166,39,0.2);
+    }
+    .select-all-hint .hint-desc {
+      opacity: 0.7;
     }
   </style>
 </head>

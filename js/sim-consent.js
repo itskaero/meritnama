@@ -127,7 +127,13 @@ function syncSimulationStatusScopeUI() {
     ).join('');
     sel.value = SIM.sim.statusScopeId;
     sel.disabled = !SIM.sim.showStatusScopeSelector || SIM.sim.statusScopes.length <= 1;
-    if (hint) hint.textContent = (scope.description || '') + ' (' + countText + ').';
+    if (hint) {
+      const isPending = matchCount === -1;
+      const countBadge = isPending
+        ? '<span class="hint-count pending">⟳</span>'
+        : '<span class="hint-count">' + esc(countText) + '</span>';
+      hint.innerHTML = '<span class="hint-icon">&#9679;</span> ' + countBadge + ' <span class="hint-desc">' + esc(scope.description || '') + '</span>';
+    }
   }
   document.querySelectorAll('.sim-status-scope-wrap').forEach(wrap => {
     wrap.classList.toggle('hidden', !SIM.sim.showStatusScopeSelector);
