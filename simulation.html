@@ -268,6 +268,7 @@
       box-shadow: 0 0 10px rgba(77,184,217,0.15);
     }
 
+    /* -- Share / Promo button in section-header -- */
     /* -- Back link in tab nav -- */
     a.tab-btn.back-btn { text-decoration: none; opacity: 0.6; font-size: 0.82rem; }
     a.tab-btn.back-btn:hover { opacity: 1; color: var(--neon-cyan); }
@@ -1723,9 +1724,15 @@
     #appSimModal,
     #customModal,
     #sbCandModal,
-    #profileViewModal {
+    #profileViewModal,
+    #shareModal {
       z-index: 12000;
     }
+    .share-modal-card { max-width:540px; background:rgba(13,20,44,.96); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(77,184,217,.1); }
+    .share-style-btn { flex:1; min-width:90px; padding:10px 8px; border-radius:12px; cursor:pointer; background:rgba(255,255,255,.03); color:var(--text); font-family:var(--font); text-align:center; transition:all .2s; border:2px solid rgba(255,255,255,.06); }
+    .share-style-btn:hover { border-color:rgba(77,184,217,.3) !important; box-shadow:0 0 14px rgba(77,184,217,.06); }
+    .share-record-indicator { font-size:0.74rem; color:#e05470; margin:6px 0; animation:sharePulse 1s ease-in-out infinite; }
+    @keyframes sharePulse { 0%,100%{ opacity:1; } 50%{ opacity:.4; } }
 
     /* ---------------------------------------------------------------
        RESPONSIVE
@@ -2690,26 +2697,48 @@
       border-color:#e05470;
     }
     .select-all-hint {
-      display: flex; align-items: center; gap: 5px;
-      margin-top: 4px; font-size: 0.72rem; color: var(--text-muted);
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 6px; padding: 6px 10px;
+      font-size: 0.7rem;
+      background: rgba(77,184,217,0.04);
+      border: 1px solid rgba(77,184,217,0.08);
+      border-radius: 8px;
+      min-height: 1.2em;
+      animation: hintFadeIn 0.4s ease both;
+    }
+    @keyframes hintFadeIn {
+      from { opacity: 0; transform: translateY(-3px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
     .select-all-hint .hint-icon {
-      font-size: 0.65rem; opacity: 0.6;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--neon-cyan); opacity: 0.4; flex-shrink: 0;
     }
     .select-all-hint .hint-count {
-      display: inline-block;
+      display: inline-flex; align-items: center; gap: 3px;
       background: rgba(77,184,217,0.12); color: var(--neon-cyan);
-      font-weight: 700; font-size: 0.7rem;
-      padding: 1px 7px; border-radius: 100px;
+      font-weight: 800; font-size: 0.7rem;
+      padding: 2px 9px; border-radius: 100px;
       border: 1px solid rgba(77,184,217,0.2);
-      letter-spacing: 0.02em;
+      letter-spacing: 0.03em; white-space: nowrap;
+      box-shadow: 0 0 12px rgba(77,184,217,0.12);
     }
     .select-all-hint .hint-count.pending {
       background: rgba(232,166,39,0.1); color: var(--neon-gold);
-      border-color: rgba(232,166,39,0.2);
+      border-color: rgba(232,166,39,0.18);
+      box-shadow: 0 0 14px rgba(232,166,39,0.12);
+      animation: hintPulse 1s ease-in-out infinite;
     }
     .select-all-hint .hint-desc {
-      opacity: 0.7;
+      color: var(--text-muted); white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; font-size: 0.68rem;
+    }
+    .select-all-hint .hint-label {
+      color: var(--text); font-weight: 600; font-size: 0.7rem;
+    }
+    @keyframes hintPulse {
+      0%, 100% { opacity: 0.6; }
+      50%      { opacity: 1; }
     }
   </style>
 </head>
@@ -2911,6 +2940,7 @@
         <span id="candCount" class="mt-count"></span>
         <button id="candDownloadPdfBtn" class="btn btn-sm" disabled>Download filtered PDF</button>
         <span id="candDownloadNote" style="font-size:0.74rem;color:var(--text-muted);">Supporter-only export</span>
+        <span id="candProfileStatusHint" class="select-all-hint"></span>
       </div>
       <div id="candStats" class="cand-stats-bar hidden">
         <span class="cstats-item" title="Applied to FCPS">
@@ -3608,6 +3638,7 @@
         <div class="profiles-self-actions">
           <a class="profiles-action-link primary" href="candidate.html">&#9998; Edit Profile</a>
           <a class="profiles-action-link" href="candidate.html#dashboardCard">&#127919; My Dashboard</a>
+          <button id="shareBtn" class="profiles-action-link" style="cursor:pointer;font-family:inherit;font-size:inherit;">&#127760; Share</button>
         </div>
       </div>
     </div>
@@ -4185,6 +4216,251 @@
   <button class="close-btn" onclick="closeChatPhoto()">&times;</button>
   <img id="chatPhotoLightboxImg" src="" alt="Chat photo" />
 </div>
+
+<!-- ═══ Share Modal ═══ -->
+<div class="modal hidden" id="shareModal">
+  <div class="modal-overlay" id="shareModalOverlay"></div>
+  <div class="modal-card share-modal-card">
+    <button class="modal-close" id="shareModalClose" title="Close">&times;</button>
+    <div style="padding:20px">
+      <h3 style="margin:0 0 4px;font-size:0.95rem;color:var(--neon-cyan);">&#127760; Share MeritNama</h3>
+      <p style="margin:0 0 14px;font-size:0.78rem;color:var(--text-muted);">Pick a style, download the card, or generate an animated video.</p>
+
+      <div class="share-style-picker" id="shareStylePicker" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
+
+      <div class="card-wrap" style="border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.04);background:#04060c;position:relative;margin-bottom:16px;">
+        <canvas id="shareCanvas" width="480" height="640" style="display:block;width:100%;height:auto;aspect-ratio:480/640;"></canvas>
+      </div>
+
+      <div class="share-actions" style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button id="shareDownloadPng" class="btn btn-primary" style="background:rgba(77,184,217,.1);color:#8ed6ed;border-color:rgba(77,184,217,.18);">&#8595; Download PNG</button>
+        <button id="shareGenVideo" class="btn btn-sm">&#9654; Generate Video</button>
+        <button id="shareCopyLink" class="btn btn-sm">&#128279; Copy Link</button>
+      </div>
+
+      <div class="share-record-indicator hidden" id="shareRecordIndicator">&#9679; Recording&hellip; <span id="shareRecordProgress">0</span>%</div>
+      <div class="share-status" id="shareStatus" style="margin-top:6px;font-size:0.74rem;color:var(--text-muted);min-height:1.2em;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// Share Card Generator
+// ═══════════════════════════════════════════════════════════════════
+(function(){
+  // Preload logo
+  var _logoImg = new Image();
+  _logoImg.src = 'animation/logo-anim.svg';
+  var _logoLoaded = false;
+  _logoImg.onload = function(){ _logoLoaded = true; };
+
+  var TEMPLATES = [
+    { id:'gradient', label:'Gradient', desc:'Cyan-purple glow', bg:['#0a1628','#162040'], accent:'#4db8d9', textColor:'#e8edf5', mutedColor:'rgba(232,237,245,0.5)', barColor:'rgba(77,184,217,0.15)', glowColor:'rgba(77,184,217,0.25)',
+      renderExtra:function(ctx,w,h){ var g=ctx.createRadialGradient(w*.8,h*.15,0,w*.8,h*.15,w*.6); g.addColorStop(0,'rgba(77,184,217,0.12)'); g.addColorStop(1,'rgba(77,184,217,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,w,h); }
+    },
+    { id:'dark', label:'Dark', desc:'Gold on black', bg:['#0d0d0d','#1a1a1a'], accent:'#e8a627', textColor:'#f0f0f0', mutedColor:'rgba(240,240,240,0.45)', barColor:'rgba(232,166,39,0.12)', glowColor:'rgba(232,166,39,0.2)',
+      renderExtra:function(ctx,w,h){ for(var i=0;i<8;i++){ var x=Math.random()*w,y=Math.random()*h,r=2+Math.random()*4; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fillStyle='rgba(232,166,39,0.08)'; ctx.fill(); } }
+    },
+    { id:'minimal', label:'Minimal', desc:'Clean white', bg:['#ffffff','#f5f7fa'], accent:'#1a2a4a', textColor:'#1a2a4a', mutedColor:'rgba(26,42,74,0.45)', barColor:'rgba(26,42,74,0.06)', glowColor:'rgba(26,42,74,0.1)',
+      renderExtra:function(ctx,w,h){ ctx.strokeStyle='rgba(26,42,74,0.06)'; ctx.lineWidth=1; ctx.strokeRect(12,12,w-24,h-24); }
+    },
+    { id:'brand', label:'MeritNama', desc:'Teal-green brand', bg:['#0b2b2b','#0d1f1f'], accent:'#3ecf8e', textColor:'#e0f0ec', mutedColor:'rgba(224,240,236,0.5)', barColor:'rgba(62,207,142,0.12)', glowColor:'rgba(62,207,142,0.2)',
+      renderExtra:function(ctx,w,h){ var g=ctx.createLinearGradient(0,h,w,0); g.addColorStop(0,'rgba(62,207,142,0.06)'); g.addColorStop(1,'rgba(62,207,142,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,w,h); }
+    },
+  ];
+
+  var activeId = 'gradient';
+  var recording = false;
+  var canvas = document.getElementById('shareCanvas');
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+
+  function esc(s){ var d=document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
+  function status(msg,color){ var el=document.getElementById('shareStatus'); if(el){ el.textContent=msg; el.style.color=color||'var(--text-muted)'; } }
+
+  function drawLogo(ctx, w, glow){
+    if(_logoLoaded){
+      var lw = 240, lh = 240 * (160/560);
+      ctx.save();
+      ctx.shadowColor=glow; ctx.shadowBlur=20;
+      ctx.drawImage(_logoImg, (w-lw)/2, 32, lw, lh);
+      ctx.restore();
+    } else {
+      ctx.fillStyle='#4db8d9'; ctx.font='bold 28px Inter,system-ui,sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='top';
+      ctx.shadowColor=glow; ctx.shadowBlur=20;
+      ctx.fillText('MeritNama', w/2, 48);
+      ctx.shadowBlur=0;
+    }
+  }
+
+  function renderCard(id, progress, time){
+    var tpl = TEMPLATES.find(function(t){ return t.id === id; }) || TEMPLATES[0];
+    var isAnim = arguments.length > 1;
+    if(!isAnim) activeId = tpl.id;
+
+    var bg=ctx.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,tpl.bg[0]); bg.addColorStop(1,tpl.bg[1]);
+    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+    if(tpl.renderExtra) tpl.renderExtra(ctx,W,H);
+    ctx.fillStyle=tpl.barColor; ctx.fillRect(0,0,W,4);
+
+    var glow = isAnim ? 'rgba(77,184,217,'+(0.15+0.1*Math.sin(time*2.5))+')' : tpl.glowColor;
+    drawLogo(ctx, W, glow);
+
+    ctx.fillStyle=tpl.mutedColor; ctx.font='13px Inter,system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
+    var tagAlpha = isAnim ? Math.min(1, Math.max(0, (progress-0.15)*5)) : 1;
+    ctx.globalAlpha = tagAlpha;
+    ctx.fillText('Induction 2021 Analytics \u2014 Free with donation', W/2, 92);
+    ctx.globalAlpha=1;
+    ctx.fillStyle=tpl.barColor; ctx.fillRect(W*.15, 116, W*.7, 1);
+
+    var features = [
+      'Real-time seat allocation simulation',
+      'Portal verification & consent what-if',
+      'Multi-programme merit comparison',
+      'Community chat & discussions',
+      'Open data, voluntary support'
+    ];
+    ctx.textAlign='left'; ctx.textBaseline='top';
+    var startY = 142;
+    for(var i=0;i<features.length;i++){
+      var alpha = isAnim ? Math.max(0, Math.min(1, (progress - 0.3 - i*0.13)*4)) : 1;
+      var offX = isAnim ? (1-alpha)*25 : 0;
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle=tpl.accent; ctx.font='15px Inter,system-ui,sans-serif'; ctx.textAlign='center';
+      ctx.fillText('\u2713', 60 - offX*0.3, startY + i*32);
+      ctx.textAlign='left'; ctx.fillStyle=tpl.textColor; ctx.font='13px Inter,system-ui,sans-serif';
+      ctx.fillText(features[i], 78 - offX, startY + i*32);
+    }
+    ctx.globalAlpha=1;
+
+    var ctaY = startY + features.length*32 + 20;
+    var ctaW = 240, ctaH = 36, ctaX = (W-ctaW)/2;
+    ctx.fillStyle=tpl.accent;
+    ctx.shadowColor=tpl.glowColor;
+    ctx.shadowBlur = isAnim ? 14 + 8*Math.sin(time*3) : 20;
+    ctx.beginPath(); ctx.roundRect(ctaX, ctaY, ctaW, ctaH, 100); ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.fillStyle='#fff'; ctx.font='bold 14px Inter,system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('Check your merit \u2192', W/2, ctaY + ctaH/2);
+
+    ctx.fillStyle=tpl.mutedColor; ctx.font='10px Inter,system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+    var urlAlpha = isAnim ? Math.min(1, Math.max(0, (progress-0.75)*5)) : 1;
+    ctx.globalAlpha = urlAlpha;
+    ctx.fillText('meritnama.pk  \u00B7  Free for all Induction 2021 applicants', W/2, H-18);
+    ctx.globalAlpha=1;
+    ctx.fillStyle=tpl.barColor; ctx.fillRect(0, H-4, W, 4);
+  }
+
+  function renderStylePicker(){
+    var container = document.getElementById('shareStylePicker');
+    if(!container) return;
+    container.innerHTML = TEMPLATES.map(function(t){
+      var act = t.id === activeId ? 'border:2px solid '+t.accent+';box-shadow:0 0 16px '+t.accent.replace(')',',0.25)')+';background:'+t.bg[0]+';' : '';
+      return '<button class="share-style-btn" data-id="'+esc(t.id)+'" style="'+act+'">'+
+        '<div style="font-weight:700;font-size:13px;">'+esc(t.label)+'</div>'+
+        '<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">'+esc(t.desc)+'</div></button>';
+    }).join('');
+    container.querySelectorAll('.share-style-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){ activeId = this.dataset.id; renderStylePicker(); renderCard(this.dataset.id); });
+    });
+  }
+
+  function downloadPng(){
+    var link = document.createElement('a');
+    link.download = 'MeritNama-share-'+activeId+'.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    status('PNG downloaded.', '#8ed6ed');
+  }
+
+  function copyLink(){
+    var url = (window.location.origin + window.location.pathname).replace(/\/+$/,'');
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(url).then(function(){ status('Link copied!', '#8ed6ed'); }, function(){ fallbackCopy(url); });
+    } else { fallbackCopy(url); }
+  }
+  function fallbackCopy(url){
+    var ta = document.createElement('textarea');
+    ta.value = url; ta.style.position='fixed'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); status('Link copied!', '#8ed6ed'); } catch(_){ status('Ctrl+C: '+url, 'var(--neon-gold)'); }
+    document.body.removeChild(ta);
+  }
+
+  function generateVideo(){
+    var mp4Path = 'data/MeritNama-promo-' + activeId + '.mp4';
+    fetch(mp4Path, {method:'HEAD'}).then(function(r){
+      if(r.ok){
+        var link = document.createElement('a');
+        link.href = mp4Path;
+        link.download = 'MeritNama-promo-' + activeId + '.mp4';
+        link.click();
+        status('MP4 downloaded!', '#8ed6ed');
+      } else {
+        fallbackRecordVideo();
+      }
+    }).catch(function(){ fallbackRecordVideo(); });
+  }
+
+  function fallbackRecordVideo(){
+    if(recording) return;
+    recording = true;
+    var fps = 30, dur = 5, totalFrames = dur * fps;
+    var stream = canvas.captureStream(fps);
+    var mimeTypes = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+    var mimeType = mimeTypes.find(function(m){ return MediaRecorder.isTypeSupported(m); }) || '';
+    var chunks = [];
+    var recorder = new MediaRecorder(stream, mimeType ? {mimeType:mimeType} : {});
+    recorder.ondataavailable = function(e){ if(e.data.size>0) chunks.push(e.data); };
+    recorder.onstop = function(){
+      recording = false;
+      var blob = new Blob(chunks, {type:recorder.mimeType||'video/webm'});
+      var ext = 'webm';
+      var link = document.createElement('a');
+      link.download = 'MeritNama-promo.'+ext;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      URL.revokeObjectURL(link.href);
+      document.getElementById('shareRecordIndicator')?.classList.add('hidden');
+      status('Video downloaded! (WEBM)', '#8ed6ed');
+    };
+    recorder.start(1000/fps);
+    var frame = 0;
+    var indicator = document.getElementById('shareRecordIndicator');
+    var progressEl = document.getElementById('shareRecordProgress');
+    if(indicator) indicator.classList.remove('hidden');
+    function drawFrame(){
+      if(frame >= totalFrames){ recorder.stop(); return; }
+      var t = frame / fps;
+      renderCard(activeId, t / dur, t);
+      if(progressEl) progressEl.textContent = Math.round((frame/totalFrames)*100);
+      frame++;
+      requestAnimationFrame(drawFrame);
+    }
+    drawFrame();
+  }
+
+  function openShareModal(){
+    var modal = document.getElementById('shareModal');
+    if(!modal) return;
+    modal.classList.remove('hidden');
+    renderStylePicker();
+    renderCard(TEMPLATES[0].id);
+    status('');
+  }
+  function closeShareModal(){ document.getElementById('shareModal')?.classList.add('hidden'); }
+
+  document.getElementById('shareBtn')?.addEventListener('click', openShareModal);
+  document.getElementById('shareModalClose')?.addEventListener('click', closeShareModal);
+  document.getElementById('shareModalOverlay')?.addEventListener('click', closeShareModal);
+  document.getElementById('shareDownloadPng')?.addEventListener('click', downloadPng);
+  document.getElementById('shareGenVideo')?.addEventListener('click', generateVideo);
+  document.getElementById('shareCopyLink')?.addEventListener('click', copyLink);
+})();
+</script>
 
 </body>
 </html>

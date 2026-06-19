@@ -37,7 +37,7 @@ const SIM = {
 
   marks: {
     options:        [],
-    activeOptionId: 'portal',
+    activeOptionId: 'adjusted',
     showSelector:   true,
     noticeTitle:    'About merit marks',
     candidateNotice:'',

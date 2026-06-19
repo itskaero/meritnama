@@ -432,6 +432,7 @@ async function loadProfileStatusData() {
 function _onProfileStatusReady() {
   renderCandStats();
   applyAndRenderCandidates();
+  if (typeof updateCandStatusHint === 'function') updateCandStatusHint();
   if (typeof syncSimulationStatusScopeUI === 'function') syncSimulationStatusScopeUI();
 }
 

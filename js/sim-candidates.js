@@ -164,6 +164,7 @@ function setupCandidateFilters() {
     SIM.profileStatus.filter = statusSel.value;
     SIM.cand.page = 0;
     applyAndRenderCandidates();
+    updateCandStatusHint();
   });
 
   document.getElementById('candTable')?.querySelector('thead')
@@ -178,6 +179,30 @@ function setupCandidateFilters() {
     });
   document.getElementById('candDownloadPdfBtn')?.addEventListener('click', downloadCandidatePoolPdf);
   updateCandidateDownloadGate();
+  updateCandStatusHint();
+}
+
+function updateCandStatusHint() {
+  const hint = document.getElementById('candProfileStatusHint');
+  if (!hint) return;
+  const filter = SIM.profileStatus.filter;
+  if (!SIM.profileStatus.loaded) {
+    hint.innerHTML = '<span class="hint-icon"></span><span class="hint-count pending">⟳</span><span class="hint-desc">Loading status data…</span>';
+    return;
+  }
+  const all = allCandidates();
+  const count = filter
+    ? all.filter(c => {
+        const st = getEffectiveProfileStatusForCandidate(c);
+        return st && Number(st.statusId) === Number(filter);
+      }).length
+    : all.length;
+  const label = filter
+    ? (document.getElementById('candProfileStatus')?.selectedOptions?.[0]?.textContent || 'Filtered')
+    : 'All candidates';
+  const countPill = '<span class="hint-count">' + count.toLocaleString() + '</span>';
+  const desc = '<span class="hint-label">' + esc(label) + '</span>';
+  hint.innerHTML = '<span class="hint-icon"></span>' + countPill + ' ' + desc;
 }
 
 function applyAndRenderCandidates() {

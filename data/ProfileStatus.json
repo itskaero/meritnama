@@ -20960,6 +20960,12 @@
       "remarks": null
     },
     {
+      "applicantId": 26717,
+      "statusId": 1,
+      "statusTypeId": 132,
+      "remarks": null
+    },
+    {
       "applicantId": 28959,
       "statusId": 1,
       "statusTypeId": 132,
@@ -21003,6 +21009,12 @@
     },
     {
       "applicantId": 29112,
+      "statusId": 1,
+      "statusTypeId": 132,
+      "remarks": null
+    },
+    {
+      "applicantId": 29113,
       "statusId": 1,
       "statusTypeId": 132,
       "remarks": null
@@ -21140,6 +21152,12 @@
       "remarks": null
     },
     {
+      "applicantId": 29590,
+      "statusId": 1,
+      "statusTypeId": 132,
+      "remarks": null
+    },
+    {
       "applicantId": 29627,
       "statusId": 1,
       "statusTypeId": 132,
@@ -21147,6 +21165,12 @@
     },
     {
       "applicantId": 29659,
+      "statusId": 1,
+      "statusTypeId": 132,
+      "remarks": null
+    },
+    {
+      "applicantId": 29668,
       "statusId": 1,
       "statusTypeId": 132,
       "remarks": null
@@ -21596,6 +21620,12 @@
       "remarks": null
     },
     {
+      "applicantId": 34698,
+      "statusId": 1,
+      "statusTypeId": 132,
+      "remarks": null
+    },
+    {
       "applicantId": 34723,
       "statusId": 1,
       "statusTypeId": 132,
@@ -21933,6 +21963,12 @@
     },
     {
       "applicantId": 36234,
+      "statusId": 1,
+      "statusTypeId": 132,
+      "remarks": null
+    },
+    {
+      "applicantId": 36237,
       "statusId": 1,
       "statusTypeId": 132,
       "remarks": null
@@ -22412,6 +22448,12 @@
       "remarks": null
     },
     {
+      "applicantId": 36735,
+      "statusId": 1,
+      "statusTypeId": 132,
+      "remarks": null
+    },
+    {
       "applicantId": 36737,
       "statusId": 1,
       "statusTypeId": 132,
@@ -22514,6 +22556,12 @@
       "remarks": null
     },
     {
+      "applicantId": 37108,
+      "statusId": 1,
+      "statusTypeId": 132,
+      "remarks": null
+    },
+    {
       "applicantId": 37120,
       "statusId": 1,
       "statusTypeId": 132,
@@ -22592,7 +22640,25 @@
       "remarks": null
     },
     {
+      "applicantId": 37811,
+      "statusId": 1,
+      "statusTypeId": 132,
+      "remarks": null
+    },
+    {
       "applicantId": 37814,
+      "statusId": 1,
+      "statusTypeId": 132,
+      "remarks": null
+    },
+    {
+      "applicantId": 37819,
+      "statusId": 1,
+      "statusTypeId": 132,
+      "remarks": null
+    },
+    {
+      "applicantId": 37844,
       "statusId": 1,
       "statusTypeId": 132,
       "remarks": null
@@ -22629,6 +22695,12 @@
     },
     {
       "applicantId": 37965,
+      "statusId": 1,
+      "statusTypeId": 132,
+      "remarks": null
+    },
+    {
+      "applicantId": 37974,
       "statusId": 1,
       "statusTypeId": 132,
       "remarks": null
@@ -22671,6 +22743,12 @@
     },
     {
       "applicantId": 38097,
+      "statusId": 1,
+      "statusTypeId": 132,
+      "remarks": null
+    },
+    {
+      "applicantId": 38100,
       "statusId": 1,
       "statusTypeId": 132,
       "remarks": null
@@ -22737,6 +22815,12 @@
     },
     {
       "applicantId": 38204,
+      "statusId": 1,
+      "statusTypeId": 132,
+      "remarks": null
+    },
+    {
+      "applicantId": 38211,
       "statusId": 1,
       "statusTypeId": 132,
       "remarks": null
@@ -23121,6 +23205,12 @@
     },
     {
       "applicantId": 39265,
+      "statusId": 1,
+      "statusTypeId": 132,
+      "remarks": null
+    },
+    {
+      "applicantId": 39280,
       "statusId": 1,
       "statusTypeId": 132,
       "remarks": null

@@ -22,7 +22,7 @@ const DEFAULT_SIM_STATUS_SCOPES = [
 // ── Augment SIM with consent + status-scope state ──
 (function augmentSIM() {
   SIM.sim.baselineResult = null;
-  SIM.sim.statusScopeId = 'all';
+  SIM.sim.statusScopeId = 'accepted';
   SIM.sim.statusScopes = [];
   SIM.sim.showStatusScopeSelector = true;
   SIM.sim.consentMode = 'view';
@@ -59,7 +59,7 @@ function applySimulationConfig(data) {
     : [];
   SIM.sim.statusScopes = parsed.length ? parsed : cloneDefaultSimStatusScopes();
   SIM.sim.showStatusScopeSelector = readConfigBool(data?.showStatusScopeSelector, true);
-  const defaultId = typeof data?.defaultStatusScopeId === 'string' && data.defaultStatusScopeId.trim() ? data.defaultStatusScopeId.trim() : 'all';
+  const defaultId = typeof data?.defaultStatusScopeId === 'string' && data.defaultStatusScopeId.trim() ? data.defaultStatusScopeId.trim() : 'accepted';
   const storedId = localStorage.getItem(SIM_STATUS_SCOPE_KEY);
   const ids = new Set(SIM.sim.statusScopes.map(s => s.id));
   const pick = id => ids.has(id) ? id : null;
@@ -128,11 +128,14 @@ function syncSimulationStatusScopeUI() {
     sel.value = SIM.sim.statusScopeId;
     sel.disabled = !SIM.sim.showStatusScopeSelector || SIM.sim.statusScopes.length <= 1;
     if (hint) {
-      const isPending = matchCount === -1;
-      const countBadge = isPending
-        ? '<span class="hint-count pending">⟳</span>'
-        : '<span class="hint-count">' + esc(countText) + '</span>';
-      hint.innerHTML = '<span class="hint-icon">&#9679;</span> ' + countBadge + ' <span class="hint-desc">' + esc(scope.description || '') + '</span>';
+      if (matchCount === -1) {
+        hint.innerHTML = '<span class="hint-icon"></span><span class="hint-count pending">⟳</span><span class="hint-desc">Loading status data…</span>';
+      } else {
+        const countStr = matchCount.toLocaleString();
+        const scopeLabel = scope.label || '';
+        const desc = scope.description || '';
+        hint.innerHTML = '<span class="hint-icon"></span><span class="hint-count">' + esc(countStr) + '</span> <span class="hint-label">' + esc(scopeLabel) + '</span><span class="hint-desc"> · ' + esc(desc) + '</span>';
+      }
     }
   }
   document.querySelectorAll('.sim-status-scope-wrap').forEach(wrap => {
