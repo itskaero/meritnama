@@ -83,6 +83,15 @@
       box-shadow: 0 0 24px rgba(77,184,217,0.06);
     }
     .ps-status-panel.hidden { display: none; }
+    .ps-amend-panel {
+      margin-top: 8px;
+      background: linear-gradient(135deg, rgba(124,101,196,0.06) 0%, rgba(77,184,217,0.03) 100%);
+      border-color: rgba(124,101,196,0.22);
+    }
+    .ps-amend-icon {
+      background: rgba(124,101,196,0.15) !important;
+      color: var(--neon-purple, #7c65c4) !important;
+    }
     .ps-status-head {
       display: flex; align-items: center; justify-content: space-between;
       gap: 12px; flex-wrap: wrap; margin-bottom: 10px;
@@ -385,6 +394,10 @@
     .profile-status-tag.ps-other {
       background: rgba(255,255,255,0.06); color: var(--text-muted);
       border: 1px solid var(--border);
+    }
+    .ps-trail-arrow {
+      display: inline-block; margin: 0 1px; font-size: 0.6rem;
+      color: var(--text-muted); vertical-align: middle; opacity: 0.5;
     }
     .supporter-tag {
       display: inline-block;
@@ -2676,6 +2689,10 @@
       background:rgba(224,84,112,.14);
       border-color:#e05470;
     }
+    .select-all-hint {
+      display: block; font-size: 0.72rem; color: var(--text-muted);
+      margin-top: 3px;
+    }
   </style>
 </head>
 <body>
@@ -2936,6 +2953,31 @@
           <div class="ps-count-item" title="Portal status 2 — rejected">
             <span class="ps-count-label">Rejected</span>
             <span class="ps-count-pill ps-pill-rejected" id="cstat-ps-rejected">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="candAmendmentStats" class="ps-status-panel ps-amend-panel hidden" role="status" aria-live="polite">
+        <div class="ps-status-head">
+          <div class="ps-status-title">
+            <span class="ps-status-title-icon ps-amend-icon" aria-hidden="true">&#9997;</span>
+            <span id="psAmendRoundLabel">Amendment Process</span>
+          </div>
+        </div>
+        <div class="ps-status-counts">
+          <div class="ps-count-item" title="Amendment status 1 — approved">
+            <span class="ps-count-label">Approved</span>
+            <span class="ps-count-pill ps-pill-accepted" id="cstat-amend-accepted">—</span>
+          </div>
+          <span class="ps-count-sep" aria-hidden="true">&middot;</span>
+          <div class="ps-count-item" title="Amendment status 11 — pending">
+            <span class="ps-count-label">Pending</span>
+            <span class="ps-count-pill ps-pill-pending" id="cstat-amend-pending">—</span>
+          </div>
+          <span class="ps-count-sep" aria-hidden="true">&middot;</span>
+          <div class="ps-count-item" title="Amendment status 2 — rejected">
+            <span class="ps-count-label">Rejected</span>
+            <span class="ps-count-pill ps-pill-rejected" id="cstat-amend-rejected">—</span>
           </div>
         </div>
       </div>

@@ -71,15 +71,38 @@ const PROFILE_STATUS = {
   lastFingerprint:   null,
 };
 
-function normalizeProfileStatusEntries(raw) {
+function normalizeProfileStatusEntries(raw, outMeta) {
   if (Array.isArray(raw)) return raw;
+
+  if (raw?.statusTypes && typeof raw.statusTypes === 'object') {
+    const entries = [];
+    if (outMeta) outMeta._fromV2 = true;
+    for (const [typeId, td] of Object.entries(raw.statusTypes)) {
+      if (td?.label != null && outMeta) {
+        outMeta[typeId] = { label: td.label, statusLabels: td.statusLabels || {} };
+      }
+    }
+    const arr = Array.isArray(raw.entries) ? raw.entries : (Array.isArray(raw.Table) ? raw.Table : []);
+    for (const e of arr) {
+      if (e.applicantId == null) continue;
+      entries.push({
+        applicantId:   e.applicantId,
+        statusId:      e.statusId ?? 0,
+        statusTypeId:  e.statusTypeId ?? 131,
+        remarks:       e.remarks ?? null,
+      });
+    }
+    return entries;
+  }
+
   if (raw?.entries && Array.isArray(raw.entries)) return raw.entries;
   if (raw?.Table && Array.isArray(raw.Table)) return raw.Table;
   return null;
 }
 
 function _profileStatusUpdatedKey(payload) {
-  const u = payload?.updatedAt ?? payload?.updated;
+  const v2u = payload?.meta?.updatedAt ?? payload?.meta?.updated;
+  const u = v2u ?? payload?.updatedAt ?? payload?.updated;
   if (u?.seconds != null) return String(u.seconds);
   if (u?.toMillis) return String(u.toMillis());
   return String(u || '');
@@ -144,7 +167,8 @@ function _notifyProfileStatusUpdated(prevMyStatus) {
 }
 
 function applyProfileStatusPayload(payload, sourceLabel, opts = {}) {
-  const entries = normalizeProfileStatusEntries(payload);
+  const meta = {};
+  const entries = normalizeProfileStatusEntries(payload, meta);
   if (!entries?.length) return false;
 
   const prevMyStatus = SIM.myId ? SIM.profileStatus.byId[String(SIM.myId)] : null;
@@ -152,23 +176,55 @@ function applyProfileStatusPayload(payload, sourceLabel, opts = {}) {
   const wasReady = PROFILE_STATUS.ready;
   const notifyLive = opts.notify !== false && sourceLabel === 'live';
 
+  const types = {};
   const byId = {};
-  for (const e of entries) {
-    if (e.applicantId == null) continue;
-    byId[String(e.applicantId)] = {
-      statusId:     e.statusId ?? 0,
-      statusTypeId: e.statusTypeId ?? payload?.statusTypeId ?? null,
-      remarks:      e.remarks ?? null,
-    };
+  const primaryTypeId = String(payload?.statusTypeId || 131);
+
+  const statusLabelsPayload = {};
+  if (payload?.statusLabels && typeof payload.statusLabels === 'object') {
+    statusLabelsPayload[primaryTypeId] = payload.statusLabels;
   }
 
-  SIM.profileStatus.byId = byId;
-  if (payload?.statusLabels && typeof payload.statusLabels === 'object') {
-    SIM.profileStatus.labels = { ...payload.statusLabels };
+  for (const e of entries) {
+    if (e.applicantId == null) continue;
+    const tid = String(e.statusTypeId || primaryTypeId);
+    if (!types[tid]) {
+      const m = meta[tid] || {};
+      types[tid] = {
+        byId: {},
+        labels: m.statusLabels || { ...(payload?.statusLabels || {}) },
+        typeLabel: m.label || (tid === primaryTypeId ? (payload?.statusTypeLabel || 'Profile verification') : `Status Type ${tid}`),
+      };
+    }
+    types[tid].byId[String(e.applicantId)] = {
+      statusId:     e.statusId ?? 0,
+      statusTypeId: Number(tid),
+      remarks:      e.remarks ?? null,
+    };
+    if (tid === primaryTypeId) {
+      byId[String(e.applicantId)] = types[tid].byId[String(e.applicantId)];
+    }
   }
-  if (payload?.statusTypeLabel) SIM.profileStatus.typeLabel = payload.statusTypeLabel;
+
+  SIM.profileStatus.types = types;
+  SIM.profileStatus.byId = byId;
+
+  if (types[primaryTypeId]) {
+    SIM.profileStatus.labels = types[primaryTypeId].labels;
+    SIM.profileStatus.typeLabel = types[primaryTypeId].typeLabel;
+  } else {
+    const first = Object.values(types)[0];
+    if (first) {
+      SIM.profileStatus.labels = first.labels;
+      SIM.profileStatus.typeLabel = first.typeLabel;
+    }
+  }
+
   SIM.profileStatus.source = sourceLabel || 'unknown';
-  SIM.profileStatus.updatedAt = payload?.updated || payload?.updatedAt || null;
+
+  const v2Updated = payload?.meta?.updatedAt || payload?.meta?.updated;
+  SIM.profileStatus.updatedAt = v2Updated ?? payload?.updated ?? payload?.updatedAt ?? null;
+
   SIM.profileStatus.loaded = true;
 
   const fp = _profileStatusFingerprint(byId, payload);
@@ -182,9 +238,40 @@ function applyProfileStatusPayload(payload, sourceLabel, opts = {}) {
   return true;
 }
 
-function getProfileStatusForCandidate(c) {
+function getProfileStatusForCandidate(c, typeId) {
   if (!c || c.applicantId == null) return null;
+  if (typeId != null) {
+    return SIM.profileStatus.types[String(typeId)]?.byId[String(c.applicantId)] || null;
+  }
   return SIM.profileStatus.byId[String(c.applicantId)] || null;
+}
+
+function getEffectiveProfileStatusForCandidate(c) {
+  if (!c || c.applicantId == null) return null;
+  const st132 = SIM.profileStatus.types['132']?.byId[String(c.applicantId)];
+  if (st132) return st132;
+  return getProfileStatusForCandidate(c);
+}
+
+function getAllProfileStatusesForCandidate(c) {
+  if (!c || c.applicantId == null) return [];
+  const result = [];
+  for (const [tid, td] of Object.entries(SIM.profileStatus.types)) {
+    const st = td.byId[String(c.applicantId)];
+    if (st) result.push({ ...st, _typeLabel: td.typeLabel, _statusLabels: td.labels });
+  }
+  return result;
+}
+
+function getProfileStatusTypeMeta(typeId) {
+  const td = SIM.profileStatus.types[String(typeId)];
+  if (!td) return null;
+  return { typeLabel: td.typeLabel, labels: td.labels };
+}
+
+function profileStatusTypeLabel(typeId) {
+  const m = getProfileStatusTypeMeta(typeId);
+  return m?.typeLabel || `Status Type ${typeId}`;
 }
 
 function profileStatusLabel(statusId) {
@@ -276,10 +363,11 @@ function profileStatusTagHtml(st) {
   if (!st) return '';
   const sid = Number(st.statusId);
   const cls = sid === 11 ? 'ps-pending' : sid === 1 ? 'ps-accepted' : sid === 2 ? 'ps-rejected' : 'ps-other';
-  const label = profileStatusLabel(sid);
+  const typeLabel = st._typeLabel || SIM.profileStatus.typeLabel;
+  const label = st._statusLabels?.[String(sid)] || profileStatusLabel(sid);
   const remarks = formatProfileStatusRemarks(st.remarks);
   const tip = [
-    SIM.profileStatus.typeLabel,
+    typeLabel,
     st.statusTypeId ? `(type ${st.statusTypeId})` : '',
     remarks ? `Remarks: ${remarks}` : '',
   ].filter(Boolean).join(' · ');
@@ -288,7 +376,13 @@ function profileStatusTagHtml(st) {
 
 function profileStatusDetailHtml(st) {
   if (!st) return '';
-  return `<p class="cand-detail-meta" style="margin-top:6px">${profileStatusTagHtml(st)} <span style="color:var(--text-muted)">${esc(SIM.profileStatus.typeLabel)}</span></p>${profileStatusRemarksHtml(st.remarks)}`;
+  const typeLabel = st._typeLabel || SIM.profileStatus.typeLabel;
+  return `<p class="cand-detail-meta" style="margin-top:6px">${profileStatusTagHtml(st)} <span style="color:var(--text-muted)">${esc(typeLabel)}</span></p>${profileStatusRemarksHtml(st.remarks)}`;
+}
+
+function profileStatusesDetailHtml(statuses) {
+  if (!statuses?.length) return '';
+  return statuses.map(st => profileStatusDetailHtml(st)).join('<hr style="border-color:rgba(77,184,217,0.08);margin:6px 0">');
 }
 
 async function loadProfileStatusData() {
@@ -310,7 +404,13 @@ async function loadProfileStatusData() {
     const res = await fetch('data/ProfileStatus.json', { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
-      if (applyProfileStatusPayload({
+      if (data.version === 2) {
+        if (applyProfileStatusPayload(data, 'static_snapshot', { notify: false })) {
+          SIM.profileStatus.loading = false;
+          _onProfileStatusReady();
+          return;
+        }
+      } else if (applyProfileStatusPayload({
         entries: data,
         statusTypeId: 131,
         statusTypeLabel: 'Verification : Round 01',
@@ -332,6 +432,7 @@ async function loadProfileStatusData() {
 function _onProfileStatusReady() {
   renderCandStats();
   applyAndRenderCandidates();
+  if (typeof syncSimulationStatusScopeUI === 'function') syncSimulationStatusScopeUI();
 }
 
 function initProfileStatus() {

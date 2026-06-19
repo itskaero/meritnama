@@ -1322,21 +1322,21 @@
       <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
         Publishes per-applicant verification status to the <strong>Candidates</strong> tab on <code>simulation.html</code> via
         <code>notifications/profile_status</code> in Firestore.
-        Paste the portal <code>ProfileStatus</code> array (or full response with <code>entries</code>) — same workflow as schedule: fetch locally, paste JSON, save.
-        Status codes: <strong>11</strong> pending · <strong>1</strong> accepted · <strong>2</strong> rejected.
+        Supports the <strong>v2 grouped format</strong> (<code>statusTypes</code> + <code>entries</code>) for multiple status types
+        (e.g. 131 = Verification Round 01, 132 = Amendment Process).
+        Paste full JSON or an entries array — same workflow as schedule: fetch locally, paste JSON, save.
       </p>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.75rem;max-width:760px;margin-bottom:0.75rem;">
-        <div class="modal-field" style="margin:0;">
-          <label>Status type label</label>
-          <input type="text" id="psAdminTypeLabel" value="Verification : Round 01" placeholder="Verification : Round 01" />
+      <details style="max-width:760px;margin-bottom:0.75rem;">
+        <summary style="cursor:pointer;font-size:0.82rem;color:var(--text-muted);">Status types metadata (click to edit)</summary>
+        <div style="margin-top:8px;border:1px solid var(--border);border-radius:8px;padding:12px;background:rgba(0,0,0,0.15);">
+          <p style="font-size:0.76rem;color:var(--text-muted);margin:0 0 8px;">
+            JSON object mapping type ID → <code>{label, statusLabels}</code>. Leave empty to fall back to single-type save.
+          </p>
+          <textarea id="psAdminStatusTypes" rows="5" spellcheck="false" style="width:100%;resize:vertical;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.78rem;font-family:Consolas,Monaco,monospace;" placeholder='{"131":{"label":"Verification : Round 01","statusLabels":{"1":"Accepted","2":"Rejected","11":"Pending"}},"132":{"label":"Amendment Process","statusLabels":{"1":"Approved","2":"Rejected","11":"Pending"}}}'></textarea>
         </div>
-        <div class="modal-field" style="margin:0;">
-          <label>Status type ID</label>
-          <input type="number" id="psAdminTypeId" value="131" min="0" />
-        </div>
-      </div>
+      </details>
       <div class="modal-field" style="max-width:760px;">
-        <label>Profile status JSON <span style="text-transform:none;font-weight:400;">(array of <code>{applicantId, statusId, statusTypeId}</code> or wrapped object)</span></label>
+        <label>Entries JSON <span style="text-transform:none;font-weight:400;">(array of <code>{applicantId, statusId, statusTypeId}</code>)</span></label>
         <textarea id="psAdminJson" rows="10" spellcheck="false" style="width:100%;resize:vertical;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.78rem;font-family:Consolas,Monaco,monospace;" placeholder='[{"applicantId":36747,"statusId":11,"statusTypeId":131},...]'></textarea>
       </div>
       <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem;">
@@ -3884,6 +3884,10 @@ function normalizeProfileStatusAdminEntries(raw) {
   return null;
 }
 
+function detectV2Payload(raw) {
+  return raw && typeof raw === 'object' && !Array.isArray(raw) && raw.statusTypes && typeof raw.statusTypes === 'object' && Object.keys(raw.statusTypes).length > 0;
+}
+
 async function loadProfileStatusAdminEditor() {
   setProfileStatusAdminStatus('Loading profile status from Firestore…');
   try {
@@ -3893,14 +3897,26 @@ async function loadProfileStatusAdminEditor() {
       return;
     }
     const data = snap.data();
-    const entries = normalizeProfileStatusAdminEntries(data);
     const ta = document.getElementById('psAdminJson');
-    if (ta && entries) ta.value = JSON.stringify(entries, null, 2);
-    const typeLabel = document.getElementById('psAdminTypeLabel');
-    const typeId = document.getElementById('psAdminTypeId');
-    if (typeLabel && data.statusTypeLabel) typeLabel.value = data.statusTypeLabel;
-    if (typeId && data.statusTypeId != null) typeId.value = data.statusTypeId;
-    setProfileStatusAdminStatus(`Loaded ${entries?.length || 0} entries from Firestore.`, 'var(--neon-green)');
+    const stTa = document.getElementById('psAdminStatusTypes');
+
+    if (detectV2Payload(data)) {
+      if (ta && data.entries) ta.value = JSON.stringify(data.entries, null, 2);
+      if (stTa) stTa.value = JSON.stringify(data.statusTypes, null, 2);
+      setProfileStatusAdminStatus(`Loaded v2 payload from Firestore: ${Object.keys(data.statusTypes).length} type(s), ${data.entries?.length || 0} entries.`, 'var(--neon-green)');
+    } else {
+      const entries = normalizeProfileStatusAdminEntries(data);
+      if (ta && entries) ta.value = JSON.stringify(entries, null, 2);
+      if (stTa && data.statusTypeId != null && data.statusTypeLabel) {
+        const legacyTypes = {};
+        legacyTypes[String(data.statusTypeId)] = {
+          label: data.statusTypeLabel,
+          statusLabels: data.statusLabels || { '1': 'Accepted', '2': 'Rejected', '11': 'Pending' },
+        };
+        stTa.value = JSON.stringify(legacyTypes, null, 2);
+      }
+      setProfileStatusAdminStatus(`Loaded legacy payload: ${entries?.length || 0} entries (single type). Converted to v2 format in editor — review before saving.`, 'var(--neon-gold)');
+    }
   } catch (e) {
     setProfileStatusAdminStatus('Error loading profile status: ' + e.message, 'var(--neon-pink)');
   }
@@ -3913,8 +3929,18 @@ async function loadProfileStatusAdminStatic() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     const ta = document.getElementById('psAdminJson');
-    if (ta && Array.isArray(data)) ta.value = JSON.stringify(data, null, 2);
-    setProfileStatusAdminStatus(`Loaded ${data.length} entries from static snapshot (not saved yet).`, 'var(--neon-green)');
+    const stTa = document.getElementById('psAdminStatusTypes');
+
+    if (detectV2Payload(data)) {
+      if (ta && data.entries) ta.value = JSON.stringify(data.entries, null, 2);
+      if (stTa) stTa.value = JSON.stringify(data.statusTypes, null, 2);
+      setProfileStatusAdminStatus(`Loaded v2 snapshot: ${Object.keys(data.statusTypes).length} type(s), ${data.entries?.length || 0} entries (not saved yet).`, 'var(--neon-green)');
+    } else if (Array.isArray(data)) {
+      if (ta) ta.value = JSON.stringify(data, null, 2);
+      setProfileStatusAdminStatus(`Loaded ${data.length} entries from static snapshot (not saved yet).`, 'var(--neon-green)');
+    } else {
+      setProfileStatusAdminStatus('Static snapshot has unexpected format.', 'var(--neon-pink)');
+    }
   } catch (e) {
     setProfileStatusAdminStatus('Error loading static snapshot: ' + e.message, 'var(--neon-pink)');
   }
@@ -3930,27 +3956,57 @@ async function saveProfileStatusAdminEditor() {
   try {
     parsed = JSON.parse(ta.value);
   } catch (e) {
-    setProfileStatusAdminStatus('Invalid JSON: ' + e.message, 'var(--neon-pink)');
+    setProfileStatusAdminStatus('Invalid entries JSON: ' + e.message, 'var(--neon-pink)');
     return;
   }
   const entries = normalizeProfileStatusAdminEntries(parsed);
   if (!entries?.length) {
-    setProfileStatusAdminStatus('JSON must be an array (or object with entries/Table) with at least one row.', 'var(--neon-pink)');
+    setProfileStatusAdminStatus('Entries must be an array with at least one row.', 'var(--neon-pink)');
     return;
   }
-  const typeLabel = document.getElementById('psAdminTypeLabel')?.value?.trim() || 'Profile status';
-  const typeId = parseInt(document.getElementById('psAdminTypeId')?.value, 10);
+  const stTa = document.getElementById('psAdminStatusTypes');
+  let statusTypes = null;
+  if (stTa?.value.trim()) {
+    try {
+      statusTypes = JSON.parse(stTa.value.trim());
+      if (typeof statusTypes !== 'object' || Array.isArray(statusTypes)) {
+        setProfileStatusAdminStatus('Status types metadata must be a JSON object (not array).', 'var(--neon-pink)');
+        return;
+      }
+    } catch (e) {
+      setProfileStatusAdminStatus('Invalid status types JSON: ' + e.message, 'var(--neon-pink)');
+      return;
+    }
+  }
   setProfileStatusAdminStatus('Saving…');
   try {
-    await db.collection('notifications').doc('profile_status').set({
-      source: 'admin_paste',
-      statusTypeId: Number.isFinite(typeId) ? typeId : null,
-      statusTypeLabel: typeLabel,
-      statusLabels: { '1': 'Accepted', '2': 'Rejected', '11': 'Pending' },
-      entries,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
-    setProfileStatusAdminStatus(`Saved ${entries.length} entries. Candidate pool will update live.`, 'var(--neon-green)');
+    if (statusTypes && Object.keys(statusTypes).length > 0) {
+      // Save as full v2 grouped format
+      await db.collection('notifications').doc('profile_status').set({
+        version: 2,
+        statusTypes,
+        entries,
+        source: 'admin_paste',
+        meta: {
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        },
+      }, { merge: true });
+      setProfileStatusAdminStatus(`Saved v2 payload: ${Object.keys(statusTypes).length} type(s), ${entries.length} entries.`, 'var(--neon-green)');
+    } else {
+      // Fall back to legacy single-type save
+      const typeLabel = 'Profile status';
+      const typeIds = [...new Set(entries.map(e => e.statusTypeId).filter(t => t != null))];
+      const typeId = typeIds.length === 1 ? Number(typeIds[0]) : 131;
+      await db.collection('notifications').doc('profile_status').set({
+        source: 'admin_paste',
+        statusTypeId: Number.isFinite(typeId) ? typeId : null,
+        statusTypeLabel: typeLabel,
+        statusLabels: { '1': 'Accepted', '2': 'Rejected', '11': 'Pending' },
+        entries,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+      setProfileStatusAdminStatus(`Saved ${entries.length} entries (legacy format).`, 'var(--neon-green)');
+    }
   } catch (e) {
     setProfileStatusAdminStatus('Error saving profile status: ' + e.message, 'var(--neon-pink)');
   }

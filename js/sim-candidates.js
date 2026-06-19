@@ -1,6 +1,21 @@
 // ═══════════════════════════════════════════════════════════════════
 // CANDIDATES TAB
 // ═══════════════════════════════════════════════════════════════════
+function _countProfileStatusByType(all, typeId) {
+  let accepted = 0, pending = 0, rejected = 0;
+  const td = SIM.profileStatus.types[String(typeId)];
+  if (!td) return { accepted, pending, rejected };
+  for (const c of all) {
+    const st = td.byId[String(c.applicantId)];
+    if (!st) continue;
+    const sid = Number(st.statusId);
+    if (sid === 11) pending++;
+    else if (sid === 1) accepted++;
+    else if (sid === 2) rejected++;
+  }
+  return { accepted, pending, rejected };
+}
+
 function renderCandStats() {
   const all = allCandidates();
   if (!all.length) return;
@@ -102,6 +117,30 @@ function renderProfileStatusPanel(accepted, pending, rejected) {
       updatedEl.title = 'Publish via admin portal to set an updated timestamp';
     }
   }
+
+  const amendContainer = document.getElementById('candAmendmentStats');
+  if (!amendContainer) return;
+
+  const amendType = SIM.profileStatus.types['132'];
+  if (!amendType || !Object.keys(amendType.byId).length) {
+    amendContainer.classList.add('hidden');
+    return;
+  }
+
+  const all = allCandidates();
+  const amendCounts = _countProfileStatusByType(all, '132');
+  amendContainer.classList.remove('hidden');
+
+  const amendRoundEl = document.getElementById('psAmendRoundLabel');
+  if (amendRoundEl) amendRoundEl.textContent = amendType.typeLabel || 'Amendment Process';
+
+  const setAmendCount = (id, n) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = Number(n).toLocaleString();
+  };
+  setAmendCount('cstat-amend-accepted', amendCounts.accepted);
+  setAmendCount('cstat-amend-pending', amendCounts.pending);
+  setAmendCount('cstat-amend-rejected', amendCounts.rejected);
 }
 
 function setupCandidateFilters() {
@@ -153,7 +192,7 @@ function applyAndRenderCandidates() {
   if (SIM.profileStatus.filter) {
     const want = Number(SIM.profileStatus.filter);
     list = list.filter(c => {
-      const st = getProfileStatusForCandidate(c);
+      const st = getEffectiveProfileStatusForCandidate(c);
       return st && Number(st.statusId) === want;
     });
   }
@@ -266,7 +305,10 @@ function renderCandidateTable(slice, total) {
     const tags   = PROGS.filter(p => effectiveMark(c, p) != null)
                         .map(p => `<span class="prog-tag prog-${p.toLowerCase()}">${p}</span>`).join('');
     const custom = c._custom ? '<span class="custom-tag">manual</span>' : '';
-    const psTag  = profileStatusTagHtml(getProfileStatusForCandidate(c));
+    const allPs = getAllProfileStatusesForCandidate(c);
+    const psTag = allPs.length > 1
+      ? allPs.map(st => profileStatusTagHtml(st)).join('<span class="ps-trail-arrow"> → </span>')
+      : profileStatusTagHtml(getProfileStatusForCandidate(c));
     return `<tr class="${isMe ? 'row-me' : ''}" data-id="${c.applicantId}" style="cursor:pointer">
       <td class="td-num">${rank}</td>
       <td>${esc(c.nameFull)} ${psTag}${supporterBadgeForCandidate(c)}${custom}${isMe ? '<span class="me-tag">YOU</span>' : ''}</td>
@@ -628,13 +670,15 @@ function openCandidateDetail(idStr) {
     ['MDCAT',      c.mdcat],
   ].filter(([, v]) => v);
 
+  const allStatuses = getAllProfileStatusesForCandidate(c);
+
   body.innerHTML = `
     <div class="cand-detail-hdr">
       <div>
         <h3>${esc(c.nameFull)} ${isMe ? '<span class="me-tag">YOU</span>' : ''}
           ${c._custom ? '<span class="custom-tag">manual</span>' : ''}</h3>
         <p class="cand-detail-meta">ID: ${c.applicantId} &nbsp;·&nbsp; ${esc(getActiveMarksLabel())}: <strong>${fmtM(baseMarks(c))}</strong> &nbsp;·&nbsp; Portal marksTotal: ${fmtM(c.marksTotal)}</p>
-        ${profileStatusDetailHtml(getProfileStatusForCandidate(c))}
+        ${profileStatusesDetailHtml(allStatuses)}
       </div>
     </div>
 

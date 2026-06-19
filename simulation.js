@@ -4536,7 +4536,7 @@ function setupSimulationStatusScopeSelector() {
 
 function candidateMatchesSimStatusScope(candidate, scope = getActiveSimStatusScope()) {
   if (!scope || scope.includeAll) return true;
-  const st = getProfileStatusForCandidate(candidate);
+  const st = getEffectiveProfileStatusForCandidate(candidate);
   if (!st) return false;
   return scope.statusIds.includes(Number(st.statusId));
 }
@@ -4560,7 +4560,7 @@ function simulationCandidatePool(program) {
   const included = [];
   let missingStatusCount = 0;
   for (const cand of base) {
-    const st = getProfileStatusForCandidate(cand);
+    const st = getEffectiveProfileStatusForCandidate(cand);
     if (!st) {
       missingStatusCount++;
       continue;
@@ -6966,6 +6966,13 @@ function applyProfileStatusPayload(payload, sourceLabel, opts = {}) {
 function getProfileStatusForCandidate(c) {
   if (!c || c.applicantId == null) return null;
   return SIM.profileStatus.byId[String(c.applicantId)] || null;
+}
+
+function getEffectiveProfileStatusForCandidate(c) {
+  if (!c || c.applicantId == null) return null;
+  const st132 = SIM.profileStatus.types['132']?.byId[String(c.applicantId)];
+  if (st132) return st132;
+  return getProfileStatusForCandidate(c);
 }
 
 function profileStatusLabel(statusId) {

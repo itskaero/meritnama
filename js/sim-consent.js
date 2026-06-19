@@ -13,10 +13,10 @@ const MAX_CONSENT_HISTORY = 8;
 
 const DEFAULT_SIM_STATUS_SCOPES = [
   { id: 'all', label: 'All candidates', description: 'Do not filter by verification status.', includeAll: true, statusIds: [] },
-  { id: 'accepted-pending', label: 'Accepted + Pending', description: 'Only candidates marked Accepted or Pending in profile verification.', includeAll: false, statusIds: [1, 11] },
-  { id: 'accepted', label: 'Accepted only', description: 'Only candidates marked Accepted.', includeAll: false, statusIds: [1] },
-  { id: 'pending', label: 'Pending only', description: 'Only candidates marked Pending.', includeAll: false, statusIds: [11] },
-  { id: 'rejected', label: 'Rejected only', description: 'Only candidates marked Rejected.', includeAll: false, statusIds: [2] },
+  { id: 'accepted-pending', label: 'Accepted + Pending', description: 'Candidates accepted in verification or amendment, plus pending.', includeAll: false, statusIds: [1, 11] },
+  { id: 'accepted', label: 'Accepted only', description: 'Candidates accepted in verification or approved via amendment.', includeAll: false, statusIds: [1] },
+  { id: 'pending', label: 'Pending only', description: 'Candidates still pending in verification.', includeAll: false, statusIds: [11] },
+  { id: 'rejected', label: 'Rejected only', description: 'Candidates rejected after amendment process (or rejected with no amendment).', includeAll: false, statusIds: [2] },
 ];
 
 // ── Augment SIM with consent + status-scope state ──
@@ -98,19 +98,36 @@ function getActiveSimStatusScope() {
     || DEFAULT_SIM_STATUS_SCOPES[0];
 }
 
+function countScopeMatches(scope) {
+  if (!SIM.profileStatus.loaded) return -1;
+  if (!scope || scope.includeAll) return allCandidates().length;
+  let count = 0;
+  for (const c of allCandidates()) {
+    const st = getEffectiveProfileStatusForCandidate(c);
+    if (st && scope.statusIds.includes(Number(st.statusId))) count++;
+  }
+  return count;
+}
+
 function syncSimulationStatusScopeUI() {
   const selects = [
     { sel: document.getElementById('simStatusScope'), hint: document.getElementById('simStatusScopeHint') },
     { sel: document.getElementById('consentStatusScope'), hint: document.getElementById('consentStatusScopeHint') },
   ].filter(item => item.sel);
   const scope = getActiveSimStatusScope();
+  const matchCount = countScopeMatches(scope);
+  const countText = matchCount === -1
+    ? 'Loading status data…'
+    : scope.includeAll
+      ? matchCount.toLocaleString() + ' total candidates'
+      : matchCount.toLocaleString() + ' candidates match';
   for (const { sel, hint } of selects) {
     sel.innerHTML = SIM.sim.statusScopes.map(s =>
       '<option value="' + esc(s.id) + '">' + esc(s.label) + '</option>'
     ).join('');
     sel.value = SIM.sim.statusScopeId;
     sel.disabled = !SIM.sim.showStatusScopeSelector || SIM.sim.statusScopes.length <= 1;
-    if (hint) hint.textContent = scope.description || (scope.includeAll ? 'All candidates included.' : 'Filtered by verification status.');
+    if (hint) hint.textContent = (scope.description || '') + ' (' + countText + ').';
   }
   document.querySelectorAll('.sim-status-scope-wrap').forEach(wrap => {
     wrap.classList.toggle('hidden', !SIM.sim.showStatusScopeSelector);
@@ -123,6 +140,7 @@ function setupSimulationStatusScopeSelector() {
     if (!SIM.sim.statusScopes.some(s => s.id === next)) return;
     SIM.sim.statusScopeId = next;
     localStorage.setItem(SIM_STATUS_SCOPE_KEY, next);
+    syncSimulationStatusScopeUI();
     SIM.sim.result = null;
     SIM.sim.baselineResult = null;
     resetInteractiveConsentState();
@@ -140,7 +158,7 @@ function setupSimulationStatusScopeSelector() {
 function candidateMatchesSimStatusScope(candidate, scope) {
   scope = scope || getActiveSimStatusScope();
   if (!scope || scope.includeAll) return true;
-  const st = getProfileStatusForCandidate(candidate);
+  const st = getEffectiveProfileStatusForCandidate(candidate);
   if (!st) return false;
   return scope.statusIds.includes(Number(st.statusId));
 }
@@ -155,7 +173,7 @@ function simulationCandidatePool(program) {
   const included = [];
   let missingStatusCount = 0;
   for (const cand of base) {
-    const st = getProfileStatusForCandidate(cand);
+    const st = getEffectiveProfileStatusForCandidate(cand);
     if (!st) { missingStatusCount++; continue; }
     if (scope.statusIds.includes(Number(st.statusId))) included.push(cand);
   }

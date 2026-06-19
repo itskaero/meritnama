@@ -57,6 +57,7 @@ const SIM = {
 
   profileStatus: {
     byId:        {},
+    types:       {},
     labels:      { '1': 'Accepted', '2': 'Rejected', '11': 'Pending' },
     typeLabel:   'Verification : Round 01',
     source:      '',
@@ -419,6 +420,7 @@ function syncMarksSelectorUI() {
   const selects = [
     document.getElementById('candMarksBasis'),
     document.getElementById('simMarksBasis'),
+    document.getElementById('consentMarksBasis'),
   ].filter(Boolean);
 
   for (const sel of selects) {
@@ -459,6 +461,7 @@ function setupMarksSelectors() {
   const handler = e => setActiveMarksOption(e.target.value);
   document.getElementById('candMarksBasis')?.addEventListener('change', handler);
   document.getElementById('simMarksBasis')?.addEventListener('change', handler);
+  document.getElementById('consentMarksBasis')?.addEventListener('change', handler);
   syncMarksSelectorUI();
   syncMarksNoticeUI();
   updateMarksBasisLabels();
