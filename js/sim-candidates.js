@@ -511,26 +511,34 @@ function parseProgramAttemptNumeric(raw) {
  * active simulation programme for bare names, or an explicit dotted subkey.
  * Missing subkeys resolve to 0 — not every programme has every dict entry.
  */
-function resolveCandidateField(c, field, program) {
+function resolveCandidateField(c, field, program, revision) {
+  const selectedRevision = arguments.length >= 4 ? revision : getActiveCandidateRevisionId();
   if (!field) return 0;
   const f = String(field).trim();
-  if (f === 'marksTotal') return c.marksTotal ?? 0;
-  if (MARKS_COMPONENT_FIELDS.includes(f)) return c[f] ?? 0;
+  if (f === 'marksTotal') return getCandidateField(c, 'marksTotal', selectedRevision) ?? 0;
+  if (MARKS_COMPONENT_FIELDS.includes(f)) return getCandidateField(c, f, selectedRevision) ?? 0;
 
   let dictName = null;
   let progKey  = null;
   const dotted = f.match(/^([a-zA-Z][a-zA-Z0-9]*)\.(.+)$/);
   if (dotted && PROGRAM_DICT_ROOTS.includes(dotted[1])) {
-    dictName = dotted[1];
+    dictName = normalizeProgramDictRoot(dotted[1]);
     progKey = dotted[2];
   } else if (PROGRAM_DICT_FIELDS.includes(f)) {
-    dictName = f;
+    dictName = normalizeProgramDictRoot(f);
     progKey = program;
   }
 
   if (!dictName || !progKey) return 0;
 
-  const raw = getProgramDictSource(c, dictName)[progKey];
+  const dictRoots = dictName === 'programAttempt'
+    ? ['programAttempt', 'programAttempts']
+    : [dictName];
+  let raw;
+  for (const root of dictRoots) {
+    raw = getCandidateField(c, `${root}.${progKey}`, selectedRevision);
+    if (raw !== undefined) break;
+  }
   return parseProgramDictNumeric(dictName, raw);
 }
 

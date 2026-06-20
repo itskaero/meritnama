@@ -1290,8 +1290,10 @@
       outline: 1px solid rgba(224,84,112,0.42);
       background: rgba(224,84,112,0.08) !important;
     }
-    .marks-basis-wrap { display: flex; flex-direction: column; gap: 4px; min-width: 220px; }
-    .marks-basis-wrap label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
+    .marks-basis-wrap,
+    .candidate-revision-wrap { display: flex; flex-direction: column; gap: 4px; min-width: 220px; }
+    .marks-basis-wrap label,
+    .candidate-revision-wrap label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
     .marks-basis-note { font-size: 0.72rem; color: var(--text-muted); max-width: 520px; line-height: 1.45; }
     .marks-info-banner {
       display: flex; gap: 14px; align-items: flex-start;
@@ -2934,6 +2936,10 @@
           <label for="candMarksBasis">Merit basis</label>
           <select id="candMarksBasis" class="mt-filter-sel" title="Formula used for base marks in this table and allocation"></select>
         </div>
+        <div class="form-group candidate-revision-wrap hidden">
+          <label for="candCandidateRevision">Candidate revision</label>
+          <select id="candCandidateRevision" class="mt-filter-sel" title="Corrected candidate-data snapshot used with the selected merit basis"></select>
+        </div>
       </div>
       <p id="marksBasisNote" class="marks-basis-note hidden" style="margin-top:10px"></p>
       <div style="margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
@@ -3393,6 +3399,10 @@
           <label for="simMarksBasis">Merit basis</label>
           <select id="simMarksBasis" class="mt-filter-sel" title="Formula used when running placement simulation"></select>
         </div>
+        <div class="form-group candidate-revision-wrap hidden">
+          <label for="simCandidateRevision">Candidate revision</label>
+          <select id="simCandidateRevision" class="mt-filter-sel" title="Corrected candidate-data snapshot used with the selected merit basis"></select>
+        </div>
         <div class="form-group sim-status-scope-wrap">
           <label for="simStatusScope">Candidate status scope</label>
           <select id="simStatusScope" class="mt-filter-sel" title="Which verification statuses are included in seat allocation"></select>
@@ -3478,6 +3488,10 @@
             <div class="form-group marks-basis-wrap">
               <label for="consentMarksBasis">Merit basis</label>
               <select id="consentMarksBasis" class="mt-filter-sel" title="Formula used for this what-if run"></select>
+            </div>
+            <div class="form-group candidate-revision-wrap hidden">
+              <label for="consentCandidateRevision">Candidate revision</label>
+              <select id="consentCandidateRevision" class="mt-filter-sel" title="Corrected candidate-data snapshot used with the selected merit basis"></select>
             </div>
             <div class="form-group sim-status-scope-wrap">
               <label for="consentStatusScope">Candidate status scope</label>

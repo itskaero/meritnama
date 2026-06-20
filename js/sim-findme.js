@@ -149,6 +149,7 @@ function loadCustomCand() {
 function saveCustomCand(c) {
   SIM.customCand = ensureCandidateAdjusted(c);
   localStorage.setItem(CUSTOM_KEY, JSON.stringify(SIM.customCand));
+  refreshCandidateRevisionOptions();
 }
 
 function openCustomModal() {

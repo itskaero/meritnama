@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupSlotBrowser();
   setupSimulationTab();
   setupMarksSelectors();
+  setupCandidateRevisionSelectors();
   setupChat();
   updateMyBadge();
 
