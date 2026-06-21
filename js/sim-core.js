@@ -44,6 +44,12 @@ const SIM = {
     showNotice:     true,
   },
 
+  candidateRevision: {
+    activeId:     null,
+    availableIds: [],
+    showSelector: false,
+  },
+
   schedule: {
     steps:     [],
     filter:    'all',
@@ -77,6 +83,7 @@ const SIM = {
 const MY_ID_KEY           = 'mn_sim_my_id';
 const CUSTOM_KEY          = 'mn_sim_custom_cand';
 const MARKS_OPTION_KEY    = 'mn_marks_option_id';
+const CANDIDATE_REVISION_KEY = 'mn_candidate_revision_id';
 const MARKS_COMPONENT_FIELDS = [
   'mdcat', 'experience', 'matric', 'fsc', 'degree', 'houseJob',
   'research', 'position', 'hardAreas', 'attempts',
@@ -129,6 +136,164 @@ function parseProgramDictNumeric(dictName, raw) {
   if (root === 'programAttempt') return parseProgramAttemptNumeric(raw);
   const n = parseFloat(raw);
   return isNaN(n) ? 0 : n;
+}
+
+function normalizeCandidateRevisionId(revision) {
+  if (revision == null || revision === '' || revision === false) return null;
+  if (typeof revision === 'string') {
+    const id = revision.trim();
+    if (!id || id === 'original') return null;
+    return id;
+  }
+  return null;
+}
+
+function getActiveCandidateRevisionId() {
+  return normalizeCandidateRevisionId(SIM.candidateRevision.activeId);
+}
+
+function resolveCandidateRevision(c, revision) {
+  if (!revision) return null;
+  if (typeof revision === 'object') return revision;
+  const id = normalizeCandidateRevisionId(revision);
+  if (!id) return null;
+  const revisions = c?.revisions;
+  const data = revisions && typeof revisions === 'object' ? revisions[id] : null;
+  return data && typeof data === 'object' ? data : null;
+}
+
+function candidatePathParts(field) {
+  return String(field || '').trim().split('.').filter(Boolean);
+}
+
+function hasCandidatePath(obj, field) {
+  const parts = candidatePathParts(field);
+  if (!obj || typeof obj !== 'object' || !parts.length) return false;
+  let cur = obj;
+  for (const part of parts) {
+    if (!cur || typeof cur !== 'object' || !Object.prototype.hasOwnProperty.call(cur, part)) {
+      return false;
+    }
+    cur = cur[part];
+  }
+  return true;
+}
+
+function readCandidatePath(obj, field) {
+  const parts = candidatePathParts(field);
+  if (!obj || typeof obj !== 'object' || !parts.length) return undefined;
+  let cur = obj;
+  for (const part of parts) {
+    if (cur == null || typeof cur !== 'object') return undefined;
+    cur = cur[part];
+  }
+  return cur;
+}
+
+/**
+ * Read candidate data through an optional revision layer.
+ * Revisions only need to store corrected fields; missing fields inherit from
+ * the root candidate record. Passing null preserves legacy/root behavior.
+ */
+function getCandidateField(candidate, field, revision) {
+  const selectedRevision = arguments.length >= 3 ? revision : getActiveCandidateRevisionId();
+  const rev = resolveCandidateRevision(candidate, selectedRevision);
+  if (rev && hasCandidatePath(rev, field)) return readCandidatePath(rev, field);
+  return readCandidatePath(candidate, field);
+}
+
+function getCandidateRevisionSourceList() {
+  if (typeof allCandidates === 'function') return allCandidates();
+  return [
+    ...(SIM.customCand ? [SIM.customCand] : []),
+    ...(SIM.candidates || []),
+  ];
+}
+
+function collectCandidateRevisionIds(candidates = getCandidateRevisionSourceList()) {
+  const ids = new Set();
+  for (const c of candidates || []) {
+    const revisions = c?.revisions;
+    if (!revisions || typeof revisions !== 'object') continue;
+    Object.keys(revisions)
+      .filter(id => id && revisions[id] && typeof revisions[id] === 'object')
+      .forEach(id => ids.add(id));
+  }
+  return [...ids].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+}
+
+function candidateRevisionLabel(id) {
+  const normalized = normalizeCandidateRevisionId(id);
+  if (!normalized) return 'Original';
+  return normalized
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .split(/[_\-\s]+/)
+    .filter(Boolean)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function updateCandidateRevisionLabels() {
+  const label = candidateRevisionLabel(getActiveCandidateRevisionId());
+  document.querySelectorAll('[data-candidate-revision-label]').forEach(el => {
+    el.textContent = label;
+  });
+}
+
+function syncCandidateRevisionUI() {
+  const selects = [
+    document.getElementById('candCandidateRevision'),
+    document.getElementById('simCandidateRevision'),
+    document.getElementById('consentCandidateRevision'),
+  ].filter(Boolean);
+
+  const optionsHtml = [
+    '<option value="">Original</option>',
+    ...SIM.candidateRevision.availableIds.map(id =>
+      `<option value="${esc(id)}">${esc(candidateRevisionLabel(id))}</option>`
+    ),
+  ].join('');
+
+  for (const sel of selects) {
+    const prev = sel.value;
+    sel.innerHTML = optionsHtml;
+    sel.value = getActiveCandidateRevisionId() || '';
+    if (!sel.value && prev && SIM.candidateRevision.availableIds.includes(prev)) {
+      sel.value = prev;
+    }
+    sel.closest('.candidate-revision-wrap')?.classList.toggle('hidden', !SIM.candidateRevision.showSelector);
+  }
+
+  document.querySelectorAll('.candidate-revision-wrap').forEach(wrap => {
+    wrap.classList.toggle('hidden', !SIM.candidateRevision.showSelector);
+  });
+  updateCandidateRevisionLabels();
+}
+
+function refreshCandidateRevisionOptions() {
+  const ids = collectCandidateRevisionIds();
+  SIM.candidateRevision.availableIds = ids;
+  SIM.candidateRevision.showSelector = ids.length > 0;
+
+  const storedId = normalizeCandidateRevisionId(localStorage.getItem(CANDIDATE_REVISION_KEY));
+  const activeId = normalizeCandidateRevisionId(SIM.candidateRevision.activeId) || storedId;
+  SIM.candidateRevision.activeId = ids.includes(activeId) ? activeId : null;
+  if (SIM.candidateRevision.activeId) {
+    localStorage.setItem(CANDIDATE_REVISION_KEY, SIM.candidateRevision.activeId);
+  } else {
+    localStorage.removeItem(CANDIDATE_REVISION_KEY);
+  }
+  syncCandidateRevisionUI();
+}
+
+function setActiveCandidateRevision(id) {
+  const normalized = normalizeCandidateRevisionId(id);
+  if (normalized && !SIM.candidateRevision.availableIds.includes(normalized)) return;
+  SIM.candidateRevision.activeId = normalized;
+  if (normalized) localStorage.setItem(CANDIDATE_REVISION_KEY, normalized);
+  else localStorage.removeItem(CANDIDATE_REVISION_KEY);
+  syncCandidateRevisionUI();
+  onCandidateRevisionChanged(true);
 }
 const MNNotif = window.MNNotifications;
 const DEFAULT_MARKS_OPTIONS = MNNotif.DEFAULT_MARKS_OPTIONS;
@@ -389,16 +554,17 @@ function getMarksOption(id) {
     || DEFAULT_MARKS_OPTIONS[0];
 }
 
-function resolveBaseMarks(c, option, program) {
+function resolveBaseMarks(c, option, program, revision) {
+  const selectedRevision = arguments.length >= 4 ? revision : getActiveCandidateRevisionId();
   const opt = option || getMarksOption();
   let total = 0;
   if (opt.base === 'sum') {
-    total = (opt.sumFields || []).reduce((s, f) => s + resolveCandidateField(c, f, program), 0);
+    total = (opt.sumFields || []).reduce((s, f) => s + resolveCandidateField(c, f, program, selectedRevision), 0);
   } else {
-    total = resolveCandidateField(c, 'marksTotal', program);
+    total = resolveCandidateField(c, 'marksTotal', program, selectedRevision);
   }
   for (const adj of (opt.adjustments || [])) {
-    const val = resolveCandidateField(c, adj.field, program);
+    const val = resolveCandidateField(c, adj.field, program, selectedRevision);
     if (adj.op === 'add') total += val;
     else if (adj.op === 'subtract') total -= val;
   }
@@ -467,6 +633,14 @@ function setupMarksSelectors() {
   updateMarksBasisLabels();
 }
 
+function setupCandidateRevisionSelectors() {
+  const handler = e => setActiveCandidateRevision(e.target.value);
+  document.getElementById('candCandidateRevision')?.addEventListener('change', handler);
+  document.getElementById('simCandidateRevision')?.addEventListener('change', handler);
+  document.getElementById('consentCandidateRevision')?.addEventListener('change', handler);
+  refreshCandidateRevisionOptions();
+}
+
 function setActiveMarksOption(id) {
   if (!id || !SIM.marks.options.some(o => o.id === id)) return;
   SIM.marks.activeOptionId = id;
@@ -487,11 +661,24 @@ function onMarksOptionChanged(clearSim) {
   if (SIM.sb.program) renderSlot();
 }
 
+function onCandidateRevisionChanged(clearSim) {
+  updateCandidateRevisionLabels();
+  updateMyBadge();
+  applyAndRenderCandidates();
+  if (clearSim) {
+    SIM.sim.result = null;
+    SIM.sim.baselineResult = null;
+    document.getElementById('simResults').innerHTML = '';
+  }
+  if (SIM.sb.program) renderSlot();
+}
+
 /**
  * Base marks for a candidate — resolved via admin/user-selected formula.
  */
-function baseMarks(c) {
-  return resolveBaseMarks(c);
+function baseMarks(c, revision) {
+  const selectedRevision = arguments.length >= 2 ? revision : getActiveCandidateRevisionId();
+  return resolveBaseMarks(c, undefined, undefined, selectedRevision);
 }
 
 /**
@@ -502,12 +689,21 @@ function baseMarks(c) {
  * are still valid and ranked on baseMarks alone. Some imported programme
  * names are present only in preference data; those preferences imply applying.
  */
-function effectiveMark(c, program) {
+function effectiveMark(c, program, revision, option) {
+  const selectedRevision = arguments.length >= 3 ? revision : getActiveCandidateRevisionId();
   const appliedIn = c.applied_in || {};
   const hasExplicitFlag = Object.prototype.hasOwnProperty.call(appliedIn, program);
   const hasProgramPrefs = (c.preference?.[program] || []).length > 0;
   if (!appliedIn[program] && (hasExplicitFlag || !hasProgramPrefs)) return null;
-  return resolveBaseMarks(c, undefined, program) + (c.programMarks?.[program] ?? 0);
+  const programMarks = getCandidateField(c, `programMarks.${program}`, selectedRevision) ?? 0;
+  return resolveBaseMarks(c, option, program, selectedRevision) + programMarks;
+}
+
+function effectiveMarks(c, revision = null, marksProfile = undefined, program = undefined) {
+  const option = typeof marksProfile === 'string' ? getMarksOption(marksProfile) : marksProfile;
+  return program == null
+    ? resolveBaseMarks(c, option, undefined, revision)
+    : effectiveMark(c, program, revision, option);
 }
 
 function esc(s) {

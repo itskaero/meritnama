@@ -12,6 +12,7 @@ async function loadData() {
       ? d
       : (d.candidates || Object.values(d));
     SIM.candidates.forEach(ensureCandidateAdjusted);
+    refreshCandidateRevisionOptions();
   } catch (e) {
     setStatus('error', 'No data');
     document.getElementById('noDataBanner')?.classList.remove('hidden');

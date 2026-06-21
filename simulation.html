@@ -4,6 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Induction Portal &mdash; MeritNama</title>
+  <meta name="description" content="MeritNama helps residency applicants explore merit, candidate profiles, seat allocation simulation, consent what-if analysis, and community discussion." />
+  <meta property="og:title" content="MeritNama &mdash; Residency Induction Analytics" />
+  <meta property="og:description" content="Explore merit, seat allocation simulation, consent what-if analysis, and community profiles for residency induction." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="logo.svg" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="MeritNama &mdash; Residency Induction Analytics" />
+  <meta name="twitter:description" content="Explore merit, seat allocation simulation, consent what-if analysis, and community profiles." />
   <link rel="icon" href="logo.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="auth.css" />
@@ -1290,8 +1298,10 @@
       outline: 1px solid rgba(224,84,112,0.42);
       background: rgba(224,84,112,0.08) !important;
     }
-    .marks-basis-wrap { display: flex; flex-direction: column; gap: 4px; min-width: 220px; }
-    .marks-basis-wrap label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
+    .marks-basis-wrap,
+    .candidate-revision-wrap { display: flex; flex-direction: column; gap: 4px; min-width: 220px; }
+    .marks-basis-wrap label,
+    .candidate-revision-wrap label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
     .marks-basis-note { font-size: 0.72rem; color: var(--text-muted); max-width: 520px; line-height: 1.45; }
     .marks-info-banner {
       display: flex; gap: 14px; align-items: flex-start;
@@ -1731,6 +1741,14 @@
     .share-modal-card { max-width:540px; background:rgba(13,20,44,.96); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(77,184,217,.1); }
     .share-style-btn { flex:1; min-width:90px; padding:10px 8px; border-radius:12px; cursor:pointer; background:rgba(255,255,255,.03); color:var(--text); font-family:var(--font); text-align:center; transition:all .2s; border:2px solid rgba(255,255,255,.06); }
     .share-style-btn:hover { border-color:rgba(77,184,217,.3) !important; box-shadow:0 0 14px rgba(77,184,217,.06); }
+    .share-url-row { display:flex; gap:8px; align-items:center; margin:0 0 14px; }
+    .share-url-row input {
+      flex:1; min-width:0; padding:9px 10px; border-radius:10px;
+      border:1px solid rgba(77,184,217,.14); background:rgba(255,255,255,.035);
+      color:var(--text); font-family:var(--mono); font-size:.72rem;
+    }
+    .share-social-row { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 14px; }
+    .share-social-row .btn { text-decoration:none; }
     .share-record-indicator { font-size:0.74rem; color:#e05470; margin:6px 0; animation:sharePulse 1s ease-in-out infinite; }
     @keyframes sharePulse { 0%,100%{ opacity:1; } 50%{ opacity:.4; } }
 
@@ -2934,6 +2952,10 @@
           <label for="candMarksBasis">Merit basis</label>
           <select id="candMarksBasis" class="mt-filter-sel" title="Formula used for base marks in this table and allocation"></select>
         </div>
+        <div class="form-group candidate-revision-wrap hidden">
+          <label for="candCandidateRevision">Candidate revision</label>
+          <select id="candCandidateRevision" class="mt-filter-sel" title="Corrected candidate-data snapshot used with the selected merit basis"></select>
+        </div>
       </div>
       <p id="marksBasisNote" class="marks-basis-note hidden" style="margin-top:10px"></p>
       <div style="margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
@@ -3393,6 +3415,10 @@
           <label for="simMarksBasis">Merit basis</label>
           <select id="simMarksBasis" class="mt-filter-sel" title="Formula used when running placement simulation"></select>
         </div>
+        <div class="form-group candidate-revision-wrap hidden">
+          <label for="simCandidateRevision">Candidate revision</label>
+          <select id="simCandidateRevision" class="mt-filter-sel" title="Corrected candidate-data snapshot used with the selected merit basis"></select>
+        </div>
         <div class="form-group sim-status-scope-wrap">
           <label for="simStatusScope">Candidate status scope</label>
           <select id="simStatusScope" class="mt-filter-sel" title="Which verification statuses are included in seat allocation"></select>
@@ -3478,6 +3504,10 @@
             <div class="form-group marks-basis-wrap">
               <label for="consentMarksBasis">Merit basis</label>
               <select id="consentMarksBasis" class="mt-filter-sel" title="Formula used for this what-if run"></select>
+            </div>
+            <div class="form-group candidate-revision-wrap hidden">
+              <label for="consentCandidateRevision">Candidate revision</label>
+              <select id="consentCandidateRevision" class="mt-filter-sel" title="Corrected candidate-data snapshot used with the selected merit basis"></select>
             </div>
             <div class="form-group sim-status-scope-wrap">
               <label for="consentStatusScope">Candidate status scope</label>
@@ -4232,6 +4262,17 @@
         <canvas id="shareCanvas" width="480" height="640" style="display:block;width:100%;height:auto;aspect-ratio:480/640;"></canvas>
       </div>
 
+      <div class="share-url-row">
+        <input id="shareUrlInput" type="text" readonly aria-label="Share URL" />
+        <button id="shareCopyText" class="btn btn-sm" type="button">&#128203; Copy Text</button>
+      </div>
+
+      <div class="share-social-row">
+        <button id="shareNative" class="btn btn-primary" type="button">&#128257; Share</button>
+        <a id="shareWhatsapp" class="btn btn-sm" target="_blank" rel="noopener">&#128241; WhatsApp</a>
+        <a id="shareX" class="btn btn-sm" target="_blank" rel="noopener">X / Twitter</a>
+      </div>
+
       <div class="share-actions" style="display:flex;gap:10px;flex-wrap:wrap;">
         <button id="shareDownloadPng" class="btn btn-primary" style="background:rgba(77,184,217,.1);color:#8ed6ed;border-color:rgba(77,184,217,.18);">&#8595; Download PNG</button>
         <button id="shareGenVideo" class="btn btn-sm">&#9654; Generate Video</button>
@@ -4278,6 +4319,36 @@
 
   function esc(s){ var d=document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
   function status(msg,color){ var el=document.getElementById('shareStatus'); if(el){ el.textContent=msg; el.style.color=color||'var(--text-muted)'; } }
+  function getShareUrl(){
+    var url = new URL(window.location.href);
+    url.search = '';
+    url.hash = '';
+    url.searchParams.set('tab', 'profiles');
+    url.searchParams.set('share', '1');
+    return url.toString();
+  }
+  function getShareTitle(){ return 'MeritNama Residency Induction Analytics'; }
+  function getShareText(){
+    return 'Explore MeritNama for residency merit, seat allocation simulation, consent what-if analysis, and community profiles.';
+  }
+  function getShareMessage(){ return getShareText() + '\n' + getShareUrl(); }
+  function syncShareTargets(){
+    var url = getShareUrl();
+    var text = getShareText();
+    var input = document.getElementById('shareUrlInput');
+    if(input) input.value = url;
+    var wa = document.getElementById('shareWhatsapp');
+    if(wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(text + ' ' + url);
+    var x = document.getElementById('shareX');
+    if(x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
+    var nativeBtn = document.getElementById('shareNative');
+    if(nativeBtn) nativeBtn.classList.toggle('hidden', !(typeof navigator !== 'undefined' && navigator.share));
+  }
+  function copyText(text, okMsg){
+    if(typeof navigator !== 'undefined' && navigator.clipboard){
+      navigator.clipboard.writeText(text).then(function(){ status(okMsg, '#8ed6ed'); }, function(){ fallbackCopy(text, okMsg); });
+    } else { fallbackCopy(text, okMsg); }
+  }
 
   function drawLogo(ctx, w, glow){
     if(_logoLoaded){
@@ -4377,17 +4448,27 @@
   }
 
   function copyLink(){
-    var url = (window.location.origin + window.location.pathname).replace(/\/+$/,'');
-    if(navigator.clipboard){
-      navigator.clipboard.writeText(url).then(function(){ status('Link copied!', '#8ed6ed'); }, function(){ fallbackCopy(url); });
-    } else { fallbackCopy(url); }
+    copyText(getShareUrl(), 'Link copied!');
   }
-  function fallbackCopy(url){
+  function copyInviteText(){
+    copyText(getShareMessage(), 'Share text copied!');
+  }
+  function fallbackCopy(text, okMsg){
     var ta = document.createElement('textarea');
-    ta.value = url; ta.style.position='fixed'; ta.style.left='-9999px';
+    ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
     document.body.appendChild(ta); ta.select();
-    try{ document.execCommand('copy'); status('Link copied!', '#8ed6ed'); } catch(_){ status('Ctrl+C: '+url, 'var(--neon-gold)'); }
+    try{ document.execCommand('copy'); status(okMsg || 'Copied!', '#8ed6ed'); } catch(_){ status('Ctrl+C: '+text, 'var(--neon-gold)'); }
     document.body.removeChild(ta);
+  }
+  function nativeShare(){
+    var payload = { title: getShareTitle(), text: getShareText(), url: getShareUrl() };
+    if(typeof navigator === 'undefined' || !navigator.share){ copyInviteText(); return; }
+    navigator.share(payload)
+      .then(function(){ status('Share sheet opened.', '#8ed6ed'); })
+      .catch(function(err){
+        if(err && err.name === 'AbortError') return;
+        copyInviteText();
+      });
   }
 
   function generateVideo(){
@@ -4449,6 +4530,7 @@
     modal.classList.remove('hidden');
     renderStylePicker();
     renderCard(TEMPLATES[0].id);
+    syncShareTargets();
     status('');
   }
   function closeShareModal(){ document.getElementById('shareModal')?.classList.add('hidden'); }
@@ -4456,9 +4538,17 @@
   document.getElementById('shareBtn')?.addEventListener('click', openShareModal);
   document.getElementById('shareModalClose')?.addEventListener('click', closeShareModal);
   document.getElementById('shareModalOverlay')?.addEventListener('click', closeShareModal);
+  document.getElementById('shareNative')?.addEventListener('click', nativeShare);
+  document.getElementById('shareCopyText')?.addEventListener('click', copyInviteText);
   document.getElementById('shareDownloadPng')?.addEventListener('click', downloadPng);
   document.getElementById('shareGenVideo')?.addEventListener('click', generateVideo);
   document.getElementById('shareCopyLink')?.addEventListener('click', copyLink);
+  if(new URLSearchParams(window.location.search).get('share')){
+    setTimeout(function(){
+      document.querySelector('.tab-btn[data-tab="profiles"]')?.click();
+      openShareModal();
+    }, 0);
+  }
 })();
 </script>
 
