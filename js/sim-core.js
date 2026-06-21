@@ -803,7 +803,7 @@ function effectiveMark(c, program, revision, option) {
   const hasExplicitFlag = Object.prototype.hasOwnProperty.call(appliedIn, program);
   const hasProgramPrefs = (c.preference?.[program] || []).length > 0;
   if (!appliedIn[program] && (hasExplicitFlag || !hasProgramPrefs)) return null;
-  const programMarks = getCandidateField(c, `programMarks.${program}`, selectedRevision) ?? 0;
+  const programMarks = getCandidateField(c, `programMarks.${program}`, null) ?? 0;
   return baseMarksWithRevision(c, option, program, selectedRevision) + programMarks;
 }
 
