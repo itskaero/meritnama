@@ -334,9 +334,13 @@ function renderCandidateTable(slice, total) {
     const psTag = allPs.length > 1
       ? allPs.map(st => profileStatusTagHtml(st)).join('<span class="ps-trail-arrow"> → </span>')
       : profileStatusTagHtml(getProfileStatusForCandidate(c));
+    const revTotal = getCandidateEnabledRevisionCount(c);
+    const revBadge = candidateHasRevisions(c)
+      ? `<span class="revision-badge" title="${revTotal} enabled revision${revTotal !== 1 ? 's' : ''} · candidate data has amended fields">${revTotal > 0 ? '✎' : '✎'}${revTotal > 0 ? `<span class="revision-badge-count">${revTotal}</span>` : ''}</span>`
+      : '';
     return `<tr class="${isMe ? 'row-me' : ''}" data-id="${c.applicantId}" style="cursor:pointer">
       <td class="td-num">${rank}</td>
-      <td>${esc(c.nameFull)} ${psTag}${supporterBadgeForCandidate(c)}${custom}${isMe ? '<span class="me-tag">YOU</span>' : ''}</td>
+      <td>${esc(c.nameFull)} ${revBadge}${psTag}${supporterBadgeForCandidate(c)}${custom}${isMe ? '<span class="me-tag">YOU</span>' : ''}</td>
       <td class="td-num">${fmtM(baseMarks(c))}</td>
       <td class="td-num">${fmtM(effectiveMark(c, 'FCPS'))}</td>
       <td class="td-num">${fmtM(effectiveMark(c, 'MS'))}</td>
@@ -441,6 +445,116 @@ function _renderMarksExplanationHtml(c) {
         ${exp.programMarksNote ? `<p class="marks-exp-note">${esc(exp.programMarksNote)}</p>` : ''}
       </div>
     </details>`;
+}
+
+function renderCandidateRevisionHtml(c) {
+  const revisions = c?.revisions;
+  if (!revisions || typeof revisions !== 'object') return '';
+  const entries = Object.entries(revisions).filter(([, rev]) => rev && typeof rev === 'object');
+  if (!entries.length) return '';
+
+  const sections = entries.map(([id, rev]) => {
+    const disabled = rev.disabled === true;
+    const timestamp = rev._timestamp || '';
+    const fields = Object.entries(rev).filter(([k]) => !k.startsWith('_'));
+    if (!fields.length && !disabled) return '';
+
+    const fieldRows = fields.map(([field, value]) => {
+      const label = revisionFieldLabel(field);
+      const val = value != null ? fmtM(value) : '—';
+      return `<div class="rev-field-row">
+        <span class="rev-field-lbl">${esc(label)}</span>
+        <span class="rev-field-val">${val}</span>
+      </div>`;
+    }).join('');
+
+    const dot = disabled
+      ? '<span class="rev-dot rev-dot-disabled" title="Disabled by admin"></span>'
+      : '<span class="rev-dot rev-dot-active" title="Active revision"></span>';
+
+    return `<div class="rev-entry ${disabled ? 'rev-entry-disabled' : ''}">
+      <div class="rev-entry-hdr">
+        ${dot}
+        <span class="rev-entry-id">${esc(candidateRevisionLabel(id))}</span>
+        ${timestamp ? `<span class="rev-entry-ts">${esc(timestamp)}</span>` : ''}
+        ${disabled ? '<span class="rev-disabled-tag">Disabled</span>' : '<span class="rev-active-tag">Active</span>'}
+      </div>
+      ${fieldRows ? `<div class="rev-field-grid">${fieldRows}</div>` : '<p class="rev-empty">No corrected fields</p>'}
+    </div>`;
+  }).filter(Boolean);
+
+  if (!sections.length) return '';
+
+  return `<details class="revision-details">
+    <summary class="revision-summary">
+      <span class="revision-summary-icon">✎</span>
+      <span>Amended fields${entries.length > 1 ? ` (${entries.length} revision${entries.length !== 1 ? 's' : ''})` : ''}</span>
+      <span class="revision-summary-hint">— click to expand</span>
+    </summary>
+    <div class="revision-body">${sections.join('')}</div>
+  </details>`;
+}
+
+function renderRevisionDeltaReport(c) {
+  const revId = getActiveCandidateRevisionId();
+  if (!revId) return '';
+  const revData = resolveCandidateRevision(c, revId);
+  if (!revData) return '';
+  const opt = getMarksOption();
+  const subtractFields = new Set(
+    (opt.adjustments || []).filter(a => a.op === 'subtract').map(a => a.field)
+  );
+  const tracked = SIM.trackedFields && SIM.trackedFields.length
+    ? SIM.trackedFields : ['houseJob', 'position', 'mdcat', 'degree'];
+  const rows = [];
+  let totalDelta = 0;
+  for (const field of tracked) {
+    if (!Object.prototype.hasOwnProperty.call(revData, field)) continue;
+    const rootVal = resolveCandidateField(c, field, undefined, null);
+    const revVal = resolveCandidateField(c, field, undefined, revId);
+    if (typeof rootVal !== 'number' || typeof revVal !== 'number') continue;
+    const delta = rootVal - revVal;
+    const skipped = subtractFields.has(field);
+    if (!skipped) totalDelta += delta;
+    rows.push({
+      field,
+      label: revisionFieldLabel(field),
+      root: rootVal,
+      revised: revVal,
+      delta,
+      skipped,
+    });
+  }
+  if (!rows.length) return '';
+  const deltaSign = totalDelta >= 0 ? '−' : '+';
+  const deltaAbs = Math.abs(totalDelta);
+  return `<details class="revision-details" style="margin-top:0.5rem;">
+    <summary class="revision-summary">
+      <span class="revision-summary-icon">Δ</span>
+      <span>Revision delta &mdash; ${esc(candidateRevisionLabel(revId))}</span>
+      <span class="revision-summary-hint">— click to expand</span>
+    </summary>
+    <div class="revision-body">
+      <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:0.35rem 0.75rem;font-size:0.78rem;padding:0.5rem 0;">
+        <span style="color:var(--text-muted);font-weight:600;">Field</span>
+        <span style="color:var(--text-muted);font-weight:600;text-align:right;">Root</span>
+        <span style="color:var(--text-muted);font-weight:600;text-align:right;">Revised</span>
+        <span style="color:var(--text-muted);font-weight:600;text-align:right;">Delta</span>
+        ${rows.map(r => {
+          const dSign = r.delta >= 0 ? '+' : '';
+          const skippedNote = r.skipped ? ' <span style="color:var(--text-muted);font-size:0.7rem;">(skipped — subtracted by formula)</span>' : '';
+          return `<span>${esc(r.label)}${skippedNote}</span>
+            <span style="text-align:right;">${fmtM(r.root)}</span>
+            <span style="text-align:right;">${fmtM(r.revised)}</span>
+            <span style="text-align:right;color:${r.skipped ? 'var(--text-muted)' : r.delta >= 0 ? 'var(--neon-green)' : 'var(--neon-pink)'};">${r.skipped ? '—' : dSign + fmtM(r.delta)}</span>`;
+        }).join('')}
+        <span style="border-top:1px solid var(--border);padding-top:0.35rem;font-weight:600;">Total delta</span>
+        <span style="border-top:1px solid var(--border);padding-top:0.35rem;"></span>
+        <span style="border-top:1px solid var(--border);padding-top:0.35rem;"></span>
+        <span style="border-top:1px solid var(--border);padding-top:0.35rem;text-align:right;font-weight:600;color:${totalDelta >= 0 ? 'var(--neon-green)' : 'var(--neon-pink)'};">${deltaSign}${fmtM(deltaAbs)}</span>
+      </div>
+    </div>
+  </details>`;
 }
 
 function getProgramAttemptDict(c) {
@@ -705,11 +819,19 @@ function openCandidateDetail(idStr) {
 
   const allStatuses = getAllProfileStatusesForCandidate(c);
 
+  const revTotal = getCandidateEnabledRevisionCount(c);
+  const revDisabled = getCandidateDisabledRevisionCount(c);
+  const revBadge = candidateHasRevisions(c)
+    ? `<span class="revision-badge revision-badge-lg" title="${revTotal} enabled revision${revTotal !== 1 ? 's' : ''}${revDisabled ? `, ${revDisabled} disabled` : ''}">✎ <span class="revision-badge-lbl">Amended</span></span>`
+    : '';
+  const revHtml = candidateHasRevisions(c) ? renderCandidateRevisionHtml(c) : '';
+
   body.innerHTML = `
     <div class="cand-detail-hdr">
       <div>
         <h3>${esc(c.nameFull)} ${isMe ? '<span class="me-tag">YOU</span>' : ''}
-          ${c._custom ? '<span class="custom-tag">manual</span>' : ''}</h3>
+          ${c._custom ? '<span class="custom-tag">manual</span>' : ''}
+          ${revBadge}</h3>
         <p class="cand-detail-meta">ID: ${c.applicantId} &nbsp;·&nbsp; ${esc(getActiveMarksLabel())}: <strong>${fmtM(baseMarks(c))}</strong> &nbsp;·&nbsp; Portal marksTotal: ${fmtM(c.marksTotal)}</p>
         ${profileStatusesDetailHtml(allStatuses)}
       </div>
@@ -730,6 +852,10 @@ function openCandidateDetail(idStr) {
         <span><strong>Merit base (${esc(getActiveMarksLabel())})</strong></span><span class="score-bk-val"><strong>${fmtM(baseMarks(c))}</strong></span>
       </div>
     </details>` : ''}
+
+    ${revHtml}
+
+    ${renderRevisionDeltaReport(c)}
 
     ${_renderMarksExplanationHtml(c)}
 

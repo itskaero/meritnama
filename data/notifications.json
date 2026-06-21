@@ -1,57 +1,25 @@
 [
+  
   {
-    "id": "unofficial-data-v1",
+    "id": "revisions-available-jun2026",
+    "icon": "✎",
+    "linkText": null,
+    "type": "info",
+    "title": "Candidate Revisions Now Available",
+    "dismissable": true,
+    "link": null,
     "active": true,
-    "type": "warning",
-    "icon": "⚠️",
-    "title": "Unofficial Data",
-    "body": "Current candidate data has been unofficially sourced for comparison purposes only. Results may differ from official allocations. Await the official PMDC Induction 21 gazette for confirmed placements.",
+    "body": "Amendments are now supported. In the Candidates tab, candidates with revised data show a ✎ badge — click to view the delta report. In the Simulation tab, select a revision from the dropdown to see how amended fields change marks."
+  },
+  {
+    "id": "june-2026-update",
+    "icon": "📢",
+    "linkText": null,
+    "type": "info",
+    "title": "Data & Access Update",
     "dismissable": false,
     "link": null,
-    "linkText": null
-  },
-  {
-    "id": "data-notes-v1",
     "active": true,
-    "type": "info",
-    "icon": "ℹ️",
-    "title": "Data Notes",
-    "body": "Some applicants appear without preferences or programme marks — this is as-received from the backend, not a site error. Additionally, service experience marks are present in the source data but excluded from merit ranking; base scores shown reflect MBBS aggregate + house job + position + MDCAT only.",
-    "dismissable": true,
-    "link": null,
-    "linkText": null
-  },
-  {
-    "id": "prp-unstable-data-v1",
-    "active": true,
-    "type": "warning",
-    "icon": "⚠️",
-    "title": "PRP Data Unstable",
-    "body": "Live data from the PRP portal is currently unstable — some applicants are showing drastically reduced marks (e.g. from ~15 down to ~1.6). This is NOT a MeritNama error. It appears the PRP system is glitching or their admins are making backend changes. Do not panic — your actual marks have not changed. We will refresh the data once PRP stabilises.",
-    "dismissable": false,
-    "link": null,
-    "linkText": null
-  },
-  {
-    "id": "merit-basis-official-adjusted-v1",
-    "active": true,
-    "type": "info",
-    "icon": "📊",
-    "title": "Official vs Adjusted merit",
-    "body": "On the Candidates and Simulation tabs, use the Merit basis dropdown to switch views. Official ranks on portal programme marks as stored (raw MS/MD before UHS adjustment). Adjusted applies the UHS policy to MS/MD only—FCPS is the same in both. Rankings and slot simulations update when you change the view. All results remain unofficial estimates.",
-    "dismissable": true,
-    "link": null,
-    "linkText": null
-  },
-  {
-    "id": "induction21-data-refresh-jun2026",
-    "active": true,
-    "type": "info",
-    "icon": "📊",
-    "title": "Candidate Data Refreshed",
-    "body": "Induction 21 candidate data was updated 84% of candidates were fetched again (16% were left before portal locked): 612 existing applicants changed and 10 new applicants were added compared to the previous snapshot. Review field, mark, and preference differences on the Data Changes page.",
-    "dismissable": true,
-    "link": "candidatesChanges.html",
-    "linkText": "View changes"
+    "body": "The grievance dataset has been updated to include all available decisions processed up to 20 June 2026.\n\nMerit trends, simulations, and verification analysis have been refreshed accordingly.\n\nTo support platform maintenance and reduce unauthorized redistribution of data, access to advanced simulation and verification tools is temporarily available through an access request. The minimum contribution is PKR 250.\n\nExisting approved users will retain their access."
   }
 ]

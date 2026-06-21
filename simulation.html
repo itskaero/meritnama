@@ -723,6 +723,112 @@
       border-left: 3px solid rgba(77,184,217,0.35);
     }
 
+    /* -- Revision badge (candidate table row) -- */
+    .revision-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 0.62rem; font-weight: 800; vertical-align: middle;
+      padding: 1px 6px; border-radius: 100px; margin-left: 4px;
+      background: rgba(232,166,39,0.12); color: var(--neon-gold, #e8a627);
+      border: 1px solid rgba(232,166,39,0.3);
+      letter-spacing: 0.03em;
+    }
+    .revision-badge.revision-badge-lg {
+      font-size: 0.7rem; padding: 2px 9px; margin-left: 6px;
+      background: rgba(232,166,39,0.15);
+    }
+    .revision-badge-count {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 14px; height: 14px; border-radius: 50%;
+      background: rgba(232,166,39,0.25); font-size: 0.55rem;
+      font-weight: 900; line-height: 1;
+    }
+    .revision-badge-lbl {
+      font-weight: 700;
+    }
+
+    /* -- Pulsating amendment legend -- */
+    @keyframes amendPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(232,166,39,0.5); }
+      50%      { box-shadow: 0 0 0 6px rgba(232,166,39,0); }
+    }
+    .amend-legend {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.72rem; color: var(--text-muted); margin-left: 12px;
+      vertical-align: middle;
+    }
+    .amend-legend-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border-radius: 50%;
+      font-size: 0.7rem; font-weight: 800;
+      background: rgba(232,166,39,0.12); color: var(--neon-gold, #e8a627);
+      border: 1px solid rgba(232,166,39,0.3);
+      animation: amendPulse 2s ease-in-out infinite;
+    }
+    /* -- Revision details in candidate modal -- */
+    .revision-details {
+      border: 1px solid rgba(232,166,39,0.2); border-radius: var(--radius, 10px);
+      padding: 10px 14px; margin-bottom: 18px; font-size: 0.82rem;
+      background: rgba(232,166,39,0.03);
+    }
+    .revision-summary {
+      cursor: pointer; user-select: none; color: var(--neon-gold, #e8a627);
+      font-weight: 600; display: flex; align-items: center; gap: 6px;
+    }
+    .revision-summary-icon { font-size: 0.9rem; }
+    .revision-summary-hint {
+      opacity: 0.5; font-size: 0.75rem; font-weight: 400; color: var(--text-muted);
+    }
+    .revision-body {
+      display: flex; flex-direction: column; gap: 10px; margin-top: 12px;
+    }
+    .rev-entry {
+      border: 1px solid rgba(232,166,39,0.12); border-radius: 8px;
+      padding: 10px 12px; background: rgba(255,255,255,0.015);
+    }
+    .rev-entry-disabled {
+      opacity: 0.55; border-color: rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.01);
+    }
+    .rev-entry-hdr {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .rev-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+    .rev-dot-active {
+      background: var(--neon-green, #3ecf8e);
+      box-shadow: 0 0 6px rgba(62,207,142,0.5);
+    }
+    .rev-dot-disabled {
+      background: var(--text-muted, #6b84a8);
+    }
+    .rev-entry-id {
+      font-weight: 700; color: var(--text); font-size: 0.85rem;
+    }
+    .rev-entry-ts {
+      font-size: 0.7rem; color: var(--text-muted); opacity: 0.7;
+    }
+    .rev-active-tag {
+      font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.04em; padding: 1px 6px; border-radius: 100px;
+      background: rgba(62,207,142,0.14); color: var(--neon-green, #3ecf8e);
+      border: 1px solid rgba(62,207,142,0.28); margin-left: auto;
+    }
+    .rev-disabled-tag {
+      font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.04em; padding: 1px 6px; border-radius: 100px;
+      background: rgba(255,255,255,0.05); color: var(--text-muted);
+      border: 1px solid var(--border); margin-left: auto;
+    }
+    .rev-field-grid {
+      display: grid; grid-template-columns: 1fr auto; gap: 4px 12px;
+      font-size: 0.8rem;
+    }
+    .rev-field-lbl { color: var(--text-muted); }
+    .rev-field-val { text-align: right; font-variant-numeric: tabular-nums; color: var(--neon-cyan, #4db8d9); }
+    .rev-empty { margin: 0; font-size: 0.76rem; color: var(--text-muted); font-style: italic; }
+
     /* -- Preference list -- */
     .pref-section { margin-bottom: 18px; }
     .pref-section h4 { margin: 0 0 10px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
@@ -2787,6 +2893,7 @@
         <span class="bell-label" id="bellLabel">Alerts</span>
         <span class="bell-dot" id="bellDot" style="display:none;"></span>
       </button>
+      <button class="share-header-btn" id="shareHeaderBtn" title="Share MeritNama" aria-label="Share">&#127760;</button>
       <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
@@ -3058,7 +3165,7 @@
         <thead>
           <tr>
             <th>#</th>
-            <th>Name</th>
+            <th>Name <span class="amend-legend" title="Candidate has amended/revision data"><span class="amend-legend-icon">✎</span> amended</span></th>
             <th data-sort="marksTotal" style="cursor:pointer"><span data-marks-basis-label>Base</span> &#8597;</th>
             <th data-sort="FCPS" style="cursor:pointer">FCPS &#8597;</th>
             <th data-sort="MS" style="cursor:pointer">MS &#8597;</th>
@@ -4536,6 +4643,7 @@
   function closeShareModal(){ document.getElementById('shareModal')?.classList.add('hidden'); }
 
   document.getElementById('shareBtn')?.addEventListener('click', openShareModal);
+  document.getElementById('shareHeaderBtn')?.addEventListener('click', openShareModal);
   document.getElementById('shareModalClose')?.addEventListener('click', closeShareModal);
   document.getElementById('shareModalOverlay')?.addEventListener('click', closeShareModal);
   document.getElementById('shareNative')?.addEventListener('click', nativeShare);

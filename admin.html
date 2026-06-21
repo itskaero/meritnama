@@ -1466,6 +1466,68 @@
         <button id="marksCfgSaveBtn" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save Config</button>
       </div>
       <div id="marksCfgStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+      <h4 style="font-size:0.85rem;color:var(--accent);margin:0 0 0.75rem;">Display Options</h4>
+      <label class="toggle-row" style="margin-bottom:0.5rem;">
+        <input type="checkbox" id="marksCfgShowSelector" /> Show formula selector to candidates
+      </label>
+      <label class="toggle-row" style="margin-bottom:0.5rem;">
+        <input type="checkbox" id="marksCfgShowNotice" /> Show notice on simulation page
+      </label>
+      <div class="modal-field" style="max-width:480px;">
+        <label>Notice title</label>
+        <input type="text" id="marksCfgNoticeTitle" placeholder="About merit marks" />
+      </div>
+      <div class="modal-field" style="max-width:600px;">
+        <label>Candidate notice <span style="text-transform:none;font-weight:400;">(markdown)</span></label>
+        <textarea id="marksCfgNotice" rows="3" style="width:100%;resize:vertical;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;" placeholder="Optional notice shown below the formula selector."></textarea>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+      <h4 style="font-size:0.85rem;color:var(--accent);margin:0 0 0.75rem;">Formula Options</h4>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:0.75rem;align-items:center;max-width:480px;margin-bottom:1rem;">
+        <label style="font-size:0.82rem;color:var(--text);">Default option</label>
+        <select id="marksCfgDefault" style="padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;"></select>
+      </div>
+      <div id="marksCfgList"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+      <h4 style="font-size:0.85rem;color:var(--accent);margin:0 0 0.75rem;">Add New Option</h4>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.75rem;max-width:640px;">
+        <div class="modal-field">
+          <label>Option ID</label>
+          <input type="text" id="marksNewId" placeholder="e.g. academic" />
+        </div>
+        <div class="modal-field">
+          <label>Label</label>
+          <input type="text" id="marksNewLabel" placeholder="e.g. Academic Merit" />
+        </div>
+        <div class="modal-field">
+          <label>Base</label>
+          <select id="marksNewBase" style="width:100%;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;">
+            <option value="marksTotal">marksTotal</option>
+            <option value="sum">Sum of fields</option>
+          </select>
+        </div>
+      </div>
+      <div id="marksNewSumWrap" style="display:none;max-width:400px;margin-top:0.5rem;">
+        <div class="modal-field">
+          <label>Sum fields <span style="text-transform:none;font-weight:400;">(comma-separated)</span></label>
+          <input type="text" id="marksNewSumFields" placeholder="degree, houseJob" />
+        </div>
+      </div>
+      <div style="margin-top:1rem;max-width:640px;">
+        <label style="font-size:0.82rem;color:var(--text);display:block;margin-bottom:0.4rem;">Adjustments <span style="text-transform:none;font-weight:400;">(add/subtract fields)</span></label>
+        <div id="marksNewAdjRows"></div>
+        <button type="button" id="marksNewAdjAddBtn" style="margin-top:0.5rem;padding:6px 14px;background:rgba(77,184,217,0.1);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.25);border-radius:6px;cursor:pointer;font-size:0.78rem;">+ Add adjustment</button>
+      </div>
+      <div class="modal-field" style="max-width:640px;margin-top:0.75rem;">
+        <label>Option notice <span style="text-transform:none;font-weight:400;">(overrides global notice; optional)</span></label>
+        <input type="text" id="marksNewNotice" placeholder="Shown when this option is selected" />
+      </div>
+      <button type="button" id="marksNewAddBtn" style="margin-top:0.75rem;padding:8px 20px;background:rgba(77,184,217,0.15);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.35);border-radius:8px;cursor:pointer;font-weight:600;">Add Option</button>
+      <datalist id="marksFormulaFieldList"></datalist>
         </div>
       </details>
 
@@ -1481,6 +1543,39 @@
         <button id="simCfgSaveBtn" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save Config</button>
       </div>
       <div id="simCfgStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+      <h4 style="font-size:0.85rem;color:var(--accent);margin:0 0 0.75rem;">Scope Settings</h4>
+      <label class="toggle-row" style="margin-bottom:0.75rem;">
+        <input type="checkbox" id="simCfgShowSelector" /> Show scope selector to candidates
+      </label>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:0.75rem;align-items:center;max-width:480px;margin-bottom:1rem;">
+        <label style="font-size:0.82rem;color:var(--text);">Default scope</label>
+        <select id="simCfgDefaultScope" style="padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;"></select>
+      </div>
+      <div id="simCfgScopes" style="display:grid;gap:0.5rem;max-width:640px;"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+      <h4 style="font-size:0.85rem;color:var(--accent);margin:0 0 0.75rem;">Add Custom Scope</h4>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.75rem;max-width:640px;">
+        <div class="modal-field">
+          <label>Scope ID</label>
+          <input type="text" id="simCfgCustomId" placeholder="e.g. deferred" />
+        </div>
+        <div class="modal-field">
+          <label>Label</label>
+          <input type="text" id="simCfgCustomLabel" placeholder="Deferred only" />
+        </div>
+        <div class="modal-field">
+          <label>Status IDs <span style="text-transform:none;font-weight:400;">(comma-separated)</span></label>
+          <input type="text" id="simCfgCustomStatusIds" placeholder="3, 12" />
+        </div>
+      </div>
+      <div class="modal-field" style="max-width:480px;margin-top:0.5rem;">
+        <label>Description</label>
+        <input type="text" id="simCfgCustomDescription" placeholder="Only candidates with deferred statuses" />
+      </div>
+      <button type="button" id="simCfgCustomAddBtn" style="margin-top:0.75rem;padding:8px 20px;background:rgba(77,184,217,0.15);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.35);border-radius:8px;cursor:pointer;font-weight:600;">Add Custom Scope</button>
         </div>
       </details>
 
@@ -1493,6 +1588,98 @@
         <button id="accessCfgSaveBtn" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save Config</button>
       </div>
       <div id="accessCfgStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+      <h4 style="font-size:0.85rem;color:var(--accent);margin:0 0 0.75rem;">Access Settings</h4>
+      <label class="toggle-row" style="margin-bottom:0.5rem;">
+        <input type="checkbox" id="accessCfgEnabled" /> Access request enabled
+      </label>
+      <label class="toggle-row" style="margin-bottom:0.5rem;">
+        <input type="checkbox" id="accessCfgShow" /> Show on request page
+      </label>
+      <label class="toggle-row" style="margin-bottom:0.5rem;">
+        <input type="checkbox" id="accessCfgOptional" /> Payment optional
+      </label>
+      <label class="toggle-row" style="margin-bottom:0.5rem;">
+        <input type="checkbox" id="accessCfgBlockInvites" /> Block invites when access request is active
+      </label>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;" />
+      <h4 style="font-size:0.85rem;color:var(--accent);margin:0 0 0.75rem;">Payment Pricing</h4>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0.75rem;max-width:640px;">
+        <div class="modal-field">
+          <label>Price min (PKR)</label>
+          <input type="number" id="accessCfgPriceMinPKR" min="0" step="1" placeholder="250" />
+        </div>
+        <div class="modal-field">
+          <label>Price max (PKR)</label>
+          <input type="number" id="accessCfgPriceMaxPKR" min="0" step="1" placeholder="670" />
+        </div>
+        <div class="modal-field">
+          <label>Price min (USD)</label>
+          <input type="number" id="accessCfgPriceMinUSD" min="0" step="0.01" placeholder="0.90" />
+        </div>
+        <div class="modal-field">
+          <label>Price max (USD)</label>
+          <input type="number" id="accessCfgPriceMaxUSD" min="0" step="0.01" placeholder="2.40" />
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;" />
+      <h4 style="font-size:0.85rem;color:var(--accent);margin:0 0 0.75rem;">Bank Details</h4>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0.75rem;max-width:640px;">
+        <div class="modal-field">
+          <label>Account number</label>
+          <input type="text" id="accessCfgAccount" placeholder="0891-2007-4774" />
+        </div>
+        <div class="modal-field">
+          <label>Bank name</label>
+          <input type="text" id="accessCfgBank" placeholder="Mashreq Pakistan" />
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;" />
+      <h4 style="font-size:0.85rem;color:var(--accent);margin:0 0 0.75rem;">Messaging</h4>
+      <div class="modal-field" style="max-width:640px;">
+        <label>Closed message <span style="text-transform:none;font-weight:400;">(shown when access requests are disabled)</span></label>
+        <textarea id="accessCfgClosedMessage" rows="3" style="width:100%;resize:vertical;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;" placeholder="Access requests are currently closed…"></textarea>
+      </div>
+      <div class="modal-field" style="max-width:640px;margin-top:0.5rem;">
+        <label>Payment note <span style="text-transform:none;font-weight:400;">(shown on payment form)</span></label>
+        <textarea id="accessCfgNote" rows="3" style="width:100%;resize:vertical;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;" placeholder="Optional support contribution…"></textarea>
+      </div>
+        </div>
+      </details>
+
+      <details class="broadcast-section">
+        <summary>✎ Candidate Revisions</summary>
+        <div class="broadcast-section-body">
+      <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
+        Globally enable or disable candidate revision IDs. Disabled revisions are hidden from all user-facing dropdowns.
+        Per-candidate revision overrides in the data file still apply on top of these global settings.
+      </p>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem;">
+        <button id="revCfgLoadBtn" style="padding:8px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:8px;cursor:pointer;font-weight:600;">Load Config</button>
+        <button id="revCfgDefaultsBtn" style="padding:8px 16px;background:rgba(245,200,66,0.12);color:#f5c842;border:1px solid rgba(245,200,66,0.28);border-radius:8px;cursor:pointer;font-weight:600;">Enable All</button>
+        <button id="revCfgSaveBtn" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save Config</button>
+      </div>
+      <div id="revCfgStatus" style="margin-top:0.75rem;font-size:0.8rem;min-height:1.2em;"></div>
+      <div style="display:flex;gap:0.5rem;max-width:480px;margin-bottom:1rem;">
+        <input type="text" id="revCfgNewId" placeholder="e.g. amendment_1" style="flex:1;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;" />
+        <button type="button" id="revCfgAddBtn" style="padding:7px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:6px;cursor:pointer;font-size:0.82rem;">Add ID</button>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+      <div id="revCfgList" style="display:grid;gap:0.5rem;max-width:480px;"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+      <h4 style="font-size:0.85rem;color:var(--accent);margin:0 0 0.75rem;">Tracked Fields</h4>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 0.75rem;max-width:640px;">
+        Fields that revisions can modify. When a revision changes one of these fields, a delta is applied to the formula result. Fields already adjusted by the formula are excluded from delta.
+      </p>
+      <div class="modal-field" style="max-width:480px;">
+        <label>Comma-separated field names</label>
+        <input type="text" id="revCfgTrackedFields" placeholder="houseJob, position, mdcat, degree" style="width:100%;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;" />
+      </div>
         </div>
       </details>
 
@@ -3718,6 +3905,136 @@ async function saveAccessConfigEditor() {
   }
 }
 
+// ── REVISIONS CONFIG EDITOR ──────────────────────────────────────────────
+let revisionsConfigDraft = { disabledIds: [], trackedFields: [] };
+
+function setRevisionsConfigStatus(message, color) {
+  const el = document.getElementById('revCfgStatus');
+  if (!el) return;
+  el.textContent = message;
+  el.style.color = color || 'var(--text-muted)';
+}
+
+function collectCandidateRevisionIdsFromData() {
+  const ids = new Set();
+  try {
+    const candidates = typeof allCandidates === 'function' ? allCandidates() : window.SIM?.candidates || [];
+    for (const c of candidates || []) {
+      const revisions = c?.revisions;
+      if (!revisions || typeof revisions !== 'object') continue;
+      Object.keys(revisions).forEach(id => { if (id) ids.add(id); });
+    }
+  } catch (_) {}
+  return ids;
+}
+
+function renderRevisionsConfigList() {
+  const listEl = document.getElementById('revCfgList');
+  if (!listEl) return;
+  const disabled = new Set(revisionsConfigDraft.disabledIds || []);
+  const fromData = collectCandidateRevisionIdsFromData();
+  const sorted = [...new Set([...fromData, ...disabled])].sort((a, b) =>
+    a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+  );
+  if (!sorted.length) {
+    listEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.82rem;">No revision IDs yet. Add one above or load saved config.</p>';
+    return;
+  }
+  const _e = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  listEl.innerHTML = sorted.map(id => {
+    const eid = _e(id);
+    const isDisabled = disabled.has(id);
+    return `<label style="display:flex;gap:0.65rem;align-items:center;padding:0.6rem 0.75rem;border:1px solid var(--border);border-radius:8px;cursor:pointer;">
+      <input type="checkbox" class="rev-cfg-toggle" value="${eid}" ${isDisabled ? '' : 'checked'} style="accent-color:var(--accent);" />
+      <span style="font-size:0.84rem;color:var(--text);">${eid}</span>
+      <span style="font-size:0.72rem;color:var(--text-muted);margin-left:auto;">${isDisabled ? 'disabled' : 'enabled'}</span>
+    </label>`;
+  }).join('');
+  listEl.querySelectorAll('.rev-cfg-toggle').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const id = cb.value;
+      const disabled = new Set(revisionsConfigDraft.disabledIds || []);
+      if (cb.checked) disabled.delete(id); else disabled.add(id);
+      revisionsConfigDraft.disabledIds = [...disabled].sort();
+      renderRevisionsConfigList();
+    });
+  });
+}
+
+async function loadRevisionsConfigEditor() {
+  setRevisionsConfigStatus('Loading config…');
+  const trackedEl = document.getElementById('revCfgTrackedFields');
+  document.getElementById('revCfgAddBtn').onclick = () => {
+    const input = document.getElementById('revCfgNewId');
+    const id = input?.value.trim();
+    if (!id) { setRevisionsConfigStatus('Enter a revision ID.', 'var(--neon-pink)'); return; }
+    if (!/^[a-z0-9][a-z0-9-_]*$/i.test(id)) {
+      setRevisionsConfigStatus('Use letters, numbers, hyphens, underscores.', 'var(--neon-pink)');
+      return;
+    }
+    const disabled = new Set(revisionsConfigDraft.disabledIds || []);
+    if (!disabled.has(id)) {
+      const all = [...collectCandidateRevisionIdsFromData(), ...disabled];
+      if (!all.includes(id)) disabled.add(id);
+    }
+    revisionsConfigDraft.disabledIds = [...disabled].sort();
+    if (input) input.value = '';
+    renderRevisionsConfigList();
+    setRevisionsConfigStatus(`Added "${String(id).replace(/"/g, '&quot;')}". Save to publish.`, 'var(--neon-gold)');
+  };
+  try {
+    const snap = await db.collection('notifications').doc('revisions_config').get();
+    if (snap.exists) {
+      const data = snap.data();
+      revisionsConfigDraft.disabledIds = Array.isArray(data.disabledIds) ? data.disabledIds : [];
+      if (Array.isArray(data.trackedFields) && data.trackedFields.length) {
+        revisionsConfigDraft.trackedFields = data.trackedFields;
+        if (trackedEl) trackedEl.value = data.trackedFields.join(', ');
+      } else {
+        revisionsConfigDraft.trackedFields = [];
+        if (trackedEl) trackedEl.value = '';
+      }
+    } else {
+      revisionsConfigDraft.disabledIds = [];
+      revisionsConfigDraft.trackedFields = [];
+      if (trackedEl) trackedEl.value = 'houseJob, position, mdcat, degree';
+    }
+    renderRevisionsConfigList();
+    setRevisionsConfigStatus('Revisions config loaded.', 'var(--neon-green)');
+  } catch (e) {
+    revisionsConfigDraft.disabledIds = [];
+    revisionsConfigDraft.trackedFields = [];
+    renderRevisionsConfigList();
+    setRevisionsConfigStatus('Error loading: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
+function enableAllRevisions() {
+  revisionsConfigDraft.disabledIds = [];
+  renderRevisionsConfigList();
+  setRevisionsConfigStatus('All revisions enabled. Save to publish.', 'var(--neon-gold)');
+}
+
+async function saveRevisionsConfigEditor() {
+  setRevisionsConfigStatus('Saving…');
+  const trackedEl = document.getElementById('revCfgTrackedFields');
+  const trackedRaw = trackedEl?.value || '';
+  const trackedFields = trackedRaw.split(',').map(s => s.trim()).filter(Boolean);
+  try {
+    const payload = {
+      disabledIds: revisionsConfigDraft.disabledIds || [],
+      trackedFields: trackedFields.length ? trackedFields : ['houseJob', 'position', 'mdcat', 'degree'],
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+    await db.collection('notifications').doc('revisions_config').set(payload);
+    revisionsConfigDraft.trackedFields = payload.trackedFields;
+    setRevisionsConfigStatus('✓ Revisions config saved. User dropdowns update on next page load.', 'var(--neon-green)');
+    showAdminToast('Revisions config saved.', 'success');
+  } catch (e) {
+    setRevisionsConfigStatus('Error saving: ' + e.message, 'var(--neon-pink)');
+  }
+}
+
 function switchTab(tab) {
   const tabs = ['overview', 'logs', 'screenshots', 'warnings', 'grievances', 'users', 'access-requests', 'contributions', 'mentorship', 'broadcast', 'profiles', 'download-logs', 'user-activity'];
   for (const t of tabs) {
@@ -3773,6 +4090,9 @@ function loadBroadcast() {
   document.getElementById('chatPinLoadBtn')?.addEventListener('click', loadChatPinEditor);
   document.getElementById('chatPinSaveBtn')?.addEventListener('click', saveChatPinEditor);
   document.getElementById('chatPinClearBtn')?.addEventListener('click', clearChatPinEditor);
+  document.getElementById('revCfgLoadBtn')?.addEventListener('click', loadRevisionsConfigEditor);
+  document.getElementById('revCfgDefaultsBtn')?.addEventListener('click', () => enableAllRevisions());
+  document.getElementById('revCfgSaveBtn')?.addEventListener('click', saveRevisionsConfigEditor);
   const simCfgLoadBtn = document.getElementById('simCfgLoadBtn');
   const simCfgDefaultsBtn = document.getElementById('simCfgDefaultsBtn');
   const simCfgSaveBtn = document.getElementById('simCfgSaveBtn');

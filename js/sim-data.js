@@ -12,7 +12,6 @@ async function loadData() {
       ? d
       : (d.candidates || Object.values(d));
     SIM.candidates.forEach(ensureCandidateAdjusted);
-    refreshCandidateRevisionOptions();
   } catch (e) {
     setStatus('error', 'No data');
     document.getElementById('noDataBanner')?.classList.remove('hidden');
@@ -49,6 +48,10 @@ async function loadData() {
   } catch (_) {}
 
   await loadSimulationNotifications();
+
+  // Load global revision config (best-effort) then rebuild revision selector
+  try { await loadGloballyDisabledRevisionIds(); } catch (_) {}
+  refreshCandidateRevisionOptions();
 
   const n   = SIM.candidates.length;
   const smsg = SIM.seatsLoaded ? ' + seats' : '';

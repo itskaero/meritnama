@@ -50,6 +50,9 @@ const SIM = {
     showSelector: false,
   },
 
+  globallyDisabledRevisionIds: [], // loaded from Firestore revisions_config
+  trackedFields: ['houseJob', 'position', 'mdcat', 'degree'],
+
   schedule: {
     steps:     [],
     filter:    'all',
@@ -211,15 +214,86 @@ function getCandidateRevisionSourceList() {
 }
 
 function collectCandidateRevisionIds(candidates = getCandidateRevisionSourceList()) {
+  const globalDisabled = new Set(SIM.globallyDisabledRevisionIds || []);
   const ids = new Set();
   for (const c of candidates || []) {
     const revisions = c?.revisions;
     if (!revisions || typeof revisions !== 'object') continue;
     Object.keys(revisions)
-      .filter(id => id && revisions[id] && typeof revisions[id] === 'object')
+      .filter(id => {
+        const rev = revisions[id];
+        return id && rev && typeof rev === 'object' && rev.disabled !== true && !globalDisabled.has(id);
+      })
       .forEach(id => ids.add(id));
   }
   return [...ids].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+}
+
+async function loadGloballyDisabledRevisionIds() {
+  try {
+    const _db = firebase.firestore();
+    const snap = await _db.collection('notifications').doc('revisions_config').get();
+    if (snap.exists) {
+      const data = snap.data();
+      SIM.globallyDisabledRevisionIds = Array.isArray(data.disabledIds) ? data.disabledIds : [];
+      if (Array.isArray(data.trackedFields) && data.trackedFields.length) {
+        SIM.trackedFields = data.trackedFields;
+      }
+    }
+  } catch (_) {}
+}
+
+function candidateHasRevisions(c) {
+  const revisions = c?.revisions;
+  if (!revisions || typeof revisions !== 'object') return false;
+  return Object.keys(revisions).some(id => {
+    const rev = revisions[id];
+    return id && rev && typeof rev === 'object';
+  });
+}
+
+function getCandidateEnabledRevisionCount(c) {
+  const revisions = c?.revisions;
+  if (!revisions || typeof revisions !== 'object') return 0;
+  return Object.keys(revisions).filter(id => {
+    const rev = revisions[id];
+    return id && rev && typeof rev === 'object' && rev.disabled !== true;
+  }).length;
+}
+
+function getCandidateDisabledRevisionCount(c) {
+  const revisions = c?.revisions;
+  if (!revisions || typeof revisions !== 'object') return 0;
+  return Object.keys(revisions).filter(id => {
+    const rev = revisions[id];
+    return id && rev && typeof rev === 'object' && rev.disabled === true;
+  }).length;
+}
+
+function getCandidateRevisionFields(c, revisionId) {
+  const rev = resolveCandidateRevision(c, revisionId);
+  if (!rev || typeof rev !== 'object') return [];
+  return Object.entries(rev)
+    .filter(([key]) => !key.startsWith('_'))
+    .map(([field, value]) => ({ field, value }));
+}
+
+const MARKS_FIELD_LABELS_REVISIONS = {
+  degree: 'Degree',
+  houseJob: 'House Job',
+  experience: 'Experience',
+  research: 'Research',
+  position: 'Position',
+  hardAreas: 'Hard Areas',
+  matric: 'Matric',
+  fsc: 'FSC',
+  attempts: 'Attempts',
+  mdcat: 'MDCAT',
+  marksTotal: 'Total marks',
+};
+
+function revisionFieldLabel(field) {
+  return MARKS_FIELD_LABELS_REVISIONS[field] || String(field || '').replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
 }
 
 function candidateRevisionLabel(id) {
@@ -554,6 +628,8 @@ function getMarksOption(id) {
     || DEFAULT_MARKS_OPTIONS[0];
 }
 
+const DEFAULT_TRACKED_FIELDS = ['houseJob', 'position', 'mdcat', 'degree'];
+
 function resolveBaseMarks(c, option, program, revision) {
   const selectedRevision = arguments.length >= 4 ? revision : getActiveCandidateRevisionId();
   const opt = option || getMarksOption();
@@ -564,11 +640,37 @@ function resolveBaseMarks(c, option, program, revision) {
     total = resolveCandidateField(c, 'marksTotal', program, selectedRevision);
   }
   for (const adj of (opt.adjustments || [])) {
-    const val = resolveCandidateField(c, adj.field, program, selectedRevision);
-    if (adj.op === 'add') total += val;
-    else if (adj.op === 'subtract') total -= val;
+    if (adj.op === 'add') {
+      total += resolveCandidateField(c, adj.field, program, selectedRevision);
+    } else if (adj.op === 'subtract') {
+      total -= resolveCandidateField(c, adj.field, program, null);
+    }
   }
   return total;
+}
+
+function applyRevisionDelta(c, revision, option) {
+  if (!revision) return 0;
+  const revData = resolveCandidateRevision(c, revision);
+  if (!revData) return 0;
+  const opt = option || getMarksOption();
+  const subtractFields = new Set(
+    (opt.adjustments || []).filter(a => a.op === 'subtract').map(a => a.field)
+  );
+  const tracked = SIM.trackedFields && SIM.trackedFields.length
+    ? SIM.trackedFields : DEFAULT_TRACKED_FIELDS;
+  let delta = 0;
+  for (const field of tracked) {
+    if (subtractFields.has(field)) continue;
+    if (Object.prototype.hasOwnProperty.call(revData, field)) {
+      const rootVal = resolveCandidateField(c, field, undefined, null);
+      const revVal = resolveCandidateField(c, field, undefined, revision);
+      if (typeof rootVal === 'number' && typeof revVal === 'number') {
+        delta += rootVal - revVal;
+      }
+    }
+  }
+  return delta;
 }
 
 function getActiveMarksLabel() {
@@ -674,20 +776,26 @@ function onCandidateRevisionChanged(clearSim) {
 }
 
 /**
- * Base marks for a candidate — resolved via admin/user-selected formula.
+ * Base marks using formula with root values, then apply revision delta.
+ * Revision delta subtracts (root - revised) for each tracked field that is
+ * NOT already adjusted by the formula — so only fields that are NOT part
+ * of the formula's adjustments get their revision change reflected.
  */
+function baseMarksWithRevision(c, option, program, revision) {
+  const base = resolveBaseMarks(c, option, program, null);
+  const delta = applyRevisionDelta(c, revision, option);
+  return base - delta;
+}
+
 function baseMarks(c, revision) {
   const selectedRevision = arguments.length >= 2 ? revision : getActiveCandidateRevisionId();
-  return resolveBaseMarks(c, undefined, undefined, selectedRevision);
+  return baseMarksWithRevision(c, undefined, undefined, selectedRevision);
 }
 
 /**
  * Effective marks for a candidate in a specific program.
- * = baseMarks(c) + programMarks[program]  (programMarks is a per-program bonus)
+ * = baseMarksWithRevision(c) + programMarks[program]  (programMarks is a per-program bonus)
  * Returns null when applied_in[program] is false (candidate did not apply).
- * A candidate may have applied_in=true but programMarks=0 (0 bonus) — they
- * are still valid and ranked on baseMarks alone. Some imported programme
- * names are present only in preference data; those preferences imply applying.
  */
 function effectiveMark(c, program, revision, option) {
   const selectedRevision = arguments.length >= 3 ? revision : getActiveCandidateRevisionId();
@@ -696,13 +804,13 @@ function effectiveMark(c, program, revision, option) {
   const hasProgramPrefs = (c.preference?.[program] || []).length > 0;
   if (!appliedIn[program] && (hasExplicitFlag || !hasProgramPrefs)) return null;
   const programMarks = getCandidateField(c, `programMarks.${program}`, selectedRevision) ?? 0;
-  return resolveBaseMarks(c, option, program, selectedRevision) + programMarks;
+  return baseMarksWithRevision(c, option, program, selectedRevision) + programMarks;
 }
 
 function effectiveMarks(c, revision = null, marksProfile = undefined, program = undefined) {
   const option = typeof marksProfile === 'string' ? getMarksOption(marksProfile) : marksProfile;
   return program == null
-    ? resolveBaseMarks(c, option, undefined, revision)
+    ? baseMarksWithRevision(c, option, undefined, revision)
     : effectiveMark(c, program, revision, option);
 }
 

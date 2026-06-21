@@ -298,6 +298,26 @@ p  { color: var(--text-muted); }
 .bell-icon { flex-shrink: 0; transition: transform 0.3s; }
 .notif-bell-btn:hover .bell-icon { transform: rotate(-12deg); }
 
+.share-header-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: rgba(77,184,217,0.06);
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.2s;
+  line-height: 1;
+}
+.share-header-btn:hover {
+  border-color: rgba(77,184,217,0.4);
+  background: rgba(77,184,217,0.12);
+  color: var(--neon-cyan);
+  transform: scale(1.1);
+}
+
 .bell-dot {
   position: absolute;
   top: 4px; right: 5px;
