@@ -381,6 +381,35 @@
       background: rgba(124,101,196,0.14); color: var(--neon-purple, #7c65c4);
       border: 1px solid rgba(124,101,196,0.32);
     }
+    .cand-row-programs {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 3px;
+    }
+    .cand-cert-programs {
+      display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; max-width: 280px;
+    }
+    .cand-cert-chip {
+      display: inline-flex; align-items: center; white-space: nowrap;
+      font-size: 0.58rem; font-weight: 800; line-height: 1.15;
+      padding: 2px 6px; border-radius: 999px;
+      background: rgba(255,255,255,0.04); color: var(--text-muted);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .cand-cert-chip.fcps {
+      background: rgba(62,207,142,0.09); color: var(--neon-green, #3ecf8e);
+      border-color: rgba(62,207,142,0.24);
+    }
+    .cand-cert-chip.ms {
+      background: rgba(77,184,217,0.09); color: var(--neon-cyan, #4db8d9);
+      border-color: rgba(77,184,217,0.24);
+    }
+    .cand-cert-chip.md {
+      background: rgba(124,101,196,0.1); color: var(--neon-purple, #7c65c4);
+      border-color: rgba(124,101,196,0.25);
+    }
+    .cand-cert-chip.more {
+      background: rgba(232,166,39,0.1); color: var(--neon-gold, #e8a627);
+      border-color: rgba(232,166,39,0.24);
+    }
 
     /* -- Profile verification status tags -- */
     .profile-status-tag {
@@ -578,6 +607,23 @@
     .sbqv-portal-meta .cand-portal-meta-lbl { margin-bottom: 6px; font-size: 0.64rem; }
     .sbqv-actions { padding: 0 12px 8px; }
     .sbqv-full-btn { font-size: 0.72rem; }
+    .cand-pg-quals {
+      margin: 0 0 16px; padding: 10px 12px;
+      background: rgba(62,207,142,0.05); border: 1px solid rgba(62,207,142,0.18);
+      border-radius: var(--radius, 10px);
+    }
+    .cand-pg-quals-lbl {
+      margin: 0 0 8px; font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.04em; color: var(--neon-green, #3ecf8e);
+    }
+    .cand-pg-qual-list { display: flex; flex-direction: column; gap: 6px; }
+    .cand-pg-qual-row {
+      display: flex; flex-direction: column; gap: 2px;
+      padding: 7px 8px; border-radius: 8px;
+      background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.05);
+    }
+    .cand-pg-qual-title { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+    .cand-pg-qual-detail { font-size: 0.74rem; color: var(--text-muted); }
 
     .sched-empty {
       text-align: center; color: var(--text-muted); padding: 2.5rem 1rem; font-size: 0.88rem;
@@ -854,6 +900,11 @@
       display: inline-block; margin-top: 4px; font-size: 0.67rem; padding: 1px 7px;
       border-radius: 100px; background: rgba(77,184,217,0.08); color: var(--neon-cyan, #4db8d9);
       border: 1px solid rgba(77,184,217,0.18);
+    }
+    .pref-score-tag {
+      display: inline-block; margin: 4px 0 0 6px; font-size: 0.67rem; padding: 1px 7px;
+      border-radius: 100px; background: rgba(62,207,142,0.08); color: var(--neon-green, #3ecf8e);
+      border: 1px solid rgba(62,207,142,0.18); font-weight: 700;
     }
 
     /* ---------------------------------------------------------------

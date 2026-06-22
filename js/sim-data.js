@@ -11,6 +11,8 @@ async function loadData() {
     SIM.candidates = Array.isArray(d)
       ? d
       : (d.candidates || Object.values(d));
+    await loadCertificateAwareSidecars();
+    mergeCertificateAwareCandidateData();
     SIM.candidates.forEach(ensureCandidateAdjusted);
   } catch (e) {
     setStatus('error', 'No data');
@@ -57,6 +59,53 @@ async function loadData() {
   const smsg = SIM.seatsLoaded ? ' + seats' : '';
   setStatus('ok', `${n} candidates${smsg}`);
   document.getElementById('simNoSeatsWarn')?.classList.toggle('hidden', SIM.seatsLoaded);
+}
+
+async function fetchOptionalJson(path) {
+  try {
+    const r = await fetch(path, { cache: 'no-store' });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch (_) {
+    return null;
+  }
+}
+
+async function loadCertificateAwareSidecars() {
+  const [components, certificates, policy, groups] = await Promise.all([
+    fetchOptionalJson('data/induction21_components.json'),
+    fetchOptionalJson('data/induction21_certificates.json'),
+    fetchOptionalJson('data/induction21_certificate_policy.json'),
+    fetchOptionalJson('data/induction21_specialty_groups.json'),
+  ]);
+  SIM.componentsByApplicantId = components || null;
+  SIM.certificatesByApplicantId = certificates || null;
+  SIM.certificatePolicy = policy || null;
+  SIM.specialtyGroups = groups || null;
+  SIM._specialtyGroupIndex = null;
+}
+
+function mergeCertificateAwareCandidateData() {
+  const components = SIM.componentsByApplicantId || {};
+  const certificates = SIM.certificatesByApplicantId || {};
+  const componentFields = [
+    'degree', 'houseJob', 'position', 'mdcat', 'experience',
+    'research', 'hardAreas', 'attempts', 'marksTotal',
+  ];
+  for (const c of SIM.candidates || []) {
+    const id = String(c.applicantId);
+    const comp = components[id];
+    if (comp && typeof comp === 'object') {
+      for (const field of componentFields) {
+        if (comp[field] != null) c[field] = comp[field];
+      }
+    }
+    if (Array.isArray(certificates[id])) {
+      c.certificates = certificates[id];
+    } else if (!Array.isArray(c.certificates)) {
+      c.certificates = [];
+    }
+  }
 }
 
 function initLiveBanner() {

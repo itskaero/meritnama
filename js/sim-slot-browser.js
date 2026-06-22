@@ -208,12 +208,12 @@ function getSlotReportRows() {
   if (spec && hosp) {
     const applicants = [];
     allCandidates().forEach(c => {
-      const em = effectiveMark(c, program);
-      if (em == null) return;
       const pref = (c.preference?.[program] || []).find(
         p => p.quotaName === quota && p.specialityName === spec && p.hospitalName === hosp
       );
       if (!pref) return;
+      const em = effectiveMark(c, program, undefined, undefined, pref);
+      if (em == null) return;
       applicants.push({
         applicantId: c.applicantId,
         nameFull: c.nameFull,
@@ -246,12 +246,12 @@ function getSlotReportRows() {
   const rows = [];
   const groups = new Map();
   allCandidates().forEach(c => {
-    const em = effectiveMark(c, program);
-    if (em == null) return;
     (c.preference?.[program] || []).forEach(p => {
       if (p.quotaName !== quota) return;
       if (spec && p.specialityName !== spec) return;
       if (hosp && p.hospitalName !== hosp) return;
+      const em = effectiveMark(c, program, undefined, undefined, p);
+      if (em == null) return;
       const key = spec ? p.hospitalName : p.specialityName;
       if (!groups.has(key)) groups.set(key, { key, applicants: [], selected: 0, cutoff: null });
       groups.get(key).applicants.push({ candidate: c, pref: p, marksTotal: em });
@@ -401,13 +401,12 @@ function renderSlot() {
 
   const applicants = [];
   allCandidates().forEach(c => {
-    // Skip candidates who did not apply in this program (programMarks === 0)
-    const em = effectiveMark(c, program);
-    if (em == null) return;
     const pref = (c.preference?.[program] || []).find(
       p => p.quotaName === quota && p.specialityName === spec && p.hospitalName === hosp
     );
     if (pref) {
+      const em = effectiveMark(c, program, undefined, undefined, pref);
+      if (em == null) return;
       applicants.push({
         applicantId:     c.applicantId,
         nameFull:        c.nameFull,
@@ -549,12 +548,11 @@ function renderPartialSlot() {
 
   // Supplement with candidate-preference slots not in seats
   allCandidates().forEach(c => {
-    const em = effectiveMark(c, program);
-    if (em == null) return;
     (c.preference?.[program] || []).forEach(p => {
       if (p.quotaName !== quota) return;
       if (spec && p.specialityName !== spec) return;
       if (hosp && p.hospitalName  !== hosp) return;
+      if (effectiveMark(c, program, undefined, undefined, p) == null) return;
       const key = p[groupKey];
       if (!groupMap.has(key)) groupMap.set(key, { key, seats: 0, slots: [] });
     });
@@ -564,8 +562,6 @@ function renderPartialSlot() {
   for (const [, grp] of groupMap) {
     const applicants = [];
     allCandidates().forEach(c => {
-      const em = effectiveMark(c, program);
-      if (em == null) return;
       const matched = (c.preference?.[program] || []).find(p =>
         p.quotaName === quota &&
         (!spec || p.specialityName === spec) &&
@@ -573,6 +569,8 @@ function renderPartialSlot() {
         p[groupKey] === grp.key
       );
       if (matched) {
+        const em = effectiveMark(c, program, undefined, undefined, matched);
+        if (em == null) return;
         applicants.push({
           applicantId:     c.applicantId,
           nameFull:        c.nameFull,
@@ -872,7 +870,10 @@ function renderSbQuickViewContent() {
   if (!c) { modal.classList.add('hidden'); return; }
 
   const prefs = (c.preference?.[program] || []).slice().sort((a, b) => a.preferenceNo - b.preferenceNo);
-  const marks = effectiveMark(c, program);
+  const currentPref = prefs.find(p => p.quotaName === quota && p.specialityName === spec && p.hospitalName === hosp);
+  const marks = currentPref
+    ? effectiveMark(c, program, undefined, undefined, currentPref)
+    : effectiveMark(c, program);
 
   const simRecords = (SIM.sim.result && SIM.sim.program === program)
     ? SIM.sim.result.candidates.filter(sc => String(sc.applicantId) === SIM.sb.clickedCandId)
@@ -911,6 +912,7 @@ function renderSbQuickViewContent() {
       ${prefs.length ? prefs.map(p => {
         const isCurrent = p.quotaName === quota && p.specialityName === spec && p.hospitalName === hosp;
         const seats = SIM.seats?.[program]?.[p.quotaName]?.[p.specialityName]?.[p.hospitalName] ?? null;
+        const prefMarks = effectiveMark(c, program, undefined, undefined, p);
         const prefSimCand = simByTrack[quotaTrack(p.quotaName)] || null;
         const prefPlacedPrefNo = prefSimCand?.placed
           ? (prefSimCand._prefs?.find(pp =>
@@ -932,7 +934,7 @@ function renderSbQuickViewContent() {
           <div class="sbqv-pref-info">
             <span class="sbqv-pref-spec">${esc(p.specialityName)}</span>
             <span class="sbqv-pref-hosp">${esc(p.hospitalName)}${isCurrent ? ' <span class="sbqv-viewing-tag">viewing</span>' : ''}</span>
-            <span class="sbqv-pref-quota">${esc(p.quotaName)}${seats ? ` &middot; ${seats} seat${seats > 1 ? 's' : ''}` : ''}</span>
+            <span class="sbqv-pref-quota">${esc(p.quotaName)}${seats ? ` &middot; ${seats} seat${seats > 1 ? 's' : ''}` : ''} &middot; marks ${fmtM(prefMarks)}</span>
           </div>
           <div class="sbqv-pref-status">${statusTag}</div>
         </div>`;

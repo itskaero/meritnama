@@ -1,0 +1,27 @@
+{
+  "version": "induction21",
+  "fcps": {
+    "requirePass": true,
+    "attemptMarks": {
+      "1": 5,
+      "2": 4,
+      "3": 3,
+      "4": 3
+    }
+  },
+  "msmd": {
+    "requirePass": true,
+    "percentageMarks": [
+      { "min": 75, "marks": 5 },
+      { "min": 65, "marks": 4 },
+      { "min": 60, "marks": 3 }
+    ],
+    "specialRules": {
+      "March2026Pass": 5
+    }
+  },
+  "fallback": {
+    "useProgramMarksWhenNoCertificateMatch": true,
+    "useProgramMarksWhenCertificateIncomplete": true
+  }
+}

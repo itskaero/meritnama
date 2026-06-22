@@ -319,6 +319,60 @@ async function downloadCandidatePoolPdf() {
   doc.save('meritnama-candidate-pool.pdf');
 }
 
+function candidatePoolProgramClass(program) {
+  const normalized = normalizeProgramName(program);
+  if (normalized.startsWith('FCPS')) return 'fcps';
+  if (normalized === 'MS' || normalized === 'MDS') return 'ms';
+  if (normalized === 'MD') return 'md';
+  return 'other';
+}
+
+function candidatePoolSpecialtyLabel(specialty) {
+  return String(specialty || '')
+    .replace(/\s+And\s+/gi, ' & ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getCandidatePoolSpecialtyPrograms(c) {
+  const certs = Array.isArray(c?.certificates) ? c.certificates : [];
+  const rows = [];
+  const seen = new Set();
+  for (const cert of certs) {
+    if (!cert?.program || !cert?.specialty) continue;
+    const detail = resolveProgramBonusDetails(c, {
+      typeName: cert.program,
+      specialityName: cert.specialty,
+    }, cert.program);
+    if (detail.source !== 'certificate') continue;
+    const specialty = candidatePoolSpecialtyLabel(cert.specialty);
+    const key = `${normalizeProgramName(cert.program)}|${normalizedLookupText(specialty)}|${detail.bonus}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    rows.push({
+      program: cert.program,
+      specialty,
+      bonus: detail.bonus,
+      detail: renderCertificateDetailLine(cert),
+    });
+  }
+  return rows;
+}
+
+function renderCandidatePoolSpecialtyProgramsHtml(c) {
+  const rows = getCandidatePoolSpecialtyPrograms(c);
+  if (!rows.length) return '';
+  const visible = rows.slice(0, 4);
+  const extra = rows.length - visible.length;
+  return `<div class="cand-cert-programs" title="Specialty-specific certificate programme marks">
+    ${visible.map(row => `
+      <span class="cand-cert-chip ${candidatePoolProgramClass(row.program)}" title="${esc(row.detail || 'Certificate-based programme marks')}">
+        ${esc(row.program)} ${esc(row.specialty)} +${fmtM(row.bonus)}
+      </span>`).join('')}
+    ${extra > 0 ? `<span class="cand-cert-chip more">+${extra} more</span>` : ''}
+  </div>`;
+}
+
 function renderCandidateTable(slice, total) {
   const tbody = document.getElementById('candBody');
   if (!tbody) return;
@@ -345,7 +399,7 @@ function renderCandidateTable(slice, total) {
       <td class="td-num">${fmtM(effectiveMark(c, 'FCPS'))}</td>
       <td class="td-num">${fmtM(effectiveMark(c, 'MS'))}</td>
       <td class="td-num">${fmtM(effectiveMark(c, 'MD'))}</td>
-      <td>${tags}</td>
+      <td><div class="cand-row-programs">${tags}</div>${renderCandidatePoolSpecialtyProgramsHtml(c)}</td>
       <td><button class="btn btn-sm view-btn" data-id="${c.applicantId}">View</button></td>
     </tr>`;
   }).join('') || '<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--text-muted)">No candidates match the filter.</td></tr>';
@@ -796,6 +850,47 @@ function renderProgramPortalMetaHtml(c) {
     </div>`;
 }
 
+function formatAttemptOrdinal(n) {
+  const attempt = Number(n);
+  if (!Number.isFinite(attempt)) return null;
+  if (attempt === 1) return '1st';
+  if (attempt === 2) return '2nd';
+  if (attempt === 3) return '3rd';
+  return `${attempt}th`;
+}
+
+function renderCertificateDetailLine(cert) {
+  const bits = [];
+  const attempt = formatAttemptOrdinal(cert.attempt);
+  if (attempt) bits.push(`Attempt: ${attempt}`);
+  if (cert.percentage != null && cert.percentage !== '') {
+    const pct = Number(cert.percentage);
+    bits.push(`Percentage: ${Number.isFinite(pct) ? pct.toFixed(2) + '%' : cert.percentage}`);
+  }
+  if (cert.session) bits.push(`Session: ${cert.session}`);
+  if (cert.status && normalizedLookupText(cert.status) !== 'pass') bits.push(`Status: ${cert.status}`);
+  return bits.join(' · ');
+}
+
+function renderPostgraduateQualificationsHtml(c) {
+  const certs = Array.isArray(c?.certificates) ? c.certificates : [];
+  if (!certs.length) return '';
+  return `
+    <div class="cand-pg-quals">
+      <p class="cand-pg-quals-lbl">Postgraduate Qualifications</p>
+      <div class="cand-pg-qual-list">
+        ${certs.map(cert => {
+          const title = [cert.program, cert.specialty].filter(Boolean).join(' ');
+          const detail = renderCertificateDetailLine(cert);
+          return `<div class="cand-pg-qual-row">
+            <span class="cand-pg-qual-title">${esc(title || cert.program || 'Qualification')}</span>
+            ${detail ? `<span class="cand-pg-qual-detail">${esc(detail)}</span>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
 function openCandidateDetail(idStr) {
   const c = ensureCandidateAdjusted(allCandidates().find(c => String(c.applicantId) === String(idStr)));
   if (!c) return;
@@ -843,6 +938,8 @@ function openCandidateDetail(idStr) {
 
     ${renderProgramPortalMetaHtml(c)}
 
+    ${renderPostgraduateQualificationsHtml(c)}
+
     ${scoreRows.length ? `
     <details class="score-breakdown">
       <summary>Score breakdown</summary>
@@ -874,6 +971,7 @@ function openCandidateDetail(idStr) {
                 <span class="pref-spec">${esc(p.specialityName)}</span>
                 <span class="pref-hosp">${esc(p.hospitalName)}</span>
                 <span class="pref-quota-tag">${esc(p.quotaName)}${p.parentInstitute ? ' ⭐' : ''}</span>
+                <span class="pref-score-tag">${esc(prog)} score: ${fmtM(effectiveMark(c, prog, undefined, undefined, p))}</span>
               </div>
               <button class="btn btn-sm pref-browse-btn"
                 data-prog="${esc(prog)}" data-quota="${esc(p.quotaName)}"
