@@ -319,6 +319,60 @@ async function downloadCandidatePoolPdf() {
   doc.save('meritnama-candidate-pool.pdf');
 }
 
+function candidatePoolProgramClass(program) {
+  const normalized = normalizeProgramName(program);
+  if (normalized.startsWith('FCPS')) return 'fcps';
+  if (normalized === 'MS' || normalized === 'MDS') return 'ms';
+  if (normalized === 'MD') return 'md';
+  return 'other';
+}
+
+function candidatePoolSpecialtyLabel(specialty) {
+  return String(specialty || '')
+    .replace(/\s+And\s+/gi, ' & ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getCandidatePoolSpecialtyPrograms(c) {
+  const certs = Array.isArray(c?.certificates) ? c.certificates : [];
+  const rows = [];
+  const seen = new Set();
+  for (const cert of certs) {
+    if (!cert?.program || !cert?.specialty) continue;
+    const detail = resolveProgramBonusDetails(c, {
+      typeName: cert.program,
+      specialityName: cert.specialty,
+    }, cert.program);
+    if (detail.source !== 'certificate') continue;
+    const specialty = candidatePoolSpecialtyLabel(cert.specialty);
+    const key = `${normalizeProgramName(cert.program)}|${normalizedLookupText(specialty)}|${detail.bonus}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    rows.push({
+      program: cert.program,
+      specialty,
+      bonus: detail.bonus,
+      detail: renderCertificateDetailLine(cert),
+    });
+  }
+  return rows;
+}
+
+function renderCandidatePoolSpecialtyProgramsHtml(c) {
+  const rows = getCandidatePoolSpecialtyPrograms(c);
+  if (!rows.length) return '';
+  const visible = rows.slice(0, 4);
+  const extra = rows.length - visible.length;
+  return `<div class="cand-cert-programs" title="Specialty-specific certificate programme marks">
+    ${visible.map(row => `
+      <span class="cand-cert-chip ${candidatePoolProgramClass(row.program)}" title="${esc(row.detail || 'Certificate-based programme marks')}">
+        ${esc(row.program)} ${esc(row.specialty)} +${fmtM(row.bonus)}
+      </span>`).join('')}
+    ${extra > 0 ? `<span class="cand-cert-chip more">+${extra} more</span>` : ''}
+  </div>`;
+}
+
 function renderCandidateTable(slice, total) {
   const tbody = document.getElementById('candBody');
   if (!tbody) return;
@@ -345,7 +399,7 @@ function renderCandidateTable(slice, total) {
       <td class="td-num">${fmtM(effectiveMark(c, 'FCPS'))}</td>
       <td class="td-num">${fmtM(effectiveMark(c, 'MS'))}</td>
       <td class="td-num">${fmtM(effectiveMark(c, 'MD'))}</td>
-      <td>${tags}</td>
+      <td><div class="cand-row-programs">${tags}</div>${renderCandidatePoolSpecialtyProgramsHtml(c)}</td>
       <td><button class="btn btn-sm view-btn" data-id="${c.applicantId}">View</button></td>
     </tr>`;
   }).join('') || '<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--text-muted)">No candidates match the filter.</td></tr>';

@@ -381,6 +381,35 @@
       background: rgba(124,101,196,0.14); color: var(--neon-purple, #7c65c4);
       border: 1px solid rgba(124,101,196,0.32);
     }
+    .cand-row-programs {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 3px;
+    }
+    .cand-cert-programs {
+      display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; max-width: 280px;
+    }
+    .cand-cert-chip {
+      display: inline-flex; align-items: center; white-space: nowrap;
+      font-size: 0.58rem; font-weight: 800; line-height: 1.15;
+      padding: 2px 6px; border-radius: 999px;
+      background: rgba(255,255,255,0.04); color: var(--text-muted);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .cand-cert-chip.fcps {
+      background: rgba(62,207,142,0.09); color: var(--neon-green, #3ecf8e);
+      border-color: rgba(62,207,142,0.24);
+    }
+    .cand-cert-chip.ms {
+      background: rgba(77,184,217,0.09); color: var(--neon-cyan, #4db8d9);
+      border-color: rgba(77,184,217,0.24);
+    }
+    .cand-cert-chip.md {
+      background: rgba(124,101,196,0.1); color: var(--neon-purple, #7c65c4);
+      border-color: rgba(124,101,196,0.25);
+    }
+    .cand-cert-chip.more {
+      background: rgba(232,166,39,0.1); color: var(--neon-gold, #e8a627);
+      border-color: rgba(232,166,39,0.24);
+    }
 
     /* -- Profile verification status tags -- */
     .profile-status-tag {
