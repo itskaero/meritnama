@@ -25,7 +25,8 @@
             "Anatomy",
             "Community Medicine",
             "Physiology",
-            "Biochemistry"
+            "Biochemistry",
+            "Diagnostic Radiology"
           ]
         },
         "surgery-allied": {
@@ -126,7 +127,8 @@
             "Anatomy",
             "Community Medicine",
             "Physiology",
-            "Biochemistry"
+            "Biochemistry",
+            "Diagnostic Radiology"
           ]
         },
         "radiology": {
