@@ -14,11 +14,18 @@
             "Dermatology",
             "Medical Oncology",
             "Clinical Haematology",
+            "Clinical Hematology",
             "Pediatrics",
             "Psychiatry",
             "Rheumatology",
             "Gastroenterology",
-            "Endocrinology"
+            "Endocrinology",
+            "Emergency Medicine",
+            "Physical Medicine & Rehabilitation",
+            "Anatomy",
+            "Community Medicine",
+            "Physiology",
+            "Biochemistry"
           ]
         },
         "surgery-allied": {
@@ -29,7 +36,7 @@
             "Pediatric Surgery",
             "Urology",
             "Thoracic Surgery",
-            "Neurosurgery",
+            "Neuro Surgery",
             "Orthopedic Surgery",
             "Orthopaedics",
             "Cardiac Surgery"
@@ -40,12 +47,19 @@
           "specialties": ["Diagnostic Radiology"]
         },
         "anaesthesia": {
-          "labels": ["Anaesthesiology", "Anesthesiology"],
-          "specialties": ["Anaesthesiology", "Anesthesiology"]
+          "labels": ["Anaesthesiology", "Anesthesiology", "Anaesthesia"],
+          "specialties": [
+            "Anaesthesiology",
+            "Anesthesiology",
+            "Anaesthesia",
+            "Cardio Thoracic Anesthesia",
+            "Cardiac Anaesthesia",
+            "Cardiac Anesthesia"
+          ]
         },
         "ent": {
           "labels": ["E.N.T.", "ENT", "Otorhinolaryngology"],
-          "specialties": ["E.N.T.", "ENT", "Otorhinolaryngology"]
+          "specialties": ["E.N.T.", "ENT", "Otorhinolaryngology", "Otorhinolaryngology ENT"]
         },
         "ophthalmology": {
           "labels": ["Ophthalmology"],
@@ -68,6 +82,7 @@
             "Urology",
             "Thoracic Surgery",
             "Neurosurgery",
+            "Neuro Surgery",
             "Orthopedic Surgery",
             "Orthopaedics",
             "Cardiac Surgery"
@@ -79,7 +94,7 @@
         },
         "ent": {
           "labels": ["E.N.T.", "ENT", "Otorhinolaryngology"],
-          "specialties": ["E.N.T.", "ENT", "Otorhinolaryngology"]
+          "specialties": ["E.N.T.", "ENT", "Otorhinolaryngology", "Otorhinolaryngology ENT"]
         },
         "ophthalmology": {
           "labels": ["Ophthalmology"],
@@ -100,11 +115,18 @@
             "Dermatology",
             "Medical Oncology",
             "Clinical Haematology",
+            "Clinical Hematology",
             "Pediatrics",
             "Psychiatry",
             "Rheumatology",
             "Gastroenterology",
-            "Endocrinology"
+            "Endocrinology",
+            "Emergency Medicine",
+            "Physical Medicine & Rehabilitation",
+            "Anatomy",
+            "Community Medicine",
+            "Physiology",
+            "Biochemistry"
           ]
         },
         "radiology": {

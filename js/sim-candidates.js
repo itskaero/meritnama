@@ -227,7 +227,12 @@ function applyAndRenderCandidates() {
     let av, bv;
     if (key === 'nameFull') { av = a.nameFull; bv = b.nameFull; }
     else if (['FCPS','MS','MD'].includes(key)) {
-      av = effectiveMark(a, key) ?? 0; bv = effectiveMark(b, key) ?? 0;
+      const specsA = getSpecialtyMarksForProgram(a, key);
+      const specsB = getSpecialtyMarksForProgram(b, key);
+      const marksA = specsA.map(s => s.mark).filter(m => m != null);
+      const marksB = specsB.map(s => s.mark).filter(m => m != null);
+      av = marksA.length ? Math.max(...marksA) : (effectiveMark(a, key) ?? 0);
+      bv = marksB.length ? Math.max(...marksB) : (effectiveMark(b, key) ?? 0);
     } else if (key === 'marksTotal') {
       av = baseMarks(a); bv = baseMarks(b);
     } else {
@@ -359,6 +364,44 @@ function getCandidatePoolSpecialtyPrograms(c) {
   return rows;
 }
 
+function getSpecialtyMarksForProgram(c, program) {
+  const prefs = (c.preference?.[program] || []).slice().sort((a, b) => a.preferenceNo - b.preferenceNo);
+  if (!prefs.length) return [];
+  return prefs.map(pref => {
+    const mark = effectiveMark(c, program, undefined, undefined, pref);
+    return {
+      preferenceNo: pref.preferenceNo,
+      specialityName: pref.specialityName,
+      hospitalName: pref.hospitalName,
+      quotaName: pref.quotaName,
+      mark,
+    };
+  });
+}
+
+function renderSpecialtyMarksDetailsHtml(c, program) {
+  const specs = getSpecialtyMarksForProgram(c, program);
+  if (!specs.length) return '';
+  const marks = specs.map(s => s.mark).filter(m => m != null);
+  const maxMark = marks.length ? Math.max(...marks) : 0;
+  const minMark = marks.length ? Math.min(...marks) : 0;
+  const showRange = maxMark !== minMark;
+  return `<div class="cand-spec-marks">
+    <span class="cand-spec-marks-summary" title="${esc(program)} specialty marks">
+      ${fmtM(maxMark)}${showRange ? `<span class="cand-spec-range"> – ${fmtM(minMark)}</span>` : ''}
+      <span class="cand-spec-toggle">▼</span>
+    </span>
+    <div class="cand-spec-marks-detail">
+      ${specs.map(s => `
+        <div class="cand-spec-row">
+          <span class="cand-spec-no">#${s.preferenceNo}</span>
+          <span class="cand-spec-name">${esc(candidatePoolSpecialtyLabel(s.specialityName))}</span>
+          <span class="cand-spec-val">${fmtM(s.mark)}</span>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
 function renderCandidatePoolSpecialtyProgramsHtml(c) {
   const rows = getCandidatePoolSpecialtyPrograms(c);
   if (!rows.length) return '';
@@ -396,9 +439,9 @@ function renderCandidateTable(slice, total) {
       <td class="td-num">${rank}</td>
       <td>${esc(c.nameFull)} ${revBadge}${psTag}${supporterBadgeForCandidate(c)}${custom}${isMe ? '<span class="me-tag">YOU</span>' : ''}</td>
       <td class="td-num">${fmtM(baseMarks(c))}</td>
-      <td class="td-num">${fmtM(effectiveMark(c, 'FCPS'))}</td>
-      <td class="td-num">${fmtM(effectiveMark(c, 'MS'))}</td>
-      <td class="td-num">${fmtM(effectiveMark(c, 'MD'))}</td>
+      <td class="td-spec-marks">${renderSpecialtyMarksDetailsHtml(c, 'FCPS')}</td>
+      <td class="td-spec-marks">${renderSpecialtyMarksDetailsHtml(c, 'MS')}</td>
+      <td class="td-spec-marks">${renderSpecialtyMarksDetailsHtml(c, 'MD')}</td>
       <td><div class="cand-row-programs">${tags}</div>${renderCandidatePoolSpecialtyProgramsHtml(c)}</td>
       <td><button class="btn btn-sm view-btn" data-id="${c.applicantId}">View</button></td>
     </tr>`;
@@ -891,8 +934,213 @@ function renderPostgraduateQualificationsHtml(c) {
     </div>`;
 }
 
+function renderSpecialtyMarksPanelHtml(c) {
+  const PROGS = ['FCPS', 'MS', 'MD', 'MDS', 'FCPSD'];
+  return PROGS.map(prog => {
+    const prefs = (c.preference?.[prog] || []).slice().sort((a, b) => a.preferenceNo - b.preferenceNo);
+    if (!prefs.length) return '';
+    const specs = getSpecialtyMarksForProgram(c, prog);
+    const markMap = {};
+    for (const s of specs) {
+      const key = `${s.preferenceNo}_${s.specialityName}_${s.hospitalName}`;
+      markMap[key] = s.mark;
+    }
+    return `<div class="pref-section">
+      <h4><span class="prog-tag prog-${prog.toLowerCase()}">${prog}</span> Preferences (${prefs.length})</h4>
+      <div class="pref-list">
+        ${prefs.map(p => {
+          const key = `${p.preferenceNo}_${p.specialityName}_${p.hospitalName}`;
+          const mark = markMap[key];
+          return `<div class="pref-item ${p.parentInstitute ? 'pref-parent' : ''}">
+            <span class="pref-no">${p.preferenceNo}</span>
+            <div class="pref-details">
+              <span class="pref-spec">${esc(candidatePoolSpecialtyLabel(p.specialityName))}</span>
+              <span class="pref-hosp">${esc(p.hospitalName)}</span>
+              <div class="pref-tags">
+                <span class="pref-quota-tag">${esc(p.quotaName)}${p.parentInstitute ? ' ⭐' : ''}</span>
+                ${mark != null ? `<span class="pref-score-tag">${fmtM(mark)}</span>` : ''}
+              </div>
+            </div>
+            <button class="btn btn-sm pref-browse-btn"
+              data-prog="${esc(prog)}" data-quota="${esc(p.quotaName)}"
+              data-spec="${esc(p.specialityName)}" data-hosp="${esc(p.hospitalName)}">
+              &#128269; Slot
+            </button>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).filter(Boolean).join('');
+}
+
+function getSpecialtyNamesForGroup(program, groupId) {
+  const norm = normalizeProgramName(program);
+  return SIM.specialtyGroups?.programs?.[norm]?.groups?.[groupId]?.specialties || [];
+}
+
+function getGroupLabel(program, groupId) {
+  const norm = normalizeProgramName(program);
+  const labels = SIM.specialtyGroups?.programs?.[norm]?.groups?.[groupId]?.labels;
+  return labels?.[0] || groupId;
+}
+
+function renderCertificationTabHtml(c) {
+  const certs = Array.isArray(c?.certificates) ? c.certificates : [];
+  const policy = certificatePolicy();
+
+  // ── Certificate cards ──
+  let certsHtml = '';
+  if (!certs.length) {
+    certsHtml = '<div class="cert-no-certs">No postgraduate qualifications recorded.</div>';
+  } else {
+    // Group by specialty group
+    const groups = {}; // groupId -> { label, certs: [{cert, unlocks}] }
+    for (const cert of certs) {
+      const prog = cert.program || '';
+      const groupId = specialtyGroupFor(prog, cert.specialty);
+      const grpLabel = groupId ? getGroupLabel(prog, groupId) : cert.specialty;
+
+      // Determine which programs this cert unlocks
+      const unlocks = [];
+      const allPrograms = ['FCPS', 'MS', 'MD', 'MDS', 'FCPSD'];
+      for (const p of allPrograms) {
+        if (!programMatches(prog, p)) continue;
+        const g = specialtyGroupFor(p, cert.specialty);
+        if (g) {
+          const specialties = getSpecialtyNamesForGroup(p, g);
+          if (specialties.length) unlocks.push({ program: p, specialties });
+        }
+      }
+
+      const key = groupId || `__ungrouped_${cert.specialty}`;
+      (groups[key] ??= { label: grpLabel, certs: [] }).certs.push({ cert, unlocks });
+    }
+
+    certsHtml = Object.entries(groups).map(([, grp]) => {
+      const certRows = grp.certs.map(({ cert, unlocks }) => {
+        const pass = isCertificatePass(cert);
+        const detail = renderCertificateDetailLine(cert);
+        const statusBadge = pass
+          ? '<span class="cert-status pass">Pass</span>'
+          : `<span class="cert-status">${esc(cert.status || 'Unknown')}</span>`;
+        const progAlias = programAliases(cert.program);
+        const progTag = progAlias[0] ? progAlias[0].toLowerCase().replace(/\s+/g, '') : '';
+
+        const unlocksHtml = unlocks.length
+          ? `<div class="cert-row-unlocks">
+              <span class="cert-unlock-lbl">Unlocks:</span>
+              ${unlocks.map(u =>
+                `<span class="cert-unlock-prog prog-tag prog-${u.program.toLowerCase()}">${u.program}</span>` +
+                `<span class="cert-unlock-specs">${u.specialties.map(s => candidatePoolSpecialtyLabel(s)).join(', ')}</span>`
+              ).join('')}
+            </div>`
+          : '';
+
+        return `<div class="cert-row">
+          <div class="cert-row-main">
+            <span class="cert-prog-tag ${progTag}">${esc(progAlias[0] || '')}</span>
+            <span class="cert-spec-name">${esc(candidatePoolSpecialtyLabel(cert.specialty))}</span>
+            ${statusBadge}
+          </div>
+          ${detail ? `<div class="cert-row-detail">${esc(detail)}</div>` : ''}
+          ${unlocksHtml}
+        </div>`;
+      }).join('');
+
+      return `<div class="cert-group-card">
+        <div class="cert-group-hdr">
+          <span class="cert-group-badge">${esc(grp.label)}</span>
+          <span class="cert-group-count">${grp.certs.length} certificate${grp.certs.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="cert-group-certs">${certRows}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Per-program marks breakdown ──
+  const allPrograms = ['FCPS', 'MS', 'MD', 'MDS', 'FCPSD'];
+  const progCardsHtml = allPrograms.map(prog => {
+    const hasPrefs = (c.preference?.[prog] || []).length > 0;
+    const applied = hasPrefs && effectiveMark(c, prog) != null;
+    const base = baseMarksWithRevision(c, undefined, prog, null);
+    const legacyB = legacyProgramBonus(c, prog);
+
+    // Find best certificate match for this program
+    let certMatch = null;
+    let bonusVal = legacyB;
+    let bonusSrc = legacyB ? 'legacy' : 'none';
+    let bonusLabel = legacyB ? fmtM(legacyB) : '0.00';
+
+    if (applied && certs.length) {
+      for (const cert of certs) {
+        if (!programMatches(cert.program, prog)) continue;
+        const fakePref = { typeName: prog, specialityName: cert.specialty };
+        const details = resolveProgramBonusDetails(c, fakePref, prog);
+        if (details.source === 'certificate') {
+          certMatch = cert;
+          bonusVal = details.bonus;
+          bonusSrc = 'certificate';
+          bonusLabel = `+${fmtM(details.bonus)}`;
+          break;
+        }
+      }
+    }
+
+    // If no cert matched but there are certs that don't match (different program), show legacy
+    if (bonusSrc === 'none' && legacyB) {
+      bonusLabel = `+${fmtM(legacyB)}`;
+      bonusSrc = 'legacy';
+      bonusVal = legacyB;
+    }
+
+    const eff = base + bonusVal;
+    const isActive = bonusSrc === 'certificate';
+    const bonusSourceHtml = isActive && certMatch
+      ? `<span class="cert-prog-source">via ${esc(certMatch.program)} ${esc(candidatePoolSpecialtyLabel(certMatch.specialty))} (attempt ${certMatch.attempt})</span>`
+      : bonusSrc === 'legacy'
+        ? `<span class="cert-prog-source" style="color:var(--text-muted)">via program marks</span>`
+        : '';
+
+    if (!applied && !hasPrefs) return '';
+
+    return `<div class="cert-prog-card ${applied ? 'applied' : 'not-applied'}">
+      <div class="cert-prog-hdr">
+        <span class="prog-tag prog-${prog.toLowerCase()}">${prog}</span>
+        ${applied
+          ? `<span class="cert-applied-badge">Applied</span>`
+          : `<span class="cert-notapplied-badge">Not applied</span>`}
+      </div>
+      <div class="cert-prog-breakdown">
+        <div class="cert-prog-row">
+          <span class="cert-prog-lbl">Base marks</span>
+          <span class="cert-prog-val">${fmtM(base)}</span>
+        </div>
+        <div class="cert-prog-row ${isActive ? 'cert-active-glow' : ''}">
+          <span class="cert-prog-lbl">Program bonus</span>
+          <span class="cert-prog-val">${bonusLabel}</span>
+          ${bonusSourceHtml}
+        </div>
+        <div class="cert-prog-row total">
+          <span class="cert-prog-lbl">Effective marks</span>
+          <span class="cert-prog-val">${fmtM(eff)}</span>
+        </div>
+      </div>
+    </div>`;
+  }).filter(Boolean).join('');
+
+  return `
+    <div class="cert-section">
+      <h4>Certificates</h4>
+      ${certsHtml}
+    </div>
+    <div class="cert-section">
+      <h4>Marks by Program</h4>
+      ${progCardsHtml || '<div class="cert-no-certs">No program preferences.</div>'}
+    </div>`;
+}
+
 function openCandidateDetail(idStr) {
-  const c = ensureCandidateAdjusted(allCandidates().find(c => String(c.applicantId) === String(idStr)));
+  const c = allCandidates().find(c => String(c.applicantId) === String(idStr));
   if (!c) return;
 
   const modal = document.getElementById('candidateModal');
@@ -900,7 +1148,6 @@ function openCandidateDetail(idStr) {
   if (!modal || !body) return;
 
   const isMe   = String(c.applicantId) === SIM.myId;
-  const progs  = Object.keys(c.programMarks || {}).filter(p => effectiveMark(c, p) != null);
 
   const scoreRows = [
     ['MBBS',       c.degree],
@@ -921,7 +1168,7 @@ function openCandidateDetail(idStr) {
     : '';
   const revHtml = candidateHasRevisions(c) ? renderCandidateRevisionHtml(c) : '';
 
-  body.innerHTML = `
+  const headerHtml = `
     <div class="cand-detail-hdr">
       <div>
         <h3>${esc(c.nameFull)} ${isMe ? '<span class="me-tag">YOU</span>' : ''}
@@ -930,16 +1177,9 @@ function openCandidateDetail(idStr) {
         <p class="cand-detail-meta">ID: ${c.applicantId} &nbsp;·&nbsp; ${esc(getActiveMarksLabel())}: <strong>${fmtM(baseMarks(c))}</strong> &nbsp;·&nbsp; Portal marksTotal: ${fmtM(c.marksTotal)}</p>
         ${profileStatusesDetailHtml(allStatuses)}
       </div>
-    </div>
+    </div>`;
 
-    ${renderProgramScoreCardsHtml(c)}
-
-    ${renderAdjustedMarksHtml(c)}
-
-    ${renderProgramPortalMetaHtml(c)}
-
-    ${renderPostgraduateQualificationsHtml(c)}
-
+  const bodyHtml = `
     ${scoreRows.length ? `
     <details class="score-breakdown">
       <summary>Score breakdown</summary>
@@ -958,31 +1198,31 @@ function openCandidateDetail(idStr) {
 
     ${candVerifEnabled && candVerifRecords ? getCandidateVerificationHtml(idStr) : '<div id="verif-placeholder" style="display:none"></div>'}
 
-    ${progs.map(prog => {
-      const prefs = (c.preference[prog] || []).slice().sort((a, b) => a.preferenceNo - b.preferenceNo);
-      if (!prefs.length) return '';
-      return `<div class="pref-section">
-        <h4><span class="prog-tag prog-${prog.toLowerCase()}">${prog}</span> Preferences (${prefs.length})</h4>
-        <div class="pref-list">
-          ${prefs.map(p => `
-            <div class="pref-item ${p.parentInstitute ? 'pref-parent' : ''}">
-              <span class="pref-no">${p.preferenceNo}</span>
-              <div class="pref-details">
-                <span class="pref-spec">${esc(p.specialityName)}</span>
-                <span class="pref-hosp">${esc(p.hospitalName)}</span>
-                <span class="pref-quota-tag">${esc(p.quotaName)}${p.parentInstitute ? ' ⭐' : ''}</span>
-                <span class="pref-score-tag">${esc(prog)} score: ${fmtM(effectiveMark(c, prog, undefined, undefined, p))}</span>
-              </div>
-              <button class="btn btn-sm pref-browse-btn"
-                data-prog="${esc(prog)}" data-quota="${esc(p.quotaName)}"
-                data-spec="${esc(p.specialityName)}" data-hosp="${esc(p.hospitalName)}">
-                Browse slot →
-              </button>
-            </div>`).join('')}
-        </div>
-      </div>`;
-    }).join('')}
+    ${renderSpecialtyMarksPanelHtml(c)}
   `;
+
+  const certHtml = renderCertificationTabHtml(c);
+
+  body.innerHTML = `
+    ${headerHtml}
+    <div class="modal-tabs">
+      <button class="modal-tab active" data-tab="info">Info</button>
+      <button class="modal-tab" data-tab="cert">Certification</button>
+    </div>
+    <div class="modal-tab-content active" id="mt-info">${bodyHtml}</div>
+    <div class="modal-tab-content" id="mt-cert">${certHtml}</div>
+  `;
+
+  // Tab switching
+  body.querySelectorAll('.modal-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      body.querySelectorAll('.modal-tab').forEach(b => b.classList.remove('active'));
+      body.querySelectorAll('.modal-tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      const tabContent = document.getElementById('mt-' + btn.dataset.tab);
+      if (tabContent) tabContent.classList.add('active');
+    });
+  });
 
   // "Browse slot" buttons jump to Slot Browser
   body.querySelectorAll('.pref-browse-btn').forEach(btn => {

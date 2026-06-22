@@ -54,6 +54,8 @@ async function loadData() {
   // Load global revision config (best-effort) then rebuild revision selector
   try { await loadGloballyDisabledRevisionIds(); } catch (_) {}
   refreshCandidateRevisionOptions();
+  // Real-time listener for tracked fields / revision config changes
+  try { initLiveRevisionsConfig(); } catch (_) {}
 
   const n   = SIM.candidates.length;
   const smsg = SIM.seatsLoaded ? ' + seats' : '';
@@ -72,22 +74,25 @@ async function fetchOptionalJson(path) {
 }
 
 async function loadCertificateAwareSidecars() {
-  const [components, certificates, policy, groups] = await Promise.all([
+  const [components, certificates, policy, groups, revisions] = await Promise.all([
     fetchOptionalJson('data/induction21_components.json'),
     fetchOptionalJson('data/induction21_certificates.json'),
     fetchOptionalJson('data/induction21_certificate_policy.json'),
     fetchOptionalJson('data/induction21_specialty_groups.json'),
+    fetchOptionalJson('data/induction21_revisions.json'),
   ]);
   SIM.componentsByApplicantId = components || null;
   SIM.certificatesByApplicantId = certificates || null;
   SIM.certificatePolicy = policy || null;
   SIM.specialtyGroups = groups || null;
+  SIM.revisionsByApplicantId = revisions || null;
   SIM._specialtyGroupIndex = null;
 }
 
 function mergeCertificateAwareCandidateData() {
   const components = SIM.componentsByApplicantId || {};
   const certificates = SIM.certificatesByApplicantId || {};
+  const revisions = SIM.revisionsByApplicantId || {};
   const componentFields = [
     'degree', 'houseJob', 'position', 'mdcat', 'experience',
     'research', 'hardAreas', 'attempts', 'marksTotal',
@@ -104,6 +109,9 @@ function mergeCertificateAwareCandidateData() {
       c.certificates = certificates[id];
     } else if (!Array.isArray(c.certificates)) {
       c.certificates = [];
+    }
+    if (revisions[id] && typeof revisions[id] === 'object') {
+      c.revisions = revisions[id];
     }
   }
 }

@@ -892,19 +892,18 @@ function renderSbQuickViewContent() {
         ? `<span class="sbqv-status-placed">&#10003; Pref #${placedPrefNo ?? '?'} &mdash; ${esc(simCand._s)} @ ${esc(simCand._h.split(',')[0].trim())}</span>`
         : `<span class="sbqv-status-unplaced">Not placed</span>`)
     : '';
-  const portalMetaLine = formatProgramPortalMetaHtml(c, program);
-  const portalMetaBlock = renderProgramPortalMetaHtml(c);
+  const specPanelHtml = typeof renderSpecialtyMarksPanelHtml === 'function'
+    ? renderSpecialtyMarksPanelHtml(c) : '';
 
   inner.innerHTML = `
     <div class="sbqv-header">
       <div class="sbqv-header-main">
         <span class="sbqv-name">${esc(c.nameFull)}</span>
-        <span class="sbqv-meta">${esc(program)} &middot; ${fmtM(marks)}${portalMetaLine ? ` &middot; ${portalMetaLine}` : ''}${simSummary ? ` &middot; ${simSummary}` : ''}</span>
+        <span class="sbqv-meta">${esc(program)} &middot; ${fmtM(marks)}${simSummary ? ` &middot; ${simSummary}` : ''}</span>
       </div>
       <button class="sbqv-close" aria-label="Close">&#10005;</button>
     </div>
-    ${portalMetaBlock ? `<div class="sbqv-portal-meta">${portalMetaBlock}</div>` : ''}
-    ${renderAdjustedMarksHtml(c)}
+    ${specPanelHtml}
     <div class="sbqv-actions">
       <button class="btn btn-sm sbqv-full-btn" type="button">Open full candidate profile</button>
     </div>

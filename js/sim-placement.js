@@ -276,10 +276,16 @@ function runSimulation() {
 }
 
 function runSimulationForProgram(program) {
-  const cands = allCandidates().filter(c => effectiveMark(c, program) != null);
-  if (!cands.length) return null;
+  const pool = simulationCandidatePool(program);
+  if (!pool.candidates.length) return null;
   const tree = buildSeatTree(program);
-  return runPlacement(cands, tree, program, SIM.sim.parentBonus);
+  const report = runPlacement(pool.candidates, tree, program, SIM.sim.parentBonus);
+  report.statusScope = pool.scope;
+  report.sourceCandidateCount = pool.sourceCandidateCount;
+  report.includedCandidateCount = pool.includedCandidateCount;
+  report.excludedByStatusCount = pool.excludedByStatusCount;
+  report.missingStatusCount = pool.missingStatusCount;
+  return report;
 }
 
 function renderSimResults() {
@@ -340,6 +346,11 @@ function renderSimResults() {
 
   const filledSlots = rows.filter(r => r.sl.candidates.length > 0).length;
 
+  const scope = result.statusScope;
+  const scopeInfo = scope && !scope.includeAll
+    ? `<span class="sim-sum-scope-info">Filtered: ${esc(scope.label)} (${result.includedCandidateCount} of ${result.sourceCandidateCount} candidates)${result.excludedByStatusCount ? ` · ${result.excludedByStatusCount} excluded by status` : ''}</span>`
+    : '';
+
   container.innerHTML = `
     ${myHtml}
     <div class="sim-summary card">
@@ -349,7 +360,7 @@ function renderSimResults() {
         <div><span class="sim-sum-val">${filledSlots}</span><span class="sim-sum-lbl">Slots filled</span></div>
         <div><span class="sim-sum-val">${rows.length}</span><span class="sim-sum-lbl">Total slots</span></div>
       </div>
-      <p style="margin-top:10px;font-size:0.72rem;color:var(--text-muted)">Merit basis: <strong>${esc(getActiveMarksLabel())}</strong>${SIM.sim.parentBonus ? ' · Parent institute bonus on' : ''}</p>
+      <p style="margin-top:10px;font-size:0.72rem;color:var(--text-muted)">Merit basis: <strong>${esc(getActiveMarksLabel())}</strong>${SIM.sim.parentBonus ? ' · Parent institute bonus on' : ''}${scopeInfo ? ` · ${scopeInfo}` : ''}</p>
     </div>
     <div class="sim-grid">
       ${rows.map(r => renderSimCard(r, program)).join('')}

@@ -308,7 +308,8 @@
     }
     .sim-nav-primary .tab-btn[data-tab="guide"],
     .sim-nav-primary .tab-btn[data-tab="slotbrowser"],
-    .sim-nav-primary .tab-btn[data-tab="simulation"] {
+    .sim-nav-primary .tab-btn[data-tab="simulation"],
+    .sim-nav-primary .tab-btn[data-tab="config"] {
       color: var(--text);
     }
     .sim-nav-secondary .tab-btn {
@@ -386,6 +387,64 @@
     }
     .cand-cert-programs {
       display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; max-width: 280px;
+    }
+    .td-spec-marks {
+      vertical-align: top; padding: 6px 4px !important; min-width: 100px; position: relative;
+    }
+    .cand-spec-marks {
+      position: relative; cursor: default;
+    }
+    .cand-spec-marks-summary {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-family: var(--mono, monospace); font-weight: 600; font-size: 0.78rem;
+      padding: 3px 6px; border-radius: 4px; background: rgba(124,101,196,0.06);
+      cursor: pointer; user-select: none;
+    }
+    .cand-spec-marks-summary:hover { background: rgba(124,101,196,0.12); }
+    .cand-spec-range { font-weight: 400; opacity: 0.55; font-size: 0.72rem; }
+    .cand-spec-toggle { font-size: 0.6rem; opacity: 0.5; margin-left: 2px; }
+    .cand-spec-marks-detail {
+      display: none; position: absolute; z-index: 20; top: 100%; left: 0;
+      min-width: 240px; background: var(--card-bg, #1c1e2e);
+      border: 1px solid var(--border, rgba(124,101,196,0.25));
+      border-radius: 6px; padding: 6px 0; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .cand-spec-marks:hover .cand-spec-marks-detail,
+    .cand-spec-marks:focus-within .cand-spec-marks-detail { display: block; }
+    .cand-spec-row {
+      display: grid; grid-template-columns: 28px 1fr auto;
+      gap: 4px 8px; padding: 3px 10px; font-size: 0.74rem; align-items: center;
+    }
+    .cand-spec-row:hover { background: rgba(124,101,196,0.05); }
+    .cand-spec-no { color: var(--text-muted, #888); font-family: var(--mono, monospace); }
+    .cand-spec-name { white-space: nowrap; }
+    .cand-spec-val {
+      font-family: var(--mono, monospace); font-weight: 600; text-align: right;
+    }
+    .cand-spec-panel { margin-bottom: 14px; }
+    .cand-spec-panel-hdr {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+    }
+    .cand-spec-panel-count { font-size: 0.76rem; color: var(--text-muted, #888); }
+    .cand-spec-panel-list {
+      display: flex; flex-direction: column; gap: 0;
+      border: 1px solid var(--border, rgba(124,101,196,0.18));
+      border-radius: 6px; overflow: hidden;
+    }
+    .cand-spec-panel-row {
+      display: grid; grid-template-columns: 32px 1fr 1.2fr 1fr 80px;
+      gap: 6px 10px; padding: 6px 12px; font-size: 0.78rem; align-items: center;
+    }
+    .cand-spec-panel-row:nth-child(even):not(.cand-spec-panel-head) {
+      background: rgba(124,101,196,0.03);
+    }
+    .cand-spec-panel-head {
+      font-weight: 600; font-size: 0.72rem; color: var(--text-muted, #888);
+      text-transform: uppercase; letter-spacing: 0.04em;
+      background: rgba(124,101,196,0.06); border-bottom: 1px solid var(--border, rgba(124,101,196,0.18));
+    }
+    .cand-spec-panel-val {
+      font-family: var(--mono, monospace); font-weight: 600; text-align: right;
     }
     .cand-cert-chip {
       display: inline-flex; align-items: center; white-space: nowrap;
@@ -879,14 +938,28 @@
     .pref-section { margin-bottom: 18px; }
     .pref-section h4 { margin: 0 0 10px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
     .pref-list { display: flex; flex-direction: column; gap: 6px; }
-    .pref-item {
-      display: flex; align-items: flex-start; gap: 10px;
-      padding: 9px 12px; border: 1px solid var(--border);
-      border-radius: var(--radius, 10px); background: rgba(255,255,255,0.02);
-      transition: border-color 0.15s, background 0.15s;
-    }
-    .pref-item:hover { border-color: rgba(77,184,217,0.22); background: rgba(77,184,217,0.03); }
-    .pref-item.pref-parent { border-color: rgba(232,166,39,0.28); background: rgba(232,166,39,0.04); }
+.pref-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 9px 12px; border: 1px solid var(--border);
+  border-radius: var(--radius, 10px); background: rgba(255,255,255,0.02);
+  transition: border-color 0.15s, background 0.15s;
+}
+.pref-item:hover { border-color: rgba(77,184,217,0.22); background: rgba(77,184,217,0.03); }
+.pref-item.pref-parent { border-color: rgba(232,166,39,0.28); background: rgba(232,166,39,0.04); }
+.pref-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.pref-browse-btn {
+  flex-shrink: 0; margin-left: auto; align-self: center;
+  white-space: nowrap; font-size: 0.72rem;
+  background: rgba(77,184,217,0.06);
+  border: 1px solid rgba(77,184,217,0.15);
+  color: var(--neon-cyan, #4db8d9);
+  transition: all 0.15s;
+}
+.pref-browse-btn:hover {
+  background: rgba(77,184,217,0.14);
+  border-color: rgba(77,184,217,0.3);
+  box-shadow: 0 0 12px rgba(77,184,217,0.1);
+}
     .pref-no {
       min-width: 28px; height: 28px; border-radius: 50%;
       background: rgba(77,184,217,0.1); border: 1px solid rgba(77,184,217,0.24);
@@ -905,6 +978,147 @@
       display: inline-block; margin: 4px 0 0 6px; font-size: 0.67rem; padding: 1px 7px;
       border-radius: 100px; background: rgba(62,207,142,0.08); color: var(--neon-green, #3ecf8e);
       border: 1px solid rgba(62,207,142,0.18); font-weight: 700;
+    }
+
+    /* ---------------------------------------------------------------
+       MODAL TABS (candidate detail)
+    --------------------------------------------------------------- */
+    .modal-tabs {
+      display: flex; gap: 0; margin-bottom: 18px;
+      border-bottom: 1px solid var(--border, rgba(124,101,196,0.18));
+    }
+    .modal-tab {
+      background: none; border: none; padding: 10px 18px;
+      font-family: var(--font); font-size: 0.82rem; font-weight: 600;
+      color: var(--text-muted, #888); cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .modal-tab:hover { color: var(--neon-cyan, #4db8d9); }
+    .modal-tab.active {
+      color: var(--neon-cyan, #4db8d9);
+      border-bottom-color: var(--neon-cyan, #4db8d9);
+    }
+    .modal-tab-content { display: none; }
+    .modal-tab-content.active { display: block; animation: fadeIn 0.25s ease both; }
+
+    /* ---------------------------------------------------------------
+       CERTIFICATION TAB
+    --------------------------------------------------------------- */
+    .cert-section { margin-bottom: 20px; }
+    .cert-section > h4 {
+      font-size: 0.82rem; font-weight: 700; margin: 0 0 10px;
+      color: var(--text-muted, #888); text-transform: uppercase; letter-spacing: 0.05em;
+    }
+.cert-group-card {
+  border: 1px solid rgba(124,101,196,0.18);
+  border-left: 3px solid var(--neon-purple, #7c65c4);
+  border-radius: 8px; overflow: hidden; margin-bottom: 14px;
+  background: rgba(124,101,196,0.02);
+}
+.cert-group-card .cert-group-certs .cert-row:last-child {
+  border-bottom: none;
+}
+    .cert-group-hdr {
+      display: flex; align-items: center; gap: 10px; padding: 8px 14px;
+      background: rgba(124,101,196,0.06); border-bottom: 1px solid var(--border, rgba(124,101,196,0.12));
+    }
+    .cert-group-badge {
+      font-size: 0.72rem; font-weight: 700; padding: 2px 10px;
+      border-radius: 100px; background: rgba(124,101,196,0.12); color: var(--neon-purple, #7c65c4);
+    }
+    .cert-group-count { font-size: 0.72rem; color: var(--text-muted, #888); }
+    .cert-group-certs { padding: 0; }
+    .cert-row {
+      padding: 10px 14px; border-bottom: 1px solid rgba(124,101,196,0.06);
+    }
+    .cert-row:last-child { border-bottom: none; }
+    .cert-row-main {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;
+    }
+    .cert-prog-tag {
+      display: inline-flex; font-size: 0.62rem; font-weight: 800; padding: 1px 7px;
+      border-radius: 100px; text-transform: uppercase; letter-spacing: 0.03em;
+    }
+    .cert-prog-tag.fcps { background: rgba(62,207,142,0.1); color: var(--neon-green, #3ecf8e); }
+    .cert-prog-tag.ms  { background: rgba(77,184,217,0.1); color: var(--neon-cyan, #4db8d9); }
+    .cert-prog-tag.md  { background: rgba(124,101,196,0.1); color: var(--neon-purple, #7c65c4); }
+    .cert-spec-name { font-weight: 600; font-size: 0.85rem; }
+    .cert-status {
+      font-size: 0.68rem; padding: 1px 7px; border-radius: 100px; font-weight: 700;
+    }
+    .cert-status.pass { background: rgba(62,207,142,0.1); color: var(--neon-green, #3ecf8e); }
+    .cert-row-detail {
+      font-size: 0.75rem; color: var(--text-muted, #888); margin-bottom: 4px;
+    }
+    .cert-row-unlocks {
+      display: flex; align-items: flex-start; gap: 6px; flex-wrap: wrap;
+      font-size: 0.74rem; color: var(--text-muted, #888);
+    }
+    .cert-unlock-lbl { font-weight: 600; white-space: nowrap; color: var(--text-muted, #888); }
+    .cert-unlock-prog {
+      font-size: 0.62rem; font-weight: 800; padding: 1px 6px; border-radius: 100px;
+      text-transform: uppercase;
+    }
+    .cert-unlock-specs { color: var(--text-secondary, #aab); }
+    .cert-no-certs {
+      text-align: center; padding: 32px 16px; color: var(--text-muted, #888);
+      font-size: 0.85rem;
+    }
+
+    /* -- Program marks breakdown -- */
+.cert-prog-card {
+  border: 1px solid var(--border, rgba(124,101,196,0.18));
+  border-left: 3px solid var(--border, rgba(124,101,196,0.25));
+  border-radius: 8px; overflow: hidden; margin-bottom: 10px;
+}
+.cert-prog-card.applied {
+  border-left-color: var(--neon-green, #3ecf8e);
+  border-color: rgba(62,207,142,0.3);
+}
+    .cert-prog-card.not-applied { opacity: 0.5; }
+    .cert-prog-hdr {
+      display: flex; align-items: center; gap: 10px; padding: 8px 14px;
+      background: rgba(124,101,196,0.04); border-bottom: 1px solid var(--border, rgba(124,101,196,0.12));
+    }
+    .cert-applied-badge {
+      font-size: 0.62rem; font-weight: 700; padding: 1px 8px; border-radius: 100px;
+      background: rgba(62,207,142,0.1); color: var(--neon-green, #3ecf8e);
+      border: 1px solid rgba(62,207,142,0.25);
+    }
+    .cert-notapplied-badge {
+      font-size: 0.62rem; font-weight: 700; padding: 1px 8px; border-radius: 100px;
+      background: rgba(255,255,255,0.04); color: var(--text-muted, #888);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .cert-prog-breakdown { padding: 8px 14px; }
+    .cert-prog-row {
+      display: flex; align-items: center; gap: 8px; padding: 4px 0;
+      font-size: 0.82rem;
+    }
+    .cert-prog-lbl { color: var(--text-muted, #888); min-width: 110px; }
+    .cert-prog-val {
+      font-family: var(--mono, monospace); font-weight: 700; text-align: right;
+      min-width: 70px;
+    }
+    .cert-prog-source {
+      font-size: 0.7rem; color: var(--neon-green, #3ecf8e); margin-left: 4px;
+    }
+    .cert-prog-row.total {
+      border-top: 1px solid rgba(124,101,196,0.1); margin-top: 4px; padding-top: 8px;
+    }
+    .cert-prog-row.total .cert-prog-val {
+      color: var(--neon-cyan, #4db8d9); font-size: 0.95rem;
+    }
+
+    /* -- Glow animation when certificate bonus is active -- */
+    @keyframes certActiveGlow {
+      0%, 100% { text-shadow: 0 0 8px rgba(62,207,142,0.3); }
+      50%      { text-shadow: 0 0 20px rgba(62,207,142,0.7); }
+    }
+    .cert-active-glow .cert-prog-val {
+      animation: certActiveGlow 2s ease-in-out infinite;
+      color: var(--neon-green, #3ecf8e);
     }
 
     /* ---------------------------------------------------------------
@@ -2915,6 +3129,51 @@
       0%, 100% { opacity: 0.6; }
       50%      { opacity: 1; }
     }
+    /* ── Config tab styles ── */
+    .config-chip {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      background: rgba(77,184,217,0.1);
+      border: 1px solid rgba(77,184,217,0.2);
+      color: var(--text, #e0e8f0);
+    }
+    .config-chip-disabled {
+      background: rgba(255,70,90,0.1);
+      border-color: rgba(255,70,90,0.25);
+      color: var(--neon-pink, #ff465a);
+    }
+    .config-stat {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+    .config-stat-val {
+      display: block;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--neon-cyan, #4db8d9);
+    }
+    .config-stat-label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-muted, #8892a0);
+      margin-top: 2px;
+    }
+    .config-policy-block h4 {
+      margin: 0 0 8px;
+      font-size: 0.9rem;
+    }
+    .config-section .data-table th {
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+    .config-section .data-table td {
+      font-size: 0.82rem;
+    }
   </style>
 </head>
 <body>
@@ -2972,6 +3231,7 @@
     <button class="tab-btn" data-tab="slotbrowser">&#127919; Where Merit Falls</button>
     <button class="tab-btn" data-tab="simulation">&#9889; Seat Allocation</button>
     <button class="tab-btn" data-tab="consent">&#8644; Consent What-If</button>
+    <button class="tab-btn" data-tab="config">&#9881; Config</button>
   </div>
   <div class="sim-nav-section sim-nav-secondary" aria-label="Planning and community">
     <span class="sim-nav-label">Plan</span>
@@ -3699,6 +3959,20 @@
   </section>
 
   <!-- ══════════════════════════════════════════
+       TAB: CONFIG
+  ══════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-config">
+    <div class="section-header">
+      <h2>Simulation Config</h2>
+      <p>Central view of all active admin configurations: formulas, tracked fields, revision control, and certificate policy.</p>
+    </div>
+
+    <div id="configContent">
+      <p class="text-muted">Loading configuration…</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
        TAB: TRAINING SEATS
   ══════════════════════════════════════════ -->
   <section class="tab-content" id="tab-seatmatrix">
@@ -4399,6 +4673,7 @@
 </script>
 <script src="js/sim-merit-list.js"></script>
 <script src="js/sim-consent.js"></script>
+<script src="js/sim-config.js"></script>
 
 <div class="chat-photo-lightbox" id="chatPhotoLightbox" onclick="closeChatPhoto(event)">
   <button class="close-btn" onclick="closeChatPhoto()">&times;</button>

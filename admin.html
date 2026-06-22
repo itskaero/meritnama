@@ -729,7 +729,8 @@
       <button class="sidebar-link" data-tab="download-logs"><span class="nav-icon">&#11015;</span> Download Logs</button>
       <button class="sidebar-link" data-tab="user-activity"><span class="nav-icon">&#128100;</span> User Activity</button>
       <div class="sidebar-section">Site</div>
-      <button class="sidebar-link" data-tab="broadcast"><span class="nav-icon">📢</span> Broadcast &amp; Config</button>
+      <button class="sidebar-link" data-tab="broadcast"><span class="nav-icon">📢</span> Broadcast</button>
+      <button class="sidebar-link" data-tab="config"><span class="nav-icon">⚙️</span> Config</button>
     </nav>
     <div class="sidebar-footer">
       <a class="sidebar-ext-link" href="index.html" target="_blank" rel="noopener">↗ Main site</a>
@@ -1384,6 +1385,16 @@
         </div>
       </details>
 
+      <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+
+      <details class="broadcast-section">
+        <summary>📱 Web Push Subscribers</summary>
+        <div class="broadcast-section-body">
+      <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;">
+        Users who clicked "Alerts" → allowed browser notifications. Their FCM tokens are stored in <code>push_subscriptions</code>.
+      </p>
+      <div style="font-size:0.9rem;">Subscriber count: <strong id="bcSubCount" style="color:var(--neon-cyan);">loading…</strong></div>
+        </div>
       </details>
     </div>
 
@@ -1450,10 +1461,10 @@
       </div>
 
     
-    <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+    <!-- ══ CONFIG TAB ══ -->
+    <div id="tab-config" style="display:none;">
 
-    <div id="universal-configs">
-      <details class="broadcast-section">
+      <details class="broadcast-section" open>
         <summary>📊 Simulation Merit Formulas</summary>
         <div class="broadcast-section-body">
       <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;max-width:760px;">
@@ -1683,16 +1694,7 @@
         </div>
       </details>
 
-      <details class="broadcast-section">
-        <summary>📱 Web Push Subscribers</summary>
-        <div class="broadcast-section-body">
-      <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 1rem;">
-        Users who clicked "Alerts" → allowed browser notifications. Their FCM tokens are stored in <code>push_subscriptions</code>.
-      </p>
-      <div style="font-size:0.9rem;">Subscriber count: <strong id="bcSubCount" style="color:var(--neon-cyan);">loading…</strong></div>
-        </div>
-      </details>
-    </div></div><!-- /dash-content -->
+    </div><!-- /tab-config --></div><!-- /dash-content -->
   </main>
 </div>
 
@@ -1845,7 +1847,8 @@ const TAB_META = {
   profiles:      { title: 'User Profiles',      sub: 'Applicant and trainee profile data' },
   mentorship:    { title: 'Mentorship',         sub: 'Mentors and mentorship requests' },
   contributions: { title: 'Contributions',      sub: 'Financial contribution records' },
-  broadcast:     { title: 'Broadcast & Config', sub: 'Live banners, simulation feed, merit formulas' },
+  broadcast:     { title: 'Broadcast', sub: 'Live banners, simulation feed, schedule, notifications' },
+  config:        { title: 'Config', sub: 'Merit formulas, seat allocation, revisions, access config' },
   'download-logs': { title: 'Download Logs', sub: 'PDF and report download audit trail' },
   'user-activity': { title: 'User Activity', sub: 'Aggregated activity per user across all log sources' },
 };
@@ -4036,7 +4039,7 @@ async function saveRevisionsConfigEditor() {
 }
 
 function switchTab(tab) {
-  const tabs = ['overview', 'logs', 'screenshots', 'warnings', 'grievances', 'users', 'access-requests', 'contributions', 'mentorship', 'broadcast', 'profiles', 'download-logs', 'user-activity'];
+  const tabs = ['overview', 'logs', 'screenshots', 'warnings', 'grievances', 'users', 'access-requests', 'contributions', 'mentorship', 'broadcast', 'config', 'profiles', 'download-logs', 'user-activity'];
   for (const t of tabs) {
     const el = document.getElementById('tab-' + t);
     if (el) el.style.display = tab === t ? '' : 'none';
@@ -4057,6 +4060,7 @@ function switchTab(tab) {
   if (tab === 'contributions') loadContributions();
   if (tab === 'mentorship')    loadMentorship();
   if (tab === 'broadcast')     loadBroadcast();
+  if (tab === 'config')        loadConfig();
   if (tab === 'profiles')      loadProfiles();
   if (tab === 'logs')          loadLogs();
   if (tab === 'screenshots')   loadScreenshotLogs();
@@ -4090,6 +4094,14 @@ function loadBroadcast() {
   document.getElementById('chatPinLoadBtn')?.addEventListener('click', loadChatPinEditor);
   document.getElementById('chatPinSaveBtn')?.addEventListener('click', saveChatPinEditor);
   document.getElementById('chatPinClearBtn')?.addEventListener('click', clearChatPinEditor);
+  loadSimulationNotificationsEditor();
+  loadFetchProgressEditor();
+  loadScheduleAdminEditor();
+  loadProfileStatusAdminEditor();
+  loadChatPinEditor();
+}
+
+function loadConfig() {
   document.getElementById('revCfgLoadBtn')?.addEventListener('click', loadRevisionsConfigEditor);
   document.getElementById('revCfgDefaultsBtn')?.addEventListener('click', () => enableAllRevisions());
   document.getElementById('revCfgSaveBtn')?.addEventListener('click', saveRevisionsConfigEditor);
@@ -4103,11 +4115,6 @@ function loadBroadcast() {
   if (simCfgCustomAddBtn) simCfgCustomAddBtn.onclick = addCustomSimulationScope;
   initMarksConfigAdmin();
   initAccessConfigAdmin();
-  loadSimulationNotificationsEditor();
-  loadFetchProgressEditor();
-  loadScheduleAdminEditor();
-  loadProfileStatusAdminEditor();
-  loadChatPinEditor();
   loadSimulationConfigEditor();
 }
 
@@ -5298,6 +5305,7 @@ async function refreshAllAdminData() {
     if (tab === 'profiles') await loadProfiles();
     if (tab === 'mentorship') await loadMentorship();
     if (tab === 'broadcast') await loadBroadcast();
+    if (tab === 'config') await loadConfig();
     if (tab === 'download-logs') await loadDownloadLogs();
     showAdminToast('Data refreshed.', 'success');
   } catch (e) {

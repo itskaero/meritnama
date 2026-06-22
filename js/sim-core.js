@@ -246,6 +246,28 @@ async function loadGloballyDisabledRevisionIds() {
   } catch (_) {}
 }
 
+function initLiveRevisionsConfig() {
+  try {
+    firebase.firestore().collection('notifications').doc('revisions_config')
+      .onSnapshot(snap => {
+        if (!snap.exists) return;
+        const data = snap.data();
+        const prevTracked = SIM.trackedFields;
+        SIM.globallyDisabledRevisionIds = Array.isArray(data.disabledIds) ? data.disabledIds : [];
+        if (Array.isArray(data.trackedFields) && data.trackedFields.length) {
+          SIM.trackedFields = data.trackedFields;
+        }
+        const changed = JSON.stringify(prevTracked) !== JSON.stringify(SIM.trackedFields);
+        if (changed) {
+          refreshCandidateRevisionOptions();
+          onCandidateRevisionChanged(true);
+        }
+      }, err => console.warn('[RevisionsConfig] listener error:', err));
+  } catch (e) {
+    console.warn('[RevisionsConfig] init failed:', e);
+  }
+}
+
 function candidateHasRevisions(c) {
   const revisions = c?.revisions;
   if (!revisions || typeof revisions !== 'object') return false;
@@ -546,6 +568,10 @@ function openSimCandidateDetail(applicantId, track = null) {
       </div>`
     : '';
 
+  const specPanelHtml = typeof renderSpecialtyMarksPanelHtml === 'function'
+    ? renderSpecialtyMarksPanelHtml(origCand)
+    : '';
+
   body.innerHTML = `
     <div class="cand-detail-hdr">
       <h3>${esc(origCand.nameFull)} ${isMe ? '<span class="me-tag">YOU</span>' : ''}</h3>
@@ -554,9 +580,7 @@ function openSimCandidateDetail(applicantId, track = null) {
         &nbsp;·&nbsp; ${esc(prog)} ${esc(workCand._trackLabel || '')} marks: <strong>${fmtM(displayScore)}</strong>
       </p>
     </div>
-    ${renderProgramScoreCardsHtml(origCand)}
-    ${renderAdjustedMarksHtml(origCand)}
-    ${renderProgramPortalMetaHtml(origCand)}
+    ${specPanelHtml}
     ${typeof renderPostgraduateQualificationsHtml === 'function' ? renderPostgraduateQualificationsHtml(origCand) : ''}
     ${_renderMarksExplanationHtml(origCand)}
     ${banner}
@@ -1066,4 +1090,5 @@ function handleSimURLParams() {
   if (tab === 'schedule')    renderScheduleTab();
   if (tab === 'hospitals')   renderHospitalsTab();
   if (tab === 'profiles')    renderProfilesTab();
+  if (tab === 'config')      renderConfigTab();
 }
