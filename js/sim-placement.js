@@ -83,22 +83,37 @@ function candidateTrackPrefs(candidate, program, track) {
 function runPlacement(candidates, seatTree, program, parentBonus = false) {
   // Working copies
   const prog = candidates.flatMap(c => {
-    const marksTotal = effectiveMark(c, program) ?? baseMarks(c);
     return [QUOTA_TRACKS.CIVILIAN, QUOTA_TRACKS.ARMED]
-      .map(track => ({
-        applicantId: c.applicantId,
-        nameFull:    c.nameFull,
-        marksTotal,
-        _track:      track,
-        _trackLabel: quotaTrackLabel(track),
-        _prefs:      candidateTrackPrefs(c, program, track),
-        placed: false, _q: null, _s: null, _h: null,
-      }))
-      .filter(cw => cw._prefs.length);
+      .map(track => {
+        const prefs = candidateTrackPrefs(c, program, track);
+        const prefScores = prefs
+          .map(pref => effectiveMark(c, program, undefined, undefined, pref))
+          .filter(v => v != null);
+        const sortMarks = prefScores.length
+          ? Math.max(...prefScores)
+          : (effectiveMark(c, program) ?? baseMarks(c));
+        return {
+          applicantId: c.applicantId,
+          nameFull:    c.nameFull,
+          marksTotal:  sortMarks,
+          _sortMarks:  sortMarks,
+          _source:     c,
+          _program:    program,
+          _track:      track,
+          _trackLabel: quotaTrackLabel(track),
+          _prefs:      prefs,
+          placed: false, _q: null, _s: null, _h: null,
+        };
+      })
+      .filter(cw => cw._prefs.length && cw._sortMarks != null);
   });
 
   const slot   = (q, s, h) => seatTree?.[q]?.[s]?.[h];
-  const effM   = (cand, pref) => cand.marksTotal + (parentBonus ? (pref.marks || 0) : 0);
+  const preferenceMark = (cand, pref) =>
+    (cand._source
+      ? effectiveMark(cand._source, cand._program || program, undefined, undefined, pref)
+      : cand.marksTotal) ?? cand.marksTotal ?? 0;
+  const effM   = (cand, pref) => preferenceMark(cand, pref) + (parentBonus ? (pref.marks || 0) : 0);
   const entry  = (cand, pref) => ({
     applicantId:  cand.applicantId,
     nameFull:     cand.nameFull,
@@ -112,7 +127,7 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
 
   for (let pass = 0; pass < MAX_PASSES; pass++) {
     const unplaced = prog.filter(c => !c.placed)
-                        .sort((a, b) => b.marksTotal - a.marksTotal);
+                        .sort((a, b) => b._sortMarks - a._sortMarks);
     if (!unplaced.length) break;
 
     let placed = 0;
@@ -684,7 +699,11 @@ function buildApplicantPreferenceRows(workCand, seatTree) {
 }
 
 function scoreForPreference(workCand, pref) {
-  return workCand.marksTotal + (SIM.sim.parentBonus ? (pref.marks || 0) : 0);
+  const program = workCand._program || SIM.sim.program;
+  const mark = workCand._source
+    ? effectiveMark(workCand._source, program, undefined, undefined, pref)
+    : workCand.marksTotal;
+  return (mark ?? workCand.marksTotal ?? 0) + (SIM.sim.parentBonus ? (pref.marks || 0) : 0);
 }
 
 function sameSlot(pref, quota, spec, hosp) {

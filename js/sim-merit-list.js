@@ -500,7 +500,7 @@
       candidates.push({
         applicantId: c.applicantId,
         nameFull: c.nameFull || '',
-        marksTotal: effectiveMark(c, program),
+        marksTotal: effectiveMark(c, program, undefined, undefined, match),
         preferenceNo: match.preferenceNo,
         _trackLabel: typeof quotaTrackLabel === 'function' ? quotaTrackLabel(quotaTrack(match.quotaName)) : '',
       });

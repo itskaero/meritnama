@@ -796,6 +796,47 @@ function renderProgramPortalMetaHtml(c) {
     </div>`;
 }
 
+function formatAttemptOrdinal(n) {
+  const attempt = Number(n);
+  if (!Number.isFinite(attempt)) return null;
+  if (attempt === 1) return '1st';
+  if (attempt === 2) return '2nd';
+  if (attempt === 3) return '3rd';
+  return `${attempt}th`;
+}
+
+function renderCertificateDetailLine(cert) {
+  const bits = [];
+  const attempt = formatAttemptOrdinal(cert.attempt);
+  if (attempt) bits.push(`Attempt: ${attempt}`);
+  if (cert.percentage != null && cert.percentage !== '') {
+    const pct = Number(cert.percentage);
+    bits.push(`Percentage: ${Number.isFinite(pct) ? pct.toFixed(2) + '%' : cert.percentage}`);
+  }
+  if (cert.session) bits.push(`Session: ${cert.session}`);
+  if (cert.status && normalizedLookupText(cert.status) !== 'pass') bits.push(`Status: ${cert.status}`);
+  return bits.join(' · ');
+}
+
+function renderPostgraduateQualificationsHtml(c) {
+  const certs = Array.isArray(c?.certificates) ? c.certificates : [];
+  if (!certs.length) return '';
+  return `
+    <div class="cand-pg-quals">
+      <p class="cand-pg-quals-lbl">Postgraduate Qualifications</p>
+      <div class="cand-pg-qual-list">
+        ${certs.map(cert => {
+          const title = [cert.program, cert.specialty].filter(Boolean).join(' ');
+          const detail = renderCertificateDetailLine(cert);
+          return `<div class="cand-pg-qual-row">
+            <span class="cand-pg-qual-title">${esc(title || cert.program || 'Qualification')}</span>
+            ${detail ? `<span class="cand-pg-qual-detail">${esc(detail)}</span>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
 function openCandidateDetail(idStr) {
   const c = ensureCandidateAdjusted(allCandidates().find(c => String(c.applicantId) === String(idStr)));
   if (!c) return;
@@ -843,6 +884,8 @@ function openCandidateDetail(idStr) {
 
     ${renderProgramPortalMetaHtml(c)}
 
+    ${renderPostgraduateQualificationsHtml(c)}
+
     ${scoreRows.length ? `
     <details class="score-breakdown">
       <summary>Score breakdown</summary>
@@ -874,6 +917,7 @@ function openCandidateDetail(idStr) {
                 <span class="pref-spec">${esc(p.specialityName)}</span>
                 <span class="pref-hosp">${esc(p.hospitalName)}</span>
                 <span class="pref-quota-tag">${esc(p.quotaName)}${p.parentInstitute ? ' ⭐' : ''}</span>
+                <span class="pref-score-tag">${esc(prog)} score: ${fmtM(effectiveMark(c, prog, undefined, undefined, p))}</span>
               </div>
               <button class="btn btn-sm pref-browse-btn"
                 data-prog="${esc(prog)}" data-quota="${esc(p.quotaName)}"

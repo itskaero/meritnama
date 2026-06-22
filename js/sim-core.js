@@ -52,6 +52,9 @@ const SIM = {
 
   globallyDisabledRevisionIds: [], // loaded from Firestore revisions_config
   trackedFields: ['houseJob', 'position', 'mdcat', 'degree'],
+  certificatePolicy: null,
+  specialtyGroups: null,
+  _specialtyGroupIndex: null,
 
   schedule: {
     steps:     [],
@@ -469,6 +472,12 @@ function openSimCandidateDetail(applicantId, track = null) {
   if (!workCand || !origCand) return;
 
   const history      = computeCandidateHistory(workCand, seatTree);
+  const placedScore  = workCand.placed
+    ? history.find(h => h.status === 'placed')?.pref
+    : null;
+  const displayScore = placedScore && typeof scoreForPreference === 'function'
+    ? scoreForPreference(workCand, placedScore)
+    : workCand.marksTotal;
   const isMe         = String(applicantId) === SIM.myId;
   const modal        = document.getElementById('candidateModal');
   const body         = document.getElementById('candidateModalBody');
@@ -542,12 +551,13 @@ function openSimCandidateDetail(applicantId, track = null) {
       <h3>${esc(origCand.nameFull)} ${isMe ? '<span class="me-tag">YOU</span>' : ''}</h3>
       <p class="cand-detail-meta">
         ID: ${origCand.applicantId}
-        &nbsp;·&nbsp; ${esc(prog)} ${esc(workCand._trackLabel || '')} marks: <strong>${fmtM(workCand.marksTotal)}</strong>
+        &nbsp;·&nbsp; ${esc(prog)} ${esc(workCand._trackLabel || '')} marks: <strong>${fmtM(displayScore)}</strong>
       </p>
     </div>
     ${renderProgramScoreCardsHtml(origCand)}
     ${renderAdjustedMarksHtml(origCand)}
     ${renderProgramPortalMetaHtml(origCand)}
+    ${typeof renderPostgraduateQualificationsHtml === 'function' ? renderPostgraduateQualificationsHtml(origCand) : ''}
     ${_renderMarksExplanationHtml(origCand)}
     ${banner}
     <p class="sim-hist-section-lbl">Preference-by-preference breakdown (${esc(prog)})</p>
@@ -792,18 +802,204 @@ function baseMarks(c, revision) {
   return baseMarksWithRevision(c, undefined, undefined, selectedRevision);
 }
 
+function normalizeProgramName(program) {
+  return String(program || '')
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, ' ');
+}
+
+function programAliases(program) {
+  const p = String(program || '').trim();
+  const normalized = normalizeProgramName(p);
+  if (normalized === 'FCPSD' || normalized === 'FCPS DENTISTRY') {
+    return ['FCPS Dentistry', 'FCPSD'];
+  }
+  return [p].filter(Boolean);
+}
+
+function programMatches(a, b) {
+  const aa = new Set(programAliases(a).map(normalizeProgramName));
+  return programAliases(b).some(alias => aa.has(normalizeProgramName(alias)));
+}
+
+function normalizedLookupText(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/\./g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\bgynaecology\b/g, 'gynecology')
+    .replace(/\borthopaedics\b/g, 'orthopedic surgery')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function legacyProgramBonus(c, program) {
+  for (const alias of programAliases(program)) {
+    const val = getCandidateField(c, `programMarks.${alias}`, null);
+    if (val != null && val !== '') {
+      const n = Number(val);
+      return Number.isFinite(n) ? n : 0;
+    }
+  }
+  return 0;
+}
+
+function getSpecialtyGroupIndex() {
+  if (SIM._specialtyGroupIndex) return SIM._specialtyGroupIndex;
+  const out = {};
+  const programs = SIM.specialtyGroups?.programs || {};
+  for (const [program, cfg] of Object.entries(programs)) {
+    const labels = {};
+    for (const [groupId, group] of Object.entries(cfg.groups || {})) {
+      for (const value of [...(group.labels || []), ...(group.specialties || [])]) {
+        const key = normalizedLookupText(value);
+        if (key) labels[key] = groupId;
+      }
+    }
+    out[normalizeProgramName(program)] = labels;
+  }
+  SIM._specialtyGroupIndex = out;
+  return out;
+}
+
+function specialtyGroupFor(program, specialty) {
+  const key = normalizedLookupText(specialty);
+  if (!key) return null;
+  const index = getSpecialtyGroupIndex();
+  for (const alias of programAliases(program)) {
+    const labels = index[normalizeProgramName(alias)];
+    if (labels?.[key]) return labels[key];
+  }
+  return key;
+}
+
+function certificateMatchesPreference(cert, program, preference) {
+  if (!cert || !programMatches(cert.program, program)) return false;
+  const prefSpecialty = preference?.specialityName || preference?.specialty || preference?.discipline || '';
+  if (!prefSpecialty) return false;
+  const prefGroup = specialtyGroupFor(program, prefSpecialty);
+  const certGroup = specialtyGroupFor(program, cert.specialty);
+  if (prefGroup && certGroup && prefGroup === certGroup) return true;
+  return normalizedLookupText(prefSpecialty) === normalizedLookupText(cert.specialty);
+}
+
+function isCertificatePass(cert) {
+  return normalizedLookupText(cert?.status) === 'pass';
+}
+
+function isMarch2026Pass(cert) {
+  if (!isCertificatePass(cert)) return false;
+  if (normalizedLookupText(cert?.session) === 'march 2026') return true;
+  const m = String(cert?.passingDate || '').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  return !!(m && Number(m[2]) === 3 && Number(m[3]) === 2026);
+}
+
+function certificatePolicy() {
+  return SIM.certificatePolicy || {};
+}
+
+function fcpsCertificateBonus(cert, policy) {
+  const cfg = policy.fcps || {};
+  if (cfg.requirePass !== false && !isCertificatePass(cert)) return null;
+  const attempt = Number(cert?.attempt);
+  if (!Number.isFinite(attempt)) return null;
+  const raw = cfg.attemptMarks?.[String(attempt)];
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+function msmdCertificateBonus(cert, policy) {
+  const cfg = policy.msmd || {};
+  if (cfg.requirePass !== false && !isCertificatePass(cert)) return null;
+  if (cfg.specialRules?.March2026Pass != null && isMarch2026Pass(cert)) {
+    const n = Number(cfg.specialRules.March2026Pass);
+    if (Number.isFinite(n)) return n;
+  }
+  const pct = Number(cert?.percentage);
+  if (!Number.isFinite(pct) || pct <= 0) return null;
+  for (const rule of cfg.percentageMarks || []) {
+    const min = Number(rule.min);
+    const marks = Number(rule.marks);
+    if (Number.isFinite(min) && Number.isFinite(marks) && pct >= min) return marks;
+  }
+  return null;
+}
+
+function certificateBonusForProgram(cert, program, policy) {
+  const normalized = normalizeProgramName(program);
+  if (normalized.startsWith('FCPS')) return fcpsCertificateBonus(cert, policy);
+  if (['MS', 'MD', 'MDS'].includes(normalized)) return msmdCertificateBonus(cert, policy);
+  return null;
+}
+
+function resolveProgramBonusDetails(candidate, preference, program) {
+  const prog = program || preference?.typeName || preference?.program;
+  const legacyBonus = legacyProgramBonus(candidate, prog);
+  const fallback = certificatePolicy().fallback || {};
+  if (!prog) return { bonus: legacyBonus || 0, source: legacyBonus ? 'legacy' : 'zero', legacyBonus };
+  if (!preference?.specialityName && !preference?.specialty && !preference?.discipline) {
+    return { bonus: legacyBonus || 0, source: legacyBonus ? 'legacy' : 'zero', legacyBonus };
+  }
+
+  const certs = Array.isArray(candidate?.certificates) ? candidate.certificates : [];
+  if (!certs.length) {
+    return { bonus: legacyBonus || 0, source: legacyBonus ? 'legacy' : 'zero', legacyBonus };
+  }
+
+  const policy = certificatePolicy();
+  const matches = certs
+    .filter(cert => certificateMatchesPreference(cert, prog, preference))
+    .map(cert => ({ cert, bonus: certificateBonusForProgram(cert, prog, policy) }))
+    .filter(row => row.bonus != null);
+
+  if (matches.length) {
+    matches.sort((a, b) => b.bonus - a.bonus);
+    return {
+      bonus: matches[0].bonus,
+      source: 'certificate',
+      certificate: matches[0].cert,
+      specialtyGroup: specialtyGroupFor(prog, preference.specialityName || preference.specialty),
+      legacyBonus,
+    };
+  }
+
+  const useFallback = fallback.useProgramMarksWhenNoCertificateMatch !== false
+    && fallback.useProgramMarksWhenCertificateIncomplete !== false;
+  return {
+    bonus: useFallback ? legacyBonus || 0 : 0,
+    source: useFallback && legacyBonus ? 'legacy' : 'zero',
+    legacyBonus,
+  };
+}
+
+function resolveProgramBonus(candidate, preference, program) {
+  return resolveProgramBonusDetails(candidate, preference, program).bonus || 0;
+}
+
 /**
  * Effective marks for a candidate in a specific program.
- * = baseMarksWithRevision(c) + programMarks[program]  (programMarks is a per-program bonus)
+ * = baseMarksWithRevision(c) + programme bonus.
+ * With a preference, the bonus is certificate/specialty-aware; without one it
+ * intentionally uses legacy programMarks so global Candidate Pool columns stay
+ * backward-compatible.
  * Returns null when applied_in[program] is false (candidate did not apply).
  */
-function effectiveMark(c, program, revision, option) {
-  const selectedRevision = arguments.length >= 3 ? revision : getActiveCandidateRevisionId();
+function effectiveMark(c, program, revision, option, preference) {
+  const selectedRevision = (arguments.length >= 3 && revision !== undefined)
+    ? revision
+    : getActiveCandidateRevisionId();
   const appliedIn = c.applied_in || {};
+  const aliases = programAliases(program);
   const hasExplicitFlag = Object.prototype.hasOwnProperty.call(appliedIn, program);
   const hasProgramPrefs = (c.preference?.[program] || []).length > 0;
-  if (!appliedIn[program] && (hasExplicitFlag || !hasProgramPrefs)) return null;
-  const programMarks = getCandidateField(c, `programMarks.${program}`, null) ?? 0;
+  const applied = aliases.some(alias => appliedIn[alias]);
+  if (!applied && (hasExplicitFlag || !hasProgramPrefs)) return null;
+  const programMarks = preference
+    ? resolveProgramBonus(c, preference, program)
+    : legacyProgramBonus(c, program);
   return baseMarksWithRevision(c, option, program, selectedRevision) + programMarks;
 }
 

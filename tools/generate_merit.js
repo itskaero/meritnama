@@ -5,6 +5,8 @@ const path = require('path');
 const DATA = path.resolve(__dirname, '..', 'data');
 const candidates = JSON.parse(fs.readFileSync(path.join(DATA, 'induction21_candidates.json'), 'utf8'));
 const seats = JSON.parse(fs.readFileSync(path.join(DATA, 'induction21_seats.json'), 'utf8'));
+const certificatePolicy = JSON.parse(fs.readFileSync(path.join(DATA, 'induction21_certificate_policy.json'), 'utf8'));
+const specialtyGroups = JSON.parse(fs.readFileSync(path.join(DATA, 'induction21_specialty_groups.json'), 'utf8'));
 
 const candIds = Object.keys(candidates);
 console.log(`Candidates: ${candIds.length}`);
@@ -32,12 +34,144 @@ function quotaTrack(qn) {
 }
 
 // ── Marks ──
-function effectiveMark(c, program) {
+function normalizeProgramName(program) {
+  return String(program || '').trim().toUpperCase().replace(/\s+/g, ' ');
+}
+
+function programAliases(program) {
+  const p = String(program || '').trim();
+  const normalized = normalizeProgramName(p);
+  if (normalized === 'FCPSD' || normalized === 'FCPS DENTISTRY') return ['FCPS Dentistry', 'FCPSD'];
+  return [p].filter(Boolean);
+}
+
+function programMatches(a, b) {
+  const aa = new Set(programAliases(a).map(normalizeProgramName));
+  return programAliases(b).some(alias => aa.has(normalizeProgramName(alias)));
+}
+
+function normalizedLookupText(value) {
+  return String(value || '').trim().toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/\./g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\bgynaecology\b/g, 'gynecology')
+    .replace(/\borthopaedics\b/g, 'orthopedic surgery')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function legacyProgramBonus(c, program) {
+  for (const alias of programAliases(program)) {
+    const val = c.programMarks?.[alias];
+    if (val != null && val !== '') {
+      const n = Number(val);
+      return Number.isFinite(n) ? n : 0;
+    }
+  }
+  return 0;
+}
+
+let specialtyGroupIndex = null;
+function getSpecialtyGroupIndex() {
+  if (specialtyGroupIndex) return specialtyGroupIndex;
+  specialtyGroupIndex = {};
+  for (const [program, cfg] of Object.entries(specialtyGroups.programs || {})) {
+    const labels = {};
+    for (const [groupId, group] of Object.entries(cfg.groups || {})) {
+      for (const value of [...(group.labels || []), ...(group.specialties || [])]) {
+        const key = normalizedLookupText(value);
+        if (key) labels[key] = groupId;
+      }
+    }
+    specialtyGroupIndex[normalizeProgramName(program)] = labels;
+  }
+  return specialtyGroupIndex;
+}
+
+function specialtyGroupFor(program, specialty) {
+  const key = normalizedLookupText(specialty);
+  if (!key) return null;
+  const index = getSpecialtyGroupIndex();
+  for (const alias of programAliases(program)) {
+    const labels = index[normalizeProgramName(alias)];
+    if (labels?.[key]) return labels[key];
+  }
+  return key;
+}
+
+function certificateMatchesPreference(cert, program, pref) {
+  if (!cert || !programMatches(cert.program, program)) return false;
+  if (!pref?.specialityName) return false;
+  const prefGroup = specialtyGroupFor(program, pref.specialityName);
+  const certGroup = specialtyGroupFor(program, cert.specialty);
+  if (prefGroup && certGroup && prefGroup === certGroup) return true;
+  return normalizedLookupText(pref.specialityName) === normalizedLookupText(cert.specialty);
+}
+
+function isCertificatePass(cert) {
+  return normalizedLookupText(cert?.status) === 'pass';
+}
+
+function isMarch2026Pass(cert) {
+  if (!isCertificatePass(cert)) return false;
+  if (normalizedLookupText(cert?.session) === 'march 2026') return true;
+  const m = String(cert?.passingDate || '').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  return !!(m && Number(m[2]) === 3 && Number(m[3]) === 2026);
+}
+
+function fcpsCertificateBonus(cert) {
+  const cfg = certificatePolicy.fcps || {};
+  if (cfg.requirePass !== false && !isCertificatePass(cert)) return null;
+  const attempt = Number(cert?.attempt);
+  if (!Number.isFinite(attempt)) return null;
+  const marks = Number(cfg.attemptMarks?.[String(attempt)]);
+  return Number.isFinite(marks) ? marks : null;
+}
+
+function msmdCertificateBonus(cert) {
+  const cfg = certificatePolicy.msmd || {};
+  if (cfg.requirePass !== false && !isCertificatePass(cert)) return null;
+  if (cfg.specialRules?.March2026Pass != null && isMarch2026Pass(cert)) {
+    const marks = Number(cfg.specialRules.March2026Pass);
+    if (Number.isFinite(marks)) return marks;
+  }
+  const pct = Number(cert?.percentage);
+  if (!Number.isFinite(pct) || pct <= 0) return null;
+  for (const rule of cfg.percentageMarks || []) {
+    const min = Number(rule.min);
+    const marks = Number(rule.marks);
+    if (Number.isFinite(min) && Number.isFinite(marks) && pct >= min) return marks;
+  }
+  return null;
+}
+
+function certificateBonusForProgram(cert, program) {
+  const normalized = normalizeProgramName(program);
+  if (normalized.startsWith('FCPS')) return fcpsCertificateBonus(cert);
+  if (['MS', 'MD', 'MDS'].includes(normalized)) return msmdCertificateBonus(cert);
+  return null;
+}
+
+function resolveProgramBonus(c, pref, program) {
+  const legacy = legacyProgramBonus(c, program);
+  if (!pref?.specialityName || !Array.isArray(c.certificates) || !c.certificates.length) return legacy;
+  const matches = c.certificates
+    .filter(cert => certificateMatchesPreference(cert, program, pref))
+    .map(cert => certificateBonusForProgram(cert, program))
+    .filter(v => v != null);
+  if (!matches.length) return legacy;
+  return Math.max(...matches);
+}
+
+function effectiveMark(c, program, pref) {
   const appliedIn = c.applied_in || {};
+  const aliases = programAliases(program);
   const hasExplicitFlag = Object.prototype.hasOwnProperty.call(appliedIn, program);
   const hasProgramPrefs = (c.preference?.[program] || []).length > 0;
-  if (!appliedIn[program] && (hasExplicitFlag || !hasProgramPrefs)) return null;
-  return (c.marksTotal ?? 0) + (c.programMarks?.[program] ?? 0);
+  const applied = aliases.some(alias => appliedIn[alias]);
+  if (!applied && (hasExplicitFlag || !hasProgramPrefs)) return null;
+  return (c.marksTotal ?? 0) + (pref ? resolveProgramBonus(c, pref, program) : legacyProgramBonus(c, program));
 }
 
 // ── Seat tree ──
@@ -65,28 +199,34 @@ function candidateTrackPrefs(c, program, track) {
 
 function runPlacement(candidates, seatTree, program) {
   const prog = candidates.flatMap(c => {
-    const marksTotal = effectiveMark(c, program);
-    if (marksTotal == null) return [];
     return [QUOTA_TRACKS.CIVILIAN, QUOTA_TRACKS.ARMED]
-      .map(track => ({
-        applicantId: c.applicantId,
-        nameFull: c.nameFull || c.name || '',
-        pmdcNo: c.pmdcNo || c.pmdc_no || '',
-        marksTotal,
-        _track: track,
-        _trackLabel: track === QUOTA_TRACKS.CIVILIAN ? 'Civilian' : 'Armed',
-        _prefs: candidateTrackPrefs(c, program, track),
-        placed: false, _q: null, _s: null, _h: null,
-      }))
-      .filter(cw => cw._prefs.length);
+      .map(track => {
+        const prefs = candidateTrackPrefs(c, program, track);
+        const prefScores = prefs.map(pref => effectiveMark(c, program, pref)).filter(v => v != null);
+        const sortMarks = prefScores.length ? Math.max(...prefScores) : effectiveMark(c, program);
+        return {
+          applicantId: c.applicantId,
+          nameFull: c.nameFull || c.name || '',
+          pmdcNo: c.pmdcNo || c.pmdc_no || '',
+          marksTotal: sortMarks,
+          _sortMarks: sortMarks,
+          _source: c,
+          _track: track,
+          _trackLabel: track === QUOTA_TRACKS.CIVILIAN ? 'Civilian' : 'Armed',
+          _prefs: prefs,
+          placed: false, _q: null, _s: null, _h: null,
+        };
+      })
+      .filter(cw => cw._prefs.length && cw._sortMarks != null);
   });
 
   const slot = (q, s, h) => seatTree?.[q]?.[s]?.[h];
+  const scoreForPref = (cand, pref) => effectiveMark(cand._source || cand, program, pref) ?? cand.marksTotal ?? 0;
   const entry = (cand, pref) => ({
     applicantId: cand.applicantId,
     nameFull: cand.nameFull,
     pmdcNo: cand.pmdcNo,
-    marksTotal: cand.marksTotal,
+    marksTotal: scoreForPref(cand, pref),
     preferenceNo: pref.preferenceNo,
     _track: cand._track,
     _trackLabel: cand._trackLabel,
@@ -97,7 +237,7 @@ function runPlacement(candidates, seatTree, program) {
 
   let prevPlaced = -1;
   for (let pass = 0; pass < MAX_PASSES; pass++) {
-    const unplaced = prog.filter(c => !c.placed).sort((a, b) => b.marksTotal - a.marksTotal);
+    const unplaced = prog.filter(c => !c.placed).sort((a, b) => b._sortMarks - a._sortMarks);
     if (!unplaced.length) break;
     let placed = 0;
     for (const cand of unplaced) {
@@ -112,7 +252,8 @@ function runPlacement(candidates, seatTree, program) {
           break;
         } else {
           const lowest = sl.candidates.reduce((m, c) => c.marksTotal < m.marksTotal ? c : m);
-          if (cand.marksTotal > lowest.marksTotal) {
+          const em = scoreForPref(cand, pref);
+          if (em > lowest.marksTotal) {
             sl.candidates = sl.candidates.filter(
               c => !(String(c.applicantId) === String(lowest.applicantId) && c._track === lowest._track)
             );

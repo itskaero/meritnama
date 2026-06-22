@@ -1,0 +1,143 @@
+{
+  "version": "induction21",
+  "programs": {
+    "FCPS": {
+      "groups": {
+        "medicine-allied": {
+          "labels": ["Medicine And Allied", "Medicine"],
+          "specialties": [
+            "Medicine",
+            "Cardiology",
+            "Pulmonology",
+            "Neurology",
+            "Nephrology",
+            "Dermatology",
+            "Medical Oncology",
+            "Clinical Haematology",
+            "Pediatrics",
+            "Psychiatry",
+            "Rheumatology",
+            "Gastroenterology",
+            "Endocrinology"
+          ]
+        },
+        "surgery-allied": {
+          "labels": ["Surgery And Allied", "Surgery", "General Surgery"],
+          "specialties": [
+            "General Surgery",
+            "Plastic Surgery",
+            "Pediatric Surgery",
+            "Urology",
+            "Thoracic Surgery",
+            "Neurosurgery",
+            "Orthopedic Surgery",
+            "Orthopaedics",
+            "Cardiac Surgery"
+          ]
+        },
+        "radiology": {
+          "labels": ["Diagnostic Radiology"],
+          "specialties": ["Diagnostic Radiology"]
+        },
+        "anaesthesia": {
+          "labels": ["Anaesthesiology", "Anesthesiology"],
+          "specialties": ["Anaesthesiology", "Anesthesiology"]
+        },
+        "ent": {
+          "labels": ["E.N.T.", "ENT", "Otorhinolaryngology"],
+          "specialties": ["E.N.T.", "ENT", "Otorhinolaryngology"]
+        },
+        "ophthalmology": {
+          "labels": ["Ophthalmology"],
+          "specialties": ["Ophthalmology"]
+        },
+        "obgyn": {
+          "labels": ["Obstetrics And Gynaecology", "Obstetrics & Gynecology"],
+          "specialties": ["Obstetrics And Gynaecology", "Obstetrics & Gynecology"]
+        }
+      }
+    },
+    "MS": {
+      "groups": {
+        "surgery-allied": {
+          "labels": ["Surgery And Allied", "Surgery", "General Surgery"],
+          "specialties": [
+            "General Surgery",
+            "Plastic Surgery",
+            "Pediatric Surgery",
+            "Urology",
+            "Thoracic Surgery",
+            "Neurosurgery",
+            "Orthopedic Surgery",
+            "Orthopaedics",
+            "Cardiac Surgery"
+          ]
+        },
+        "obgyn": {
+          "labels": ["Obstetrics And Gynaecology", "Obstetrics & Gynecology"],
+          "specialties": ["Obstetrics And Gynaecology", "Obstetrics & Gynecology"]
+        },
+        "ent": {
+          "labels": ["E.N.T.", "ENT", "Otorhinolaryngology"],
+          "specialties": ["E.N.T.", "ENT", "Otorhinolaryngology"]
+        },
+        "ophthalmology": {
+          "labels": ["Ophthalmology"],
+          "specialties": ["Ophthalmology"]
+        }
+      }
+    },
+    "MD": {
+      "groups": {
+        "medicine-allied": {
+          "labels": ["Medicine And Allied", "Medicine"],
+          "specialties": [
+            "Medicine",
+            "Cardiology",
+            "Pulmonology",
+            "Neurology",
+            "Nephrology",
+            "Dermatology",
+            "Medical Oncology",
+            "Clinical Haematology",
+            "Pediatrics",
+            "Psychiatry",
+            "Rheumatology",
+            "Gastroenterology",
+            "Endocrinology"
+          ]
+        },
+        "radiology": {
+          "labels": ["Diagnostic Radiology"],
+          "specialties": ["Diagnostic Radiology"]
+        }
+      }
+    },
+    "FCPS Dentistry": {
+      "groups": {
+        "dentistry": {
+          "labels": ["Dentistry"],
+          "specialties": [
+            "Operative Dentistry",
+            "Prosthodontics",
+            "Orthodontics",
+            "Oral & Maxillofacial Surgery"
+          ]
+        }
+      }
+    },
+    "MDS": {
+      "groups": {
+        "dentistry": {
+          "labels": ["Dentistry"],
+          "specialties": [
+            "Operative Dentistry",
+            "Prosthodontics",
+            "Orthodontics",
+            "Oral & Maxillofacial Surgery"
+          ]
+        }
+      }
+    }
+  }
+}
