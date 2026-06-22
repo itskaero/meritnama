@@ -414,5 +414,323 @@
     ],
     "missingFromRemoteByApplicantSpecialty": [],
     "missingFromLocalByApplicantSpecialty": []
+  },
+  "officialCsvMdFilteredComparison": {
+    "officialRowsTotal": 3474,
+    "generatedMdRows": 1345,
+    "generatedMdApplicants": 1318,
+    "officialRowsAfterMdFilter": 1318,
+    "missingGeneratedMdApplicantsInOfficial": 0,
+    "fieldMismatchApplicants": 0,
+    "generatedApplicantsWithMultipleMdRows": 26,
+    "sampleMissing": [],
+    "sampleMismatches": [],
+    "sampleMultiRows": [
+      {
+        "applicantId": "5709",
+        "rows": [
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 4.0,
+            "marksTotal": 18.692857
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 4.0,
+            "marksTotal": 18.692857
+          },
+          {
+            "specialityName": "",
+            "marksProgram": 3.0,
+            "marksTotal": 17.692857
+          }
+        ]
+      },
+      {
+        "applicantId": "18438",
+        "rows": [
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 5.0,
+            "marksTotal": 21.118924
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 21.118924
+          }
+        ]
+      },
+      {
+        "applicantId": "24431",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 21.927273
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 5.0,
+            "marksTotal": 21.927273
+          }
+        ]
+      },
+      {
+        "applicantId": "28078",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 23.431989
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 5.0,
+            "marksTotal": 23.431989
+          }
+        ]
+      },
+      {
+        "applicantId": "28185",
+        "rows": [
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 5.0,
+            "marksTotal": 22.009886
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 22.009886
+          }
+        ]
+      },
+      {
+        "applicantId": "28601",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 22.526932
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 5.0,
+            "marksTotal": 22.526932
+          }
+        ]
+      },
+      {
+        "applicantId": "28710",
+        "rows": [
+          {
+            "specialityName": "",
+            "marksProgram": 3.0,
+            "marksTotal": 20.484545
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 3.0,
+            "marksTotal": 20.484545
+          }
+        ]
+      },
+      {
+        "applicantId": "31095",
+        "rows": [
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 5.0,
+            "marksTotal": 23.229375
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 23.229375
+          }
+        ]
+      },
+      {
+        "applicantId": "31115",
+        "rows": [
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 5.0,
+            "marksTotal": 22.891136
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 22.891136
+          }
+        ]
+      },
+      {
+        "applicantId": "31521",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 18.784318
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 5.0,
+            "marksTotal": 18.784318
+          }
+        ]
+      },
+      {
+        "applicantId": "31634",
+        "rows": [
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 4.0,
+            "marksTotal": 22.007102
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 4.0,
+            "marksTotal": 22.007102
+          }
+        ]
+      },
+      {
+        "applicantId": "31819",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 23.034318
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 5.0,
+            "marksTotal": 23.034318
+          }
+        ]
+      },
+      {
+        "applicantId": "32510",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 4.0,
+            "marksTotal": 20.830341
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 4.0,
+            "marksTotal": 20.830341
+          }
+        ]
+      },
+      {
+        "applicantId": "34170",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 16.89375
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 5.0,
+            "marksTotal": 16.89375
+          }
+        ]
+      },
+      {
+        "applicantId": "34857",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 23.080511
+          },
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 4.0,
+            "marksTotal": 22.080511
+          }
+        ]
+      },
+      {
+        "applicantId": "34929",
+        "rows": [
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 5.0,
+            "marksTotal": 23.139602
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 23.139602
+          }
+        ]
+      },
+      {
+        "applicantId": "35193",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 22.791364
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 5.0,
+            "marksTotal": 22.791364
+          }
+        ]
+      },
+      {
+        "applicantId": "35197",
+        "rows": [
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 5.0,
+            "marksTotal": 23.035625
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 23.035625
+          }
+        ]
+      },
+      {
+        "applicantId": "36150",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 23.242653
+          },
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 4.0,
+            "marksTotal": 22.242653
+          }
+        ]
+      },
+      {
+        "applicantId": "36296",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 22.620966
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 5.0,
+            "marksTotal": 22.620966
+          }
+        ]
+      }
+    ]
   }
 }

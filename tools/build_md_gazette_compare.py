@@ -27,6 +27,15 @@ DEFAULT_OUT_JSON = ROOT / "data" / "induction21_md_gazette.json"
 DEFAULT_OUT_CSV = ROOT / "data" / "induction21_md_gazette.csv"
 DEFAULT_COMPARE_OUT = ROOT / "data" / "induction21_md_gazette_compare.json"
 DEFAULT_PHF_URL = "https://prp.phf.gop.pk/en/gazette-list?tp=md&qs=1fcb4ee4-249c-41d7-9500-984d39e085bd"
+OFFICIAL_COMPONENT_FIELD_PAIRS = (
+    ("degree", "degree"),
+    ("houseJob", "houseJob"),
+    ("experience", "experience"),
+    ("hardArea", "hardArea"),
+    ("research", "research"),
+    ("position", "position"),
+    ("marksTotal", "baseMarksTotal"),
+)
 
 
 def read_json(path: Path) -> Any:
@@ -157,6 +166,11 @@ def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         writer = csv.DictWriter(fh, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
+
+
+def read_csv_rows(path: Path) -> list[dict[str, Any]]:
+    with path.open("r", encoding="utf-8-sig", newline="") as fh:
+        return list(csv.DictReader(fh))
 
 
 class TableParser(HTMLParser):
@@ -291,12 +305,92 @@ def compare_rows(local_rows: list[dict[str, Any]], remote_rows: list[dict[str, A
     }
 
 
+def compare_official_csv_filtered_to_md(local_rows: list[dict[str, Any]], official_rows: list[dict[str, Any]]) -> dict[str, Any]:
+    local_by_id: dict[str, list[dict[str, Any]]] = {}
+    for row in local_rows:
+        local_by_id.setdefault(str(row.get("applicantId")), []).append(row)
+    for rows in local_by_id.values():
+        rows.sort(key=lambda r: as_float(r.get("marksTotal")), reverse=True)
+
+    official_by_id = {
+        row_applicant_id(row): row
+        for row in official_rows
+        if row_applicant_id(row)
+    }
+    md_ids = set(local_by_id)
+    official_md = {
+        applicant_id: official_by_id[applicant_id]
+        for applicant_id in md_ids
+        if applicant_id in official_by_id
+    }
+    missing_from_official = sorted(
+        md_ids - set(official_by_id),
+        key=lambda v: int(v) if str(v).isdigit() else str(v),
+    )
+
+    mismatches = []
+    for applicant_id, official in official_md.items():
+        generated = local_by_id[applicant_id][0]
+        diffs = {}
+        for official_field, generated_field in OFFICIAL_COMPONENT_FIELD_PAIRS:
+            official_value = as_float(official.get(official_field))
+            generated_value = as_float(generated.get(generated_field))
+            if abs(official_value - generated_value) > 1e-6:
+                diffs[official_field] = {
+                    "official": official_value,
+                    "generated": generated_value,
+                    "delta": round(generated_value - official_value, 6),
+                }
+        if diffs:
+            mismatches.append({
+                "applicantId": applicant_id,
+                "name": generated.get("nameFull"),
+                "diffs": diffs,
+            })
+
+    multi_rows = {
+        applicant_id: rows
+        for applicant_id, rows in local_by_id.items()
+        if len(rows) > 1
+    }
+
+    return {
+        "officialRowsTotal": len(official_rows),
+        "generatedMdRows": len(local_rows),
+        "generatedMdApplicants": len(local_by_id),
+        "officialRowsAfterMdFilter": len(official_md),
+        "missingGeneratedMdApplicantsInOfficial": len(missing_from_official),
+        "fieldMismatchApplicants": len(mismatches),
+        "generatedApplicantsWithMultipleMdRows": len(multi_rows),
+        "sampleMissing": missing_from_official[:50],
+        "sampleMismatches": mismatches[:50],
+        "sampleMultiRows": [
+            {
+                "applicantId": applicant_id,
+                "rows": [
+                    {
+                        "specialityName": row.get("specialityName"),
+                        "marksProgram": row.get("marksProgram"),
+                        "marksTotal": row.get("marksTotal"),
+                    }
+                    for row in rows
+                ],
+            }
+            for applicant_id, rows in sorted(
+                multi_rows.items(),
+                key=lambda item: int(item[0]) if str(item[0]).isdigit() else str(item[0]),
+            )[:20]
+        ],
+    }
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidates", type=Path, default=DEFAULT_CANDIDATES)
     parser.add_argument("--policy", type=Path, default=DEFAULT_POLICY)
     parser.add_argument("--source-url", default=DEFAULT_PHF_URL)
     parser.add_argument("--remote-file", type=Path, default=None)
+    parser.add_argument("--official-csv", type=Path, default=None, help="Official all-programme Gazette CSV; filtered to generated MD applicant IDs before comparison")
     parser.add_argument("--official-gazette", type=Path, default=DEFAULT_OFFICIAL_GAZETTE)
     parser.add_argument("--out-json", type=Path, default=DEFAULT_OUT_JSON)
     parser.add_argument("--out-csv", type=Path, default=DEFAULT_OUT_CSV)
@@ -323,6 +417,11 @@ def main() -> None:
       official = read_json(args.official_gazette)
       official_rows = extract_rows_from_payload(official)
       comparison["fallbackOfficialGazetteComparison"] = compare_rows(local_rows, official_rows)
+    if args.official_csv and args.official_csv.exists():
+      comparison["officialCsvMdFilteredComparison"] = compare_official_csv_filtered_to_md(
+          local_rows,
+          read_csv_rows(args.official_csv),
+      )
 
     write_json(args.compare_out, comparison)
     print(f"local MD rows: {len(local_rows)} -> {args.out_json}")
