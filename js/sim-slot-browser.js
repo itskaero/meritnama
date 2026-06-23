@@ -48,7 +48,44 @@ function setupSlotBrowser() {
 
   setupSbCandSearch();
   setupSbPdfExport();
+  setupSbSimulationRunner();
   updateSbDownloadGate();
+}
+
+function setupSbSimulationRunner() {
+  document.getElementById('sbRunSimBtn')?.addEventListener('click', runSlotBrowserSimulation);
+}
+
+function runSlotBrowserSimulation() {
+  const prog = SIM.sb.program;
+  const btn = document.getElementById('sbRunSimBtn');
+  if (!prog) {
+    showToast('Select a programme before running simulation.', 'warning');
+    return;
+  }
+  if (!allCandidates().some(c => effectiveMark(c, prog) != null)) {
+    showToast('No candidates for this programme.', 'warning');
+    return;
+  }
+
+  SIM.sim.program = prog;
+  const simProgram = document.getElementById('simProgram');
+  if (simProgram) simProgram.value = prog;
+  if (btn) { btn.disabled = true; btn.textContent = 'Running...'; }
+
+  setTimeout(() => {
+    try {
+      SIM.sim.result = runSimulationForProgram(prog);
+      renderSimResults();
+      renderSlot();
+      showToast('Simulation updated for Where Merit Falls.', 'success');
+    } catch (e) {
+      showToast(`Simulation error: ${e.message}`, 'error');
+      console.error(e);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Run Simulation'; }
+    }
+  }, 30);
 }
 
 function refreshSbDropdowns(from) {
@@ -424,7 +461,6 @@ function renderSlot() {
 
   // ── Simulation overlay ─────────────────────────────────────────
   const useSimData = !!(SIM.sim.result && SIM.sim.program === program);
-  const simSourceLabel = SIM.sim.result?.publishedMerit ? 'Published allocation' : 'Simulation';
   const simMap     = useSimData ? buildSimCandidateMap(program) : null;
   if (simMap) {
     for (const a of applicants) annotateApplicantWithSim(a, quota, spec, hosp, simMap);
@@ -465,7 +501,7 @@ function renderSlot() {
       </div>
     </div>
     ${useSimData
-      ? `<p class="sb-sim-note">${esc(simSourceLabel)} active &mdash; &#10003; selected candidates and merit cutoff shown. Dimmed = placed at a higher-preference slot.</p>`
+      ? `<p class="sb-sim-note">Simulation active &mdash; &#10003; selected candidates and merit cutoff shown. Dimmed = placed at a higher-preference slot.</p>`
       : `<p class="sb-sim-note sb-merit-hint">&#9432; Sorted by marks only &mdash; run the <strong>Simulation</strong> tab for merit-accurate predictions.</p>`}
     ${!SIM.seatsLoaded ? '<p class="sb-no-seats">⚠️ Seat count not loaded — cutoff line unavailable.</p>' : ''}
     <div class="sb-list">
@@ -475,7 +511,7 @@ function renderSlot() {
         let cutoffShown = false;
         displayList.forEach((a, di) => {
           if (di === 0 && selectedGroup.length)
-            rows.push(`<div class="sb-section-hdr sb-section-sel"><span>&#10003; Selected by ${esc(simSourceLabel.toLowerCase())}</span></div>`);
+            rows.push(`<div class="sb-section-hdr sb-section-sel"><span>&#10003; Selected by simulation</span></div>`);
           if (di === selectedGroup.length && selectedGroup.length)
             rows.push(`<div class="sb-section-hdr"><span>All applicants by merit</span></div>`);
           if (!cutoffShown) {
@@ -525,7 +561,6 @@ function renderPartialSlot() {
   if (!container) return;
 
   const useSimData = !!(SIM.sim.result && SIM.sim.program === program);
-  const simSourceLabel = SIM.sim.result?.publishedMerit ? 'Published allocation' : 'Simulation';
 
   // Determine grouping dimension
   // spec set → group by hospital | hosp set → group by specialty | neither → group by specialty
@@ -618,7 +653,7 @@ function renderPartialSlot() {
     </div>
     ${!useSimData
       ? `<div class="sb-partial-warn">&#9888;&#65039; Without running the <strong>Simulation</strong> first, the same candidate may appear in multiple slots below. Run the Simulation tab for a de-duplicated, merit-accurate view.</div>`
-      : `<p class="sb-sim-note">${esc(simSourceLabel)} active &mdash; showing selected candidates and merit cutoffs per slot.</p>`}
+      : `<p class="sb-sim-note">Simulation active &mdash; showing selected candidates and merit cutoffs per slot.</p>`}
     <div style="padding:12px;display:flex;flex-direction:column;gap:12px;">
   `;
 
@@ -662,7 +697,7 @@ function renderPartialSlot() {
               top5.forEach((a, i) => {
                 if (useSimData && a._simStatus === 'selected' && !sectionSelShown) {
                   sectionSelShown = true;
-                  rows.push(`<div class="sb-section-hdr sb-section-sel"><span>&#10003; Selected by ${esc(simSourceLabel.toLowerCase())}</span></div>`);
+                  rows.push(`<div class="sb-section-hdr sb-section-sel"><span>&#10003; Selected by simulation</span></div>`);
                 }
                 if (useSimData && sectionSelShown && i > 0 && top5[i - 1]._simStatus === 'selected' && a._simStatus !== 'selected') {
                   rows.push(`<div class="sb-section-hdr"><span>Next in line</span></div>`);

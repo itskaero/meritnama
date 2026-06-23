@@ -10,7 +10,6 @@ const SIM = {
   seats:        null,   // {PROG: {quota: {spec: {hosp: n}}}}  or null
   flatSeats:    [],     // raw flat array [{typeName, quotaName, specialityName, hospitalName, seats}]
   seatsLoaded:  false,
-  publishedMerit: [],    // published placement rows, when available
   myId:         null,   // applicantId string | null
   customCand:   null,   // manually-added candidate | null
   activeTab:    'guide',

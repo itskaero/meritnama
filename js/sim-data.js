@@ -49,17 +49,6 @@ async function loadData() {
     }
   } catch (_) {}
 
-  // Optional published merit placements. When present, Seat Allocation can
-  // replay the official allocation while keeping the same result structure.
-  try {
-    const rawMerit = await fetchOptionalJson('data/induction21_merit.json');
-    SIM.publishedMerit = Array.isArray(rawMerit)
-      ? rawMerit
-      : (Array.isArray(rawMerit?.Table5) ? rawMerit.Table5 : []);
-  } catch (_) {
-    SIM.publishedMerit = [];
-  }
-
   await loadSimulationNotifications();
 
   // Load global revision config (best-effort) then rebuild revision selector

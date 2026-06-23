@@ -71,8 +71,18 @@ function candidateTrackPrefs(candidate, program, track) {
     .sort((a, b) => a.preferenceNo - b.preferenceNo);
 }
 
-function buildPlacementWorkingCandidates(candidates, program) {
-  return candidates.flatMap(c => {
+/**
+ * Run the PRP placement algorithm.
+ *
+ * @param {Object[]} candidates - candidates filtered to this program
+ * @param {Object}   seatTree   - {quota: {spec: {hosp: {jobs, candidates:[], others:[]}}}}
+ * @param {string}   program    - program name for selecting program-specific marks
+ * @param {boolean}  parentBonus - add pref.marks to effective marks if true
+ * @returns {{ seatTree, candidates }}
+ */
+function runPlacement(candidates, seatTree, program, parentBonus = false) {
+  // Working copies
+  const prog = candidates.flatMap(c => {
     return [QUOTA_TRACKS.CIVILIAN, QUOTA_TRACKS.ARMED]
       .map(track => {
         const prefs = candidateTrackPrefs(c, program, track);
@@ -97,171 +107,21 @@ function buildPlacementWorkingCandidates(candidates, program) {
       })
       .filter(cw => cw._prefs.length && cw._sortMarks != null);
   });
-}
 
-function placementPreferenceMark(cand, pref, program) {
-  return (cand._source
-    ? effectiveMark(cand._source, cand._program || program, undefined, undefined, pref)
-    : cand.marksTotal) ?? cand.marksTotal ?? 0;
-}
-
-function placementScore(cand, pref, program, parentBonus, overrideMarks) {
-  const n = Number(overrideMarks);
-  if (overrideMarks != null && Number.isFinite(n)) return n;
-  return placementPreferenceMark(cand, pref, program) + (parentBonus ? (pref.marks || 0) : 0);
-}
-
-function placementEntry(cand, pref, program, parentBonus, overrideMarks) {
-  return {
+  const slot   = (q, s, h) => seatTree?.[q]?.[s]?.[h];
+  const preferenceMark = (cand, pref) =>
+    (cand._source
+      ? effectiveMark(cand._source, cand._program || program, undefined, undefined, pref)
+      : cand.marksTotal) ?? cand.marksTotal ?? 0;
+  const effM   = (cand, pref) => preferenceMark(cand, pref) + (parentBonus ? (pref.marks || 0) : 0);
+  const entry  = (cand, pref) => ({
     applicantId:  cand.applicantId,
     nameFull:     cand.nameFull,
-    marksTotal:   placementScore(cand, pref, program, parentBonus, overrideMarks),
+    marksTotal:   effM(cand, pref),
     preferenceNo: pref.preferenceNo,
     _track:       cand._track,
     _trackLabel:  cand._trackLabel,
-  };
-}
-
-function samePlacementSlot(pref, q, s, h) {
-  return pref &&
-    pref.quotaName === q &&
-    pref.specialityName === s &&
-    pref.hospitalName === h;
-}
-
-function sortSeatTreePlacements(seatTree) {
-  for (const specs of Object.values(seatTree)) {
-    for (const hosps of Object.values(specs)) {
-      for (const sl of Object.values(hosps)) {
-        sl.candidates.sort((a, b) => b.marksTotal - a.marksTotal);
-        sl.others.sort((a, b) => b.marksTotal - a.marksTotal);
-      }
-    }
-  }
-}
-
-function populatePlacementOthers(seatTree, prog, program, parentBonus) {
-  const slot = (q, s, h) => seatTree?.[q]?.[s]?.[h];
-  for (const cand of prog) {
-    const placedPrefNo = cand.placed
-      ? cand._prefs.find(p => samePlacementSlot(p, cand._q, cand._s, cand._h))?.preferenceNo ?? null
-      : null;
-    for (const pref of cand._prefs) {
-      const sl = slot(pref.quotaName, pref.specialityName, pref.hospitalName);
-      if (!sl) continue;
-      const inC = sl.candidates.some(c =>
-        String(c.applicantId) === String(cand.applicantId) &&
-        c._track === cand._track
-      );
-      const inO = sl.others.some(c =>
-        String(c.applicantId) === String(cand.applicantId) &&
-        c._track === cand._track
-      );
-      if (!inC && !inO) {
-        sl.others.push({
-          ...placementEntry(cand, pref, program, parentBonus),
-          placed:   cand.placed,
-          placedAtHigherPref: (placedPrefNo !== null && placedPrefNo < pref.preferenceNo),
-          placedAt: cand.placed ? { q: cand._q, s: cand._s, h: cand._h } : null,
-          _track:   cand._track,
-          _trackLabel: cand._trackLabel,
-        });
-      }
-    }
-  }
-  sortSeatTreePlacements(seatTree);
-}
-
-function meritRowValue(row, ...keys) {
-  for (const key of keys) {
-    const value = row?.[key];
-    if (value != null && value !== '') return value;
-  }
-  return null;
-}
-
-function publishedMeritRowsForProgram(program) {
-  return (SIM.publishedMerit || []).filter(row =>
-    programMatches(meritRowValue(row, 'typeName', 'type', 'program'), program)
-  );
-}
-
-function runPublishedPlacement(candidates, seatTree, program, meritRows) {
-  const prog = buildPlacementWorkingCandidates(candidates, program);
-  const byKey = new Map(prog.map(c => [simRecordKey(c.applicantId, c._track), c]));
-
-  for (const specs of Object.values(seatTree)) {
-    for (const hosps of Object.values(specs)) {
-      for (const sl of Object.values(hosps)) {
-        sl.candidates = [];
-        sl.others = [];
-      }
-    }
-  }
-
-  for (const row of meritRows) {
-    const q = meritRowValue(row, 'quotaName', 'quota');
-    const s = meritRowValue(row, 'specialityName', 'speciality', 'specialty');
-    const h = meritRowValue(row, 'hospitalName', 'hospital');
-    const applicantId = meritRowValue(row, 'applicantId');
-    if (!q || !s || !h || applicantId == null) continue;
-
-    const sl = seatTree?.[q]?.[s]?.[h];
-    if (!sl) continue;
-
-    const track = quotaTrack(q);
-    const key = simRecordKey(applicantId, track);
-    const cand = byKey.get(key) || {
-      applicantId,
-      nameFull: meritRowValue(row, 'nameFull', 'name') || '',
-      marksTotal: Number(meritRowValue(row, 'marksTotal', 'marks')) || 0,
-      _track: track,
-      _trackLabel: quotaTrackLabel(track),
-      _prefs: [],
-    };
-    const prefNo = meritRowValue(row, 'preferenceNo');
-    const pref = cand._prefs?.find(p => samePlacementSlot(p, q, s, h)) || {
-      quotaName: q,
-      specialityName: s,
-      hospitalName: h,
-      preferenceNo: prefNo,
-      marks: 0,
-    };
-
-    if (byKey.has(key)) {
-      cand.placed = true;
-      cand._q = q; cand._s = s; cand._h = h;
-    }
-
-    sl.candidates.push(placementEntry(
-      cand,
-      pref,
-      program,
-      false,
-      meritRowValue(row, 'marksTotal', 'marks')
-    ));
-  }
-
-  populatePlacementOthers(seatTree, prog, program, false);
-  return { seatTree, candidates: prog, publishedMerit: true, publishedMeritCount: meritRows.length };
-}
-
-/**
- * Run the PRP placement algorithm.
- *
- * @param {Object[]} candidates - candidates filtered to this program
- * @param {Object}   seatTree   - {quota: {spec: {hosp: {jobs, candidates:[], others:[]}}}}
- * @param {string}   program    - program name for selecting program-specific marks
- * @param {boolean}  parentBonus - add pref.marks to effective marks if true
- * @returns {{ seatTree, candidates }}
- */
-function runPlacement(candidates, seatTree, program, parentBonus = false) {
-  // Working copies
-  const prog = buildPlacementWorkingCandidates(candidates, program);
-
-  const slot   = (q, s, h) => seatTree?.[q]?.[s]?.[h];
-  const effM   = (cand, pref) => placementScore(cand, pref, program, parentBonus);
-  const entry  = (cand, pref) => placementEntry(cand, pref, program, parentBonus);
+  });
 
   let prevPlaced = -1;
 
@@ -271,6 +131,7 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
     if (!unplaced.length) break;
 
     let placed = 0;
+    let changed = false;
 
     for (const cand of unplaced) {
       for (const pref of cand._prefs) {
@@ -284,6 +145,7 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
           cand.placed = true;
           cand._q = pref.quotaName; cand._s = pref.specialityName; cand._h = pref.hospitalName;
           placed++;
+          changed = true;
           break;
         } else {
           const lowest = sl.candidates.reduce((m, c) => c.marksTotal < m.marksTotal ? c : m);
@@ -303,6 +165,7 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
             cand.placed = true;
             cand._q = pref.quotaName; cand._s = pref.specialityName; cand._h = pref.hospitalName;
             placed++;
+            changed = true;
             break;
           }
         }
@@ -310,12 +173,47 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
     }
 
     const total = prog.filter(c => c.placed).length;
-    if (total === prevPlaced) break;
+    if (!changed || (total === prevPlaced && placed === 0)) break;
     prevPlaced = total;
   }
 
   // Build "others" list for each slot
-  populatePlacementOthers(seatTree, prog, program, parentBonus);
+  const isMe = id => String(id) === SIM.myId;
+  for (const cand of prog) {
+    const placedPrefNo = cand.placed
+      ? cand._prefs.find(p =>
+          p.quotaName === cand._q &&
+          p.specialityName === cand._s &&
+          p.hospitalName === cand._h
+        )?.preferenceNo ?? null
+      : null;
+    for (const pref of cand._prefs) {
+      const sl = slot(pref.quotaName, pref.specialityName, pref.hospitalName);
+      if (!sl) continue;
+      const inC = sl.candidates.some(c => String(c.applicantId) === String(cand.applicantId));
+      const inO = sl.others.some(c => String(c.applicantId) === String(cand.applicantId));
+      if (!inC && !inO) {
+        sl.others.push({
+          ...entry(cand, pref),
+          placed:   cand.placed,
+          placedAtHigherPref: (placedPrefNo !== null && placedPrefNo < pref.preferenceNo),
+          placedAt: cand.placed ? { q: cand._q, s: cand._s, h: cand._h } : null,
+          _track:   cand._track,
+          _trackLabel: cand._trackLabel,
+        });
+      }
+    }
+  }
+
+  // Sort placed and others by marks desc
+  for (const specs of Object.values(seatTree)) {
+    for (const hosps of Object.values(specs)) {
+      for (const sl of Object.values(hosps)) {
+        sl.candidates.sort((a, b) => b.marksTotal - a.marksTotal);
+        sl.others.sort((a, b) => b.marksTotal - a.marksTotal);
+      }
+    }
+  }
 
   return { seatTree, candidates: prog };
 }
@@ -381,25 +279,10 @@ function runSimulation() {
 }
 
 function runSimulationForProgram(program) {
-  const publishedRows = publishedMeritRowsForProgram(program);
-  const publishedPoolCandidates = publishedRows.length
-    ? allCandidates().filter(c => effectiveMark(c, program) != null)
-    : null;
-  const pool = publishedRows.length
-    ? {
-        candidates: publishedPoolCandidates,
-        scope: { id: 'published-merit', label: 'Published merit placements', includeAll: true, statusIds: [] },
-        sourceCandidateCount: publishedPoolCandidates.length,
-        includedCandidateCount: publishedPoolCandidates.length,
-        excludedByStatusCount: 0,
-        missingStatusCount: 0,
-      }
-    : simulationCandidatePool(program);
+  const pool = simulationCandidatePool(program);
   if (!pool.candidates.length) return null;
   const tree = buildSeatTree(program);
-  const report = publishedRows.length
-    ? runPublishedPlacement(pool.candidates, tree, program, publishedRows)
-    : runPlacement(pool.candidates, tree, program, SIM.sim.parentBonus);
+  const report = runPlacement(pool.candidates, tree, program, SIM.sim.parentBonus);
   report.statusScope = pool.scope;
   report.sourceCandidateCount = pool.sourceCandidateCount;
   report.includedCandidateCount = pool.includedCandidateCount;
@@ -418,13 +301,12 @@ function renderSimResults() {
 
   // My result banner
   const meRecords = SIM.myId ? candidates.filter(c => String(c.applicantId) === SIM.myId) : [];
-  const placementLabel = result.publishedMerit ? 'Published placement' : 'Projected placement';
   let myHtml = '';
   if (meRecords.length) {
     const placedMe = meRecords.filter(c => c.placed);
     if (placedMe.length) {
       myHtml = `<div class="sim-my placed">
-        ✅ <strong>${placementLabel}${placedMe.length > 1 ? 's' : ''}:</strong>
+        ✅ <strong>Projected placement${placedMe.length > 1 ? 's' : ''}:</strong>
         ${placedMe.map(me => {
           const prefNo = me._prefs?.find(p =>
             p.quotaName === me._q && p.specialityName === me._s && p.hospitalName === me._h
@@ -471,9 +353,6 @@ function renderSimResults() {
   const scopeInfo = scope && !scope.includeAll
     ? `<span class="sim-sum-scope-info">Filtered: ${esc(scope.label)} (${result.includedCandidateCount} of ${result.sourceCandidateCount} candidates)${result.excludedByStatusCount ? ` · ${result.excludedByStatusCount} excluded by status` : ''}</span>`
     : '';
-  const sourceInfo = result.publishedMerit
-    ? `Allocation source: <strong>Published merit placements</strong> (${(result.publishedMeritCount || 0).toLocaleString()} rows)`
-    : `Merit basis: <strong>${esc(getActiveMarksLabel())}</strong>${SIM.sim.parentBonus ? ' · Parent institute bonus on' : ''}${scopeInfo ? ` · ${scopeInfo}` : ''}`;
 
   container.innerHTML = `
     ${myHtml}
@@ -484,7 +363,7 @@ function renderSimResults() {
         <div><span class="sim-sum-val">${filledSlots}</span><span class="sim-sum-lbl">Slots filled</span></div>
         <div><span class="sim-sum-val">${rows.length}</span><span class="sim-sum-lbl">Total slots</span></div>
       </div>
-      <p style="margin-top:10px;font-size:0.72rem;color:var(--text-muted)">${sourceInfo}</p>
+      <p style="margin-top:10px;font-size:0.72rem;color:var(--text-muted)">Merit basis: <strong>${esc(getActiveMarksLabel())}</strong>${SIM.sim.parentBonus ? ' · Parent institute bonus on' : ''}${scopeInfo ? ` · ${scopeInfo}` : ''}</p>
     </div>
     <div class="sim-grid">
       ${rows.map(r => renderSimCard(r, program)).join('')}
@@ -820,6 +699,7 @@ function buildApplicantPreferenceRows(workCand, seatTree) {
     else if (isPlacedHere) status = 'placed';
     else if (pref.preferenceNo > placedPrefNo) status = 'not_attempted';
     else if (cutoff == null) status = 'no_cutoff';
+    else if (score + 1e-9 >= cutoff) status = 'clears_cutoff';
 
     return {
       pref,
@@ -950,7 +830,7 @@ async function downloadApplicantSimulationPdf() {
         score: fmtM(row.score),
         cutoff: fmtM(row.cutoff),
         margin: formatApplicantDelta(row.delta, row.status),
-        status: applicantStatusLabel(row.status),
+        status: applicantStatusLabel(row.status, row.delta),
       }));
       y = drawPdfTable(doc, [
         { label: 'Pref', w: 32, key: 'prefNo' },
@@ -989,13 +869,18 @@ function renderApplicantTrackSection(trackResult) {
   const placed = workCand.placed;
   const placedRow = history.find(r => r.status === 'placed');
   const bestMiss = history
-    .filter(r => r.status === 'beaten' && r.delta != null)
+    .filter(r => r.status === 'beaten' && r.delta != null && r.delta < 0)
+    .sort((a, b) => Math.abs(a.delta) - Math.abs(b.delta))[0];
+  const bestClear = history
+    .filter(r => r.status === 'clears_cutoff' && r.delta != null)
     .sort((a, b) => Math.abs(a.delta) - Math.abs(b.delta))[0];
   const shortfall = bestMiss ? Math.max(0, -bestMiss.delta) : null;
   const resultText = placed && placedRow
     ? `Placed at preference #${placedRow.pref.preferenceNo}: ${esc(placedRow.pref.specialityName)} @ ${esc(shortHospital(placedRow.pref.hospitalName))}`
     : bestMiss
     ? `Not placed; closest shown cutoff shortfall is ${fmtM(shortfall)} marks.`
+    : bestClear
+    ? `Not placed; this result shows at least one cleared cutoff, so rerun simulation or review pool constraints.`
     : 'Not placed in recorded preferences.';
 
   return `<div class="app-sim-track-section ${placed ? 'is-placed' : 'is-unplaced'}">
@@ -1015,7 +900,7 @@ function renderApplicantTrackSection(trackResult) {
 
 function renderApplicantPreferenceRow(row) {
   const { pref, status, score, cutoff, delta } = row;
-  const statusLabel = applicantStatusLabel(status);
+  const statusLabel = applicantStatusLabel(status, delta);
   const deltaClass = delta == null ? '' : (delta >= 0 ? 'good' : 'bad');
   return `<div class="app-sim-pref-row status-${esc(status)}">
     <span class="app-sim-pref-no">#${pref.preferenceNo}</span>
@@ -1031,9 +916,10 @@ function renderApplicantPreferenceRow(row) {
   </div>`;
 }
 
-function applicantStatusLabel(status) {
+function applicantStatusLabel(status, delta = null) {
   if (status === 'placed') return 'Placed';
-  if (status === 'beaten') return 'Fell short';
+  if (status === 'beaten') return delta != null && delta >= 0 ? 'Clears cutoff' : 'Fell short';
+  if (status === 'clears_cutoff') return 'Clears cutoff';
   if (status === 'not_attempted') return 'Skipped';
   if (status === 'no_cutoff') return 'No cutoff';
   return 'No seats';
@@ -1042,8 +928,9 @@ function applicantStatusLabel(status) {
 function formatApplicantDelta(delta, status) {
   if (delta == null) return '—';
   if (status === 'not_attempted') {
-    return delta >= 0 ? `Would clear +${fmtM(delta)}` : `Would short ${fmtM(Math.abs(delta))}`;
+    return delta >= 0 ? `Would clear +${fmtM(delta)}` : `Would be short ${fmtM(Math.abs(delta))}`;
   }
+  if (status === 'clears_cutoff') return `Clears +${fmtM(delta)}`;
   if (status === 'beaten' && delta < 0) return `Short ${fmtM(Math.abs(delta))}`;
   return `${delta >= 0 ? '+' : '-'}${fmtM(Math.abs(delta))}`;
 }
