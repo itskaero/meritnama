@@ -945,8 +945,10 @@ function msmdCertificateBonus(cert, policy) {
   const pct = Number(cert?.percentage);
   if (!Number.isFinite(pct) || pct <= 0) return null;
   for (const rule of cfg.percentageMarks || []) {
+    const gt = Number(rule.gt);
     const min = Number(rule.min);
     const marks = Number(rule.marks);
+    if (Number.isFinite(gt) && Number.isFinite(marks) && pct > gt) return marks;
     if (Number.isFinite(min) && Number.isFinite(marks) && pct >= min) return marks;
   }
   return null;

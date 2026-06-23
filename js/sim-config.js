@@ -153,9 +153,10 @@ function renderCertificatePolicySection(container) {
         <table class="data-table" style="width:100%">
           <thead><tr><th>Min %</th><th>Marks</th></tr></thead>
           <tbody>
-            ${(policy.msmd?.percentageMarks || []).map(tier =>
-              `<tr><td>${_escHtml(String(tier.min))}%</td><td>${_escHtml(String(tier.marks))}</td></tr>`
-            ).join('')}
+            ${(policy.msmd?.percentageMarks || []).map(tier => {
+              const label = tier.gt != null ? `>${tier.gt}` : String(tier.min);
+              return `<tr><td>${_escHtml(label)}%</td><td>${_escHtml(String(tier.marks))}</td></tr>`;
+            }).join('')}
           </tbody>
         </table>
         <p style="font-size:0.8rem;color:var(--text-muted);margin:6px 0 0">

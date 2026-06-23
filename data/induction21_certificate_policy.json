@@ -12,7 +12,7 @@
   "msmd": {
     "requirePass": true,
     "percentageMarks": [
-      { "min": 70, "marks": 5 },
+      { "gt": 70, "marks": 5 },
       { "min": 65, "marks": 4 },
       { "min": 60, "marks": 3 }
     ],
