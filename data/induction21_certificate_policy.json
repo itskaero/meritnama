@@ -13,7 +13,7 @@
     "requirePass": true,
     "percentageMarks": [
       { "gt": 70, "marks": 5 },
-      { "min": 65, "marks": 4 },
+      { "gt": 65, "marks": 4 },
       { "min": 60, "marks": 3 }
     ],
     "specialRules": {
