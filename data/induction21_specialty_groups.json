@@ -100,7 +100,21 @@
         "ophthalmology": {
           "labels": ["Ophthalmology"],
           "specialties": ["Ophthalmology"]
+        },
+        "anaesthesia": {
+          "labels": ["Anaesthesiology", "Anesthesiology", "Anaesthesia"],
+          "specialties": [
+            "Anaesthesiology",
+            "Anesthesiology",
+            "Anaesthesia",
+            "Cardio Thoracic Anesthesia",
+            "Cardiac Anaesthesia",
+            "Cardiac Anesthesia"
+          ]
         }
+        
+        
+        
       }
     },
     "MD": {

@@ -193,8 +193,8 @@ function updateCandStatusHint() {
   const all = allCandidates();
   const count = filter
     ? all.filter(c => {
-        const st = getEffectiveProfileStatusForCandidate(c);
-        return st && Number(st.statusId) === Number(filter);
+        const statuses = getAllProfileStatusesForCandidate(c);
+        return statuses.some(st => Number(st.statusId) === Number(filter));
       }).length
     : all.length;
   const label = filter
@@ -217,8 +217,8 @@ function applyAndRenderCandidates() {
   if (SIM.profileStatus.filter) {
     const want = Number(SIM.profileStatus.filter);
     list = list.filter(c => {
-      const st = getEffectiveProfileStatusForCandidate(c);
-      return st && Number(st.statusId) === want;
+      const statuses = getAllProfileStatusesForCandidate(c);
+      return statuses.some(st => Number(st.statusId) === want);
     });
   }
 

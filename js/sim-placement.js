@@ -241,6 +241,11 @@ function setupSimulationTab() {
     if (SIM.sim.result) renderSimResults();
   });
 
+  document.getElementById('simConsentMode')?.addEventListener('change', e => {
+    SIM.sim.consentMode = e.target.value || 'view';
+    if (typeof updateSimConsentModeHint === 'function') updateSimConsentModeHint();
+  });
+
   document.getElementById('runSimBtn')?.addEventListener('click', runSimulation);
   document.getElementById('simDownloadPdfBtn')?.addEventListener('click', downloadSimulationPdf);
   updateSimulationDownloadGate();
@@ -252,6 +257,7 @@ function setupSimulationTab() {
   appInput?.addEventListener('keydown', e => {
     if (e.key === 'Enter') runApplicantSimulation(appInput.value.trim());
   });
+  if (typeof updateSimConsentModeHint === 'function') updateSimConsentModeHint();
 }
 
 function runSimulation() {
@@ -267,7 +273,9 @@ function runSimulation() {
   // Defer so the browser has time to update the button state
   setTimeout(() => {
     try {
-      SIM.sim.result = runSimulationForProgram(prog);
+      if (typeof resetInteractiveConsentState === 'function') resetInteractiveConsentState();
+      SIM.sim.baselineResult = runSimulationForProgram(prog);
+      SIM.sim.result = SIM.sim.baselineResult;
       renderSimResults();
       if (SIM.sb.program === prog) renderSlot();
     } catch (e) {
@@ -365,6 +373,7 @@ function renderSimResults() {
       </div>
       <p style="margin-top:10px;font-size:0.72rem;color:var(--text-muted)">Merit basis: <strong>${esc(getActiveMarksLabel())}</strong>${SIM.sim.parentBonus ? ' · Parent institute bonus on' : ''}${scopeInfo ? ` · ${scopeInfo}` : ''}</p>
     </div>
+    ${typeof renderSimConsentBanner === 'function' ? renderSimConsentBanner() : ''}
     <div class="sim-grid">
       ${rows.map(r => renderSimCard(r, program)).join('')}
     </div>
@@ -378,11 +387,23 @@ function renderSimResults() {
     });
   });
 
-  // Delegate clicks on candidate rows → open placement detail modal
-  container.addEventListener('click', e => {
+  // Delegate candidate/result clicks. Consent mode reruns placement instead of opening detail.
+  container.onclick = e => {
+    const restore = e.target.closest('[data-consent-restore]');
+    if (restore && typeof restoreNoConsentCandidate === 'function') {
+      restoreNoConsentCandidate(restore.dataset.consentRestore);
+      return;
+    }
     const el = e.target.closest('[data-sim-cand]');
-    if (el) openSimCandidateDetail(el.dataset.simCand, el.dataset.simTrack);
-  });
+    if (!el) return;
+    if (SIM.sim.consentMode === 'no-consent' || SIM.sim.consentMode === 'consent') {
+      if (typeof applyInteractiveConsentChoice === 'function') {
+        applyInteractiveConsentChoice(el.dataset.simCand, SIM.sim.consentMode);
+      }
+      return;
+    }
+    openSimCandidateDetail(el.dataset.simCand, el.dataset.simTrack);
+  };
   updateSimulationDownloadGate();
 }
 
