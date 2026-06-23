@@ -397,7 +397,7 @@ function setActiveCandidateRevision(id) {
 const MNNotif = window.MNNotifications;
 const DEFAULT_MARKS_OPTIONS = MNNotif.DEFAULT_MARKS_OPTIONS;
 const PAGE_SIZE      = 50;
-const MAX_PASSES     = 200;
+const MAX_PASSES     = 1000;
 const QUOTA_TRACKS = {
   ARMED: 'armed',
   CIVILIAN: 'civilian',

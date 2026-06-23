@@ -149,7 +149,7 @@ function parseProgramDictNumeric(dictName, raw) {
 const MNNotif = window.MNNotifications;
 const DEFAULT_MARKS_OPTIONS = MNNotif.DEFAULT_MARKS_OPTIONS;
 const PAGE_SIZE      = 50;
-const MAX_PASSES     = 200;
+const MAX_PASSES     = 1000;
 const QUOTA_TRACKS = {
   ARMED: 'armed',
   CIVILIAN: 'civilian',
@@ -2708,6 +2708,7 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
     if (!unplaced.length) break;
 
     let placed = 0;
+    let changed = false;
 
     for (const cand of unplaced) {
       for (const pref of cand._prefs) {
@@ -2721,6 +2722,7 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
           cand.placed = true;
           cand._q = pref.quotaName; cand._s = pref.specialityName; cand._h = pref.hospitalName;
           placed++;
+          changed = true;
           break;
         } else {
           const lowest = sl.candidates.reduce((m, c) => c.marksTotal < m.marksTotal ? c : m);
@@ -2740,6 +2742,7 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
             cand.placed = true;
             cand._q = pref.quotaName; cand._s = pref.specialityName; cand._h = pref.hospitalName;
             placed++;
+            changed = true;
             break;
           }
         }
@@ -2747,7 +2750,7 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
     }
 
     const total = prog.filter(c => c.placed).length;
-    if (total === prevPlaced) break;
+    if (!changed || (total === prevPlaced && placed === 0)) break;
     prevPlaced = total;
   }
 

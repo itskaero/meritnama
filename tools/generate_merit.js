@@ -15,7 +15,7 @@ const totalSeats = seats.reduce((s, sl) => s + sl.seats, 0);
 console.log(`Total seats: ${totalSeats}`);
 
 // ── Constants (from sim-core.js) ──
-const MAX_PASSES = 200;
+const MAX_PASSES = 1000;
 const QUOTA_TRACKS = { ARMED: 'armed', CIVILIAN: 'civilian' };
 const CIVILIAN_QUOTA_KEYS = new Set([
   'kpk sindh balochistan', 'punjab', 'disable', 'foreign', 'foriegn',
@@ -240,6 +240,7 @@ function runPlacement(candidates, seatTree, program) {
     const unplaced = prog.filter(c => !c.placed).sort((a, b) => b._sortMarks - a._sortMarks);
     if (!unplaced.length) break;
     let placed = 0;
+    let changed = false;
     for (const cand of unplaced) {
       for (const pref of cand._prefs) {
         const sl = slot(pref.quotaName, pref.specialityName, pref.hospitalName);
@@ -249,6 +250,7 @@ function runPlacement(candidates, seatTree, program) {
           cand.placed = true;
           cand._q = pref.quotaName; cand._s = pref.specialityName; cand._h = pref.hospitalName;
           placed++;
+          changed = true;
           break;
         } else {
           const lowest = sl.candidates.reduce((m, c) => c.marksTotal < m.marksTotal ? c : m);
@@ -265,13 +267,14 @@ function runPlacement(candidates, seatTree, program) {
             cand.placed = true;
             cand._q = pref.quotaName; cand._s = pref.specialityName; cand._h = pref.hospitalName;
             placed++;
+            changed = true;
             break;
           }
         }
       }
     }
     const totalPlaced = prog.filter(c => c.placed).length;
-    if (totalPlaced === prevPlaced) break;
+    if (!changed || (totalPlaced === prevPlaced && placed === 0)) break;
     prevPlaced = totalPlaced;
   }
 
