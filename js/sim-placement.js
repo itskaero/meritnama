@@ -131,6 +131,7 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
     if (!unplaced.length) break;
 
     let placed = 0;
+    let changed = false;
 
     for (const cand of unplaced) {
       for (const pref of cand._prefs) {
@@ -144,6 +145,7 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
           cand.placed = true;
           cand._q = pref.quotaName; cand._s = pref.specialityName; cand._h = pref.hospitalName;
           placed++;
+          changed = true;
           break;
         } else {
           const lowest = sl.candidates.reduce((m, c) => c.marksTotal < m.marksTotal ? c : m);
@@ -163,6 +165,7 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
             cand.placed = true;
             cand._q = pref.quotaName; cand._s = pref.specialityName; cand._h = pref.hospitalName;
             placed++;
+            changed = true;
             break;
           }
         }
@@ -170,7 +173,7 @@ function runPlacement(candidates, seatTree, program, parentBonus = false) {
     }
 
     const total = prog.filter(c => c.placed).length;
-    if (total === prevPlaced) break;
+    if (!changed || (total === prevPlaced && placed === 0)) break;
     prevPlaced = total;
   }
 
@@ -696,6 +699,7 @@ function buildApplicantPreferenceRows(workCand, seatTree) {
     else if (isPlacedHere) status = 'placed';
     else if (pref.preferenceNo > placedPrefNo) status = 'not_attempted';
     else if (cutoff == null) status = 'no_cutoff';
+    else if (score + 1e-9 >= cutoff) status = 'clears_cutoff';
 
     return {
       pref,
@@ -826,7 +830,7 @@ async function downloadApplicantSimulationPdf() {
         score: fmtM(row.score),
         cutoff: fmtM(row.cutoff),
         margin: formatApplicantDelta(row.delta, row.status),
-        status: applicantStatusLabel(row.status),
+        status: applicantStatusLabel(row.status, row.delta),
       }));
       y = drawPdfTable(doc, [
         { label: 'Pref', w: 32, key: 'prefNo' },
@@ -865,13 +869,18 @@ function renderApplicantTrackSection(trackResult) {
   const placed = workCand.placed;
   const placedRow = history.find(r => r.status === 'placed');
   const bestMiss = history
-    .filter(r => r.status === 'beaten' && r.delta != null)
+    .filter(r => r.status === 'beaten' && r.delta != null && r.delta < 0)
+    .sort((a, b) => Math.abs(a.delta) - Math.abs(b.delta))[0];
+  const bestClear = history
+    .filter(r => r.status === 'clears_cutoff' && r.delta != null)
     .sort((a, b) => Math.abs(a.delta) - Math.abs(b.delta))[0];
   const shortfall = bestMiss ? Math.max(0, -bestMiss.delta) : null;
   const resultText = placed && placedRow
     ? `Placed at preference #${placedRow.pref.preferenceNo}: ${esc(placedRow.pref.specialityName)} @ ${esc(shortHospital(placedRow.pref.hospitalName))}`
     : bestMiss
     ? `Not placed; closest shown cutoff shortfall is ${fmtM(shortfall)} marks.`
+    : bestClear
+    ? `Not placed; this result shows at least one cleared cutoff, so rerun simulation or review pool constraints.`
     : 'Not placed in recorded preferences.';
 
   return `<div class="app-sim-track-section ${placed ? 'is-placed' : 'is-unplaced'}">
@@ -891,7 +900,7 @@ function renderApplicantTrackSection(trackResult) {
 
 function renderApplicantPreferenceRow(row) {
   const { pref, status, score, cutoff, delta } = row;
-  const statusLabel = applicantStatusLabel(status);
+  const statusLabel = applicantStatusLabel(status, delta);
   const deltaClass = delta == null ? '' : (delta >= 0 ? 'good' : 'bad');
   return `<div class="app-sim-pref-row status-${esc(status)}">
     <span class="app-sim-pref-no">#${pref.preferenceNo}</span>
@@ -907,9 +916,10 @@ function renderApplicantPreferenceRow(row) {
   </div>`;
 }
 
-function applicantStatusLabel(status) {
+function applicantStatusLabel(status, delta = null) {
   if (status === 'placed') return 'Placed';
-  if (status === 'beaten') return 'Fell short';
+  if (status === 'beaten') return delta != null && delta >= 0 ? 'Clears cutoff' : 'Fell short';
+  if (status === 'clears_cutoff') return 'Clears cutoff';
   if (status === 'not_attempted') return 'Skipped';
   if (status === 'no_cutoff') return 'No cutoff';
   return 'No seats';
@@ -918,8 +928,9 @@ function applicantStatusLabel(status) {
 function formatApplicantDelta(delta, status) {
   if (delta == null) return '—';
   if (status === 'not_attempted') {
-    return delta >= 0 ? `Would clear +${fmtM(delta)}` : `Would short ${fmtM(Math.abs(delta))}`;
+    return delta >= 0 ? `Would clear +${fmtM(delta)}` : `Would be short ${fmtM(Math.abs(delta))}`;
   }
+  if (status === 'clears_cutoff') return `Clears +${fmtM(delta)}`;
   if (status === 'beaten' && delta < 0) return `Short ${fmtM(Math.abs(delta))}`;
   return `${delta >= 0 ? '+' : '-'}${fmtM(Math.abs(delta))}`;
 }

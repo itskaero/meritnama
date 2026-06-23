@@ -48,7 +48,44 @@ function setupSlotBrowser() {
 
   setupSbCandSearch();
   setupSbPdfExport();
+  setupSbSimulationRunner();
   updateSbDownloadGate();
+}
+
+function setupSbSimulationRunner() {
+  document.getElementById('sbRunSimBtn')?.addEventListener('click', runSlotBrowserSimulation);
+}
+
+function runSlotBrowserSimulation() {
+  const prog = SIM.sb.program;
+  const btn = document.getElementById('sbRunSimBtn');
+  if (!prog) {
+    showToast('Select a programme before running simulation.', 'warning');
+    return;
+  }
+  if (!allCandidates().some(c => effectiveMark(c, prog) != null)) {
+    showToast('No candidates for this programme.', 'warning');
+    return;
+  }
+
+  SIM.sim.program = prog;
+  const simProgram = document.getElementById('simProgram');
+  if (simProgram) simProgram.value = prog;
+  if (btn) { btn.disabled = true; btn.textContent = 'Running...'; }
+
+  setTimeout(() => {
+    try {
+      SIM.sim.result = runSimulationForProgram(prog);
+      renderSimResults();
+      renderSlot();
+      showToast('Simulation updated for Where Merit Falls.', 'success');
+    } catch (e) {
+      showToast(`Simulation error: ${e.message}`, 'error');
+      console.error(e);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Run Simulation'; }
+    }
+  }, 30);
 }
 
 function refreshSbDropdowns(from) {
