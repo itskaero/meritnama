@@ -7,144 +7,193 @@
   <link rel="icon" href="logo.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css" />
   <style>
-    body { background: var(--bg-deep, #0d1626); color: var(--text, #e0e6ef); margin: 0; }
+    /* ── Page layout ── */
     .cc-wrap { max-width: 1400px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 
-    .cc-header { margin-bottom: 1.25rem; }
-    .cc-header h1 { font-size: 1.6rem; margin: 0 0 0.4rem; }
-    .cc-header p { color: var(--text-muted, #7a8fa8); font-size: 0.88rem; margin: 0; line-height: 1.5; }
-
-    .cc-meta {
-      display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem;
+    /* ── Summary stats bar ── */
+    .cc-stats {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px; margin-bottom: 1.5rem;
     }
     .cc-stat {
-      flex: 1 1 120px; background: var(--bg-card, #1a2236);
-      border: 1px solid var(--border, #2a3a52); border-radius: 10px;
-      padding: 0.75rem 1rem; text-align: center;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 16px 18px;
+      backdrop-filter: blur(8px); position: relative; overflow: hidden;
     }
-    .cc-stat .num { font-size: 1.5rem; font-weight: 700; color: var(--neon-cyan, #00d4ff); }
-    .cc-stat .lbl { font-size: 0.72rem; color: var(--text-muted, #7a8fa8); margin-top: 0.15rem; }
-    .cc-stat.added .num { color: var(--neon-green, #3ecf8e); }
-    .cc-stat.changed .num { color: var(--neon-gold, #e8a627); }
+    .cc-stat::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .cc-stat.blue::before { background: var(--neon-cyan); }
+    .cc-stat.green::before { background: var(--neon-green); }
+    .cc-stat.gold::before { background: var(--neon-gold); }
+    .cc-stat.pink::before { background: var(--neon-pink); }
+    .cc-stat.purple::before { background: var(--neon-purple); }
+    .cc-stat .num { font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .cc-stat .num.blue { color: var(--neon-cyan); }
+    .cc-stat .num.green { color: var(--neon-green); }
+    .cc-stat .num.gold { color: var(--neon-gold); }
+    .cc-stat .num.pink { color: var(--neon-pink); }
+    .cc-stat .num.purple { color: var(--neon-purple); }
+    .cc-stat .lbl { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-top: 3px; }
+    .cc-stat .sub { font-size: 0.72rem; color: var(--text-light); margin-top: 1px; }
 
+    /* ── Section collapsible ── */
+    .cc-sec {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); margin-bottom: 1rem;
+      backdrop-filter: blur(8px); overflow: hidden;
+    }
+    .cc-sec-hdr {
+      padding: 14px 18px; cursor: pointer; user-select: none;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    .cc-sec-hdr:hover { background: var(--bg-hover); }
+    .cc-sec-hdr .arrow { transition: transform 0.2s; font-size: 0.7rem; color: var(--text-muted); }
+    .cc-sec-hdr.collapsed .arrow { transform: rotate(-90deg); }
+    .cc-sec-hdr.collapsed + .cc-sec-body { display: none; }
+    .cc-sec-body { padding: 16px 18px; overflow-x: auto; }
+    .cc-sec h3 {
+      font-size: 0.85rem; font-weight: 700; color: var(--neon-cyan);
+      margin: 1rem 0 0.6rem;
+    }
+
+    /* ── Callout / info box ── */
+    .cc-callout {
+      background: rgba(77,184,217,0.05); border-left: 3px solid var(--neon-cyan);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 10px 14px; margin-bottom: 14px; font-size: 0.8rem;
+      color: var(--text-muted); line-height: 1.5;
+    }
+
+    /* ── Tables ── */
+    .cc-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .cc-table th {
+      text-align: left; padding: 9px 12px;
+      background: rgba(77,184,217,0.05); color: var(--neon-cyan);
+      font-weight: 600; font-size: 0.68rem; text-transform: uppercase;
+      letter-spacing: 0.06em; border-bottom: 1px solid var(--border);
+    }
+    .cc-table td { padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+    .cc-table tr:hover td { background: var(--bg-hover); }
+    .cc-old { color: var(--neon-pink); }
+    .cc-new { color: var(--neon-green); }
+    .cc-up { color: var(--neon-green); }
+    .cc-down { color: var(--neon-pink); }
+    .cc-zero { color: var(--text-muted); }
+
+    /* ── Badge tags ── */
+    .cc-badge {
+      display: inline-block; padding: 2px 10px; border-radius: 100px;
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .cc-badge.change { background: rgba(232,166,39,0.12); color: var(--neon-gold); border: 1px solid rgba(232,166,39,0.2); }
+    .cc-badge.add { background: rgba(62,207,142,0.12); color: var(--neon-green); border: 1px solid rgba(62,207,142,0.2); }
+    .cc-badge.remove { background: rgba(212,79,126,0.12); color: var(--neon-pink); border: 1px solid rgba(212,79,126,0.2); }
+    .cc-badge.marks { background: rgba(77,184,217,0.12); color: var(--neon-cyan); border: 1px solid rgba(77,184,217,0.2); }
+    .cc-badge.prog { background: rgba(124,101,196,0.12); color: var(--neon-purple); border: 1px solid rgba(124,101,196,0.2); }
+
+    /* ── Progress bar ── */
+    .cc-pbar { height: 5px; background: rgba(255,255,255,0.04); border-radius: 4px; overflow: hidden; }
+    .cc-pbar .fill { height: 100%; border-radius: 4px; }
+    .cc-pbar .fill.up { background: linear-gradient(90deg, var(--neon-green), #6fdfa8); }
+    .cc-pbar .fill.down { background: linear-gradient(90deg, var(--neon-pink), #e87a9a); }
+    .cc-pbar .fill.zero { background: var(--text-light); }
+
+    /* ── Dist row ── */
+    .cc-dist { display: flex; align-items: center; gap: 8px; margin: 3px 0; font-size: 0.78rem; }
+    .cc-dist .lbl { width: 90px; text-align: right; color: var(--text-muted); font-family: var(--mono); }
+    .cc-dist .cnt { color: var(--text-light); min-width: 28px; font-size: 0.72rem; }
+
+    /* ── Filter toolbar ── */
     .cc-toolbar {
-      display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center;
-      margin-bottom: 1rem;
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px;
     }
     .cc-toolbar input, .cc-toolbar select {
-      padding: 0.5rem 0.75rem; border-radius: 8px;
-      border: 1px solid var(--border, #2a3a52);
-      background: var(--bg-card, #1a2236); color: var(--text, #e0e6ef);
-      font-size: 0.85rem;
+      padding: 7px 12px; border-radius: var(--radius);
+      border: 1px solid var(--border); background: var(--bg-input);
+      color: var(--text); font-family: var(--font); font-size: 0.82rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .cc-toolbar input { flex: 1 1 200px; min-width: 140px; }
-    .cc-toolbar input:focus { outline: none; border-color: var(--neon-cyan, #00d4ff); }
-    .cc-gen { font-size: 0.78rem; color: var(--text-muted, #7a8fa8); margin-left: auto; }
+    .cc-toolbar input { flex: 1 1 180px; min-width: 120px; }
+    .cc-toolbar input:focus { outline: none; border-color: var(--neon-cyan); box-shadow: 0 0 0 2px rgba(77,184,217,0.1); }
+    .cc-toolbar select { min-width: 120px; }
+    .cc-toolbar select option { background: #0d1630; color: var(--text); }
+    .cc-toolbar .count { font-size: 0.78rem; color: var(--text-muted); margin-left: auto; }
 
-    .cc-layout {
-      display: grid;
-      grid-template-columns: minmax(140px, 200px) 1fr;
-      gap: 1rem;
-      align-items: start;
+    /* ── Candidate card (browse) ── */
+    .cc-card {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: var(--radius); margin-bottom: 5px; overflow: hidden;
     }
+    .cc-card-hdr {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px; cursor: pointer; gap: 8px;
+      transition: background 0.15s;
+    }
+    .cc-card-hdr:hover { background: var(--bg-hover); }
+    .cc-card-hdr .arrow { font-size: 0.6rem; color: var(--text-muted); transition: transform 0.2s; }
+    .cc-card-hdr.open .arrow { transform: rotate(180deg); }
+    .cc-card-body { display: none; padding: 0 14px 12px; }
+    .cc-card-body.open { display: block; }
 
-    .cc-index {
-      position: sticky;
-      top: 12px;
-      max-height: calc(100vh - 24px);
-      overflow: auto;
-      background: var(--bg-card, #1a2236);
-      border: 1px solid var(--border, #2a3a52);
-      border-radius: 10px;
-      padding: 0.35rem 0;
+    /* ── Detail grid (inside card) ── */
+    .cc-dgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    @media (max-width: 600px) { .cc-dgrid { grid-template-columns: 1fr; } }
+    .cc-ditem {
+      background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 6px;
     }
-    .cc-index-title {
-      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.06em; color: var(--text-muted, #7a8fa8);
-      padding: 0.5rem 0.75rem 0.35rem;
-      border-bottom: 1px solid var(--border, #2a3a52);
-      position: sticky; top: 0; background: var(--bg-card, #1a2236); z-index: 1;
+    .cc-ditem .fname {
+      font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--text-light); font-weight: 600;
     }
-    .cc-id-row {
-      display: block; width: 100%; text-align: left;
-      padding: 0.35rem 0.75rem; border: none; background: transparent;
-      color: var(--neon-cyan, #00d4ff); font-size: 0.82rem; font-weight: 600;
-      font-variant-numeric: tabular-nums; cursor: pointer;
-      font-family: inherit;
-    }
-    .cc-id-row:hover, .cc-id-row:focus {
-      background: rgba(0, 212, 255, 0.08); outline: none;
-    }
-    .cc-id-row.active { background: rgba(0, 212, 255, 0.14); color: #fff; }
-    .cc-id-row.status-added { color: var(--neon-green, #3ecf8e); }
-    .cc-id-row.status-removed { color: #ff6482; }
+    .cc-ditem .fval { font-size: 0.82rem; margin-top: 2px; }
+    .cc-ditem .fval .old { color: var(--neon-pink); }
+    .cc-ditem .fval .new { color: var(--neon-green); }
+    .cc-ditem .fval .arrow { color: var(--text-light); margin: 0 4px; }
 
-    .cc-details { min-width: 0; }
+    /* ── Preference block ── */
+    .cc-pref {
+      margin-bottom: 6px; padding: 6px 10px;
+      background: rgba(0,0,0,0.15); border-radius: 6px;
+      font-size: 0.78rem; line-height: 1.5;
+    }
+    .cc-pref strong { color: var(--neon-cyan); }
 
-    .cc-candidate {
-      scroll-margin-top: 80px;
-      background: var(--bg-card, #1a2236);
-      border: 1px solid var(--border, #2a3a52);
-      border-radius: 10px;
-      margin-bottom: 1rem;
-      overflow: hidden;
+    /* ── Marks mini table ── */
+    .cc-marks-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 6px; }
+    .cc-marks-table th {
+      background: rgba(77,184,217,0.04); padding: 5px 8px;
+      text-align: left; font-size: 0.62rem; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;
+      border-bottom: 1px solid var(--border);
     }
-    .cc-candidate:target { border-color: rgba(0, 212, 255, 0.45); box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.2); }
-    .cc-cand-head {
-      display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 1rem;
-      padding: 0.85rem 1rem;
-      border-bottom: 1px solid var(--border, #2a3a52);
-      background: rgba(0, 0, 0, 0.15);
-    }
-    .cc-cand-head h2 {
-      margin: 0; font-size: 1rem; font-weight: 700;
-      font-variant-numeric: tabular-nums;
-    }
-    .cc-cand-head .name { color: var(--text-muted, #7a8fa8); font-size: 0.82rem; font-weight: 400; }
-    .cc-badge {
-      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.05em; padding: 0.2rem 0.55rem; border-radius: 100px;
-    }
-    .cc-badge.changed { background: rgba(232, 166, 39, 0.15); color: #e8a627; }
-    .cc-badge.added { background: rgba(62, 207, 142, 0.15); color: #3ecf8e; }
-    .cc-badge.removed { background: rgba(255, 100, 130, 0.15); color: #ff6482; }
+    .cc-marks-table td { padding: 5px 8px; border-bottom: 1px solid rgba(255,255,255,0.03); }
 
-    .cc-section { padding: 0.75rem 1rem 1rem; }
-    .cc-section h3 {
-      margin: 0 0 0.6rem; font-size: 0.78rem; text-transform: uppercase;
-      letter-spacing: 0.05em; color: var(--text-muted, #7a8fa8);
+    /* ── Load / error states ── */
+    #loadMsg { text-align: center; padding: 4rem 2rem; color: var(--text-muted); }
+    #loadMsg .spinner {
+      width: 40px; height: 40px; margin: 0 auto 16px;
+      border: 3px solid rgba(77,184,217,0.1); border-top-color: var(--neon-cyan);
+      border-radius: 50%; animation: spin 0.7s linear infinite;
     }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loadErr { color: var(--neon-pink); }
 
-    .cc-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-    .cc-table th {
-      text-align: left; padding: 0.45rem 0.6rem; color: var(--text-muted, #7a8fa8);
-      font-weight: 600; border-bottom: 1px solid var(--border, #2a3a52);
+    /* ── Program chip ── */
+    .cc-prog-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .cc-prog-chip {
+      padding: 5px 12px; border-radius: 100px; font-size: 0.75rem;
+      background: rgba(77,184,217,0.06); border: 1px solid var(--border);
+      color: var(--text-muted); cursor: pointer; transition: all 0.15s;
     }
-    .cc-table td {
-      padding: 0.45rem 0.6rem; border-bottom: 1px solid rgba(42, 58, 82, 0.5);
-      vertical-align: top; word-break: break-word;
-    }
-    .cc-table tr:last-child td { border-bottom: none; }
-    .cc-old { color: #ff9a9a; }
-    .cc-new { color: #9ae6b0; }
-    .cc-mono { font-family: ui-monospace, monospace; font-size: 0.76rem; white-space: pre-wrap; }
+    .cc-prog-chip:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+    .cc-prog-chip.active { background: rgba(77,184,217,0.12); border-color: var(--neon-cyan); color: var(--neon-cyan); }
 
-    .cc-pref-block {
-      margin-bottom: 0.65rem; padding: 0.55rem 0.65rem;
-      background: rgba(0, 0, 0, 0.2); border-radius: 8px;
-      font-size: 0.78rem; line-height: 1.45;
-    }
-    .cc-pref-block strong { color: var(--neon-cyan, #00d4ff); }
-
-    #loadMsg { text-align: center; padding: 3rem; color: var(--text-muted, #7a8fa8); }
-    #loadErr { color: #ff6482; }
-
-    @media (max-width: 800px) {
-      .cc-layout { grid-template-columns: 1fr; }
-      .cc-index {
-        position: static; max-height: 220px;
-      }
-    }
+    /* ── Animations ── */
+    .cc-fade { animation: fadeInUp 0.35s ease both; }
   </style>
 </head>
 <body>
@@ -172,13 +221,13 @@
 </nav>
 
 <div class="cc-wrap">
-  <div class="cc-header">
-    <h1>&#128202; Candidate Data Changes</h1>
-    <p>Compares the previous snapshot (<code>old-induction21_candidates.json</code>) with the current data (<code>induction21_candidates.json</code>). Click an applicant ID to jump to their changes.</p>
+  <div class="section-header cc-fade">
+    <h2>&#128202; Candidate Data Changes</h2>
+    <p>Compares the previous snapshot (<code>old-induction21_candidates.json</code>) with the current data (<code>induction21_candidates.json</code>). Shows what changed, by how much, and for which candidates.</p>
   </div>
 
-  <div id="loadMsg">Loading change log&hellip;</div>
-  <div id="appRoot" class="hidden"></div>
+  <div id="appRoot"></div>
+  <div id="loadMsg"><div class="spinner"></div>Loading change log&hellip;</div>
 </div>
 
 <script>
@@ -186,188 +235,556 @@
   const PRIVATE_FIELDS = new Set(['emailId', 'pmdcNo', 'contactNumber', 'cnic']);
 
   const FIELD_LABELS = {
-    nameFull: 'Name',
-    programMarks: 'Programme marks',
-    applied_in: 'Applied programmes',
-    degree: 'Degree aggregate',
-    houseJob: 'House job',
-    experience: 'Experience',
-    research: 'Research',
-    position: 'Position',
-    hardAreas: 'Hard areas',
-    matric: 'Matric',
-    fsc: 'FSc',
-    attempts: 'Attempts',
-    mdcat: 'MDCAT',
-    marksTotal: 'Total merit marks',
-    scrutiny: 'Scrutiny status',
-    _record: 'Record'
+    nameFull: 'Full name', cnic: 'CNIC', applied_in: 'Applied programmes',
+    degree: 'Degree aggregate', houseJob: 'House job', experience: 'Experience',
+    research: 'Research', position: 'Position', hardAreas: 'Hard areas',
+    matric: 'Matriculation', fsc: 'FSc / Intermediate', attempts: 'Attempts',
+    mdcat: 'MDCAT score', marksTotal: 'Total merit marks', scrutiny: 'Scrutiny status',
+    programMarks: 'Programme marks', marksExplanation: 'Marks explanation',
+    programAttempt: 'Attempts by programme', programPercentage: 'Percentage by programme',
+    adjusted: 'Adjusted marks', _record: 'Record',
   };
 
+  const SCALAR_FIELDS = new Set([
+    'degree', 'houseJob', 'experience', 'research', 'position', 'hardAreas',
+    'matric', 'fsc', 'attempts', 'mdcat', 'marksTotal',
+  ]);
+
   function esc(s) {
-    return String(s ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  function formatVal(v) {
-    if (v === null || v === undefined || v === '') return '<span class="cc-old">—</span>';
-    if (typeof v === 'object') return '<span class="cc-mono">' + esc(JSON.stringify(v, null, 0)) + '</span>';
-    return esc(v);
+  function fmt(v) {
+    if (v === null || v === undefined || v === '') return '—';
+    if (typeof v === 'number') return v.toFixed(4);
+    if (typeof v === 'object') return JSON.stringify(v);
+    return String(v);
   }
 
-  function candAnchor(id) {
-    return 'cand-' + id;
+  function fmtChange(val) {
+    if (typeof val !== 'number') return '';
+    return (val >= 0 ? '+' : '') + val.toFixed(4);
   }
 
-  function renderPrefChange(p) {
-    const prog = esc(p.program || '');
-    const no = p.preferenceNo != null ? ' #' + esc(p.preferenceNo) : '';
-    if (p.kind === 'count') {
-      return '<div class="cc-pref-block"><strong>' + prog + '</strong> preference count: ' +
-        esc(p.oldCount) + ' → ' + esc(p.newCount) + '</div>';
-    }
-    if (p.kind === 'added') {
-      const n = p.new || {};
-      return '<div class="cc-pref-block"><strong>' + prog + no + '</strong> <span class="cc-new">added</span>: ' +
-        esc(n.specialityName) + ' — ' + esc(n.hospitalName) + '</div>';
-    }
-    if (p.kind === 'removed') {
-      const o = p.old || {};
-      return '<div class="cc-pref-block"><strong>' + prog + no + '</strong> <span class="cc-old">removed</span>: ' +
-        esc(o.specialityName) + ' — ' + esc(o.hospitalName) + '</div>';
-    }
-    const bits = (p.fields || []).map(f =>
-      esc(f.field) + ': <span class="cc-old">' + esc(f.old) + '</span> → <span class="cc-new">' + esc(f.new) + '</span>'
-    ).join('; ');
-    return '<div class="cc-pref-block"><strong>' + prog + no + '</strong> ' + bits + '</div>';
+  function changeClass(val) {
+    if (typeof val !== 'number') return 'cc-zero';
+    return val > 0.0001 ? 'cc-up' : val < -0.0001 ? 'cc-down' : 'cc-zero';
   }
 
-  function renderCandidate(c) {
-    const id = c.applicantId;
-    const visibleFields = (c.fields || []).filter(f => !PRIVATE_FIELDS.has(f.field));
-    const fieldsHtml = visibleFields.length
-      ? '<table class="cc-table"><thead><tr><th>Field</th><th>Previous</th><th>Current</th></tr></thead><tbody>' +
-        visibleFields.map(f => '<tr><td>' + esc(FIELD_LABELS[f.field] || f.field) + '</td><td class="cc-old">' +
-          formatVal(f.old) + '</td><td class="cc-new">' + formatVal(f.new) + '</td></tr>').join('') +
-        '</tbody></table>'
-      : '<p style="color:var(--text-muted);font-size:0.82rem;margin:0">No field-level changes.</p>';
-
-    const prefsHtml = (c.preferences || []).length
-      ? '<div class="cc-section"><h3>Preferences</h3>' + (c.preferences || []).map(renderPrefChange).join('') + '</div>'
-      : '';
-
-    const name = c.nameFull ? '<span class="name">' + esc(c.nameFull) + '</span>' : '';
-
-    return '<article class="cc-candidate" id="' + esc(candAnchor(id)) + '">' +
-      '<div class="cc-cand-head">' +
-        '<h2>Applicant ' + esc(id) + '</h2>' + name +
-        '<span class="cc-badge ' + esc(c.status) + '">' + esc(c.status) + '</span>' +
-      '</div>' +
-      '<div class="cc-section"><h3>Profile &amp; marks</h3>' + fieldsHtml + '</div>' +
-      prefsHtml +
-      '</article>';
+  // ── Summary cards ──
+  function renderSummary(s) {
+    const pctChanged = s.common ? ((s.changed / s.common) * 100).toFixed(1) : '0.0';
+    const pctAdded = s.oldCount ? ((s.added / s.oldCount) * 100).toFixed(1) : '0.0';
+    return (
+      '<div class="cc-stats">' +
+        '<div class="cc-stat blue"><div class="num blue">' + esc(s.oldCount) + '</div><div class="lbl">Previous pool</div><div class="sub">' + esc(s.oldSource ? 'old snapshot' : '') + '</div></div>' +
+        '<div class="cc-stat blue"><div class="num blue">' + esc(s.newCount) + '</div><div class="lbl">Current pool</div><div class="sub">latest snapshot</div></div>' +
+        '<div class="cc-stat gold"><div class="num gold">' + esc(s.changed) + '</div><div class="lbl">Candidates updated</div><div class="sub">' + pctChanged + '% of common</div></div>' +
+        '<div class="cc-stat green"><div class="num green">' + esc(s.added) + '</div><div class="lbl">New applicants</div><div class="sub">' + pctAdded + '% added</div></div>' +
+        (s.removed ? '<div class="cc-stat pink"><div class="num pink">' + esc(s.removed) + '</div><div class="lbl">Removed</div></div>' : '') +
+        '<div class="cc-stat purple"><div class="num purple">' + esc(s.totalUpdates) + '</div><div class="lbl">Total changes</div><div class="sub">in this log</div></div>' +
+      '</div>'
+    );
   }
 
-  function scrollToCandidate(id) {
-    const el = document.getElementById(candAnchor(id));
-    if (!el) return;
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    document.querySelectorAll('.cc-id-row').forEach(btn => {
-      btn.classList.toggle('active', Number(btn.dataset.id) === Number(id));
+  // ── Collapsible section wrapper ──
+  function section(title, badge, bodyHtml, defaultOpen) {
+    var openClass = defaultOpen === false ? ' collapsed' : '';
+    return (
+      '<div class="cc-sec cc-fade">' +
+        '<div class="cc-sec-hdr' + openClass + '" onclick="toggleSec(this)">' +
+          '<span class="arrow">&#9660;</span> ' + esc(title) +
+          (badge ? ' <span class="cc-badge ' + esc(badge.cls || 'change') + '">' + esc(badge.text) + '</span>' : '') +
+        '</div>' +
+        '<div class="cc-sec-body">' + bodyHtml + '</div>' +
+      '</div>'
+    );
+  }
+
+  // ── Distribution bars ──
+  function renderDist(deltas, label) {
+    if (!deltas || !deltas.length) return '';
+    var buckets = {};
+    deltas.forEach(function(d) {
+      var b = (Math.round(d * 100) / 100).toFixed(2);
+      if (!buckets[b]) buckets[b] = 0;
+      buckets[b]++;
     });
+    var sorted = Object.keys(buckets).sort(function(a, b) { return parseFloat(a) - parseFloat(b); });
+    var maxCount = Math.max.apply(null, sorted.map(function(k) { return buckets[k]; }));
+    var html = '<div style="margin-bottom:8px;">';
+    sorted.forEach(function(b) {
+      var v = parseFloat(b);
+      var count = buckets[b];
+      var pct = maxCount ? (count / maxCount * 100) : 0;
+      var cls = v > 0 ? 'up' : (v < 0 ? 'down' : 'zero');
+      html += (
+        '<div class="cc-dist">' +
+          '<span class="lbl">' + b + '</span>' +
+          '<div class="cc-pbar" style="width:160px;"><div class="fill ' + cls + '" style="width:' + pct + '%;"></div></div>' +
+          '<span class="cnt">' + count + '</span>' +
+        '</div>'
+      );
+    });
+    html += '</div>';
+    return html;
   }
 
+  // ── Detect which fields changed in a candidate ──
+  function categorizeChanges(c) {
+    var types = { marks: false, scalar: false, other: false, added: false, removed: false };
+    if (c.status === 'added') { types.added = true; return types; }
+    if (c.status === 'removed') { types.removed = true; return types; }
+    (c.fields || []).forEach(function(f) {
+      if (f.field === 'marksTotal') types.marks = true;
+      else if (SCALAR_FIELDS.has(f.field)) types.scalar = true;
+      else types.other = true;
+    });
+    if (c.preferences && c.preferences.length) types.other = true;
+    return types;
+  }
+
+  // ── Marks total changes overview section ──
+  function renderMarksSection(candidates, summary) {
+    var marksChanged = candidates.filter(function(c) {
+      return c.fields && c.fields.some(function(f) { return f.field === 'marksTotal'; });
+    });
+    if (!marksChanged.length) return '';
+
+    var deltas = [];
+    var tableRows = '';
+    marksChanged.forEach(function(c) {
+      var f = c.fields.find(function(f) { return f.field === 'marksTotal'; });
+      var d = (typeof f.new === 'number' ? f.new : 0) - (typeof f.old === 'number' ? f.old : 0);
+      deltas.push(d);
+      var cls = changeClass(d);
+      var sign = d >= 0 ? '+' : '';
+      var name = (c.nameFull || '').trim() || '—';
+      var nameShort = name.length > 55 ? name.substring(0, 55) + '…' : name;
+      var word = d > 0 ? 'increased' : (d < 0 ? 'decreased' : 'unchanged');
+      tableRows += (
+        '<tr class="cand-row" data-id="' + c.applicantId + '" data-name="' + esc((c.nameFull || '').toLowerCase()) + '" data-delta="' + d + '">' +
+          '<td><strong>' + c.applicantId + '</strong></td>' +
+          '<td>' + esc(nameShort) + '</td>' +
+          '<td class="cc-old">' + fmt(f.old) + '</td>' +
+          '<td class="cc-new">' + fmt(f.new) + '</td>' +
+          '<td class="' + cls + '">' + sign + d.toFixed(4) + '</td>' +
+          '<td><a class="cand-expand" href="javascript:;" onclick="toggleCandDetail(' + c.applicantId + ')">Show details</a></td>' +
+        '</tr>' +
+        '<tr id="cdetail-' + c.applicantId + '" style="display:none;"><td colspan="6" style="padding:0;">' +
+          '<div style="padding:10px 14px 14px;"><div class="cc-dgrid">' + renderCandidateFieldsDetail(c) + '</div></div>' +
+        '</td></tr>'
+      );
+    });
+
+    var up = deltas.filter(function(d) { return d > 0; }).length;
+    var down = deltas.filter(function(d) { return d < 0; }).length;
+
+    var body =
+      '<div class="cc-callout">&#9432; <strong>Total merit marks</strong> are the sum of degree, house job, position, and MDCAT. ' +
+      'The table below shows candidates whose total marks changed between the old and new snapshots.</div>' +
+      renderDist(deltas, 'How much did marks change?') +
+      '<div class="cc-toolbar">' +
+        '<input type="text" id="marksSearch" placeholder="Search name or ID…" oninput="filterMarks()">' +
+        '<select id="marksSort" onchange="sortMarks()">' +
+          '<option value="delta-desc">Largest increase first</option>' +
+          '<option value="delta-asc">Largest decrease first</option>' +
+          '<option value="id">By ID</option>' +
+          '<option value="name">By name</option>' +
+        '</select>' +
+        '<span class="count" id="marksCount"></span>' +
+      '</div>' +
+      '<table class="cc-table" id="marksTable"><thead><tr>' +
+        '<th>ID</th><th>Name</th><th>Previous</th><th>Current</th><th>Change</th><th></th>' +
+      '</tr></thead><tbody>' + tableRows + '</tbody></table>';
+
+    return section('Marks Changes by Candidate', { text: marksChanged.length + ' candidates', cls: 'change' }, body, true);
+  }
+
+  // ── Programme marks section ──
+  function renderProgramMarksSection(candidates) {
+    var progChanged = candidates.filter(function(c) {
+      if (c.status !== 'changed') return false;
+      return c.fields.some(function(f) { return f.field === 'programMarks'; });
+    });
+    if (!progChanged.length) return '';
+
+    // Group by program if possible (programMarks is a dict, so we need to find which subkey changed)
+    var rows = '';
+    progChanged.forEach(function(c) {
+      var f = c.fields.find(function(f) { return f.field === 'programMarks'; });
+      var oldVal = f.old, newVal = f.new;
+      // programMarks can be a dict; try to find which program(s) changed
+      var progDiffs = [];
+      if (typeof oldVal === 'object' && typeof newVal === 'object' && oldVal !== null && newVal !== null) {
+        var allProgs = new Set(Object.keys(oldVal).concat(Object.keys(newVal)));
+        allProgs.forEach(function(p) {
+          var ov = oldVal[p] || 0, nv = newVal[p] || 0;
+          if (Math.abs(ov - nv) > 0.001) {
+            progDiffs.push({ program: p, old: ov, new: nv });
+          }
+        });
+      }
+      if (!progDiffs.length) {
+        // Couldn't diff further; show raw values
+        progDiffs.push({ program: '?', old: fmt(oldVal), new: fmt(newVal) });
+      }
+      var name = (c.nameFull || '').trim() || '—';
+      var nameShort = name.length > 55 ? name.substring(0, 55) + '…' : name;
+      progDiffs.forEach(function(pd) {
+        var d = (typeof pd.new === 'number' ? pd.new : 0) - (typeof pd.old === 'number' ? pd.old : 0);
+        var cls = changeClass(d);
+        var sign = d >= 0 ? '+' : '';
+        rows += (
+          '<tr data-id="' + c.applicantId + '">' +
+            '<td><strong>' + c.applicantId + '</strong></td>' +
+            '<td>' + esc(nameShort) + '</td>' +
+            '<td style="color:var(--neon-purple);font-weight:600;">' + esc(pd.program) + '</td>' +
+            '<td class="cc-old">' + pd.old + '</td>' +
+            '<td class="cc-new">' + pd.new + '</td>' +
+            '<td class="' + cls + '">' + sign + d.toFixed(1) + '</td>' +
+          '</tr>'
+        );
+      });
+    });
+
+    // Count unique candidates per program
+    var progCounts = {};
+    progChanged.forEach(function(c) {
+      var f = c.fields.find(function(f) { return f.field === 'programMarks'; });
+      if (f && typeof f.old === 'object' && typeof f.new === 'object') {
+        Object.keys(f.new).forEach(function(p) {
+          if (Math.abs((f.new[p] || 0) - (f.old[p] || 0)) > 0.001) {
+            progCounts[p] = (progCounts[p] || 0) + 1;
+          }
+        });
+      }
+    });
+    var chips = Object.keys(progCounts).sort().map(function(p) {
+      return '<span class="cc-prog-chip">' + esc(p) + ' <strong>' + progCounts[p] + '</strong></span>';
+    }).join('');
+
+    var body =
+      '<div class="cc-callout">&#9432; <strong>Programme marks</strong> reflect certificate marks per programme (FCPS, MS, MD, etc.). ' +
+      'Changes here mean certificate data was updated between snapshots.</div>' +
+      (chips ? '<div class="cc-prog-chips">' + chips + '</div>' : '') +
+      '<table class="cc-table"><thead><tr>' +
+        '<th>ID</th><th>Name</th><th>Program</th><th>Previous</th><th>Current</th><th>Change</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table>';
+
+    return section('Programme Marks Changes', { text: progChanged.length + ' candidates', cls: 'prog' }, body, false);
+  }
+
+  // ── Render field changes detail for a candidate ──
+  function renderCandidateFieldsDetail(c) {
+    var html = '';
+    var fieldMap = {};
+    (c.fields || []).forEach(function(f) {
+      if (!PRIVATE_FIELDS.has(f.field)) fieldMap[f.field] = f;
+    });
+
+    var keys = Object.keys(fieldMap).sort();
+    keys.forEach(function(k) {
+      var f = fieldMap[k];
+      var lbl = FIELD_LABELS[k] || k;
+      if (k === 'programMarks') {
+        // Show per-program diff
+        var progHtml = '';
+        if (typeof f.old === 'object' && typeof f.new === 'object') {
+          var allP = new Set(Object.keys(f.old || {}).concat(Object.keys(f.new || {})));
+          allP.forEach(function(p) {
+            var ov = (f.old || {})[p] || 0;
+            var nv = (f.new || {})[p] || 0;
+            if (Math.abs(ov - nv) > 0.001) {
+              var d = nv - ov;
+              var cls = changeClass(d);
+              progHtml += '<div style="font-size:0.78rem;margin:2px 0;"><strong style="color:var(--neon-purple);">' + esc(p) + '</strong>: <span class="old">' + ov + '</span><span class="arrow"> &rarr; </span><span class="new">' + nv + '</span> <span class="' + cls + '">(' + (d >= 0 ? '+' : '') + d.toFixed(1) + ')</span></div>';
+            }
+          });
+        }
+        if (progHtml) {
+          html += '<div class="cc-ditem"><div class="fname">Programme marks</div><div class="fval">' + progHtml + '</div></div>';
+        }
+      } else if (k === 'adjusted' || k === 'programPercentage' || k === 'programAttempt' || k === 'applied_in') {
+        var oh = fmt(f.old), nh = fmt(f.new);
+        if (oh !== nh) {
+          html += '<div class="cc-ditem"><div class="fname">' + esc(lbl) + '</div><div class="fval"><span class="old">' + esc(oh) + '</span><span class="arrow"> &rarr; </span><span class="new">' + esc(nh) + '</span></div></div>';
+        }
+      } else if (k === 'marksTotal') {
+        var d = (typeof f.new === 'number' ? f.new : 0) - (typeof f.old === 'number' ? f.old : 0);
+        var cls = changeClass(d);
+        var word = d > 0 ? 'went up' : (d < 0 ? 'went down' : 'stayed the same');
+        html += (
+          '<div class="cc-ditem"><div class="fname">Total merit marks</div>' +
+          '<div class="fval"><span class="old">' + fmt(f.old) + '</span><span class="arrow"> &rarr; </span><span class="new">' + fmt(f.new) + '</span>' +
+          ' <span class="' + cls + '">(' + (d >= 0 ? '+' : '') + d.toFixed(4) + ')</span></div>' +
+          '<div style="font-size:0.7rem;color:var(--text-muted);margin-top:2px;font-style:italic;">Your total ' + word + ' by ' + Math.abs(d).toFixed(4) + ' points.</div></div>'
+        );
+      } else if (SCALAR_FIELDS.has(k)) {
+        var d = (typeof f.new === 'number' ? f.new : 0) - (typeof f.old === 'number' ? f.old : 0);
+        var cls = changeClass(d);
+        html += (
+          '<div class="cc-ditem"><div class="fname">' + esc(lbl) + '</div>' +
+          '<div class="fval"><span class="old">' + fmt(f.old) + '</span><span class="arrow"> &rarr; </span><span class="new">' + fmt(f.new) + '</span>' +
+          ' <span class="' + cls + '">(' + (d >= 0 ? '+' : '') + d.toFixed(4) + ')</span></div></div>'
+        );
+      } else {
+        var oh = fmt(f.old), nh = fmt(f.new);
+        if (oh !== nh) {
+          html += '<div class="cc-ditem"><div class="fname">' + esc(lbl) + '</div><div class="fval"><span class="old">' + esc(oh) + '</span><span class="arrow"> &rarr; </span><span class="new">' + esc(nh) + '</span></div></div>';
+        }
+      }
+    });
+    return html || '<div style="color:var(--text-muted);font-size:0.82rem;">No field-level changes to display.</div>';
+  }
+
+  // ── Preferences HTML ──
+  function renderPreferences(prefs) {
+    if (!prefs || !prefs.length) return '';
+    var html = '<div style="margin-top:10px;"><div class="fname" style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-light);font-weight:600;margin-bottom:6px;">Preferences</div>';
+    prefs.forEach(function(p) {
+      var prog = esc(p.program || '');
+      var no = p.preferenceNo != null ? ' #' + esc(p.preferenceNo) : '';
+      if (p.kind === 'count') {
+        html += '<div class="cc-pref"><strong>' + prog + '</strong> count: ' + esc(p.oldCount) + ' &rarr; ' + esc(p.newCount) + '</div>';
+      } else if (p.kind === 'added') {
+        var n = p.new || {};
+        html += '<div class="cc-pref"><strong>' + prog + no + '</strong> <span class="cc-new">added</span>: ' + esc(n.specialityName || '') + ' &mdash; ' + esc(n.hospitalName || '') + '</div>';
+      } else if (p.kind === 'removed') {
+        var o = p.old || {};
+        html += '<div class="cc-pref"><strong>' + prog + no + '</strong> <span class="cc-old">removed</span>: ' + esc(o.specialityName || '') + ' &mdash; ' + esc(o.hospitalName || '') + '</div>';
+      } else {
+        var bits = (p.fields || []).map(function(f) { return esc(f.field) + ': <span class="cc-old">' + esc(f.old) + '</span> &rarr; <span class="cc-new">' + esc(f.new) + '</span>'; }).join('; ');
+        html += '<div class="cc-pref"><strong>' + prog + no + '</strong> ' + bits + '</div>';
+      }
+    });
+    html += '</div>';
+    return html;
+  }
+
+  // ── Browse all changes section ──
+  function renderBrowseSection(candidates) {
+    var cards = '';
+    candidates.forEach(function(c) {
+      var types = categorizeChanges(c);
+      var tags = [];
+      if (c.status === 'added') tags.push('add');
+      else if (c.status === 'removed') tags.push('remove');
+      else if (c.status === 'changed') tags.push('change');
+      if (types.marks) tags.push('marks');
+      if (types.scalar) tags.push('change');
+
+      var badgeCls = c.status === 'added' ? 'add' : (c.status === 'removed' ? 'remove' : 'change');
+      var badgeText = c.status === 'added' ? 'New' : (c.status === 'removed' ? 'Removed' : 'Updated');
+      var name = (c.nameFull || '').trim() || '—';
+      var nameShort = name.length > 60 ? name.substring(0, 60) + '…' : name;
+      var tagHtml = tags.map(function(t) { return '<span class="cc-badge ' + t + '">' + t + '</span>'; }).join(' ');
+      var typesStr = tags.join(',');
+
+      // Compute max abs delta for sorting
+      var maxDelta = 0;
+      (c.fields || []).forEach(function(f) {
+        if (typeof f.old === 'number' && typeof f.new === 'number') {
+          maxDelta = Math.max(maxDelta, Math.abs(f.new - f.old));
+        }
+      });
+
+      var fieldHtml = renderCandidateFieldsDetail(c);
+      var prefHtml = renderPreferences(c.preferences);
+
+      var detailHtml = fieldHtml;
+      if (c.status === 'added') {
+        detailHtml = '<div class="cc-ditem" style="grid-column:1/-1;"><div class="fname">Status</div><div class="fval"><span class="cc-new">New applicant added to the system</span></div></div>' + fieldHtml;
+      } else if (c.status === 'removed') {
+        detailHtml = '<div class="cc-ditem" style="grid-column:1/-1;"><div class="fname">Status</div><div class="fval"><span class="cc-old">Applicant removed from the system</span></div></div>';
+      }
+
+      cards += (
+        '<div class="cc-card cc-fade" data-id="' + c.applicantId + '" data-name="' + esc((c.nameFull || '').toLowerCase()) + '" data-status="' + c.status + '" data-types="' + typesStr + '" data-delta="' + maxDelta + '">' +
+          '<div class="cc-card-hdr" onclick="toggleCard(this)">' +
+            '<span><strong>' + c.applicantId + '</strong> &mdash; ' + esc(nameShort) + ' ' + tagHtml + '</span>' +
+            '<span class="arrow">&#9660;</span>' +
+          '</div>' +
+          '<div class="cc-card-body"><div class="cc-dgrid">' + detailHtml + '</div>' + prefHtml + '</div>' +
+        '</div>'
+      );
+    });
+
+    var filterOpts = [
+      { value: 'all', label: 'All changes' },
+      { value: 'changed', label: 'Updated' },
+      { value: 'added', label: 'New' },
+      { value: 'removed', label: 'Removed' },
+      { value: 'marks', label: 'Marks changed' },
+    ];
+    var filterHtml = filterOpts.map(function(o) {
+      return '<option value="' + o.value + '">' + o.label + '</option>';
+    }).join('');
+
+    var body =
+      '<div class="cc-toolbar">' +
+        '<input type="text" id="allSearch" placeholder="Search ID or name…" oninput="filterAll()">' +
+        '<select id="allFilter" onchange="filterAll()">' + filterHtml + '</select>' +
+        '<select id="allSort" onchange="sortAll()">' +
+          '<option value="id">Sort by ID</option>' +
+          '<option value="name">Sort by name</option>' +
+          '<option value="delta-desc">Biggest change first</option>' +
+        '</select>' +
+        '<span class="count" id="allCount"></span>' +
+      '</div>' +
+      '<div id="allCards">' + cards + '</div>';
+
+    return section('Browse All Changes', { text: candidates.length + ' candidates', cls: 'change' }, body, false);
+  }
+
+  // ── Render the full app ──
+  function renderApp(data) {
+    var s = data.summary || {};
+    s.oldSource = data.oldSource || '';
+
+    // Compute derived common count
+    s.common = Math.min(s.oldCount || 0, s.newCount || 0);
+
+    var candidates = data.candidates || [];
+    var changed = candidates.filter(function(c) { return c.status === 'changed'; });
+    var added = candidates.filter(function(c) { return c.status === 'added'; });
+    var removed = candidates.filter(function(c) { return c.status === 'removed'; });
+
+    var html =
+      renderSummary(s) +
+      renderMarksSection(changed, s) +
+      renderProgramMarksSection(changed) +
+      renderBrowseSection(candidates);
+
+    var root = document.getElementById('appRoot');
+    root.innerHTML = html;
+
+    // Apply initial filters
+    filterMarks();
+    filterAll();
+  }
+
+  // ── Toggle section ──
+  window.toggleSec = function(el) {
+    el.classList.toggle('collapsed');
+  };
+
+  // ── Toggle candidate detail row ──
+  window.toggleCandDetail = function(id) {
+    var row = document.getElementById('cdetail-' + id);
+    if (!row) return;
+    var hidden = row.style.display === 'none' || row.style.display === '';
+    row.style.display = hidden ? 'table-row' : 'none';
+    var link = row.previousElementSibling.querySelector('.cand-expand');
+    if (link) link.textContent = hidden ? 'Hide details' : 'Show details';
+  };
+
+  // ── Toggle card ──
+  window.toggleCard = function(el) {
+    var body = el.nextElementSibling;
+    if (!body) return;
+    body.classList.toggle('open');
+    el.classList.toggle('open');
+  };
+
+  // ── Filter marks table ──
+  window.filterMarks = function() {
+    var q = (document.getElementById('marksSearch') ? document.getElementById('marksSearch').value : '').toLowerCase();
+    var rows = document.querySelectorAll('#marksTable tbody tr.cand-row');
+    var count = 0;
+    rows.forEach(function(r) {
+      var id = r.getAttribute('data-id') || '';
+      var name = r.getAttribute('data-name') || '';
+      var match = id.includes(q) || name.includes(q);
+      r.style.display = match ? '' : 'none';
+      var detail = document.getElementById('cdetail-' + r.getAttribute('data-id'));
+      if (detail && !match) detail.style.display = 'none';
+      if (match) count++;
+    });
+    var el = document.getElementById('marksCount');
+    if (el) el.textContent = count + ' shown';
+  };
+
+  // ── Sort marks table ──
+  window.sortMarks = function() {
+    var sort = document.getElementById('marksSort') ? document.getElementById('marksSort').value : 'delta-desc';
+    var tbody = document.querySelector('#marksTable tbody');
+    if (!tbody) return;
+    var rows = Array.from(tbody.querySelectorAll('tr.cand-row'));
+    rows.sort(function(a, b) {
+      if (sort === 'id') return parseInt(a.getAttribute('data-id')) - parseInt(b.getAttribute('data-id'));
+      if (sort === 'name') return (a.getAttribute('data-name') || '').localeCompare(b.getAttribute('data-name') || '');
+      var da = parseFloat(a.getAttribute('data-delta')) || 0;
+      var db = parseFloat(b.getAttribute('data-delta')) || 0;
+      return sort === 'delta-desc' ? db - da : da - db;
+    });
+    rows.forEach(function(r) { tbody.appendChild(r); });
+    rows.forEach(function(r) {
+      var detail = document.getElementById('cdetail-' + r.getAttribute('data-id'));
+      if (detail) tbody.appendChild(detail);
+    });
+    filterMarks();
+  };
+
+  // ── Filter all cards ──
+  window.filterAll = function() {
+    var q = (document.getElementById('allSearch') ? document.getElementById('allSearch').value : '').toLowerCase();
+    var filter = document.getElementById('allFilter') ? document.getElementById('allFilter').value : 'all';
+    var cards = document.querySelectorAll('#allCards .cc-card');
+    var count = 0;
+    cards.forEach(function(c) {
+      var id = c.getAttribute('data-id') || '';
+      var name = c.getAttribute('data-name') || '';
+      var status = c.getAttribute('data-status') || '';
+      var types = c.getAttribute('data-types') || '';
+      var match = (id.includes(q) || name.includes(q)) &&
+        (filter === 'all' || filter === status || types.includes(filter));
+      c.style.display = match ? '' : 'none';
+      if (match) count++;
+    });
+    var el = document.getElementById('allCount');
+    if (el) el.textContent = count + ' shown';
+  };
+
+  // ── Sort all cards ──
+  window.sortAll = function() {
+    var sort = document.getElementById('allSort') ? document.getElementById('allSort').value : 'id';
+    var container = document.getElementById('allCards');
+    if (!container) return;
+    var cards = Array.from(container.querySelectorAll('.cc-card'));
+    cards.sort(function(a, b) {
+      if (sort === 'name') return (a.getAttribute('data-name') || '').localeCompare(b.getAttribute('data-name') || '');
+      if (sort === 'delta-desc') return parseFloat(b.getAttribute('data-delta') || 0) - parseFloat(a.getAttribute('data-delta') || 0);
+      return parseInt(a.getAttribute('data-id')) - parseInt(b.getAttribute('data-id'));
+    });
+    cards.forEach(function(c) { container.appendChild(c); });
+    filterAll();
+  };
+
+  // ── Hamburger ──
   function setupHamburger() {
-    const btn = document.getElementById('hamburgerBtn');
-    const nav = document.getElementById('mainNav');
+    var btn = document.getElementById('hamburgerBtn');
+    var nav = document.getElementById('mainNav');
     if (!btn || !nav) return;
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', function() {
       nav.classList.toggle('open');
       btn.classList.toggle('open');
     });
   }
 
-  let allCandidates = [];
-
-  function applyFilter() {
-    const q = (document.getElementById('ccSearch')?.value || '').trim();
-    const status = document.getElementById('ccStatus')?.value || '';
-    const filtered = allCandidates.filter(c => {
-      if (status && c.status !== status) return false;
-      if (!q) return true;
-      return String(c.applicantId).includes(q) ||
-        (c.nameFull && c.nameFull.toLowerCase().includes(q.toLowerCase()));
-    });
-
-    const indexEl = document.getElementById('ccIndexList');
-    const detailsEl = document.getElementById('ccDetails');
-    const countEl = document.getElementById('ccFilterCount');
-    if (!indexEl || !detailsEl) return;
-
-    countEl.textContent = filtered.length + ' shown';
-
-    indexEl.innerHTML = filtered.map(c =>
-      '<button type="button" class="cc-id-row status-' + esc(c.status) + '" data-id="' + esc(c.applicantId) + '">' +
-        esc(c.applicantId) + '</button>'
-    ).join('');
-
-    indexEl.querySelectorAll('.cc-id-row').forEach(btn => {
-      btn.addEventListener('click', () => scrollToCandidate(btn.dataset.id));
-    });
-
-    detailsEl.innerHTML = filtered.map(renderCandidate).join('');
-  }
-
-  function renderApp(data) {
-    const s = data.summary || {};
-    const root = document.getElementById('appRoot');
-    root.innerHTML =
-      '<div class="cc-meta">' +
-        '<div class="cc-stat"><div class="num">' + esc(s.oldCount) + '</div><div class="lbl">Previous pool</div></div>' +
-        '<div class="cc-stat"><div class="num">' + esc(s.newCount) + '</div><div class="lbl">Current pool</div></div>' +
-        '<div class="cc-stat changed"><div class="num">' + esc(s.changed) + '</div><div class="lbl">Updated</div></div>' +
-        '<div class="cc-stat added"><div class="num">' + esc(s.added) + '</div><div class="lbl">New applicants</div></div>' +
-        '<div class="cc-stat"><div class="num">' + esc(s.totalUpdates) + '</div><div class="lbl">Total in this log</div></div>' +
-      '</div>' +
-      '<div class="cc-toolbar">' +
-        '<input type="search" id="ccSearch" placeholder="Search applicant ID or name…" />' +
-        '<select id="ccStatus"><option value="">All statuses</option>' +
-          '<option value="changed">Changed</option><option value="added">Added</option><option value="removed">Removed</option></select>' +
-        '<span id="ccFilterCount"></span>' +
-        '<span class="cc-gen">Generated ' + esc(data.generatedAt || '') + '</span>' +
-      '</div>' +
-      '<div class="cc-layout">' +
-        '<aside class="cc-index"><div class="cc-index-title">Applicant IDs</div><div id="ccIndexList"></div></aside>' +
-        '<div class="cc-details" id="ccDetails"></div>' +
-      '</div>';
-
-    root.classList.remove('hidden');
-    allCandidates = data.candidates || [];
-    document.getElementById('ccSearch').addEventListener('input', applyFilter);
-    document.getElementById('ccStatus').addEventListener('change', applyFilter);
-    applyFilter();
-
-    const hash = location.hash.replace(/^#/, '');
-    if (hash.startsWith('cand-')) {
-      const id = hash.slice(5);
-      setTimeout(() => scrollToCandidate(id), 100);
-    }
-  }
-
+  // ── Init ──
   async function init() {
     setupHamburger();
-    const loadMsg = document.getElementById('loadMsg');
+    var loadMsg = document.getElementById('loadMsg');
     try {
-      const res = await fetch('data/candidates_changes.json', { cache: 'no-store' });
+      var res = await fetch('data/candidates_changes.json', { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      loadMsg.classList.add('hidden');
+      var data = await res.json();
+      loadMsg.style.display = 'none';
       renderApp(data);
     } catch (e) {
-      loadMsg.innerHTML = '<span id="loadErr">Could not load <code>data/candidates_changes.json</code>. ' +
+      loadMsg.innerHTML =
+        '<span id="loadErr">Could not load <code>data/candidates_changes.json</code>. ' +
         'Run <code>python build_candidates_changes.py</code> after updating candidate snapshots. (' +
         esc(e.message) + ')</span>';
     }
