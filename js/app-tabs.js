@@ -39,6 +39,15 @@ function onTabActivated(tab) {
   if (tab === 'competition') renderCompetitionTab();
   if (tab === 'seatmatrix')  renderSeatMatrixTab();
   if (tab === 'hospitals')   renderHospitalsTab();
+  if (tab === 'candidates') {
+    if (typeof loadAdminCandidates === 'function') {
+      if (!ADMIN_CAND.data) {
+        loadAdminCandidates();
+      } else {
+        renderAdminCandTable();
+      }
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════

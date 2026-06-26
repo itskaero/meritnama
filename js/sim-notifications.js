@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupSimulationTab();
   setupMarksSelectors();
   setupCandidateRevisionSelectors();
+  setupConfigBadgeNavs();
   setupChat();
   updateMyBadge();
 
@@ -227,6 +228,8 @@ function applyProfileStatusPayload(payload, sourceLabel, opts = {}) {
   SIM.profileStatus.updatedAt = v2Updated ?? payload?.updated ?? payload?.updatedAt ?? null;
 
   SIM.profileStatus.loaded = true;
+  // Notify scope UI to update hint (listener set up in sim-consent.js)
+  document.dispatchEvent(new CustomEvent('profileStatusLoaded', { detail: { byId } }));
 
   const fp = _profileStatusFingerprint(byId, payload);
   PROFILE_STATUS.lastFingerprint = fp;
@@ -262,6 +265,40 @@ function getAllProfileStatusesForCandidate(c) {
     if (st) result.push({ ...st, _typeLabel: td.typeLabel, _statusLabels: td.labels });
   }
   return result;
+}
+
+/**
+ * Candidate Status Aggregator
+ * Returns a unified summary of a candidate's profile status across all types (131, 132).
+ */
+function getCandidateStatusSummary(c) {
+  const all = getAllProfileStatusesForCandidate(c);
+  const st131 = all.find(s => Number(s.statusTypeId) === 131) || null;
+  const st132 = all.find(s => Number(s.statusTypeId) === 132) || null;
+
+  const sid131 = st131 ? Number(st131.statusId) : null;
+  const sid132 = st132 ? Number(st132.statusId) : null;
+
+  // Effective: 132 overrides 131 for allocation scope
+  // But for "accepted" counts: accepted if 131 is accepted, or 131 rejected + 132 accepted
+  const isAccepted = (sid131 === 1) || (sid131 === 2 && sid132 === 1);
+  const isRejected = !isAccepted && (sid131 === 2 && sid132 !== 1);
+  const isPending = !isAccepted && !isRejected && (sid131 === 11 || (!st131 && st132));
+
+  return { st131, st132, all, isAccepted, isRejected, isPending, sid131, sid132 };
+}
+
+function countCandidatesByAcceptance(candidates) {
+  let accepted = 0, pending = 0, rejected = 0, noStatus = 0;
+  for (const c of candidates) {
+    const s = getCandidateStatusSummary(c);
+    if (!s.st131 && !s.st132) { noStatus++; continue; }
+    if (s.isAccepted) accepted++;
+    else if (s.isPending) pending++;
+    else if (s.isRejected) rejected++;
+    else noStatus++;
+  }
+  return { accepted, pending, rejected, noStatus };
 }
 
 function getProfileStatusTypeMeta(typeId) {

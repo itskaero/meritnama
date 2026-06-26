@@ -13,6 +13,7 @@ function onDataReady() {
   setupCompetitionTab();
   setupSeatMatrixTab();
   setupCompareTab();
+  if (typeof setupAdminCandidates === 'function') setupAdminCandidates();
   setupBackToTop();
   setupHamburger();
   setupKeyboardShortcuts();

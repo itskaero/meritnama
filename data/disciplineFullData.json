@@ -1,0 +1,582 @@
+[
+ {
+  "programs": [
+   {
+    "name": "FCPS",
+    "typeId": 1
+   },
+   {
+    "name": "MS",
+    "typeId": 2
+   }
+  ],
+  "name": "Anaesthesiology",
+  "disciplineId": 1,
+  "specialities": [
+   {
+    "specialityName": "Anaesthesia",
+    "specialityId": 1
+   },
+   {
+    "specialityName": "Cardio Thoracic Anesthesia",
+    "specialityId": 58
+   },
+   {
+    "specialityName": "Critical Care",
+    "specialityId": 47
+   },
+   {
+    "specialityName": "Emergency Medicine",
+    "specialityId": 40
+   },
+   {
+    "specialityName": "Anaesthesia",
+    "specialityId": 1
+   }
+  ]
+ },
+ {
+  "programs": [
+   {
+    "name": "FCPS",
+    "typeId": 1
+   }
+  ],
+  "name": "Community Medicine",
+  "disciplineId": 10,
+  "specialities": [
+   {
+    "specialityName": "Anaesthesia",
+    "specialityId": 1
+   },
+   {
+    "specialityName": "Biochemistry",
+    "specialityId": 43
+   },
+   {
+    "specialityName": "Community Medicine",
+    "specialityId": 6
+   },
+   {
+    "specialityName": "Pharmacology",
+    "specialityId": 42
+   }
+  ]
+ },
+ {
+  "programs": [
+   {
+    "name": "FCPS Dentistry",
+    "typeId": 5
+   },
+   {
+    "name": "MDS",
+    "typeId": 4
+   }
+  ],
+  "name": "Dentistry",
+  "disciplineId": 11,
+  "specialities": [
+   {
+    "specialityName": "Operative Dentistry",
+    "specialityId": 31
+   },
+   {
+    "specialityName": "Oral & Maxillofacial Surgery",
+    "specialityId": 32
+   },
+   {
+    "specialityName": "Orthodontics",
+    "specialityId": 33
+   },
+   {
+    "specialityName": "Prosthodontics",
+    "specialityId": 34
+   },
+   {
+    "specialityName": "Operative Dentistry",
+    "specialityId": 31
+   },
+   {
+    "specialityName": "Oral & Maxillofacial Surgery",
+    "specialityId": 32
+   },
+   {
+    "specialityName": "Orthodontics",
+    "specialityId": 33
+   },
+   {
+    "specialityName": "Prosthodontics",
+    "specialityId": 34
+   }
+  ]
+ },
+ {
+  "programs": [
+   {
+    "name": "FCPS",
+    "typeId": 1
+   },
+   {
+    "name": "MD",
+    "typeId": 3
+   }
+  ],
+  "name": "Diagnostic Radiology",
+  "disciplineId": 4,
+  "specialities": [
+   {
+    "specialityName": "Diagnostic Radiology",
+    "specialityId": 8
+   },
+   {
+    "specialityName": "Radiation Oncology ",
+    "specialityId": 61
+   },
+   {
+    "specialityName": "Radiotherapy",
+    "specialityId": 28
+   },
+   {
+    "specialityName": "Diagnostic Radiology",
+    "specialityId": 8
+   }
+  ]
+ },
+ {
+  "programs": [
+   {
+    "name": "FCPS",
+    "typeId": 1
+   },
+   {
+    "name": "MS",
+    "typeId": 2
+   }
+  ],
+  "name": "E.N.T.",
+  "disciplineId": 7,
+  "specialities": [
+   {
+    "specialityName": "Otorhinolaryngology ENT",
+    "specialityId": 22
+   },
+   {
+    "specialityName": "Otorhinolaryngology ENT",
+    "specialityId": 22
+   }
+  ]
+ },
+ {
+  "programs": [
+   {
+    "name": "FCPS",
+    "typeId": 1
+   },
+   {
+    "name": "MD",
+    "typeId": 3
+   }
+  ],
+  "name": "Medicine And Allied",
+  "disciplineId": 2,
+  "specialities": [
+   {
+    "specialityName": "Biochemistry",
+    "specialityId": 43
+   },
+   {
+    "specialityName": "Cardiology",
+    "specialityId": 2
+   },
+   {
+    "specialityName": "Community Medicine",
+    "specialityId": 6
+   },
+   {
+    "specialityName": "Critical Care",
+    "specialityId": 47
+   },
+   {
+    "specialityName": "Dermatology",
+    "specialityId": 7
+   },
+   {
+    "specialityName": "Emergency Medicine",
+    "specialityId": 40
+   },
+   {
+    "specialityName": "Endocrinology",
+    "specialityId": 46
+   },
+   {
+    "specialityName": "Forensic Medicine",
+    "specialityId": 9
+   },
+   {
+    "specialityName": "Gastroenterology",
+    "specialityId": 10
+   },
+   {
+    "specialityName": "Infectious Disease",
+    "specialityId": 51
+   },
+   {
+    "specialityName": "Medical Oncology",
+    "specialityId": 15
+   },
+   {
+    "specialityName": "Medicine",
+    "specialityId": 14
+   },
+   {
+    "specialityName": "Nephrology",
+    "specialityId": 16
+   },
+   {
+    "specialityName": "Neurology",
+    "specialityId": 18
+   },
+   {
+    "specialityName": "Pediatrics",
+    "specialityId": 23
+   },
+   {
+    "specialityName": "Pharmacology",
+    "specialityId": 42
+   },
+   {
+    "specialityName": "Physiology",
+    "specialityId": 48
+   },
+   {
+    "specialityName": "Pulmonology",
+    "specialityId": 27
+   },
+   {
+    "specialityName": "Radiation Oncology ",
+    "specialityId": 61
+   },
+   {
+    "specialityName": "Radiotherapy",
+    "specialityId": 28
+   },
+   {
+    "specialityName": "Rheamatology",
+    "specialityId": 57
+   },
+   {
+    "specialityName": "Cardiology",
+    "specialityId": 2
+   },
+   {
+    "specialityName": "Dermatology",
+    "specialityId": 7
+   },
+   {
+    "specialityName": "Emergency Medicine",
+    "specialityId": 40
+   },
+   {
+    "specialityName": "Gastroenterology",
+    "specialityId": 10
+   },
+   {
+    "specialityName": "Infectious Disease",
+    "specialityId": 51
+   },
+   {
+    "specialityName": "Medical Oncology",
+    "specialityId": 15
+   },
+   {
+    "specialityName": "Medicine",
+    "specialityId": 14
+   },
+   {
+    "specialityName": "Nephrology",
+    "specialityId": 16
+   },
+   {
+    "specialityName": "Neurology",
+    "specialityId": 18
+   },
+   {
+    "specialityName": "Pediatrics",
+    "specialityId": 23
+   },
+   {
+    "specialityName": "Pulmonology",
+    "specialityId": 27
+   }
+  ]
+ },
+ {
+  "programs": [
+   {
+    "name": "FCPS",
+    "typeId": 1
+   }
+  ],
+  "name": "MicroBiology ",
+  "disciplineId": 15,
+  "specialities": [
+   {
+    "specialityName": "Microbiology",
+    "specialityId": 44
+   }
+  ]
+ },
+ {
+  "programs": [
+   {
+    "name": "FCPS",
+    "typeId": 1
+   },
+   {
+    "name": "MS",
+    "typeId": 2
+   }
+  ],
+  "name": "Obstetrics And Gynaecology",
+  "disciplineId": 5,
+  "specialities": [
+   {
+    "specialityName": "Obstetrics & Gynecology",
+    "specialityId": 19
+   },
+   {
+    "specialityName": "Obstetrics & Gynecology",
+    "specialityId": 19
+   }
+  ]
+ },
+ {
+  "programs": [
+   {
+    "name": "FCPS",
+    "typeId": 1
+   },
+   {
+    "name": "MS",
+    "typeId": 2
+   }
+  ],
+  "name": "Ophthalmology",
+  "disciplineId": 6,
+  "specialities": [
+   {
+    "specialityName": "Ophthalmology",
+    "specialityId": 20
+   },
+   {
+    "specialityName": "Ophthalmology",
+    "specialityId": 20
+   }
+  ]
+ },
+ {
+  "programs": [
+   {
+    "name": "FCPS",
+    "typeId": 1
+   },
+   {
+    "name": "MD",
+    "typeId": 3
+   }
+  ],
+  "name": "Pathology",
+  "disciplineId": 9,
+  "specialities": [
+   {
+    "specialityName": "Biochemistry",
+    "specialityId": 43
+   },
+   {
+    "specialityName": "Chemical Pathology",
+    "specialityId": 5
+   },
+   {
+    "specialityName": "Clinical Hematology",
+    "specialityId": 36
+   },
+   {
+    "specialityName": "Hematology",
+    "specialityId": 12
+   },
+   {
+    "specialityName": "Histopathology",
+    "specialityId": 13
+   },
+   {
+    "specialityName": "Microbiology",
+    "specialityId": 44
+   },
+   {
+    "specialityName": "Pharmacology",
+    "specialityId": 42
+   },
+   {
+    "specialityName": "Clinical Hematology",
+    "specialityId": 36
+   }
+  ]
+ },
+ {
+  "programs": [
+   {
+    "name": "FCPS",
+    "typeId": 1
+   }
+  ],
+  "name": "Physiology",
+  "disciplineId": 13,
+  "specialities": [
+   {
+    "specialityName": "Physiology",
+    "specialityId": 48
+   }
+  ]
+ },
+ {
+  "programs": [
+   {
+    "name": "FCPS",
+    "typeId": 1
+   },
+   {
+    "name": "MD",
+    "typeId": 3
+   }
+  ],
+  "name": "Psychiatry",
+  "disciplineId": 8,
+  "specialities": [
+   {
+    "specialityName": "Psychiatry",
+    "specialityId": 26
+   },
+   {
+    "specialityName": "Psychiatry",
+    "specialityId": 26
+   }
+  ]
+ },
+ {
+  "programs": [
+   {
+    "name": "FCPS",
+    "typeId": 1
+   },
+   {
+    "name": "MS",
+    "typeId": 2
+   }
+  ],
+  "name": "Surgery And Allied",
+  "disciplineId": 3,
+  "specialities": [
+   {
+    "specialityName": "Anatomy",
+    "specialityId": 41
+   },
+   {
+    "specialityName": "Biochemistry",
+    "specialityId": 43
+   },
+   {
+    "specialityName": "Cardiac Surgery",
+    "specialityId": 3
+   },
+   {
+    "specialityName": "Chest Surgery ",
+    "specialityId": 56
+   },
+   {
+    "specialityName": "Emergency Medicine",
+    "specialityId": 40
+   },
+   {
+    "specialityName": "Forensic Medicine",
+    "specialityId": 9
+   },
+   {
+    "specialityName": "General Surgery",
+    "specialityId": 11
+   },
+   {
+    "specialityName": "Neuro Surgery",
+    "specialityId": 17
+   },
+   {
+    "specialityName": "Orthopedic Surgery",
+    "specialityId": 21
+   },
+   {
+    "specialityName": "Pediatric Surgery",
+    "specialityId": 24
+   },
+   {
+    "specialityName": "Pharmacology",
+    "specialityId": 42
+   },
+   {
+    "specialityName": "Plastic Surgery",
+    "specialityId": 25
+   },
+   {
+    "specialityName": "Radiation Oncology ",
+    "specialityId": 61
+   },
+   {
+    "specialityName": "Radiotherapy",
+    "specialityId": 28
+   },
+   {
+    "specialityName": "Thoracic Surgery",
+    "specialityId": 29
+   },
+   {
+    "specialityName": "Urology",
+    "specialityId": 30
+   },
+   {
+    "specialityName": "Cardiac Surgery",
+    "specialityId": 3
+   },
+   {
+    "specialityName": "Emergency Medicine",
+    "specialityId": 40
+   },
+   {
+    "specialityName": "General Surgery",
+    "specialityId": 11
+   },
+   {
+    "specialityName": "Neuro Surgery",
+    "specialityId": 17
+   },
+   {
+    "specialityName": "Orthopedic Surgery",
+    "specialityId": 21
+   },
+   {
+    "specialityName": "Pediatric Surgery",
+    "specialityId": 24
+   },
+   {
+    "specialityName": "Plastic Surgery",
+    "specialityId": 25
+   },
+   {
+    "specialityName": "Thoracic Surgery",
+    "specialityId": 29
+   },
+   {
+    "specialityName": "Urology",
+    "specialityId": 30
+   }
+  ]
+ }
+]

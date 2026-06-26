@@ -360,6 +360,7 @@ function syncCandidateRevisionUI() {
     if (!sel.value && prev && SIM.candidateRevision.availableIds.includes(prev)) {
       sel.value = prev;
     }
+    sel.disabled = true;
     sel.closest('.candidate-revision-wrap')?.classList.toggle('hidden', !SIM.candidateRevision.showSelector);
   }
 
@@ -367,6 +368,7 @@ function syncCandidateRevisionUI() {
     wrap.classList.toggle('hidden', !SIM.candidateRevision.showSelector);
   });
   updateCandidateRevisionLabels();
+  _updateRevisionDisplays();
 }
 
 function refreshCandidateRevisionOptions() {
@@ -505,7 +507,36 @@ function openSimCandidateDetail(applicantId, track = null) {
   const body         = document.getElementById('candidateModalBody');
   if (!modal || !body) return;
 
-  // Placement banner
+  // ── Build per-preference detail maps ──
+  const prefScoreMap = {};
+  const prefCutoffMap = {};
+  const prefDeltaMap = {};
+  const prefQueuePosMap = {};
+  const prefQueueTotalMap = {};
+  const prefStatusMap = {};
+  for (const p of (workCand._prefs || [])) {
+    const sl = seatTree?.[p.quotaName]?.[p.specialityName]?.[p.hospitalName];
+    const score = typeof scoreForPreference === 'function' ? scoreForPreference(workCand, p) : workCand.marksTotal;
+    const cutoff = sl?.candidates?.length ? Math.min(...sl.candidates.map(c => c.marksTotal)) : null;
+    const delta = cutoff != null ? score - cutoff : null;
+    prefScoreMap[p.preferenceNo] = score;
+    prefCutoffMap[p.preferenceNo] = cutoff;
+    prefDeltaMap[p.preferenceNo] = delta;
+
+    if (sl?.others) {
+      const idx = sl.others.findIndex(o => String(o.applicantId) === String(applicantId));
+      prefQueuePosMap[p.preferenceNo] = idx >= 0 ? idx + 1 : null;
+      prefQueueTotalMap[p.preferenceNo] = sl.others.length;
+    } else {
+      prefQueuePosMap[p.preferenceNo] = null;
+      prefQueueTotalMap[p.preferenceNo] = 0;
+    }
+
+    const histEntry = history.find(h => h.pref.preferenceNo === p.preferenceNo);
+    prefStatusMap[p.preferenceNo] = histEntry?.status || 'no_slot';
+  }
+
+  // ── Tab 1: Allocation History ──
   let banner;
   if (workCand.placed) {
     const prefNo = workCand._prefs.find(p =>
@@ -513,38 +544,58 @@ function openSimCandidateDetail(applicantId, track = null) {
       p.specialityName === workCand._s &&
       p.hospitalName   === workCand._h
     )?.preferenceNo ?? '?';
-    banner = `<div class="sim-my placed" style="margin-bottom:16px">
-      ✅ <strong>Placed:</strong> ${esc(workCand._s)}
-      <span style="opacity:0.75"> @ ${esc(workCand._h)}</span>
-      &nbsp;·&nbsp; <span style="font-size:0.86em;opacity:0.8">${esc(workCand._q)} &nbsp;·&nbsp; Preference #${prefNo}</span>
+    banner = `<div class="sim-my placed">
+      <span class="sim-my-icon">&#10003;</span>
+      <div><strong>Placed:</strong> ${esc(workCand._s)}
+        <span class="sim-my-hosp">@ ${esc(workCand._h)}</span>
+        <span class="sim-my-meta">${esc(workCand._q)} &middot; Preference #${prefNo}</span>
+      </div>
     </div>`;
   } else {
-    banner = `<div class="sim-my unplaced" style="margin-bottom:16px">
-      ⚠️ <strong>Not placed.</strong>
-      All ${workCand._prefs.length} preferences were filled by higher-scoring candidates.
+    banner = `<div class="sim-my unplaced">
+      <span class="sim-my-icon">&#9888;</span>
+      <div><strong>Not placed.</strong>
+        <span class="sim-my-meta">All ${workCand._prefs.length} preferences were filled by higher-scoring candidates.</span>
+      </div>
     </div>`;
   }
 
-  // History rows
   const notAttempted = workCand._prefs.length - history.length;
   const histRows = history.map(h => {
     const { pref, status } = h;
     let icon, detail, cls;
 
     if (status === 'placed') {
-      icon = '✅'; cls = 'sim-hist-placed';
-      detail = '<strong>Placed here</strong>';
+      icon = '&#10003;'; cls = 'sim-hist-placed';
+      detail = '<strong class="sim-hist-placed-label">Placed here</strong>';
     } else if (status === 'beaten') {
-      icon = '✗'; cls = 'sim-hist-beaten';
+      icon = '&#10007;'; cls = 'sim-hist-beaten';
+      const prefNo = h.pref.preferenceNo;
       const cutoffStr = h.cutoff != null ? fmtM(h.cutoff) : '—';
-      detail = `Cutoff: <strong style="color:#e05470">${cutoffStr}</strong>`;
-      if (h.capacity != null) detail += `<br><span style="opacity:0.65">${h.filled}/${h.capacity} seats</span>`;
+      const score = prefScoreMap[prefNo];
+      const delta = prefDeltaMap[prefNo];
+      const queuePos = prefQueuePosMap[prefNo];
+      const queueTotal = prefQueueTotalMap[prefNo];
+
+      detail = `<span class="sim-hist-cutoff">Cutoff: <strong>${cutoffStr}</strong></span>`;
+      if (score != null) detail += `<span class="sim-hist-score">Your score: <strong>${fmtM(score)}</strong></span>`;
+      if (delta != null) {
+        const shortfall = delta < 0 ? Math.abs(delta) : 0;
+        detail += `<span class="sim-hist-delta ${delta >= 0 ? 'sim-hist-delta-ok' : 'sim-hist-delta-short'}">${shortfall > 0 ? `Short ${fmtM(shortfall)}` : `Clears by ${fmtM(delta)}`}</span>`;
+      }
+      if (h.capacity != null) {
+        const pct = Math.round((h.filled / h.capacity) * 100);
+        detail += `<span class="sim-hist-capacity">${h.filled}/${h.capacity} seats (${pct}%)</span>`;
+      }
+      if (queuePos != null) {
+        detail += `<span class="sim-hist-queue">Queue: #${queuePos} of ${queueTotal}</span>`;
+      }
     } else if (status === 'not_attempted') {
-      icon = '⏭'; cls = 'sim-hist-skip';
-      detail = 'Already placed at better pref';
+      icon = '&#920;'; cls = 'sim-hist-skip';
+      detail = '<span class="sim-hist-skip-label">Skipped (already placed)</span>';
     } else {
       icon = '—'; cls = 'sim-hist-nodata';
-      detail = 'No seat data';
+      detail = '<span class="sim-hist-nodata-label">No seat data</span>';
     }
 
     return `<div class="sim-hist-row ${cls}">
@@ -560,18 +611,121 @@ function openSimCandidateDetail(applicantId, track = null) {
   }).join('');
 
   const notAttemptedRow = notAttempted > 0
-    ? `<div class="sim-hist-row sim-hist-skip" style="opacity:0.35">
-        <span class="sim-hist-icon">⏭</span>
-        <span style="font-size:0.77rem;color:var(--text-muted);grid-column:2/-1">
-          ${notAttempted} lower preference${notAttempted > 1 ? 's' : ''} not attempted (placed at an earlier preference)
-        </span>
+    ? `<div class="sim-hist-row sim-hist-skip" style="opacity:0.4">
+        <span class="sim-hist-icon">&#920;</span>
+        <span class="sim-hist-no">—</span>
+        <div class="sim-hist-slot" style="grid-column:span 2">
+          <span style="font-size:0.75rem;color:var(--text-muted)">
+            ${notAttempted} lower preference${notAttempted > 1 ? 's' : ''} not reached
+          </span>
+        </div>
       </div>`
     : '';
 
-  const specPanelHtml = typeof renderSpecialtyMarksPanelHtml === 'function'
-    ? renderSpecialtyMarksPanelHtml(origCand)
-    : '';
+  const allocationTab = `
+    <div class="sim-allocation-tab">
+      ${banner}
+      <div class="sim-hist-section">
+        <div class="sim-hist-section-hdr">Preference-by-preference outcome</div>
+        <div class="sim-hist-list">
+          ${histRows || '<p style="color:var(--text-muted);font-size:0.82rem;padding:8px">No preferences recorded.</p>'}
+          ${notAttemptedRow}
+        </div>
+      </div>
+    </div>`;
 
+  // ── Tab 2: Preferences ──
+  const prefs = (origCand.preference?.[prog] || []).slice().sort((a, b) => a.preferenceNo - b.preferenceNo);
+  const prefsHtml = prefs.length ? prefs.map(p => {
+    const dIds = Array.isArray(p.disciplineIds) ? p.disciplineIds : [];
+    const discHtml = dIds.length ? [...new Set(dIds)].map(id => {
+      const info = getDisciplineInfo(id);
+      const name = info?.name || String(id);
+      const specs = (info?.specialities || []).map(s => s.specialityName).join(', ');
+      return `<span class="cand-pref-disc" title="${esc(specs)}">${esc(name)}</span>`;
+    }).join('') : '';
+    const prefSpec = p.specialityName ? candidatePoolSpecialtyLabel(p.specialityName) : esc(p.hospitalName || '');
+    const pDetails = resolveProgramBonusDetails(origCand, p, prog);
+    const isCert = ['certificateMarks', 'computerizedMarks', 'programMarks'].includes(pDetails.source);
+    const pEff = pDetails.bonus > 0 ? baseMarksWithRevision(origCand, undefined, prog, null) + pDetails.bonus : null;
+
+    let bonusLabel = '';
+    if (pDetails.certificate) {
+      bonusLabel = `+${fmtM(pDetails.bonus)} via ${esc(pDetails.certificate.disciplineName || pDetails.certificate.specialty)}`;
+    } else if (pDetails.source === 'programMarks') {
+      bonusLabel = '+prog';
+    }
+
+    // Outcome + queue detail
+    const status = prefStatusMap[p.preferenceNo];
+    const score = prefScoreMap[p.preferenceNo];
+    const cutoff = prefCutoffMap[p.preferenceNo];
+    const delta = prefDeltaMap[p.preferenceNo];
+    const queuePos = prefQueuePosMap[p.preferenceNo];
+    const queueTotal = prefQueueTotalMap[p.preferenceNo];
+
+    let outcomeBadge = '';
+    let queueHtml = '';
+    if (status === 'placed') {
+      outcomeBadge = '<span class="sim-pref-outcome sim-pref-placed">Placed</span>';
+    } else if (status === 'beaten') {
+      outcomeBadge = '<span class="sim-pref-outcome sim-pref-beaten">Fell short</span>';
+      const shortfall = delta != null && delta < 0 ? Math.abs(delta) : null;
+      const shortStr = shortfall != null ? `Short by <strong>${fmtM(shortfall)}</strong>` : '';
+      const cutoffStr = cutoff != null ? `Cutoff: <strong>${fmtM(cutoff)}</strong>` : '';
+      const queueStr = queuePos != null
+        ? `#${queuePos} of ${queueTotal} in queue`
+        : queueTotal > 0 ? `In queue (${queueTotal} ahead)` : '';
+      queueHtml = `<div class="sim-pref-queue-detail">
+        ${cutoffStr ? `<span class="sim-pref-cutoff">${cutoffStr}</span>` : ''}
+        ${shortStr ? `<span class="sim-pref-shortfall">${shortStr}</span>` : ''}
+        ${queueStr ? `<span class="sim-pref-queue-pos">${queueStr}</span>` : ''}
+      </div>`;
+    } else if (status === 'not_attempted') {
+      outcomeBadge = '<span class="sim-pref-outcome sim-pref-skipped">Skipped</span>';
+      queueHtml = '<div class="sim-pref-queue-detail"><span class="sim-pref-skip-reason">Already placed at higher preference</span></div>';
+    }
+
+    const marksBadge = pEff != null
+      ? `<span class="cand-pref-marks-badge ${isCert ? 'cand-pref-marks-cert' : 'cand-pref-marks-prog'}">
+          <span class="cand-pref-marks-val">${fmtM(pEff)}</span>
+          ${bonusLabel ? `<span class="cand-pref-marks-src">${bonusLabel}</span>` : ''}
+        </span>`
+      : '';
+
+    return `<div class="cand-pref-row ${isCert ? 'cand-pref-cert-match' : ''}">
+      <div class="cand-pref-no-col">
+        <span class="cand-pref-no">${p.preferenceNo}</span>
+      </div>
+      <div class="cand-pref-body">
+        <div class="cand-pref-spec-row">
+          <span class="cand-pref-spec">${esc(prefSpec)}</span>
+          ${outcomeBadge}
+          ${marksBadge}
+        </div>
+        ${queueHtml}
+        <div class="cand-pref-meta-row">
+          <span class="cand-pref-hosp">${esc(p.hospitalName)}</span>
+          <span class="cand-pref-meta-sep">&middot;</span>
+          <span class="cand-pref-quota">${esc(p.quotaName)}${p.parentInstitute ? '<span class="cand-pref-parent-star">&#9733;</span>' : ''}</span>
+          ${discHtml ? `<span class="cand-pref-meta-sep">&middot;</span><span class="cand-pref-discs">${discHtml}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('') : '<div class="cand-pref-empty">No preferences</div>';
+
+  const prefsTab = `
+    <div class="sim-prefs-tab">
+      <div class="sim-hist-section-hdr">All preferences (${esc(prog)})</div>
+      <div class="cand-pref-list">${prefsHtml}</div>
+    </div>`;
+
+  // ── Tab 3: Certificates ──
+  const certTab = typeof renderCertificationTabHtml === 'function'
+    ? `<div class="sim-cert-tab">${renderCertificationTabHtml(origCand)}</div>`
+    : '<div class="sim-cert-tab"><p style="color:var(--text-muted);font-size:0.85rem">No certificate data available.</p></div>';
+
+  // ── Assemble ──
   body.innerHTML = `
     <div class="cand-detail-hdr">
       <h3>${esc(origCand.nameFull)} ${isMe ? '<span class="me-tag">YOU</span>' : ''}</h3>
@@ -580,16 +734,26 @@ function openSimCandidateDetail(applicantId, track = null) {
         &nbsp;·&nbsp; ${esc(prog)} ${esc(workCand._trackLabel || '')} marks: <strong>${fmtM(displayScore)}</strong>
       </p>
     </div>
-    ${specPanelHtml}
-    ${typeof renderPostgraduateQualificationsHtml === 'function' ? renderPostgraduateQualificationsHtml(origCand) : ''}
-    ${_renderMarksExplanationHtml(origCand)}
-    ${banner}
-    <p class="sim-hist-section-lbl">Preference-by-preference breakdown (${esc(prog)})</p>
-    <div class="sim-hist-list">
-      ${histRows || '<p style="color:var(--text-muted);font-size:0.82rem">No preferences recorded.</p>'}
-      ${notAttemptedRow}
+    <div class="sim-modal-tabs">
+      <button class="sim-modal-tab active" data-simtab="allocation">Allocation</button>
+      <button class="sim-modal-tab" data-simtab="prefs">Preferences</button>
+      <button class="sim-modal-tab" data-simtab="certs">Certificates</button>
     </div>
+    <div class="sim-modal-tab-content active" id="sim-mt-allocation">${allocationTab}</div>
+    <div class="sim-modal-tab-content" id="sim-mt-prefs">${prefsTab}</div>
+    <div class="sim-modal-tab-content" id="sim-mt-certs">${certTab}</div>
   `;
+
+  // Tab switching
+  body.querySelectorAll('.sim-modal-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      body.querySelectorAll('.sim-modal-tab').forEach(t => t.classList.remove('active'));
+      body.querySelectorAll('.sim-modal-tab-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      const content = document.getElementById('sim-mt-' + tab.dataset.simtab);
+      if (content) content.classList.add('active');
+    });
+  });
 
   modal.classList.remove('hidden');
 }
@@ -718,6 +882,48 @@ function updateMarksBasisLabels() {
   });
 }
 
+function _updateMarksDisplays() {
+  const label = getActiveMarksLabel();
+  ['candMarksBasisDisplay','simMarksBasisDisplay','consentMarksBasisDisplay'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = label;
+  });
+  // Sync the config tab selector
+  const cfg = document.getElementById('cfgMarksBasis');
+  if (cfg) {
+    const prev = cfg.value;
+    cfg.innerHTML = SIM.marks.options.map(o =>
+      `<option value="${esc(o.id)}">${esc(o.label)}</option>`
+    ).join('');
+    cfg.value = SIM.marks.activeOptionId;
+    if (!cfg.value && SIM.marks.options.length) cfg.value = SIM.marks.options[0].id;
+    else if (prev && [...cfg.options].some(o => o.value === prev)) cfg.value = prev;
+    cfg.disabled = !SIM.marks.showSelector || SIM.marks.options.length <= 1;
+  }
+}
+
+function _updateRevisionDisplays() {
+  const activeId = getActiveCandidateRevisionId();
+  const active = activeId ? { id: activeId, name: candidateRevisionLabel(activeId) } : null;
+  const label = active ? (active.name || active.id) : 'None';
+  ['candCandidateRevisionDisplay','simCandidateRevisionDisplay','consentCandidateRevisionDisplay'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = label;
+  });
+  // Sync the config tab selector
+  const cfg = document.getElementById('cfgCandidateRevision');
+  if (cfg) {
+    const prev = cfg.value;
+    cfg.innerHTML = '<option value="">(none)</option>' +
+      SIM.candidateRevision.availableIds.map(id =>
+        `<option value="${esc(id)}">${esc(candidateRevisionLabel(id))}</option>`
+      ).join('');
+    cfg.value = active ? active.id : '';
+    if (!cfg.value && prev && SIM.candidateRevision.availableIds.includes(prev)) cfg.value = prev;
+    cfg.disabled = SIM.candidateRevision.availableIds.length <= 1;
+  }
+}
+
 function syncMarksSelectorUI() {
   const selects = [
     document.getElementById('candMarksBasis'),
@@ -736,7 +942,7 @@ function syncMarksSelectorUI() {
     } else if (prev && [...sel.options].some(o => o.value === prev)) {
       sel.value = prev;
     }
-    sel.disabled = !SIM.marks.showSelector || SIM.marks.options.length <= 1;
+    sel.disabled = true;
     sel.closest('.marks-basis-wrap')?.classList.toggle('hidden', !SIM.marks.showSelector);
   }
 
@@ -744,6 +950,7 @@ function syncMarksSelectorUI() {
     wrap.classList.toggle('hidden', !SIM.marks.showSelector);
   });
 
+  _updateMarksDisplays();
   syncMarksNoticeUI();
 }
 
@@ -761,9 +968,8 @@ function syncMarksNoticeUI() {
 
 function setupMarksSelectors() {
   const handler = e => setActiveMarksOption(e.target.value);
-  document.getElementById('candMarksBasis')?.addEventListener('change', handler);
-  document.getElementById('simMarksBasis')?.addEventListener('change', handler);
-  document.getElementById('consentMarksBasis')?.addEventListener('change', handler);
+  document.getElementById('cfgMarksBasis')?.addEventListener('change', handler);
+  // Hidden selects kept for backward compat — no longer trigger changes
   syncMarksSelectorUI();
   syncMarksNoticeUI();
   updateMarksBasisLabels();
@@ -771,10 +977,19 @@ function setupMarksSelectors() {
 
 function setupCandidateRevisionSelectors() {
   const handler = e => setActiveCandidateRevision(e.target.value);
-  document.getElementById('candCandidateRevision')?.addEventListener('change', handler);
-  document.getElementById('simCandidateRevision')?.addEventListener('change', handler);
-  document.getElementById('consentCandidateRevision')?.addEventListener('change', handler);
+  document.getElementById('cfgCandidateRevision')?.addEventListener('change', handler);
+  // Hidden selects kept for backward compat — no longer trigger changes
   refreshCandidateRevisionOptions();
+}
+
+function setupConfigBadgeNavs() {
+  document.querySelectorAll('.config-badge-link[data-tab]').forEach(el => {
+    el.addEventListener('click', () => {
+      const tab = el.dataset.tab;
+      const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+      if (btn) btn.click();
+    });
+  });
 }
 
 function setActiveMarksOption(id) {
@@ -901,6 +1116,13 @@ function specialtyGroupFor(program, specialty) {
 }
 
 function certificateMatchesPreference(cert, program, preference) {
+  if (!cert || !preference) return false;
+  const prefDisciplineIds = preference.disciplineIds || [];
+  if (!prefDisciplineIds.length) return legacyCertificateStringMatch(cert, program, preference);
+  return prefDisciplineIds.includes(cert.disciplineId);
+}
+
+function legacyCertificateStringMatch(cert, program, preference) {
   if (!cert || !programMatches(cert.program, program)) return false;
   const prefSpecialty = preference?.specialityName || preference?.specialty || preference?.discipline || '';
   if (!prefSpecialty) return false;
@@ -910,15 +1132,83 @@ function certificateMatchesPreference(cert, program, preference) {
   return normalizedLookupText(prefSpecialty) === normalizedLookupText(cert.specialty);
 }
 
+function certForPreference(preference, certs) {
+  if (!preference || !Array.isArray(certs) || !certs.length) return null;
+  const prefDisciplineIds = preference.disciplineIds || [];
+  const prefTypeId = preference.typeId;
+  if (prefDisciplineIds.length) {
+    return certs.find(c =>
+      c.disciplineId != null &&
+      prefDisciplineIds.includes(c.disciplineId) &&
+      (prefTypeId == null || c.typeId == null || c.typeId === prefTypeId)
+    ) || null;
+  }
+  const prog = preference.typeName || preference.program;
+  return certs.find(c =>
+    programMatches(c.program || c.typeName, prog) &&
+    certificateMatchesPreference(c, prog, preference)
+  ) || null;
+}
+
 function isCertificatePass(cert) {
   return normalizedLookupText(cert?.status) === 'pass';
 }
 
-function isMarch2026Pass(cert) {
+/** ── Generic special rules parser ── */
+
+function matchSpecialRule(cert, ruleName) {
   if (!isCertificatePass(cert)) return false;
-  if (normalizedLookupText(cert?.session) === 'march 2026') return true;
-  const m = String(cert?.passingDate || '').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  return !!(m && Number(m[2]) === 3 && Number(m[3]) === 2026);
+
+  // March2026Pass, MonthYYYYPass → session match
+  const monthMatch = ruleName.match(/^([A-Z][a-z]+)(\d{4})Pass$/);
+  if (monthMatch) {
+    const month = monthMatch[1].toLowerCase();
+    const year = Number(monthMatch[2]);
+    const expected = `${month} ${year}`;
+    if (normalizedLookupText(cert?.session) === normalizedLookupText(expected)) return true;
+    const m = String(cert?.passingDate || '').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    const monthMap = { january: 1, february: 2, march: 3, april: 4, may: 5, june: 6, july: 7, august: 8, september: 9, october: 10, november: 11, december: 12 };
+    return !!(m && Number(m[2]) === monthMap[month] && Number(m[3]) === year);
+  }
+
+  // PassAfterYYYY → passingDate year >= YYYY
+  const afterMatch = ruleName.match(/^PassAfter(\d{4})$/);
+  if (afterMatch) {
+    const minYear = Number(afterMatch[1]);
+    const m = String(cert?.passingDate || '').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    return !!(m && Number(m[3]) >= minYear);
+  }
+
+  // AttemptLE<N> → attempt <= N
+  const attemptMatch = ruleName.match(/^AttemptLE(\d+)$/);
+  if (attemptMatch) {
+    const maxAtt = Number(attemptMatch[1]);
+    return Number(cert?.attempt) <= maxAtt;
+  }
+
+  // PercentageGE<X> → percentage >= X
+  const pctMatch = ruleName.match(/^PercentageGE([\d.]+)$/);
+  if (pctMatch) {
+    const minPct = Number(pctMatch[1]);
+    return Number(cert?.percentage) >= minPct;
+  }
+
+  // PercentilePass → cert has percentile pass info
+  if (ruleName === 'PercentilePass') {
+    const info = String(cert?.info || '').toLowerCase();
+    return info.includes('percentile = pass') || info.includes('percentile');
+  }
+
+  return false;
+}
+
+function checkSpecialRules(cert, specialRules) {
+  for (const [ruleName, marksValue] of Object.entries(specialRules || {})) {
+    const marks = Number(marksValue);
+    if (!Number.isFinite(marks)) continue;
+    if (matchSpecialRule(cert, ruleName)) return marks;
+  }
+  return null;
 }
 
 function certificatePolicy() {
@@ -935,13 +1225,18 @@ function fcpsCertificateBonus(cert, policy) {
   return Number.isFinite(n) ? n : null;
 }
 
+function computerizedMarks(cert, policy) {
+  const prog = normalizeProgramName(cert?.program);
+  if (prog.startsWith('FCPS')) return fcpsCertificateBonus(cert, policy);
+  if (['MS', 'MD', 'MDS'].includes(prog)) return msmdCertificateBonus(cert, policy);
+  return null;
+}
+
 function msmdCertificateBonus(cert, policy) {
   const cfg = policy.msmd || {};
   if (cfg.requirePass !== false && !isCertificatePass(cert)) return null;
-  if (cfg.specialRules?.March2026Pass != null && isMarch2026Pass(cert)) {
-    const n = Number(cfg.specialRules.March2026Pass);
-    if (Number.isFinite(n)) return n;
-  }
+  const specialMarks = checkSpecialRules(cert, cfg.specialRules);
+  if (specialMarks != null) return specialMarks;
   const pct = Number(cert?.percentage);
   if (!Number.isFinite(pct) || pct <= 0) return null;
   for (const rule of cfg.percentageMarks || []) {
@@ -966,7 +1261,7 @@ function resolveProgramBonusDetails(candidate, preference, program) {
   const legacyBonus = legacyProgramBonus(candidate, prog);
   const fallback = certificatePolicy().fallback || {};
   if (!prog) return { bonus: legacyBonus || 0, source: legacyBonus ? 'legacy' : 'zero', legacyBonus };
-  if (!preference?.specialityName && !preference?.specialty && !preference?.discipline) {
+  if (!preference?.specialityName && !preference?.specialty && !preference?.discipline && !preference?.disciplineIds?.length) {
     return { bonus: legacyBonus || 0, source: legacyBonus ? 'legacy' : 'zero', legacyBonus };
   }
 
@@ -975,34 +1270,72 @@ function resolveProgramBonusDetails(candidate, preference, program) {
     return { bonus: legacyBonus || 0, source: legacyBonus ? 'legacy' : 'zero', legacyBonus };
   }
 
-  const policy = certificatePolicy();
-  const matches = certs
-    .filter(cert => certificateMatchesPreference(cert, prog, preference))
-    .map(cert => ({ cert, bonus: certificateBonusForProgram(cert, prog, policy) }))
-    .filter(row => row.bonus != null);
-
-  if (matches.length) {
-    matches.sort((a, b) => b.bonus - a.bonus);
+  const matchedCert = certForPreference(preference, certs);
+  if (!matchedCert) {
+    const useFallback = fallback.useProgramMarksWhenNoCertificateMatch !== false;
     return {
-      bonus: matches[0].bonus,
-      source: 'certificate',
-      certificate: matches[0].cert,
-      specialtyGroup: specialtyGroupFor(prog, preference.specialityName || preference.specialty),
+      bonus: useFallback ? legacyBonus || 0 : 0,
+      source: useFallback && legacyBonus ? 'legacy' : 'zero',
       legacyBonus,
     };
   }
 
-  const useFallback = fallback.useProgramMarksWhenNoCertificateMatch !== false
-    && fallback.useProgramMarksWhenCertificateIncomplete !== false;
+  const portalMarks = parseFloat(matchedCert.certificateMarks);
+  if (Number.isFinite(portalMarks) && portalMarks > 0) {
+    return {
+      bonus: portalMarks,
+      source: 'certificateMarks',
+      certificate: matchedCert,
+      disciplineId: matchedCert.disciplineId,
+      legacyBonus,
+    };
+  }
+
+  const compMarks = parseFloat(matchedCert.computerizedMarks);
+  if (Number.isFinite(compMarks) && compMarks > 0) {
+    return {
+      bonus: compMarks,
+      source: 'computerizedMarks',
+      certificate: matchedCert,
+      disciplineId: matchedCert.disciplineId,
+      legacyBonus,
+    };
+  }
+
+  const prefMarks = parseFloat(preference.programMarks || preference.marks);
+  if (Number.isFinite(prefMarks) && prefMarks > 0) {
+    return {
+      bonus: prefMarks,
+      source: 'programMarks',
+      certificate: matchedCert,
+      disciplineId: matchedCert.disciplineId,
+      legacyBonus,
+    };
+  }
+
   return {
-    bonus: useFallback ? legacyBonus || 0 : 0,
-    source: useFallback && legacyBonus ? 'legacy' : 'zero',
+    bonus: legacyBonus || 0,
+    source: legacyBonus ? 'legacy' : 'zero',
     legacyBonus,
   };
 }
 
 function resolveProgramBonus(candidate, preference, program) {
   return resolveProgramBonusDetails(candidate, preference, program).bonus || 0;
+}
+
+function prefMarks(candidate, preference) {
+  if (!candidate || !preference) return null;
+  const certs = Array.isArray(candidate.certificates) ? candidate.certificates : [];
+  const cert = certForPreference(preference, certs);
+  if (!cert) return null;
+  const portalMarks = parseFloat(cert.certificateMarks);
+  if (Number.isFinite(portalMarks) && portalMarks > 0) return portalMarks;
+  const compMarks = parseFloat(cert.computerizedMarks);
+  if (Number.isFinite(compMarks) && compMarks > 0) return compMarks;
+  const pm = parseFloat(preference.programMarks || preference.marks);
+  if (Number.isFinite(pm) && pm > 0) return pm;
+  return null;
 }
 
 /**
@@ -1093,4 +1426,28 @@ function handleSimURLParams() {
   if (tab === 'hospitals')   renderHospitalsTab();
   if (tab === 'profiles')    renderProfilesTab();
   if (tab === 'config')      renderConfigTab();
+}
+
+/** ── Discipline lookup helpers ── */
+
+function getDisciplineName(id) {
+  const d = SIM.disciplineMap?.[id];
+  return d?.name || String(id);
+}
+
+function getDisciplineInfo(id) {
+  return SIM.disciplineMap?.[id] || null;
+}
+
+function getDisciplineSpecialties(id) {
+  const d = SIM.disciplineMap?.[id];
+  return d?.specialities?.map(s => s.specialityName) || [];
+}
+
+function disciplineNamesForIds(ids) {
+  return (ids || []).map(id => getDisciplineName(id)).join(', ');
+}
+
+function disciplinesForSpecialty(specialityId) {
+  return SIM.specialtyToDiscipline?.[specialityId] || [];
 }

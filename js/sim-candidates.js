@@ -21,7 +21,6 @@ function renderCandStats() {
   if (!all.length) return;
 
   let fcps = 0, ms = 0, md = 0, multi = 0, noPrefs = 0, lowMarks = 0;
-  let psAccepted = 0, psPending = 0, psRejected = 0;
   for (const c of all) {
     const ai    = c.applied_in || {};
     const progs = (ai.FCPS ? 1 : 0) + (ai.MS ? 1 : 0) + (ai.MD ? 1 : 0);
@@ -31,12 +30,6 @@ function renderCandStats() {
     if (progs >= 2) multi++;
     if (progs === 0) noPrefs++;
     if ((c.marksTotal || 0) < 5) lowMarks++;
-    const ps = getProfileStatusForCandidate(c);
-    if (ps) {
-      if (Number(ps.statusId) === 11) psPending++;
-      else if (Number(ps.statusId) === 1) psAccepted++;
-      else if (Number(ps.statusId) === 2) psRejected++;
-    }
   }
 
   const bar = document.getElementById('candStats');
@@ -56,7 +49,7 @@ function renderCandStats() {
   document.getElementById('cstats-lowmarks-item')
     ?.classList.toggle('cstats-ok', lowMarks === 0);
 
-  renderProfileStatusPanel(psAccepted, psPending, psRejected);
+  renderProfileStatusPanel();
 }
 
 function fmtProfileStatusUpdatedAt(raw) {
@@ -69,78 +62,87 @@ function fmtProfileStatusUpdatedAt(raw) {
   });
 }
 
-function renderProfileStatusPanel(accepted, pending, rejected) {
+function renderProfileStatusPanel() {
   const panel = document.getElementById('candProfileStats');
-  if (!panel) return;
+  const all = allCandidates();
 
-  const total = Object.keys(SIM.profileStatus.byId || {}).length;
-  if (!SIM.profileStatus.loaded || !total) {
-    panel.classList.add('hidden');
+  const hasStatus = SIM.profileStatus.loaded && Object.keys(SIM.profileStatus.types || {}).length;
+  if (!hasStatus) {
+    if (panel) panel.classList.add('hidden');
     return;
   }
 
-  panel.classList.remove('hidden');
+  // Type 131 counts (raw per-type, not unified)
+  const v131 = _countProfileStatusByType(all, '131');
 
   const setCount = (id, n) => {
     const el = document.getElementById(id);
     if (el) el.textContent = Number(n).toLocaleString();
   };
-  setCount('cstat-ps-accepted', accepted);
-  setCount('cstat-ps-pending', pending);
-  setCount('cstat-ps-rejected', rejected);
 
-  const roundEl = document.getElementById('psStatusRoundLabel');
-  if (roundEl) roundEl.textContent = SIM.profileStatus.typeLabel || 'Profile verification';
+  // Verification Round 1
+  if (panel) {
+    panel.classList.remove('hidden');
+    setCount('cstat-ps-accepted', v131.accepted);
+    setCount('cstat-ps-pending', v131.pending);
+    setCount('cstat-ps-rejected', v131.rejected);
 
-  const isLive = SIM.profileStatus.source === 'live';
-  const badgeEl = document.getElementById('psStatusSourceBadge');
-  if (badgeEl) {
-    badgeEl.textContent = isLive ? 'Live' : 'Snapshot';
-    badgeEl.className = 'ps-source-badge ' + (isLive ? 'ps-source-live' : 'ps-source-snapshot');
-    badgeEl.title = isLive
-      ? 'Synced from Firestore — updates automatically when admin publishes'
-      : 'Loaded from bundled snapshot until a live publish is available';
-  }
+    const roundEl = document.getElementById('psStatusRoundLabel');
+    if (roundEl) roundEl.textContent = SIM.profileStatus.types['131']?.typeLabel || 'Verification : Round 01';
 
-  const updatedEl = document.getElementById('psStatusUpdatedAt');
-  const formatted = fmtProfileStatusUpdatedAt(SIM.profileStatus.updatedAt);
-  if (updatedEl) {
-    if (formatted) {
-      updatedEl.textContent = formatted;
-      const iso = SIM.profileStatus.updatedAt?.toDate?.()?.toISOString?.()
-        || (typeof SIM.profileStatus.updatedAt === 'string' ? SIM.profileStatus.updatedAt : '');
-      if (iso) updatedEl.setAttribute('datetime', iso);
-      updatedEl.title = `${isLive ? 'Live' : 'Snapshot'} verification data as of ${formatted}`;
-    } else {
-      updatedEl.textContent = 'Timing not published';
-      updatedEl.removeAttribute('datetime');
-      updatedEl.title = 'Publish via admin portal to set an updated timestamp';
+    const isLive = SIM.profileStatus.source === 'live';
+    const badgeEl = document.getElementById('psStatusSourceBadge');
+    if (badgeEl) {
+      badgeEl.textContent = isLive ? 'Live' : 'Snapshot';
+      badgeEl.className = 'ps-source-badge ' + (isLive ? 'ps-source-live' : 'ps-source-snapshot');
+      badgeEl.title = isLive
+        ? 'Synced from Firestore — updates automatically when admin publishes'
+        : 'Loaded from bundled snapshot until a live publish is available';
+    }
+
+    const updatedEl = document.getElementById('psStatusUpdatedAt');
+    const formatted = fmtProfileStatusUpdatedAt(SIM.profileStatus.updatedAt);
+    if (updatedEl) {
+      if (formatted) {
+        updatedEl.textContent = formatted;
+        const iso = SIM.profileStatus.updatedAt?.toDate?.()?.toISOString?.()
+          || (typeof SIM.profileStatus.updatedAt === 'string' ? SIM.profileStatus.updatedAt : '');
+        if (iso) updatedEl.setAttribute('datetime', iso);
+        updatedEl.title = `${isLive ? 'Live' : 'Snapshot'} verification data as of ${formatted}`;
+      } else {
+        updatedEl.textContent = 'Timing not published';
+        updatedEl.removeAttribute('datetime');
+        updatedEl.title = 'Publish via admin portal to set an updated timestamp';
+      }
     }
   }
 
+  // Amendment panel (type 132)
   const amendContainer = document.getElementById('candAmendmentStats');
-  if (!amendContainer) return;
-
   const amendType = SIM.profileStatus.types['132'];
-  if (!amendType || !Object.keys(amendType.byId).length) {
-    amendContainer.classList.add('hidden');
-    return;
+  if (amendContainer) {
+    if (!amendType || !Object.keys(amendType.byId).length) {
+      amendContainer.classList.add('hidden');
+    } else {
+      const amendCounts = _countProfileStatusByType(all, '132');
+      amendContainer.classList.remove('hidden');
+      const amendRoundEl = document.getElementById('psAmendRoundLabel');
+      if (amendRoundEl) amendRoundEl.textContent = amendType.typeLabel || 'Amendment Process';
+      setCount('cstat-amend-accepted', amendCounts.accepted);
+      setCount('cstat-amend-pending', amendCounts.pending);
+      setCount('cstat-amend-rejected', amendCounts.rejected);
+    }
   }
 
-  const all = allCandidates();
-  const amendCounts = _countProfileStatusByType(all, '132');
-  amendContainer.classList.remove('hidden');
-
-  const amendRoundEl = document.getElementById('psAmendRoundLabel');
-  if (amendRoundEl) amendRoundEl.textContent = amendType.typeLabel || 'Amendment Process';
-
-  const setAmendCount = (id, n) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = Number(n).toLocaleString();
-  };
-  setAmendCount('cstat-amend-accepted', amendCounts.accepted);
-  setAmendCount('cstat-amend-pending', amendCounts.pending);
-  setAmendCount('cstat-amend-rejected', amendCounts.rejected);
+  // Unified total (across both types without double-counting)
+  const totalContainer = document.getElementById('candTotalStats');
+  if (totalContainer) {
+    const agg = countCandidatesByAcceptance(all);
+    setCount('cstat-total-accepted', agg.accepted);
+    setCount('cstat-total-pending', agg.pending);
+    setCount('cstat-total-rejected', agg.rejected);
+    totalContainer.classList.remove('hidden');
+  }
 }
 
 function setupCandidateFilters() {
@@ -996,7 +998,7 @@ function renderCertificationTabHtml(c) {
     // Group by specialty group
     const groups = {}; // groupId -> { label, certs: [{cert, unlocks}] }
     for (const cert of certs) {
-      const prog = cert.program || '';
+      const prog = cert.program || cert.typeName || '';
       const groupId = specialtyGroupFor(prog, cert.specialty);
       const grpLabel = groupId ? getGroupLabel(prog, groupId) : cert.specialty;
 
@@ -1023,7 +1025,7 @@ function renderCertificationTabHtml(c) {
         const statusBadge = pass
           ? '<span class="cert-status pass">Pass</span>'
           : `<span class="cert-status">${esc(cert.status || 'Unknown')}</span>`;
-        const progAlias = programAliases(cert.program);
+        const progAlias = programAliases(cert.program || cert.typeName);
         const progTag = progAlias[0] ? progAlias[0].toLowerCase().replace(/\s+/g, '') : '';
 
         const unlocksHtml = unlocks.length
@@ -1036,11 +1038,21 @@ function renderCertificationTabHtml(c) {
             </div>`
           : '';
 
+        const discName = cert.disciplineName || (cert.disciplineId ? getDisciplineName(cert.disciplineId) : '');
+        const marksHtml = cert.certificateMarks != null || cert.computerizedMarks != null
+          ? `<span class="cert-marks-line">
+              ${cert.certificateMarks != null ? `<span class="cert-mark portal" title="Portal-assigned certificate marks">P: <strong>${fmtM(cert.certificateMarks)}</strong></span>` : ''}
+              ${cert.computerizedMarks != null ? `<span class="cert-mark computed" title="Policy-calculated computerized marks">C: <strong>${fmtM(cert.computerizedMarks)}</strong></span>` : ''}
+            </span>`
+          : '';
+
         return `<div class="cert-row">
           <div class="cert-row-main">
             <span class="cert-prog-tag ${progTag}">${esc(progAlias[0] || '')}</span>
             <span class="cert-spec-name">${esc(candidatePoolSpecialtyLabel(cert.specialty))}</span>
+            ${discName ? `<span class="cert-disc-name">${esc(discName)}</span>` : ''}
             ${statusBadge}
+            ${marksHtml}
           </div>
           ${detail ? `<div class="cert-row-detail">${esc(detail)}</div>` : ''}
           ${unlocksHtml}
@@ -1059,47 +1071,48 @@ function renderCertificationTabHtml(c) {
 
   // ── Per-program marks breakdown ──
   const allPrograms = ['FCPS', 'MS', 'MD', 'MDS', 'FCPSD'];
+  const CERT_SOURCES = ['certificateMarks', 'computerizedMarks', 'programMarks'];
   const progCardsHtml = allPrograms.map(prog => {
-    const hasPrefs = (c.preference?.[prog] || []).length > 0;
+    const prefs = c.preference?.[prog] || [];
+    const hasPrefs = prefs.length > 0;
     const applied = hasPrefs && effectiveMark(c, prog) != null;
     const base = baseMarksWithRevision(c, undefined, prog, null);
     const legacyB = legacyProgramBonus(c, prog);
 
-    // Find best certificate match for this program
-    let certMatch = null;
-    let bonusVal = legacyB;
-    let bonusSrc = legacyB ? 'legacy' : 'none';
-    let bonusLabel = legacyB ? fmtM(legacyB) : '0.00';
-
+    // Find best preference's certificate match for this program
+    let bestMatch = { bonus: legacyB, src: legacyB ? 'legacy' : 'none', cert: null, pref: null };
     if (applied && certs.length) {
-      for (const cert of certs) {
-        if (!programMatches(cert.program, prog)) continue;
-        const fakePref = { typeName: prog, specialityName: cert.specialty };
-        const details = resolveProgramBonusDetails(c, fakePref, prog);
-        if (details.source === 'certificate') {
-          certMatch = cert;
-          bonusVal = details.bonus;
-          bonusSrc = 'certificate';
-          bonusLabel = `+${fmtM(details.bonus)}`;
-          break;
+      for (const pref of prefs) {
+        const details = resolveProgramBonusDetails(c, pref, prog);
+        if (CERT_SOURCES.includes(details.source) && details.bonus > bestMatch.bonus) {
+          bestMatch = { bonus: details.bonus, src: details.source, cert: details.certificate || null, pref };
         }
       }
     }
-
-    // If no cert matched but there are certs that don't match (different program), show legacy
-    if (bonusSrc === 'none' && legacyB) {
-      bonusLabel = `+${fmtM(legacyB)}`;
-      bonusSrc = 'legacy';
-      bonusVal = legacyB;
+    if (bestMatch.src === 'none' && legacyB) {
+      bestMatch = { bonus: legacyB, src: 'legacy', cert: null, pref: null };
     }
 
-    const eff = base + bonusVal;
-    const isActive = bonusSrc === 'certificate';
-    const bonusSourceHtml = isActive && certMatch
-      ? `<span class="cert-prog-source">via ${esc(certMatch.program)} ${esc(candidatePoolSpecialtyLabel(certMatch.specialty))} (attempt ${certMatch.attempt})</span>`
-      : bonusSrc === 'legacy'
-        ? `<span class="cert-prog-source" style="color:var(--text-muted)">via program marks</span>`
-        : '';
+    const isActive = CERT_SOURCES.includes(bestMatch.src);
+    const eff = base + bestMatch.bonus;
+    const bonusLabel = bestMatch.bonus ? `+${fmtM(bestMatch.bonus)}` : '0.00';
+
+    let bonusSourceHtml;
+    if (isActive && bestMatch.cert) {
+      const ct = bestMatch.cert;
+      const discName = ct.disciplineName || (ct.disciplineId ? getDisciplineName(ct.disciplineId) : '');
+      const prefSpec = bestMatch.pref?.specialityName ? candidatePoolSpecialtyLabel(bestMatch.pref.specialityName) : '';
+      bonusSourceHtml = `<span class="cert-prog-source">
+        via <strong>${esc(discName || ct.specialty)}</strong> cert
+        (${esc(ct.program)} ${esc(candidatePoolSpecialtyLabel(ct.specialty))})
+        ${prefSpec ? `→ ${esc(prefSpec)}` : ''}
+        <span class="cert-prog-srclbl">${bestMatch.src === 'certificateMarks' ? 'portal marks' : bestMatch.src === 'computerizedMarks' ? 'computed' : 'prog marks'}</span>
+      </span>`;
+    } else if (bestMatch.src === 'legacy') {
+      bonusSourceHtml = `<span class="cert-prog-source" style="color:var(--text-muted)">via program marks (no matching cert)</span>`;
+    } else {
+      bonusSourceHtml = '';
+    }
 
     if (!applied && !hasPrefs) return '';
 
@@ -1139,6 +1152,101 @@ function renderCertificationTabHtml(c) {
     </div>`;
 }
 
+function _candidateComponentMarksHtml(c) {
+  const fields = [
+    ['degree', 'Degree'], ['houseJob', 'House Job'], ['experience', 'Experience'],
+    ['research', 'Research'], ['position', 'Position'], ['hardAreas', 'Hard Areas'],
+    ['matric', 'Matric'], ['fsc', 'FSC'], ['attempts', 'Attempts'], ['mdcat', 'MDCAT'],
+    ['marksTotal', 'Portal Total'],
+  ];
+  const html = fields.map(([key, label]) => {
+    const val = c[key];
+    if (val == null) return '';
+    const isTotal = key === 'marksTotal';
+    return `<div class="cm-item ${isTotal ? 'cm-total' : ''}">
+      <span class="cm-lbl">${esc(label)}</span>
+      <span class="cm-val">${fmtM(val)}</span>
+    </div>`;
+  }).filter(Boolean).join('');
+  return html ? `<div class="cand-comp-marks"><h4>Component Marks</h4><div class="cm-grid">${html}</div></div>` : '';
+}
+
+function _candidatePreferencesHtml(c) {
+  const allProgs = getCandidateProgrammes(c);
+  const applied = c.applied_in || {};
+  const certs = Array.isArray(c?.certificates) ? c.certificates : [];
+  return allProgs.map(prog => {
+    const prefs = (c.preference?.[prog] || []).slice().sort((a, b) => a.preferenceNo - b.preferenceNo);
+    const eff = effectiveMark(c, prog);
+    const legacyBonus = c.programMarks?.[prog];
+    const isApplied = applied[prog];
+
+    const prefRows = prefs.length ? prefs.map(p => {
+      const dIds = Array.isArray(p.disciplineIds) ? p.disciplineIds : [];
+      const discHtml = dIds.length ? [...new Set(dIds)].map(id => {
+        const info = getDisciplineInfo(id);
+        const name = info?.name || String(id);
+        const specs = (info?.specialities || []).map(s => s.specialityName).join(', ');
+        return `<span class="cand-pref-disc" title="${esc(specs)}">${esc(name)}</span>`;
+      }).join('') : '';
+      const prefSpec = p.specialityName ? candidatePoolSpecialtyLabel(p.specialityName) : esc(p.hospitalName || '');
+      const pDetails = resolveProgramBonusDetails(c, p, prog);
+      const isCert = ['certificateMarks', 'computerizedMarks', 'programMarks'].includes(pDetails.source);
+      const pEff = pDetails.bonus > 0 ? baseMarksWithRevision(c, undefined, prog, null) + pDetails.bonus : null;
+
+      let bonusLabel = '';
+      if (pDetails.certificate) {
+        bonusLabel = `+${fmtM(pDetails.bonus)} via ${esc(pDetails.certificate.disciplineName || pDetails.certificate.specialty)}`;
+      } else if (pDetails.source === 'programMarks') {
+        bonusLabel = '+prog';
+      }
+
+      const marksBadge = pEff != null
+        ? `<span class="cand-pref-marks-badge ${isCert ? 'cand-pref-marks-cert' : 'cand-pref-marks-prog'}">
+            <span class="cand-pref-marks-val">${fmtM(pEff)}</span>
+            ${bonusLabel ? `<span class="cand-pref-marks-src">${bonusLabel}</span>` : ''}
+          </span>`
+        : '';
+
+      return `<div class="cand-pref-row ${p.parentInstitute ? 'cand-pref-parent' : ''} ${isCert ? 'cand-pref-cert-match' : ''}">
+        <div class="cand-pref-no-col">
+          <span class="cand-pref-no">${p.preferenceNo}</span>
+        </div>
+        <div class="cand-pref-body">
+          <div class="cand-pref-spec-row">
+            <span class="cand-pref-spec">${esc(prefSpec)}</span>
+            ${marksBadge}
+          </div>
+          <div class="cand-pref-meta-row">
+            <span class="cand-pref-hosp">${esc(p.hospitalName)}</span>
+            <span class="cand-pref-meta-sep">&middot;</span>
+            <span class="cand-pref-quota">${esc(p.quotaName)}${p.parentInstitute ? '<span class="cand-pref-parent-star" title="Parent institute">&#9733;</span>' : ''}</span>
+            ${discHtml ? `<span class="cand-pref-meta-sep">&middot;</span><span class="cand-pref-discs">${discHtml}</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+    }).join('') : '';
+
+    return `<div class="cand-pref-prog">
+      <div class="cand-pref-prog-hdr">
+        <span class="prog-tag prog-${prog.toLowerCase()}">${esc(prog)}</span>
+        ${isApplied ? '<span class="cand-pref-applied">Applied</span>' : '<span class="cand-pref-notapplied">Not applied</span>'}
+        <span class="cand-pref-eff">Per-program marks: <strong>${eff != null ? fmtM(eff) : '—'}</strong></span>
+      </div>
+      ${prefRows ? `<div class="cand-pref-list">${prefRows}</div>` : '<div class="cand-pref-empty">No preferences</div>'}
+    </div>`;
+  }).join('');
+}
+
+function _candidateStatusTrailHtml(c) {
+  const allPs = getAllProfileStatusesForCandidate(c);
+  if (!allPs.length) return '';
+  const trail = allPs.length > 1
+    ? allPs.map(st => profileStatusTagHtml(st)).join('<span class="ps-trail-arrow"> → </span>')
+    : profileStatusTagHtml(allPs[0]);
+  return `<div class="cand-detail-status">${trail}</div>`;
+}
+
 function openCandidateDetail(idStr) {
   const c = allCandidates().find(c => String(c.applicantId) === String(idStr));
   if (!c) return;
@@ -1149,22 +1257,9 @@ function openCandidateDetail(idStr) {
 
   const isMe   = String(c.applicantId) === SIM.myId;
 
-  const scoreRows = [
-    ['MBBS',       c.degree],
-    ['House Job',  c.houseJob],
-    ['Experience', c.experience],
-    ['Research',   c.research],
-    ['Position',   c.position],
-    ['Hard Areas', c.hardAreas],
-    ['MDCAT',      c.mdcat],
-  ].filter(([, v]) => v);
-
-  const allStatuses = getAllProfileStatusesForCandidate(c);
-
   const revTotal = getCandidateEnabledRevisionCount(c);
-  const revDisabled = getCandidateDisabledRevisionCount(c);
   const revBadge = candidateHasRevisions(c)
-    ? `<span class="revision-badge revision-badge-lg" title="${revTotal} enabled revision${revTotal !== 1 ? 's' : ''}${revDisabled ? `, ${revDisabled} disabled` : ''}">✎ <span class="revision-badge-lbl">Amended</span></span>`
+    ? `<span class="revision-badge revision-badge-lg" title="${revTotal} enabled revision${revTotal !== 1 ? 's' : ''}">✎ <span class="revision-badge-lbl">Amended</span></span>`
     : '';
   const revHtml = candidateHasRevisions(c) ? renderCandidateRevisionHtml(c) : '';
 
@@ -1175,31 +1270,20 @@ function openCandidateDetail(idStr) {
           ${c._custom ? '<span class="custom-tag">manual</span>' : ''}
           ${revBadge}</h3>
         <p class="cand-detail-meta">ID: ${c.applicantId} &nbsp;·&nbsp; ${esc(getActiveMarksLabel())}: <strong>${fmtM(baseMarks(c))}</strong> &nbsp;·&nbsp; Portal marksTotal: ${fmtM(c.marksTotal)}</p>
-        ${profileStatusesDetailHtml(allStatuses)}
+        ${_candidateStatusTrailHtml(c)}
       </div>
     </div>`;
 
-  const bodyHtml = `
-    ${scoreRows.length ? `
-    <details class="score-breakdown">
-      <summary>Score breakdown</summary>
-      <div class="score-bk-grid">
-        ${scoreRows.map(([l, v]) => `<span>${l}</span><span class="score-bk-val">${fmtM(v)}</span>`).join('')}
-        <span><strong>Portal marksTotal</strong></span><span class="score-bk-val">${fmtM(c.marksTotal)}</span>
-        <span><strong>Merit base (${esc(getActiveMarksLabel())})</strong></span><span class="score-bk-val"><strong>${fmtM(baseMarks(c))}</strong></span>
-      </div>
-    </details>` : ''}
-
-    ${revHtml}
-
-    ${renderRevisionDeltaReport(c)}
-
-    ${_renderMarksExplanationHtml(c)}
-
-    ${candVerifEnabled && candVerifRecords ? getCandidateVerificationHtml(idStr) : '<div id="verif-placeholder" style="display:none"></div>'}
-
-    ${renderSpecialtyMarksPanelHtml(c)}
-  `;
+  // Combined info tab content: component marks + status/prefs/revisions
+  const infoBodyHtml = `
+    <div class="cand-compact-layout">
+      ${_candidateComponentMarksHtml(c)}
+      ${revHtml}
+      ${renderRevisionDeltaReport(c)}
+      ${_renderMarksExplanationHtml(c)}
+      ${_candidatePreferencesHtml(c)}
+      ${candVerifEnabled && candVerifRecords ? getCandidateVerificationHtml(idStr) : '<div id="verif-placeholder" style="display:none"></div>'}
+    </div>`;
 
   const certHtml = renderCertificationTabHtml(c);
 
@@ -1207,9 +1291,9 @@ function openCandidateDetail(idStr) {
     ${headerHtml}
     <div class="modal-tabs">
       <button class="modal-tab active" data-tab="info">Info</button>
-      <button class="modal-tab" data-tab="cert">Certification</button>
+      <button class="modal-tab" data-tab="cert">Certificates</button>
     </div>
-    <div class="modal-tab-content active" id="mt-info">${bodyHtml}</div>
+    <div class="modal-tab-content active" id="mt-info">${infoBodyHtml}</div>
     <div class="modal-tab-content" id="mt-cert">${certHtml}</div>
   `;
 
@@ -1221,15 +1305,6 @@ function openCandidateDetail(idStr) {
       btn.classList.add('active');
       const tabContent = document.getElementById('mt-' + btn.dataset.tab);
       if (tabContent) tabContent.classList.add('active');
-    });
-  });
-
-  // "Browse slot" buttons jump to Slot Browser
-  body.querySelectorAll('.pref-browse-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const { prog, quota, spec, hosp } = btn.dataset;
-      closeModal();
-      jumpToSlot(prog, quota, spec, hosp);
     });
   });
 

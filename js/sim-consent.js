@@ -103,43 +103,39 @@ function countScopeMatches(scope) {
   if (!scope || scope.includeAll) return allCandidates().length;
   let count = 0;
   for (const c of allCandidates()) {
-    const st = getEffectiveProfileStatusForCandidate(c);
-    if (st && scope.statusIds.includes(Number(st.statusId))) count++;
+    if (_candidateMatchesScopeStatus(c, scope)) count++;
   }
   return count;
 }
 
 function syncSimulationStatusScopeUI() {
-  const selects = [
-    { sel: document.getElementById('simStatusScope'), hint: document.getElementById('simStatusScopeHint') },
-    { sel: document.getElementById('consentStatusScope'), hint: document.getElementById('consentStatusScopeHint') },
-  ].filter(item => item.sel);
-  const scope = getActiveSimStatusScope();
-  const matchCount = countScopeMatches(scope);
-  const countText = matchCount === -1
-    ? 'Loading status data…'
-    : scope.includeAll
-      ? matchCount.toLocaleString() + ' total candidates'
-      : matchCount.toLocaleString() + ' candidates match';
-  for (const { sel, hint } of selects) {
-    sel.innerHTML = SIM.sim.statusScopes.map(s =>
+  const cfg = document.getElementById('cfgSimStatusScope');
+  if (cfg) {
+    cfg.innerHTML = SIM.sim.statusScopes.map(s =>
       '<option value="' + esc(s.id) + '">' + esc(s.label) + '</option>'
     ).join('');
-    sel.value = SIM.sim.statusScopeId;
-    sel.disabled = !SIM.sim.showStatusScopeSelector || SIM.sim.statusScopes.length <= 1;
-    if (hint) {
-      if (matchCount === -1) {
-        hint.innerHTML = '<span class="hint-icon"></span><span class="hint-count pending">⟳</span><span class="hint-desc">Loading status data…</span>';
-      } else {
-        const countStr = matchCount.toLocaleString();
-        const scopeLabel = scope.label || '';
-        const desc = scope.description || '';
-        hint.innerHTML = '<span class="hint-icon"></span><span class="hint-count">' + esc(countStr) + '</span> <span class="hint-label">' + esc(scopeLabel) + '</span><span class="hint-desc"> · ' + esc(desc) + '</span>';
-      }
-    }
+    cfg.value = SIM.sim.statusScopeId;
   }
-  document.querySelectorAll('.sim-status-scope-wrap').forEach(wrap => {
-    wrap.classList.toggle('hidden', !SIM.sim.showStatusScopeSelector);
+  // Update hints
+  const scope = getActiveSimStatusScope();
+  const matchCount = countScopeMatches(scope);
+  ['simStatusScopeHint', 'consentStatusScopeHint'].forEach(id => {
+    const hint = document.getElementById(id);
+    if (!hint) return;
+    if (matchCount === -1) {
+      hint.innerHTML = '<span class="hint-icon"></span><span class="hint-count pending">⟳</span><span class="hint-desc">Loading status data…</span>';
+    } else {
+      const countStr = matchCount.toLocaleString();
+      const scopeLabel = scope.label || '';
+      const desc = scope.description || '';
+      hint.innerHTML = '<span class="hint-icon"></span><span class="hint-count">' + esc(countStr) + '</span> <span class="hint-label">' + esc(scopeLabel) + '</span><span class="hint-desc"> · ' + esc(desc) + '</span>';
+    }
+  });
+  // Update display badges
+  const label = scope ? scope.label : 'All';
+  ['simStatusScopeDisplay', 'consentStatusScopeDisplay'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = label;
   });
 }
 
@@ -159,17 +155,27 @@ function setupSimulationStatusScopeSelector() {
     if (cr) { cr.className = 'consent-placeholder'; cr.textContent = 'Candidate status scope changed. Run the consent comparison again.'; }
     updateSimulationDownloadGate();
   };
-  document.getElementById('simStatusScope')?.addEventListener('change', handler);
-  document.getElementById('consentStatusScope')?.addEventListener('change', handler);
+  document.getElementById('cfgSimStatusScope')?.addEventListener('change', handler);
   syncSimulationStatusScopeUI();
+  // Re-run UI when profile status finishes loading (ensures hint counts are correct)
+  document.addEventListener('profileStatusLoaded', () => syncSimulationStatusScopeUI());
+}
+
+function getDefaultStatusScopes() {
+  return SIM.sim?.statusScopes || [];
 }
 
 function candidateMatchesSimStatusScope(candidate, scope) {
   scope = scope || getActiveSimStatusScope();
   if (!scope || scope.includeAll) return true;
-  const st = getEffectiveProfileStatusForCandidate(candidate);
-  if (!st) return false;
-  return scope.statusIds.includes(Number(st.statusId));
+  return _candidateMatchesScopeStatus(candidate, scope);
+}
+
+function _candidateMatchesScopeStatus(cand, scope) {
+  if (!scope || scope.includeAll) return true;
+  const allStatuses = getAllProfileStatusesForCandidate(cand);
+  if (!allStatuses.length) return false;
+  return allStatuses.some(st => scope.statusIds.includes(Number(st.statusId)));
 }
 
 function simulationCandidatePool(program) {
@@ -182,9 +188,8 @@ function simulationCandidatePool(program) {
   const included = [];
   let missingStatusCount = 0;
   for (const cand of base) {
-    const st = getEffectiveProfileStatusForCandidate(cand);
-    if (!st) { missingStatusCount++; continue; }
-    if (scope.statusIds.includes(Number(st.statusId))) included.push(cand);
+    if (!_candidateMatchesScopeStatus(cand, scope)) { missingStatusCount++; continue; }
+    included.push(cand);
   }
   return { candidates: included, scope, sourceCandidateCount: base.length, includedCandidateCount: included.length, excludedByStatusCount: base.length - included.length, missingStatusCount, statusUnavailable: !statusCount };
 }

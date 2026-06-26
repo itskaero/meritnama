@@ -1,25 +1,35 @@
 [
-  
   {
-    "id": "revisions-available-jun2026",
-    "icon": "✎",
-    "linkText": null,
+    "id": "data-update-26062026",
+    "icon": "📊",
+    "linkText": "View changes",
     "type": "info",
-    "title": "Candidate Revisions Now Available",
+    "title": "Data Updated — 26 June 2026, 20:59",
+    "dismissable": false,
+    "link": "candidatesChanges.html",
+    "active": true,
+    "body": "Candidate records, preferences, certificates, and profile statuses refreshed with the latest portal data. Merit calculations and seat allocation now reflect the current snapshot."
+  },
+  {
+    "id": "fixes-2606",
+    "icon": "🔧",
+    "linkText": null,
+    "type": "success",
+    "title": "Bug Fixes",
     "dismissable": true,
     "link": null,
     "active": true,
-    "body": "Amendments are now supported. In the Candidates tab, candidates with revised data show a ✎ badge — click to view the delta report. In the Simulation tab, select a revision from the dropdown to see how amended fields change marks."
+    "body": "Accepted count now correctly includes amendment-accepted candidates. Preference marks no longer show 0.00 — certificate-matched marks are used with policy fallbacks. Speciality names display properly instead of raw IDs."
   },
   {
-    "id": "june-2026-update",
-    "icon": "📢",
+    "id": "ui-refresh-2606",
+    "icon": "✨",
     "linkText": null,
     "type": "info",
-    "title": "Data & Access Update",
-    "dismissable": false,
+    "title": "UI Refresh",
+    "dismissable": true,
     "link": null,
     "active": true,
-    "body": "The grievance dataset has been updated to include all available decisions processed up to 20 June 2026.\n\nMerit trends, simulations, and verification analysis have been refreshed accordingly.\n\nTo support platform maintenance and reduce unauthorized redistribution of data, access to advanced simulation and verification tools is temporarily available through an access request. The minimum contribution is PKR 250.\n\nExisting approved users will retain their access."
+    "body": "Animated quote strip with clickable dots, smoother notification banners with gradient backgrounds, and polished toast messages with status-colored indicators."
   }
 ]

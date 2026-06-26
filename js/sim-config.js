@@ -2,21 +2,75 @@
 
 let _configTabRendered = false;
 
-function renderConfigTab() {
-  if (_configTabRendered) return;
-  _configTabRendered = true;
+// Read admin config from localStorage (set by admin portal)
+function _readAdminCfg() {
+  try {
+    const raw = localStorage.getItem('mn_admin_sim_config');
+    return raw ? JSON.parse(raw) : null;
+  } catch (_) { return null; }
+}
 
+function _shouldShowDropdown(key) {
+  const cfg = _readAdminCfg();
+  return cfg ? cfg.dropdownVisibility?.[key] !== false : true;
+}
+
+function _adminDefaultValue(key) {
+  const cfg = _readAdminCfg();
+  return cfg?.defaultValues?.[key] || '';
+}
+
+function renderConfigTab() {
   const container = document.getElementById('configContent');
   if (!container) return;
 
-  container.innerHTML = '';
+  if (!_configTabRendered) {
+    _configTabRendered = true;
+    container.innerHTML = '';
+    renderActiveOverview(container);
+    renderUserControls(container);
+  }
 
-  renderFormulaSection(container);
-  renderTrackedFieldsSection(container);
-  renderRevisionSection(container);
-  renderCertificatePolicySection(container);
-  renderSimulationConfigSection(container);
+  // Always refresh controls state (visibility, defaults, options)
+  renderConfigControlsHelp();
 }
+
+function renderConfigControlsHelp() {
+  syncMarksSelectorUI();
+  refreshCandidateRevisionOptions();
+  syncSimulationStatusScopeUI();
+  _applyAdminVisibilityAndDefaults();
+}
+
+function _applyAdminVisibilityAndDefaults() {
+  const controls = [
+    { key: 'marksBasis', selectId: 'cfgMarksBasis', badgeId: null },
+    { key: 'revision', selectId: 'cfgCandidateRevision', badgeId: null },
+    { key: 'statusScope', selectId: 'cfgSimStatusScope', badgeId: null },
+  ];
+
+  for (const ctrl of controls) {
+    const sel = document.getElementById(ctrl.selectId);
+    if (!sel) continue;
+
+    const visible = _shouldShowDropdown(ctrl.key);
+    const parent = sel.closest('.config-editor-field') || sel.parentElement;
+    if (parent) parent.style.display = visible ? '' : 'none';
+
+    if (!visible) {
+      const defVal = _adminDefaultValue(ctrl.key);
+      if (defVal) {
+        const opt = Array.from(sel.options).find(o => o.value === defVal);
+        if (opt) {
+          sel.value = defVal;
+          sel.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+    }
+  }
+}
+
+// ── Active Config Overview (visually appealing cards) ──
 
 function _escHtml(s) {
   const d = document.createElement('div');
@@ -24,217 +78,92 @@ function _escHtml(s) {
   return d.innerHTML;
 }
 
-function renderFormulaSection(container) {
-  const options = SIM.marks.options || [];
-  const activeId = SIM.marks.activeOptionId || options[0]?.id;
+function renderActiveOverview(container) {
+  const marksOpts = SIM.marks?.options || [];
+  const activeMarksId = SIM.marks?.activeOptionId || marksOpts[0]?.id;
+  const activeMarks = marksOpts.find(o => o.id === activeMarksId);
 
-  const section = document.createElement('div');
-  section.className = 'card config-section';
-  section.innerHTML = `
-    <h3 style="margin-top:0">Mark Formula</h3>
-    <p style="margin:0 0 12px;color:var(--text-muted);font-size:0.85rem">
-      Merit formula options configured in <code>notifications/marks_config</code>.
-      Active formula is highlighted.
-    </p>
-    <table class="data-table" style="width:100%">
-      <thead><tr>
-        <th>ID</th>
-        <th>Label</th>
-        <th>Base</th>
-        <th>Sum Fields</th>
-        <th>Adjustments</th>
-      </tr></thead>
-      <tbody>
-        ${options.map(opt => {
-          const isActive = opt.id === activeId;
-          const adjustments = (opt.adjustments || []).map(a =>
-            `${a.op === 'subtract' ? '&minus;' : '+'} ${_escHtml(a.field)}`
-          ).join(', ') || '<em>none</em>';
-          const sumFields = opt.base === 'sum' && opt.sumFields?.length
-            ? opt.sumFields.map(f => _escHtml(f)).join(', ')
-            : '<em>marksTotal</em>';
-          return `<tr${isActive ? ' style="background:var(--accent-glow, rgba(77,184,217,0.08))"' : ''}>
-            <td>${_escHtml(opt.id)}${isActive ? ' <span style="color:var(--neon-cyan)">&#9668; active</span>' : ''}</td>
-            <td>${_escHtml(opt.label)}</td>
-            <td>${_escHtml(opt.base)}</td>
-            <td style="font-size:0.85rem">${sumFields}</td>
-            <td style="font-size:0.85rem">${adjustments}</td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table>
-  `;
-  container.appendChild(section);
-}
+  const revIds = collectCandidateRevisionIds();
+  const activeRevId = SIM.candidateRevision?.activeId;
+  const activeRevLabel = activeRevId && typeof candidateRevisionLabel === 'function'
+    ? candidateRevisionLabel(activeRevId) : activeRevId || 'None';
 
-function renderTrackedFieldsSection(container) {
-  const fields = SIM.trackedFields?.length ? SIM.trackedFields : ['houseJob', 'position', 'mdcat', 'degree'];
+  const scope = getActiveSimStatusScope();
+  const scopeLabel = scope?.label || 'All';
+  const scopeDesc = scope?.description || '';
+  const scopeCount = typeof countScopeMatches === 'function' ? countScopeMatches(scope) : 0;
 
-  const section = document.createElement('div');
-  section.className = 'card config-section';
-  section.style.marginTop = '16px';
-  section.innerHTML = `
-    <h3 style="margin-top:0">Tracked Fields</h3>
-    <p style="margin:0 0 12px;color:var(--text-muted);font-size:0.85rem">
-      Fields tracked for candidate revision delta display, from <code>notifications/revisions_config</code>.
-    </p>
-    <div style="display:flex;flex-wrap:wrap;gap:8px">
-      ${fields.map(f => `<span class="config-chip">${_escHtml(f)}</span>`).join('')}
-    </div>
-  `;
-  container.appendChild(section);
-}
+  const candCount = SIM.candidates?.length || 0;
+  const seatsLoaded = SIM.seatsLoaded;
+  const statusLoaded = SIM.profileStatus?.loaded;
 
-function renderRevisionSection(container) {
-  const disabled = SIM.globallyDisabledRevisionIds || [];
-  const totalAvail = collectCandidateRevisionIds().length;
-  const candidatesWithRevisions = (SIM.candidates || []).filter(c => candidateHasRevisions(c)).length;
-
-  const section = document.createElement('div');
-  section.className = 'card config-section';
-  section.style.marginTop = '16px';
-  section.innerHTML = `
-    <h3 style="margin-top:0">Revision Management</h3>
-    <p style="margin:0 0 12px;color:var(--text-muted);font-size:0.85rem">
-      Globally disabled revision IDs from <code>notifications/revisions_config</code>.
-    </p>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
-      <div class="config-stat">
-        <span class="config-stat-val">${totalAvail}</span>
-        <span class="config-stat-label">Available revision IDs</span>
+  container.innerHTML = `
+    <div class="config-overview-grid" style="margin-bottom:18px">
+      <div class="config-overview-card">
+        <span class="cov-label">Merit Formula</span>
+        <span class="cov-value active">${_escHtml(activeMarks?.label || activeMarksId || '—')}</span>
+        <span class="cov-meta">Base: ${_escHtml(activeMarks?.base || 'marksTotal')}</span>
       </div>
-      <div class="config-stat">
-        <span class="config-stat-val">${candidatesWithRevisions}</span>
-        <span class="config-stat-label">Candidates with revisions</span>
+      <div class="config-overview-card">
+        <span class="cov-label">Candidate Revision</span>
+        <span class="cov-value">${_escHtml(activeRevLabel)}</span>
+        <span class="cov-meta">${revIds.length} revision(s) available</span>
       </div>
-      <div class="config-stat">
-        <span class="config-stat-val">${disabled.length}</span>
-        <span class="config-stat-label">Globally disabled</span>
+      <div class="config-overview-card">
+        <span class="cov-label">Status Scope</span>
+        <span class="cov-value">${_escHtml(scopeLabel)}</span>
+        <span class="cov-meta">${scopeCount.toLocaleString()} candidate(s) match · ${_escHtml(scopeDesc)}</span>
+      </div>
+      <div class="config-overview-card">
+        <span class="cov-label">Candidates</span>
+        <span class="cov-value">${candCount.toLocaleString()}</span>
+        <span class="cov-meta">${seatsLoaded ? 'Seats loaded' : 'No seat data'}</span>
+      </div>
+      <div class="config-overview-card ${statusLoaded ? 'cov-source' : 'cov-source-missing'}">
+        <span class="cov-label">Profile Status</span>
+        <span class="cov-value">${statusLoaded ? 'Loaded' : 'Not loaded'}</span>
+        <span class="cov-meta">${statusLoaded ? (Object.keys(SIM.profileStatus.byId || {}).length.toLocaleString() + ' records') : 'Snapshot or live'}</span>
       </div>
     </div>
-    ${disabled.length ? `
-      <p style="margin:0 0 6px;font-weight:600;font-size:0.85rem">Disabled revision IDs:</p>
-      <div style="display:flex;flex-wrap:wrap;gap:6px">
-        ${disabled.map(id => `<span class="config-chip config-chip-disabled">${_escHtml(id)}</span>`).join('')}
-      </div>
-    ` : '<p style="color:var(--text-muted);font-size:0.85rem">No globally disabled revision IDs.</p>'}
-  `;
-  container.appendChild(section);
-}
-
-function renderCertificatePolicySection(container) {
-  const policy = SIM.certificatePolicy || {};
-
-  const section = document.createElement('div');
-  section.className = 'card config-section';
-  section.style.marginTop = '16px';
-  section.innerHTML = `
-    <h3 style="margin-top:0">Certificate Policy</h3>
-    <p style="margin:0 0 12px;color:var(--text-muted);font-size:0.85rem">
-      Loaded from <code>data/induction21_certificate_policy.json</code>.
+    <p style="margin:-10px 0 14px;font-size:0.78rem;color:var(--text-muted)">
+      &#9432; Active config overview. Use the dropdowns below to switch between available options.
+      Administrators can hide these dropdowns and set defaults via the Admin portal.
     </p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-      <div class="config-policy-block">
-        <h4>FCPS Attempt Marks</h4>
-        <table class="data-table" style="width:100%">
-          <thead><tr><th>Attempt</th><th>Marks</th></tr></thead>
-          <tbody>
-            ${Object.entries(policy.fcps?.attemptMarks || {}).map(([attempt, marks]) =>
-              `<tr><td>${_escHtml(attempt)}</td><td>${_escHtml(String(marks))}</td></tr>`
-            ).join('')}
-          </tbody>
-        </table>
-        <p style="font-size:0.8rem;color:var(--text-muted);margin:6px 0 0">
-          Require pass: ${policy.fcps?.requirePass !== false ? 'Yes' : 'No'}
-        </p>
-      </div>
-      <div class="config-policy-block">
-        <h4>MS/MD Percentage Tiers</h4>
-        <table class="data-table" style="width:100%">
-          <thead><tr><th>Min %</th><th>Marks</th></tr></thead>
-          <tbody>
-            ${(policy.msmd?.percentageMarks || []).map(tier => {
-              const label = tier.gt != null ? `>${tier.gt}` : String(tier.min);
-              return `<tr><td>${_escHtml(label)}%</td><td>${_escHtml(String(tier.marks))}</td></tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-        <p style="font-size:0.8rem;color:var(--text-muted);margin:6px 0 0">
-          March 2026 pass: ${policy.msmd?.specialRules?.March2026Pass != null ? `${policy.msmd.specialRules.March2026Pass} marks` : 'Not set'}
-        </p>
-      </div>
-    </div>
-    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-light,rgba(255,255,255,0.06))">
-      <h4 style="margin:0 0 6px">Fallback</h4>
-      <div style="display:flex;flex-wrap:wrap;gap:12px;font-size:0.85rem">
-        <span>Use program marks when no certificate match: <strong>${policy.fallback?.useProgramMarksWhenNoCertificateMatch !== false ? 'Yes' : 'No'}</strong></span>
-        <span>Use program marks when certificate incomplete: <strong>${policy.fallback?.useProgramMarksWhenCertificateIncomplete !== false ? 'Yes' : 'No'}</strong></span>
-      </div>
-    </div>
   `;
-  container.appendChild(section);
 }
 
-function renderSimulationConfigSection(container) {
-  const section = document.createElement('div');
-  section.className = 'card config-section';
-  section.style.marginTop = '16px';
-  section.innerHTML = `
-    <h3 style="margin-top:0">Seat Allocation Config</h3>
-    <p style="margin:0 0 12px;color:var(--text-muted);font-size:0.85rem">
-      Candidate status scopes from <code>notifications/simulation_config</code>.
-    </p>
-    <div id="configStatusScopes">
-      <p class="text-muted" style="font-size:0.85rem">Checking live config…</p>
-    </div>
-  `;
-  container.appendChild(section);
+// ── Per-User Config Controls ──
 
-  _loadSimulationConfigLive();
-}
+function renderUserControls(container) {
+  const controlsWrap = document.getElementById('configControls');
+  if (!controlsWrap) return;
 
-async function _loadSimulationConfigLive() {
-  const el = document.getElementById('configStatusScopes');
-  if (!el) return;
-  try {
-    const db = firebase.firestore();
-    const snap = await db.collection('notifications').doc('simulation_config').get();
-    if (!snap.exists) {
-      el.innerHTML = '<p style="font-size:0.85rem;color:var(--text-muted)">No simulation config saved — using defaults.</p>';
-      return;
-    }
-    const data = snap.data();
-    const scopes = Array.isArray(data.statusScopes) ? data.statusScopes : [];
-    const defaultId = data.defaultStatusScopeId || 'all';
+  // Ensure the editor grid exists inside configControls
+  let grid = controlsWrap.querySelector('.config-editor-grid');
+  if (!grid) {
+    grid = document.createElement('div');
+    grid.className = 'config-editor-grid';
+    controlsWrap.insertBefore(grid, controlsWrap.querySelector('.marks-basis-note') || null);
+  }
 
-    el.innerHTML = `
-      <p style="margin:0 0 8px;font-size:0.85rem">
-        Default scope: <strong>${_escHtml(defaultId)}</strong>
-        &middot; Show selector: <strong>${data.showStatusScopeSelector !== false ? 'Yes' : 'No'}</strong>
-      </p>
-      <table class="data-table" style="width:100%">
-        <thead><tr>
-          <th>ID</th>
-          <th>Label</th>
-          <th>Description</th>
-          <th>Include All</th>
-          <th>Status IDs</th>
-        </tr></thead>
-        <tbody>
-          ${scopes.map(s => {
-            const isDefault = s.id === defaultId;
-            return `<tr${isDefault ? ' style="background:var(--accent-glow, rgba(77,184,217,0.08))"' : ''}>
-              <td>${_escHtml(s.id)}${isDefault ? ' <span style="color:var(--neon-cyan)">&#9668; default</span>' : ''}</td>
-              <td>${_escHtml(s.label || '')}</td>
-              <td style="font-size:0.85rem">${_escHtml(s.description || '')}</td>
-              <td>${s.includeAll ? 'Yes' : 'No'}</td>
-              <td style="font-size:0.85rem">${(s.statusIds || []).map(id => _escHtml(id)).join(', ') || '<em>none</em>'}</td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
+  // Fields are already in the HTML: cfgMarksBasis, cfgCandidateRevision, cfgSimStatusScope
+  // Just ensure they're in the right position
+  const existingFields = controlsWrap.querySelectorAll('.config-editor-field');
+  if (!existingFields.length) {
+    // Fallback: create them
+    grid.innerHTML = `
+      <div class="config-editor-field">
+        <label for="cfgMarksBasis">Merit formula</label>
+        <select id="cfgMarksBasis" class="mt-filter-sel"></select>
+      </div>
+      <div class="config-editor-field candidate-revision-wrap hidden">
+        <label for="cfgCandidateRevision">Candidate revision</label>
+        <select id="cfgCandidateRevision" class="mt-filter-sel"></select>
+      </div>
+      <div class="config-editor-field">
+        <label for="cfgSimStatusScope">Status scope</label>
+        <select id="cfgSimStatusScope" class="mt-filter-sel"></select>
+      </div>
     `;
-  } catch (e) {
-    el.innerHTML = `<p style="font-size:0.85rem;color:var(--neon-pink)">Error loading: ${_escHtml(e.message)}</p>`;
   }
 }

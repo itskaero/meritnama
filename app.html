@@ -57,6 +57,7 @@
   <a href="simulation.html" class="tab-btn">&#127973; Induction Portal</a>
   <a href="accreditation.html" class="tab-btn">&#9989; Accreditation</a>
   <button class="tab-btn" data-tab="policy">&#128196; Policy</button>
+  <button class="tab-btn" data-tab="candidates">&#128101; Candidates</button>
   <button class="tab-btn" data-tab="guide">&#10067; Guide</button>
   <a href="reviews.html" class="tab-btn">&#128172; Discussion</a>
   <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
@@ -572,8 +573,75 @@
   </section>
 
   <!-- ============================================================
+       TAB : CANDIDATES
+   ============================================================ -->
+  <section class="tab-content" id="tab-candidates">
+    <div class="cand-browser-header">
+      <h3>Induction 21 Candidate Browser</h3>
+      <p style="color:var(--text-muted);font-size:0.85rem">Browse, search, and inspect candidate records including certificates, marks, and preferences.</p>
+    </div>
+    <div class="cand-browser-controls">
+      <input type="text" id="adminCandSearch" placeholder="Search by name or ID..." class="cand-search-input" />
+      <select id="adminCandProgram" class="cand-filter-select">
+        <option value="">All Programs</option>
+        <option value="FCPS">FCPS</option>
+        <option value="FCPS Dentistry">FCPS Dentistry</option>
+        <option value="MS">MS</option>
+        <option value="MD">MD</option>
+        <option value="MDS">MDS</option>
+      </select>
+      <button class="btn btn-primary btn-sm" id="adminCandSearchBtn">Search</button>
+      <span id="adminCandCount" class="cand-count-badge">0 candidates</span>
+    </div>
+    <div id="adminCandRevisionsBar" class="cand-revisions-bar hidden">
+      <span id="adminCandRevisionStatus"></span>
+      <button class="btn btn-sm" id="adminCandClearRev">Clear</button>
+    </div>
+    <div id="adminCandError" class="hidden" style="color:var(--neon-pink);padding:12px"></div>
+    <details class="card" style="margin-bottom:12px;padding:10px 14px;font-size:0.85rem">
+      <summary style="cursor:pointer;font-weight:600;color:var(--neon-cyan)">Bulk Import Revisions (JSON)</summary>
+      <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <input type="file" id="adminRevUploadInput" accept=".json" style="flex:1;min-width:180px" />
+        <button class="btn btn-sm btn-primary" id="adminRevUploadBtn">Upload</button>
+        <span id="adminRevUploadStatus" style="font-size:0.8rem;color:var(--text-muted)"></span>
+      </div>
+      <p style="margin:8px 0 0;font-size:0.75rem;color:var(--text-muted)">
+        Expected format: <code>{"applicantId": {"revisionId": {"field": value, ...}}, ...}</code>.
+        Fields are merged into existing admin revisions in browser storage.
+        Refresh the simulation portal after upload to see changes.
+      </p>
+    </details>
+    <div id="adminCandTableWrap" class="admin-cand-table-wrap">
+      <table class="data-table admin-cand-table" id="adminCandTable">
+        <thead>
+          <tr>
+            <th data-sort="rank">#</th>
+            <th data-sort="nameFull">Name</th>
+            <th data-sort="applicantId">ID</th>
+            <th data-sort="marksTotal">Base Marks</th>
+            <th>FCPS</th>
+            <th>MS</th>
+            <th>MD</th>
+            <th>Certificates</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="adminCandBody"></tbody>
+      </table>
+    </div>
+    <div id="adminCandPager" class="cand-pager"></div>
+    <div id="adminCandDetail" class="admin-cand-detail hidden">
+      <div class="admin-cand-detail-header">
+        <h3 id="adminCandDetailName"></h3>
+        <button class="btn btn-sm" id="adminCandDetailClose">Close</button>
+      </div>
+      <div id="adminCandDetailBody"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================
        TAB 6 : GUIDE
-  ============================================================ -->
+   ============================================================ -->
   <section class="tab-content" id="tab-guide">
     <div class="section-header">
       <h2>How to Use MeritNama</h2>
@@ -861,7 +929,6 @@
 
   </section><!-- /tab-guide -->
 
-
 </main>
 
 <!-- Tooltip popup -->
@@ -885,6 +952,7 @@
 <script src="js/app-tabs.js"></script>
 <script src="js/app-predict-calc.js"></script>
 <script src="js/app-policy-compare.js"></script>
+<script src="js/app-candidates.js"></script>
 <script src="js/app-notif-init.js"></script>
 <script src="access-request.js"></script>
 <script src="screenshot-guard.js"></script>

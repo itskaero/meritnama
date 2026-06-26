@@ -17,7 +17,8 @@
       { "min": 60, "marks": 3 }
     ],
     "specialRules": {
-      "March2026Pass": 5
+      "March2026Pass": 5,
+      "PercentilePass": 5
     }
   },
   "fallback": {

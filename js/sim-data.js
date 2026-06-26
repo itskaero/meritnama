@@ -11,6 +11,19 @@ async function loadData() {
     SIM.candidates = Array.isArray(d)
       ? d
       : (d.candidates || Object.values(d));
+    // Normalize preferences: the JSON stores a flat "preferences" array,
+    // but the UI code expects "preference" as {"FCPS": [...], "MS": [...], ...}
+    for (const c of SIM.candidates) {
+      if (c.preferences && Array.isArray(c.preferences)) {
+        if (!c.preference || typeof c.preference !== 'object') c.preference = {};
+        for (const pref of c.preferences) {
+          const prog = pref.typeName || pref.program;
+          if (!prog) continue;
+          if (!Array.isArray(c.preference[prog])) c.preference[prog] = [];
+          c.preference[prog].push(pref);
+        }
+      }
+    }
     await loadCertificateAwareSidecars();
     mergeCertificateAwareCandidateData();
     SIM.candidates.forEach(ensureCandidateAdjusted);
@@ -50,6 +63,56 @@ async function loadData() {
   } catch (_) {}
 
   await loadSimulationNotifications();
+
+  // Load discipline lookup data (try both paths: conflicting/ and data/)
+  try {
+    let disc = await fetchOptionalJson('data/disciplineFullData.json');
+    if (!Array.isArray(disc)) disc = await fetchOptionalJson('data/disciplines_full.json');
+    if (!Array.isArray(disc)) disc = await fetchOptionalJson('../conflicting/disciplineFullData.json');
+    if (Array.isArray(disc)) {
+      SIM.disciplineMap = Object.fromEntries(disc.map(d => [d.disciplineId, d]));
+    } else {
+      SIM.disciplineMap = {};
+    }
+  } catch (_) { SIM.disciplineMap = {}; }
+  // Build reverse index: specialityId → discipline + specialityId → name
+  if (SIM.disciplineMap) {
+    SIM.specialtyToDiscipline = {};
+    SIM.specialtyNames = {};
+    for (const d of Object.values(SIM.disciplineMap)) {
+      for (const s of d.specialities || []) {
+        (SIM.specialtyToDiscipline[s.specialityId] ??= []).push(d);
+        if (!SIM.specialtyNames[s.specialityId]) {
+          SIM.specialtyNames[s.specialityId] = s.specialityName;
+        }
+      }
+    }
+  }
+  // Enrich preferences with specialityName
+  for (const c of SIM.candidates || []) {
+    const prefs = c.preferences || (() => {
+      const all = [];
+      for (const prefsArr of Object.values(c.preference || {})) {
+        if (Array.isArray(prefsArr)) all.push(...prefsArr);
+      }
+      return all;
+    })();
+    for (const p of prefs) {
+      if (!p.specialityName && p.specialityId && SIM.specialtyNames?.[p.specialityId]) {
+        p.specialityName = SIM.specialtyNames[p.specialityId];
+      }
+    }
+    // Also enrich keyed preferences
+    for (const prefsArr of Object.values(c.preference || {})) {
+      if (Array.isArray(prefsArr)) {
+        for (const p of prefsArr) {
+          if (!p.specialityName && p.specialityId && SIM.specialtyNames?.[p.specialityId]) {
+            p.specialityName = SIM.specialtyNames[p.specialityId];
+          }
+        }
+      }
+    }
+  }
 
   // Load global revision config (best-effort) then rebuild revision selector
   try { await loadGloballyDisabledRevisionIds(); } catch (_) {}
@@ -103,6 +166,18 @@ function mergeCertificateAwareCandidateData() {
     if (comp && typeof comp === 'object') {
       for (const field of componentFields) {
         if (comp[field] != null) c[field] = comp[field];
+      }
+      // Deep-merge programMarks from components as fallback
+      if (comp.programMarks && typeof comp.programMarks === 'object') {
+        c.programMarks = { ...(c.programMarks || {}) };
+        for (const [prog, val] of Object.entries(comp.programMarks)) {
+          if (val != null && val !== '' && Number(val) !== 0) {
+            const existing = c.programMarks[prog];
+            if (existing == null || existing === '' || Number(existing) === 0) {
+              c.programMarks[prog] = val;
+            }
+          }
+        }
       }
     }
     if (Array.isArray(certificates[id])) {

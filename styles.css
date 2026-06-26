@@ -337,34 +337,37 @@ p  { color: var(--text-muted); }
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 16px;
+  padding: 10px 18px;
   font-size: 0.82rem;
   font-weight: 500;
   line-height: 1.4;
   border-bottom: 1px solid transparent;
-  animation: bannerSlideIn 0.3s ease;
+  animation: bannerSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   flex-wrap: wrap;
+  position: relative;
 }
 @keyframes bannerSlideIn {
-  from { opacity: 0; transform: translateY(-6px); }
+  from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.live-update-banner.lub-info    { background: rgba(77,184,217,0.1);  border-color: rgba(77,184,217,0.22);  color: #b8daea; }
-.live-update-banner.lub-warning { background: rgba(232,166,39,0.1);  border-color: rgba(232,166,39,0.22);  color: #e8d0a0; }
-.live-update-banner.lub-success { background: rgba(62,207,142,0.1);  border-color: rgba(62,207,142,0.22);  color: #a0e8c8; }
-.live-update-banner.lub-danger  { background: rgba(224,84,112,0.1);  border-color: rgba(224,84,112,0.22);  color: #e8a8b8; }
-.lub-icon   { font-size: 1rem; flex-shrink: 0; }
+.live-update-banner.lub-info    { background: linear-gradient(90deg, rgba(77,184,217,0.1) 0%, rgba(77,184,217,0.04) 100%); border-color: rgba(77,184,217,0.2);  color: #b8daea; }
+.live-update-banner.lub-warning { background: linear-gradient(90deg, rgba(232,166,39,0.1) 0%, rgba(232,166,39,0.04) 100%); border-color: rgba(232,166,39,0.2);  color: #e8d0a0; }
+.live-update-banner.lub-success { background: linear-gradient(90deg, rgba(62,207,142,0.1) 0%, rgba(62,207,142,0.04) 100%); border-color: rgba(62,207,142,0.2);  color: #a0e8c8; }
+.live-update-banner.lub-danger  { background: linear-gradient(90deg, rgba(224,84,112,0.1) 0%, rgba(224,84,112,0.04) 100%); border-color: rgba(224,84,112,0.2);  color: #e8a8b8; }
+.lub-icon   { font-size: 1.05rem; flex-shrink: 0; }
 .lub-text   { flex: 1; min-width: 0; }
 .lub-link   {
-  color: var(--neon-cyan); text-decoration: underline;
+  color: var(--neon-cyan); text-decoration: none;
   font-weight: 600; font-size: 0.8rem; white-space: nowrap;
+  border-bottom: 1px solid transparent; transition: border-color 0.2s;
 }
+.lub-link:hover { border-bottom-color: var(--neon-cyan); }
 .lub-close  {
-  background: none; border: none; color: inherit; opacity: 0.6;
-  font-size: 1.1rem; line-height: 1; cursor: pointer; padding: 0 2px;
-  flex-shrink: 0; transition: opacity 0.15s;
+  background: none; border: none; color: inherit; opacity: 0.5;
+  font-size: 1.15rem; line-height: 1; cursor: pointer; padding: 0 2px;
+  flex-shrink: 0; transition: opacity 0.2s, transform 0.2s;
 }
-.lub-close:hover { opacity: 1; }
+.lub-close:hover { opacity: 1; transform: scale(1.1); }
 
 /* ─── BADGES ─── */
 .badge {
@@ -3555,3 +3558,308 @@ select option {
 }
 .induction-summary-card .is-component.included { color: var(--text); }
 .induction-summary-card .is-component.removed { text-decoration: line-through; opacity: 0.5; }
+
+/* ═══════════════════════════════════════════════════════════════
+   ADMIN CANDIDATE BROWSER
+   ═══════════════════════════════════════════════════════════════ */
+.cand-browser-header { padding: 16px 20px 0 }
+.cand-browser-header h3 { margin: 0 0 4px }
+.cand-browser-controls { display: flex; gap: 8px; align-items: center; padding: 8px 20px; flex-wrap: wrap }
+.cand-search-input { flex: 1; min-width: 180px; padding: 6px 10px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-input); color: var(--text); font-size: 0.85rem }
+.cand-filter-select { padding: 6px 8px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-input); color: var(--text); font-size: 0.85rem }
+.cand-count-badge { font-size: 0.82rem; color: var(--text-muted); margin-left: auto; white-space: nowrap }
+.cand-revisions-bar { display: flex; gap: 8px; align-items: center; padding: 6px 20px; background: rgba(77,184,217,0.06); border-bottom: 1px solid var(--border); font-size: 0.82rem }
+.cand-revisions-bar.hidden { display: none }
+.admin-cand-table-wrap { overflow-x: auto; margin: 0 12px }
+.admin-cand-table { width: 100%; font-size: 0.82rem }
+.admin-cand-table th { cursor: pointer; white-space: nowrap; padding: 8px 6px; user-select: none }
+.admin-cand-table td { padding: 6px; vertical-align: middle }
+.cert-badge { display: inline-block; padding: 2px 8px; border-radius: 99px; background: rgba(77,184,217,0.1); color: var(--neon-cyan); font-size: 0.75rem; white-space: nowrap }
+.cand-pager { display: flex; gap: 8px; justify-content: center; align-items: center; padding: 12px }
+.cand-pager .page-btn { padding: 4px 12px; border-radius: var(--radius); background: var(--bg-card); border: 1px solid var(--border); color: var(--text); cursor: pointer; font-size: 0.82rem }
+.cand-pager .page-btn:hover { border-color: var(--neon-cyan) }
+.cand-pager .page-info { font-size: 0.82rem; color: var(--text-muted) }
+.admin-cand-detail { margin: 12px; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden }
+.admin-cand-detail.hidden { display: none }
+.admin-cand-detail-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--bg-card); border-bottom: 1px solid var(--border) }
+.admin-cand-detail-header h3 { margin: 0; font-size: 1rem }
+.admin-cand-sections { display: flex; flex-direction: column; gap: 12px; padding: 12px }
+.admin-cand-sections .card { margin: 0 }
+.marks-grid-admin { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px }
+.marks-item { display: flex; flex-direction: column; padding: 6px 10px; background: var(--bg-hover); border-radius: var(--radius) }
+.marks-item .marks-lbl { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em }
+.marks-item .marks-val { font-size: 0.95rem; font-weight: 600; color: var(--text) }
+.marks-item.marks-total { border: 1px solid var(--neon-cyan); background: rgba(77,184,217,0.06) }
+.marks-item.marks-total .marks-val { color: var(--neon-cyan) }
+.prog-marks-row { display: flex; gap: 16px; align-items: center; padding: 6px 0; font-size: 0.85rem; border-bottom: 1px solid var(--border-light, rgba(255,255,255,0.04)) }
+.prog-marks-row:last-child { border-bottom: none }
+.cert-row-admin { display: flex; gap: 10px; align-items: center; padding: 6px 0; font-size: 0.82rem; border-bottom: 1px solid var(--border-light, rgba(255,255,255,0.04)); flex-wrap: wrap }
+.cert-row-admin:last-child { border-bottom: none }
+.cert-row-admin .cert-prog-tag { padding: 1px 6px; border-radius: 4px; background: rgba(77,184,217,0.1); color: var(--neon-cyan); font-size: 0.72rem; white-space: nowrap }
+.cert-row-admin .cert-spec-name { font-weight: 500 }
+.cert-row-admin .cert-status { font-size: 0.72rem; padding: 1px 6px; border-radius: 4px; background: rgba(232,166,39,0.1) }
+.cert-row-admin .cert-status.pass { background: rgba(62,207,142,0.1); color: var(--neon-green) }
+.cert-row-admin .cert-marks, .cert-row-admin .cert-comp-marks, .cert-row-admin .cert-attempt { font-size: 0.75rem; color: var(--text-muted) }
+.pref-section-admin { margin-bottom: 12px }
+.pref-section-admin h4 { margin: 0 0 6px; font-size: 0.85rem; color: var(--text) }
+.pref-list-admin { display: flex; flex-direction: column; gap: 3px }
+.admin-pref-row {
+  display: flex; gap: 8px; padding: 6px 10px; font-size: 0.8rem;
+  border: 1px solid var(--border-light, rgba(255,255,255,0.03));
+  border-radius: var(--radius); transition: background 0.1s;
+}
+.admin-pref-row:hover { background: var(--bg-hover) }
+.admin-pref-row.admin-pref-parent { background: rgba(232,166,39,0.04) }
+.admin-pref-no-col { display: flex; align-items: flex-start; padding-top: 1px }
+.admin-pref-no {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(77,184,217,0.12); color: var(--neon-cyan);
+  font-size: 0.72rem; font-weight: 700;
+}
+.admin-pref-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px }
+.admin-pref-spec-row { display: flex; justify-content: space-between; align-items: center; gap: 8px }
+.admin-pref-spec { font-weight: 600; color: var(--text); font-size: 0.82rem }
+.admin-pref-marks-badge {
+  display: inline-flex; flex-direction: column; align-items: flex-end; white-space: nowrap;
+  flex-shrink: 0;
+}
+.admin-pref-marks-val { font-size: 0.82rem; font-weight: 700; color: var(--neon-gold); line-height: 1.2 }
+.admin-pref-marks-src { font-size: 0.6rem; color: var(--text-muted); line-height: 1.2 }
+.admin-pref-meta-row {
+  display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+  font-size: 0.7rem; color: var(--text-muted);
+}
+.admin-pref-hosp { color: var(--text-muted) }
+.admin-pref-meta-sep { color: rgba(255,255,255,0.12); font-size: 0.6rem }
+.admin-pref-quota { white-space: nowrap }
+.admin-pref-parent-star { color: var(--neon-gold); margin-left: 2px; font-size: 0.8rem }
+.admin-pref-discs { display: flex; gap: 3px; flex-wrap: wrap }
+.admin-pref-disc {
+  font-size: 0.6rem; padding: 1px 5px; border-radius: 100px; font-weight: 600;
+  background: rgba(124,101,196,0.08); color: var(--neon-purple, #7c65c4);
+  white-space: nowrap; cursor: help;
+}
+.marks-edit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 12px }
+.marks-edit-field { display: flex; flex-direction: column; gap: 2px }
+.marks-edit-field label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em }
+.marks-edit-field input { padding: 4px 8px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-input); color: var(--text); font-size: 0.82rem; width: 100%; box-sizing: border-box }
+.marks-edit-field input:focus { border-color: var(--neon-cyan); outline: none }
+.marks-edit-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap }
+
+/* ── Candidate Modal Redesign ── */
+.cand-compact-layout { display: flex; flex-direction: column; gap: 14px; padding: 4px 0 }
+.cand-comp-marks h4 { margin: 0 0 6px; font-size: 0.82rem; color: var(--text-muted) }
+.cm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 5px }
+.cm-item { display: flex; flex-direction: column; padding: 5px 8px; background: var(--bg-hover); border-radius: var(--radius) }
+.cm-item .cm-lbl { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em }
+.cm-item .cm-val { font-size: 0.9rem; font-weight: 600; color: var(--text) }
+.cm-item.cm-total { border: 1px solid var(--neon-cyan); background: rgba(77,184,217,0.06) }
+.cm-item.cm-total .cm-val { color: var(--neon-cyan) }
+.cand-detail-status { margin: 6px 0 0; display: flex; flex-wrap: wrap; gap: 4px; align-items: center }
+.cand-pref-prog { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden }
+.cand-pref-prog-hdr { display: flex; gap: 10px; align-items: center; padding: 8px 12px; background: var(--bg-card); border-bottom: 1px solid var(--border); flex-wrap: wrap }
+.cand-pref-prog-hdr .cand-pref-applied { font-size: 0.72rem; padding: 1px 6px; border-radius: 4px; background: rgba(62,207,142,0.1); color: var(--neon-green) }
+.cand-pref-prog-hdr .cand-pref-notapplied { font-size: 0.72rem; padding: 1px 6px; border-radius: 4px; background: rgba(220,60,60,0.1); color: var(--neon-red) }
+.cand-pref-eff { font-size: 0.82rem; color: var(--text-muted); margin-left: auto }
+.cand-pref-bonus { font-size: 0.75rem; color: var(--neon-gold) }
+.cand-pref-list { display: flex; flex-direction: column }
+
+/* Redesigned preference rows — card-style per preference */
+.cand-pref-row {
+  display: flex; gap: 10px; padding: 7px 12px; font-size: 0.8rem;
+  border-bottom: 1px solid var(--border-light, rgba(255,255,255,0.03));
+  transition: background 0.12s;
+}
+.cand-pref-row:last-child { border-bottom: none }
+.cand-pref-row:hover { background: var(--bg-hover) }
+.cand-pref-row.cand-pref-parent { background: rgba(232,166,39,0.04) }
+.cand-pref-row.cand-pref-cert-match { background: rgba(62,207,142,0.04) }
+
+.cand-pref-no-col {
+  display: flex; align-items: flex-start; padding-top: 2px;
+}
+.cand-pref-no {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(77,184,217,0.12); color: var(--neon-cyan);
+  font-size: 0.72rem; font-weight: 700;
+}
+
+.cand-pref-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px }
+
+.cand-pref-spec-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+}
+.cand-pref-spec { font-weight: 600; color: var(--text); font-size: 0.82rem; min-width: 0 }
+
+.cand-pref-meta-row {
+  display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
+  font-size: 0.7rem; color: var(--text-muted);
+}
+.cand-pref-hosp { color: var(--text-muted) }
+.cand-pref-meta-sep { color: rgba(255,255,255,0.12); font-size: 0.6rem }
+.cand-pref-quota { white-space: nowrap }
+.cand-pref-parent-star { color: var(--neon-gold, #e8a627); margin-left: 2px; font-size: 0.8rem }
+
+.cand-pref-marks-badge {
+  display: inline-flex; flex-direction: column; align-items: flex-end;
+  white-space: nowrap; flex-shrink: 0;
+}
+.cand-pref-marks-val {
+  font-size: 0.85rem; font-weight: 700; line-height: 1.2;
+}
+.cand-pref-marks-cert .cand-pref-marks-val { color: var(--neon-green) }
+.cand-pref-marks-prog .cand-pref-marks-val { color: var(--neon-cyan) }
+.cand-pref-marks-src {
+  font-size: 0.6rem; color: var(--text-muted); line-height: 1.2;
+}
+
+.cand-pref-discs { display: flex; gap: 3px; flex-wrap: wrap }
+.cand-pref-disc {
+  font-size: 0.62rem; padding: 1px 5px; border-radius: 100px; font-weight: 600;
+  background: rgba(124,101,196,0.08); color: var(--neon-purple, #7c65c4);
+  white-space: nowrap; cursor: help;
+}
+.cand-pref-empty { padding: 10px; font-size: 0.8rem; color: var(--text-muted); text-align: center }
+
+/* ── Admin Toggle Switches ── */
+.admin-toggle { position: relative; display: inline-block; width: 36px; height: 20px; cursor: pointer }
+.admin-toggle input { opacity: 0; width: 0; height: 0 }
+.admin-toggle-slider {
+  position: absolute; inset: 0; background: var(--bg-input); border-radius: 20px;
+  border: 1px solid var(--border); transition: background 0.2s, border-color 0.2s;
+}
+.admin-toggle-slider::before {
+  content: ''; position: absolute; left: 2px; top: 2px; width: 14px; height: 14px;
+  border-radius: 50%; background: var(--text-muted); transition: transform 0.2s, background 0.2s;
+}
+.admin-toggle input:checked + .admin-toggle-slider { background: rgba(62,207,142,0.15); border-color: var(--neon-green) }
+.admin-toggle input:checked + .admin-toggle-slider::before { transform: translateX(16px); background: var(--neon-green) }
+.admin-cfg-sel { padding: 4px 6px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-input); color: var(--text); font-size: 0.8rem }
+.admin-cfg-sel:disabled { opacity: 0.5; cursor: not-allowed }
+
+/* ── Config Tab Overview (simplified) ── */
+.config-overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px }
+.config-overview-card {
+  padding: 14px; border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--bg-card); display: flex; flex-direction: column; gap: 6px;
+}
+.config-overview-card .cov-label { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em }
+.config-overview-card .cov-value { font-size: 1rem; font-weight: 700; color: var(--text) }
+.config-overview-card .cov-value.active { color: var(--neon-cyan) }
+.config-overview-card .cov-meta { font-size: 0.72rem; color: var(--text-muted) }
+.config-overview-card.cov-source { border-left: 3px solid var(--neon-green) }
+.config-overview-card.cov-source-missing { border-left: 3px solid var(--neon-pink) }
+
+/* ── Config Data Sources ── */
+.config-source-ok td:first-child { border-left: 3px solid var(--neon-green) }
+.config-source-missing td:first-child { border-left: 3px solid var(--neon-pink) }
+.config-source-desc { font-size: 0.72rem; color: var(--text-muted); font-weight: 400 }
+.config-source-status { font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 4px }
+.config-source-status-ok { background: rgba(62,207,142,0.1); color: var(--neon-green) }
+.config-source-status-missing { background: rgba(220,60,60,0.1); color: var(--neon-pink) }
+
+/* ── Config Tab / Badge Styles ── */
+.config-badge {
+  display: inline-block; padding: 4px 12px; border-radius: var(--radius);
+  background: var(--bg-hover); border: 1px solid var(--border);
+  color: var(--text); font-size: 0.82rem; line-height: 1.4;
+}
+.config-badge-link { cursor: pointer; transition: border-color 0.15s }
+.config-badge-link:hover { border-color: var(--neon-cyan); background: rgba(77,184,217,0.06) }
+.config-editor-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px; margin-top: 6px
+}
+.config-editor-field { display: flex; flex-direction: column; gap: 4px }
+.config-editor-field label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em }
+.config-editor-field select { padding: 6px 8px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-input); color: var(--text); font-size: 0.85rem }
+.config-editor-field select:focus { border-color: var(--neon-cyan); outline: none }
+
+/* ── Simulation Modal (seat allocation) ── */
+.sim-modal-tabs {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border);
+  margin: 0 0 16px; background: var(--bg-card); border-radius: var(--radius) var(--radius) 0 0;
+}
+.sim-modal-tab {
+  padding: 9px 18px; font-size: 0.82rem; font-weight: 600;
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  color: var(--text-muted); cursor: pointer; transition: color 0.12s, border-color 0.12s;
+}
+.sim-modal-tab:hover { color: var(--text) }
+.sim-modal-tab.active { color: var(--neon-cyan); border-bottom-color: var(--neon-cyan) }
+.sim-modal-tab-content { display: none }
+.sim-modal-tab-content.active { display: block }
+
+/* Allocation tab */
+.sim-allocation-tab { padding: 0 4px }
+.sim-my {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 10px 14px; border-radius: var(--radius); margin-bottom: 16px;
+  font-size: 0.88rem;
+}
+.sim-my.placed { background: rgba(62,207,142,0.08); border-left: 3px solid var(--neon-green) }
+.sim-my.unplaced { background: rgba(220,60,60,0.06); border-left: 3px solid var(--neon-pink) }
+.sim-my-icon { font-size: 1rem; line-height: 1.4 }
+.sim-my-hosp { opacity: 0.75 }
+.sim-my-meta { display: block; font-size: 0.78rem; opacity: 0.6; margin-top: 1px }
+
+.sim-hist-section { }
+.sim-hist-section-hdr {
+  font-size: 0.82rem; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+.sim-hist-list { display: flex; flex-direction: column; gap: 4px }
+.sim-hist-row {
+  display: grid; grid-template-columns: 24px 28px 1fr auto;
+  gap: 6px; align-items: center; padding: 6px 10px;
+  border-radius: var(--radius); font-size: 0.8rem;
+  border: 1px solid transparent; transition: background 0.1s;
+}
+.sim-hist-row:hover { background: var(--bg-hover) }
+.sim-hist-icon { text-align: center; font-size: 0.85rem }
+.sim-hist-no { font-weight: 700; color: var(--neon-cyan); font-size: 0.75rem }
+.sim-hist-slot { display: flex; flex-direction: column; gap: 1px; min-width: 0 }
+.sim-hist-spec { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.sim-hist-hosp { font-size: 0.72rem; color: var(--text-muted) }
+.sim-hist-quota { font-size: 0.68rem; color: var(--text-muted); opacity: 0.7 }
+
+.sim-hist-detail { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; white-space: nowrap; font-size: 0.75rem }
+.sim-hist-placed-label { color: var(--neon-green); font-size: 0.78rem }
+.sim-hist-cutoff { color: #e05470 }
+.sim-hist-score { color: var(--text-muted); font-size: 0.7rem }
+.sim-hist-capacity { color: var(--text-muted); font-size: 0.68rem }
+.sim-hist-delta { font-weight: 700; font-size: 0.75rem; padding: 1px 6px; border-radius: 4px }
+.sim-hist-delta-ok { background: rgba(62,207,142,0.1); color: var(--neon-green) }
+.sim-hist-delta-short { background: rgba(220,60,60,0.1); color: var(--neon-pink) }
+.sim-hist-queue { font-size: 0.68rem; color: var(--neon-gold, #e8a627); font-weight: 600 }
+.sim-hist-skip-label { color: var(--text-muted); font-size: 0.75rem }
+.sim-hist-nodata-label { color: var(--text-muted); font-size: 0.75rem }
+
+/* Preferences subtab inside sim modal */
+.sim-prefs-tab .cand-pref-list { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden }
+
+/* Outcome badges on preferences */
+.sim-pref-outcome {
+  font-size: 0.65rem; font-weight: 700; padding: 2px 7px; border-radius: 100px;
+  text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+}
+.sim-pref-placed { background: rgba(62,207,142,0.12); color: var(--neon-green) }
+.sim-pref-beaten { background: rgba(220,60,60,0.1); color: var(--neon-pink) }
+.sim-pref-skipped { background: rgba(255,255,255,0.04); color: var(--text-muted) }
+
+/* Queue detail row in Preferences tab */
+.sim-pref-queue-detail {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  font-size: 0.7rem; margin-top: 1px;
+}
+.sim-pref-cutoff { color: #e05470; font-weight: 600 }
+.sim-pref-shortfall { color: var(--neon-pink); font-weight: 700 }
+.sim-pref-queue-pos { color: var(--neon-gold, #e8a627); font-weight: 600 }
+.sim-pref-skip-reason { color: var(--text-muted); font-style: italic }
+
+/* Certificates tab inside sim modal */
+.sim-cert-tab .cert-card:first-child { margin-top: 0 }
+.sim-cert-tab .cert-section-title { margin-top: 0 }

@@ -203,43 +203,73 @@
     /* -- Motivational Quote Strip -- */
     .quote-strip {
       display: flex; align-items: center; gap: 14px;
-      padding: 9px 24px;
-      background: linear-gradient(135deg, rgba(124,101,196,0.04) 0%, rgba(77,184,217,0.02) 100%);
-      border-bottom: 1px solid rgba(124,101,196,0.12);
-      min-height: 50px;
+      padding: 10px 24px;
+      background: linear-gradient(135deg, rgba(124,101,196,0.06) 0%, rgba(77,184,217,0.03) 50%, rgba(124,101,196,0.04) 100%);
+      background-size: 200% 200%;
+      animation: quoteGradient 12s ease infinite;
+      border-bottom: 1px solid rgba(124,101,196,0.1);
+      min-height: 52px;
       position: relative; overflow: hidden;
+    }
+    @keyframes quoteGradient {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
     }
     .quote-strip::before {
       content: ''; position: absolute; left: 0; top: 0; bottom: 0;
       width: 3px; background: linear-gradient(180deg, #7c65c4 0%, #4db8d9 100%);
       border-radius: 0 2px 2px 0;
     }
+    .quote-strip::after {
+      content: ''; position: absolute; top: 0; left: -100%;
+      width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(124,101,196,0.06), transparent);
+      animation: quoteShimmer 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes quoteShimmer {
+      0%, 100% { left: -60%; }
+      50% { left: 100%; }
+    }
     .quote-glyph {
-      font-size: 2rem; line-height: 1; font-family: Georgia, 'Times New Roman', serif;
-      color: rgba(124,101,196,0.3); flex-shrink: 0; margin-top: -6px;
+      font-size: 2.2rem; line-height: 1; font-family: Georgia, 'Times New Roman', serif;
+      color: rgba(124,101,196,0.25); flex-shrink: 0; margin-top: -8px;
       user-select: none;
+      animation: quoteGlyphFloat 4s ease-in-out infinite;
+    }
+    @keyframes quoteGlyphFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
     }
     .quote-body {
       flex: 1; display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 10px;
-      min-width: 0; transition: opacity 0.55s ease;
+      min-width: 0; transition: opacity 0.5s ease, transform 0.5s ease;
     }
-    .quote-body.fading { opacity: 0; }
+    .quote-body.fading { opacity: 0; transform: translateY(4px); }
     .quote-text {
-      font-style: italic; font-size: 0.8rem;
-      color: var(--text, #c8daf0); line-height: 1.45; flex-shrink: 1;
+      font-style: italic; font-size: 0.82rem;
+      color: var(--text, #c8daf0); line-height: 1.5; flex-shrink: 1;
+      text-shadow: 0 0 20px rgba(124,101,196,0.08);
     }
     .quote-author {
-      font-size: 0.71rem; color: var(--neon-purple, #7c65c4);
+      font-size: 0.72rem; color: var(--neon-purple, #7c65c4);
       font-weight: 600; white-space: nowrap; flex-shrink: 0;
+      opacity: 0.85;
     }
     .quote-dots {
       display: flex; align-items: center; gap: 5px; flex-shrink: 0;
     }
     .quote-dot {
       width: 5px; height: 5px; border-radius: 50%;
-      background: rgba(124,101,196,0.2); transition: background 0.4s;
+      background: rgba(124,101,196,0.18); transition: all 0.4s ease;
+      cursor: pointer;
     }
-    .quote-dot.active { background: #7c65c4; }
+    .quote-dot:hover { background: rgba(124,101,196,0.4); transform: scale(1.4); }
+    .quote-dot.active {
+      background: #7c65c4;
+      box-shadow: 0 0 6px rgba(124,101,196,0.4);
+      transform: scale(1.3);
+    }
 
     /* -- Find Me bar -- */
     .sim-findme-bar {
@@ -1044,10 +1074,19 @@
     .cert-prog-tag.ms  { background: rgba(77,184,217,0.1); color: var(--neon-cyan, #4db8d9); }
     .cert-prog-tag.md  { background: rgba(124,101,196,0.1); color: var(--neon-purple, #7c65c4); }
     .cert-spec-name { font-weight: 600; font-size: 0.85rem; }
+    .cert-disc-name {
+      font-size: 0.68rem; padding: 1px 7px; border-radius: 100px; font-weight: 600;
+      background: rgba(124,101,196,0.12); color: var(--neon-purple, #7c65c4);
+      letter-spacing: 0.02em;
+    }
     .cert-status {
       font-size: 0.68rem; padding: 1px 7px; border-radius: 100px; font-weight: 700;
     }
     .cert-status.pass { background: rgba(62,207,142,0.1); color: var(--neon-green, #3ecf8e); }
+    .cert-marks-line { display: inline-flex; gap: 4px; margin-left: auto; }
+    .cert-mark { font-size: 0.68rem; padding: 1px 6px; border-radius: 4px; font-weight: 600; white-space: nowrap; cursor: help; }
+    .cert-mark.portal { background: rgba(77,184,217,0.1); color: var(--neon-cyan, #4db8d9); }
+    .cert-mark.computed { background: rgba(232,166,39,0.1); color: var(--neon-gold, #e8a627); }
     .cert-row-detail {
       font-size: 0.75rem; color: var(--text-muted, #888); margin-bottom: 4px;
     }
@@ -1103,6 +1142,11 @@
     }
     .cert-prog-source {
       font-size: 0.7rem; color: var(--neon-green, #3ecf8e); margin-left: 4px;
+    }
+    .cert-prog-srclbl {
+      font-size: 0.62rem; padding: 1px 5px; border-radius: 4px;
+      background: rgba(62,207,142,0.08); color: var(--neon-green, #3ecf8e);
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
     }
     .cert-prog-row.total {
       border-top: 1px solid rgba(124,101,196,0.1); margin-top: 4px; padding-top: 8px;
@@ -1277,53 +1321,73 @@
       display: flex; align-items: flex-start; gap: 14px;
       padding: 14px 22px;
       font-size: 0.92rem; line-height: 1.65;
-      animation: fadeInUp 0.2s ease both;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      animation: notifSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background 0.2s;
+      position: relative;
     }
+    @keyframes notifSlideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .notif-item:hover { background: rgba(255,255,255,0.015); }
     .notif-warning {
-      background: rgba(18, 16, 10, 0.88);
+      background: linear-gradient(90deg, rgba(18, 16, 10, 0.9) 0%, rgba(14, 20, 38, 0.85) 100%);
       border-left: 4px solid var(--neon-gold, #e8a627);
     }
     .notif-info {
-      background: rgba(12, 22, 38, 0.9);
+      background: linear-gradient(90deg, rgba(12, 22, 38, 0.9) 0%, rgba(14, 20, 38, 0.85) 100%);
       border-left: 4px solid var(--neon-cyan, #4db8d9);
     }
     .notif-danger {
-      background: rgba(22, 10, 14, 0.9);
+      background: linear-gradient(90deg, rgba(22, 10, 14, 0.9) 0%, rgba(14, 20, 38, 0.85) 100%);
       border-left: 4px solid #e05470;
+    }
+    .notif-success {
+      background: linear-gradient(90deg, rgba(10, 22, 16, 0.9) 0%, rgba(14, 20, 38, 0.85) 100%);
+      border-left: 4px solid var(--neon-green, #3ecf8e);
     }
     .notif-icon {
       display: flex; align-items: center; justify-content: center;
-      width: 2rem; height: 2rem; flex-shrink: 0;
-      font-size: 1rem; line-height: 1;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
+      width: 2.2rem; height: 2.2rem; flex-shrink: 0;
+      font-size: 1.05rem; line-height: 1;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.04);
     }
+    .notif-warning .notif-icon { background: rgba(232,166,39,0.08); border-color: rgba(232,166,39,0.12); }
+    .notif-info    .notif-icon { background: rgba(77,184,217,0.08); border-color: rgba(77,184,217,0.12); }
+    .notif-danger  .notif-icon { background: rgba(224,84,112,0.08); border-color: rgba(224,84,112,0.12); }
+    .notif-success .notif-icon { background: rgba(62,207,142,0.08); border-color: rgba(62,207,142,0.12); }
     .notif-body { flex: 1; min-width: 0; max-width: 80ch; }
     .notif-title {
       font-weight: 700; margin-bottom: 6px;
-      font-size: 0.98rem; line-height: 1.35;
+      font-size: 0.95rem; line-height: 1.35;
       color: var(--text, #f0f4fa);
+      display: flex; align-items: center; gap: 6px;
     }
     .notif-warning .notif-title { color: #f0d080; }
     .notif-info    .notif-title { color: #8ed4ec; }
     .notif-danger  .notif-title { color: #f0a0b0; }
+    .notif-success .notif-title { color: #8eecb0; }
     .notif-text {
       color: var(--text, #dce4f0);
-      font-size: 0.9rem; line-height: 1.7;
+      font-size: 0.88rem; line-height: 1.7;
     }
     .notif-link {
       color: var(--neon-cyan, #6ec8e8);
       text-decoration: none; font-weight: 600;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s;
     }
-    .notif-link:hover { text-decoration: underline; }
+    .notif-link:hover { border-bottom-color: var(--neon-cyan, #6ec8e8); }
     .notif-dismiss {
-      background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);
       color: var(--text-muted, #9eb0cc);
-      cursor: pointer; font-size: 0.9rem; padding: 4px 8px; flex-shrink: 0;
-      border-radius: 6px; transition: opacity 0.15s, background 0.15s; line-height: 1;
+      cursor: pointer; font-size: 0.85rem; padding: 4px 9px; flex-shrink: 0;
+      border-radius: 8px; transition: all 0.2s; line-height: 1;
     }
-    .notif-dismiss:hover { opacity: 1; background: rgba(255, 255, 255, 0.08); }
+    .notif-dismiss:hover { opacity: 1; background: rgba(255, 255, 255, 0.08); border-color: rgba(255,255,255,0.14); transform: scale(1.05); }
 
     /* -- Live fetch progress (admin-controlled) -- */
     .fetch-progress-wrap {
@@ -2089,17 +2153,27 @@
        TOAST
     --------------------------------------------------------------- */
     .toast {
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-      background: rgba(13, 20, 44, 0.97); border: 1px solid var(--border);
-      color: var(--text); padding: 10px 22px; border-radius: 100px;
-      font-size: 0.84rem; box-shadow: 0 4px 24px rgba(0,0,0,0.6);
-      opacity: 0; pointer-events: none; transition: opacity 0.22s ease;
-      z-index: 9999; white-space: nowrap; backdrop-filter: blur(10px);
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(10px);
+      background: rgba(10, 16, 36, 0.97); border: 1px solid var(--border);
+      color: var(--text); padding: 11px 24px; border-radius: 100px;
+      font-size: 0.84rem; font-weight: 500;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.02);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 9999; white-space: nowrap; backdrop-filter: blur(12px);
+      display: flex; align-items: center; gap: 8px;
     }
-    .toast.toast-visible { opacity: 1; pointer-events: auto; }
-    .toast.toast-success { border-color: rgba(62,207,142,0.45); color: var(--neon-green, #3ecf8e); }
-    .toast.toast-warning { border-color: rgba(232,166,39,0.45); color: var(--neon-gold, #e8a627); }
-    .toast.toast-error   { border-color: rgba(224,84,112,0.45); color: #e05470; }
+    .toast.toast-visible { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+    .toast::before {
+      content: ''; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+      background: var(--neon-cyan, #4db8d9);
+    }
+    .toast.toast-success { border-color: rgba(62,207,142,0.4); color: var(--neon-green, #3ecf8e); }
+    .toast.toast-success::before { background: var(--neon-green, #3ecf8e); box-shadow: 0 0 8px rgba(62,207,142,0.4); }
+    .toast.toast-warning { border-color: rgba(232,166,39,0.4); color: var(--neon-gold, #e8a627); }
+    .toast.toast-warning::before { background: var(--neon-gold, #e8a627); box-shadow: 0 0 8px rgba(232,166,39,0.4); }
+    .toast.toast-error   { border-color: rgba(224,84,112,0.4); color: #e05470; }
+    .toast.toast-error::before { background: #e05470; box-shadow: 0 0 8px rgba(224,84,112,0.4); }
 
     #candidateModal,
     #appSimModal,
@@ -2207,31 +2281,8 @@
 
     /* ---------------------------------------------------------------
        SIMULATION — candidate detail history (inside candidateModal)
+       Now defined in styles.css — keep minimal overrides only
     --------------------------------------------------------------- */
-    .sim-hist-list { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
-    .sim-hist-row {
-      display: grid; grid-template-columns: 22px 38px 1fr auto;
-      gap: 5px 10px; align-items: start; padding: 7px 10px;
-      border-radius: 7px; font-size: 0.8rem;
-      border: 1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02);
-    }
-    .sim-hist-placed { background: rgba(62,207,142,0.08); border-color: rgba(62,207,142,0.22); }
-    .sim-hist-beaten { background: rgba(224,84,112,0.05); border-color: rgba(224,84,112,0.15); }
-    .sim-hist-skip   { opacity: 0.42; }
-    .sim-hist-nodata { opacity: 0.35; }
-    .sim-hist-icon   { font-size: 0.82rem; text-align: center; line-height: 1.4; }
-    .sim-hist-no     { color: var(--text-muted); font-size: 0.71rem; white-space: nowrap; padding-top: 1px; }
-    .sim-hist-slot   { display: flex; flex-direction: column; gap: 1px; }
-    .sim-hist-spec   { color: var(--text); font-weight: 600; font-size: 0.81rem; }
-    .sim-hist-hosp   { color: var(--text-muted); font-size: 0.73rem; }
-    .sim-hist-quota  { color: var(--text-muted); font-size: 0.67rem; opacity: 0.7; }
-    .sim-hist-detail { text-align: right; color: var(--text-muted); font-size: 0.74rem; white-space: nowrap; padding-top: 2px; }
-    .sim-hist-placed .sim-hist-detail { color: var(--neon-green, #3ecf8e); font-weight: 700; }
-    .sim-hist-beaten .sim-hist-detail { color: #e05470; }
-    .sim-hist-section-lbl {
-      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
-      color: var(--text-muted); margin: 14px 0 6px;
-    }
 
     /* Clickable candidate rows in simulation cards */
     .sim-row[data-sim-cand]         { cursor: pointer; }
@@ -3231,7 +3282,7 @@
     <button class="tab-btn" data-tab="slotbrowser">&#127919; Where Merit Falls</button>
     <button class="tab-btn" data-tab="simulation">&#9889; Seat Allocation</button>
     <button class="tab-btn" data-tab="consent">&#8644; Consent What-If</button>
-    <!---<button class="tab-btn" data-tab="config">&#9881; Config</button>--->
+    <button class="tab-btn" data-tab="config">&#9881; Config</button>
   </div>
   <div class="sim-nav-section sim-nav-secondary" aria-label="Planning and community">
     <span class="sim-nav-label">Plan</span>
@@ -3366,13 +3417,13 @@
             <option value="2">Rejected</option>
           </select>
         </div>
-        <div class="form-group marks-basis-wrap">
-          <label for="candMarksBasis">Merit basis</label>
-          <select id="candMarksBasis" class="mt-filter-sel" title="Formula used for base marks in this table and allocation"></select>
+        <div class="form-group marks-basis-wrap" style="display:flex;flex-direction:column">
+          <label>Merit basis</label>
+          <span id="candMarksBasisDisplay" class="config-badge config-badge-link" data-tab="config" title="Click to open Config tab">—</span>
         </div>
-        <div class="form-group candidate-revision-wrap hidden">
-          <label for="candCandidateRevision">Candidate revision</label>
-          <select id="candCandidateRevision" class="mt-filter-sel" title="Corrected candidate-data snapshot used with the selected merit basis"></select>
+        <div class="form-group candidate-revision-wrap hidden" style="display:flex;flex-direction:column">
+          <label>Candidate revision</label>
+          <span id="candCandidateRevisionDisplay" class="config-badge config-badge-link" data-tab="config" title="Click to open Config tab">—</span>
         </div>
       </div>
       <p id="marksBasisNote" class="marks-basis-note hidden" style="margin-top:10px"></p>
@@ -3466,6 +3517,31 @@
           <div class="ps-count-item" title="Amendment status 2 — rejected">
             <span class="ps-count-label">Rejected</span>
             <span class="ps-count-pill ps-pill-rejected" id="cstat-amend-rejected">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="candTotalStats" class="ps-status-panel ps-total-panel hidden" role="status" aria-live="polite">
+        <div class="ps-status-head">
+          <div class="ps-status-title">
+            <span class="ps-status-title-icon ps-total-icon" aria-hidden="true">&#9432;</span>
+            <span>Combined Total (unique candidates)</span>
+          </div>
+        </div>
+        <div class="ps-status-counts">
+          <div class="ps-count-item" title="Accepted in verification OR approved via amendment">
+            <span class="ps-count-label">Accepted</span>
+            <span class="ps-count-pill ps-pill-accepted" id="cstat-total-accepted">—</span>
+          </div>
+          <span class="ps-count-sep" aria-hidden="true">&middot;</span>
+          <div class="ps-count-item" title="Pending in both types">
+            <span class="ps-count-label">Pending</span>
+            <span class="ps-count-pill ps-pill-pending" id="cstat-total-pending">—</span>
+          </div>
+          <span class="ps-count-sep" aria-hidden="true">&middot;</span>
+          <div class="ps-count-item" title="Rejected and no amendment approval">
+            <span class="ps-count-label">Rejected</span>
+            <span class="ps-count-pill ps-pill-rejected" id="cstat-total-rejected">—</span>
           </div>
         </div>
       </div>
@@ -3830,17 +3906,17 @@
           <label for="simFilter">Filter results</label>
           <input type="text" id="simFilter" class="mt-filter-input" placeholder="Specialty or hospital&hellip;" />
         </div>
-        <div class="form-group marks-basis-wrap">
-          <label for="simMarksBasis">Merit basis</label>
-          <select id="simMarksBasis" class="mt-filter-sel" title="Formula used when running placement simulation"></select>
+        <div class="form-group marks-basis-wrap" style="display:flex;flex-direction:column">
+          <label>Merit basis</label>
+          <span id="simMarksBasisDisplay" class="config-badge config-badge-link" data-tab="config" title="Click to open Config tab">—</span>
         </div>
-        <div class="form-group candidate-revision-wrap hidden">
-          <label for="simCandidateRevision">Candidate revision</label>
-          <select id="simCandidateRevision" class="mt-filter-sel" title="Corrected candidate-data snapshot used with the selected merit basis"></select>
+        <div class="form-group candidate-revision-wrap hidden" style="display:flex;flex-direction:column">
+          <label>Candidate revision</label>
+          <span id="simCandidateRevisionDisplay" class="config-badge config-badge-link" data-tab="config" title="Click to open Config tab">—</span>
         </div>
         <div class="form-group sim-status-scope-wrap">
-          <label for="simStatusScope">Candidate status scope</label>
-          <select id="simStatusScope" class="mt-filter-sel" title="Which verification statuses are included in seat allocation"></select>
+          <label>Candidate status scope</label>
+          <span id="simStatusScopeDisplay" class="config-badge config-badge-link" data-tab="config" title="Click to open Config tab">—</span>
           <span id="simStatusScopeHint" class="select-all-hint">All candidates included.</span>
         </div>
       </div>
@@ -3920,17 +3996,17 @@
               <label for="consentCandidateId">Applicant ID</label>
               <input type="number" id="consentCandidateId" class="mt-filter-input" placeholder="Candidate who may consent or not&hellip;" />
             </div>
-            <div class="form-group marks-basis-wrap">
-              <label for="consentMarksBasis">Merit basis</label>
-              <select id="consentMarksBasis" class="mt-filter-sel" title="Formula used for this what-if run"></select>
+            <div class="form-group marks-basis-wrap" style="display:flex;flex-direction:column">
+              <label>Merit basis</label>
+              <span id="consentMarksBasisDisplay" class="config-badge config-badge-link" data-tab="config" title="Click to open Config tab">—</span>
             </div>
-            <div class="form-group candidate-revision-wrap hidden">
-              <label for="consentCandidateRevision">Candidate revision</label>
-              <select id="consentCandidateRevision" class="mt-filter-sel" title="Corrected candidate-data snapshot used with the selected merit basis"></select>
+            <div class="form-group candidate-revision-wrap hidden" style="display:flex;flex-direction:column">
+              <label>Candidate revision</label>
+              <span id="consentCandidateRevisionDisplay" class="config-badge config-badge-link" data-tab="config" title="Click to open Config tab">—</span>
             </div>
             <div class="form-group sim-status-scope-wrap">
-              <label for="consentStatusScope">Candidate status scope</label>
-              <select id="consentStatusScope" class="mt-filter-sel" title="Which verification statuses are included"></select>
+              <label>Candidate status scope</label>
+              <span id="consentStatusScopeDisplay" class="config-badge config-badge-link" data-tab="config" title="Click to open Config tab">—</span>
               <span id="consentStatusScopeHint" class="select-all-hint">All candidates included.</span>
             </div>
           </div>
@@ -3961,17 +4037,36 @@
 
   <!-- ══════════════════════════════════════════
        TAB: CONFIG
-  ══════════════════════════════════════════ 
+  ══════════════════════════════════════════ -->
   <section class="tab-content" id="tab-config">
     <div class="section-header">
       <h2>Simulation Config</h2>
-      <p>Central view of all active admin configurations: formulas, tracked fields, revision control, and certificate policy.</p>
+      <p>Active simulation settings. Toggle between available options below &mdash; administrators can control visibility and defaults via the Admin portal.</p>
+    </div>
+
+    <div id="configControls" class="card config-section" style="margin-bottom:16px">
+      <h3 style="margin-top:0">Active Configuration</h3>
+      <div class="config-editor-grid">
+        <div class="config-editor-field">
+          <label for="cfgMarksBasis">Merit formula</label>
+          <select id="cfgMarksBasis" class="mt-filter-sel" title="Formula used for base marks in all tabs"></select>
+        </div>
+        <div class="config-editor-field candidate-revision-wrap hidden">
+          <label for="cfgCandidateRevision">Candidate revision</label>
+          <select id="cfgCandidateRevision" class="mt-filter-sel" title="Corrected candidate-data snapshot"></select>
+        </div>
+        <div class="config-editor-field">
+          <label for="cfgSimStatusScope">Default status scope</label>
+          <select id="cfgSimStatusScope" class="mt-filter-sel" title="Default verification status scope for allocation"></select>
+        </div>
+      </div>
+      <p id="cfgMarksNote" class="marks-basis-note" style="font-size:0.85rem;color:var(--text-muted);margin:8px 0 0">Changes apply immediately across all tabs.</p>
     </div>
 
     <div id="configContent">
-      <p class="text-muted">Loading configuration…</p>
+      <p class="text-muted">Loading configuration details…</p>
     </div>
-  </section>-->
+  </section>
 
   <!-- ══════════════════════════════════════════
        TAB: TRAINING SEATS
@@ -4221,7 +4316,7 @@
 ══════════════════════════════════════════ -->
 <div class="modal hidden" id="candidateModal">
   <div class="modal-overlay" id="candidateModalOverlay"></div>
-  <div class="modal-box" style="max-width:680px;max-height:85vh;overflow-y:auto">
+  <div class="modal-box" style="max-width:760px;max-height:85vh;overflow-y:auto">
     <button class="modal-close" id="candidateModalClose" title="Close">&times;</button>
     <div id="candidateModalBody"></div>
   </div>
@@ -4440,6 +4535,18 @@
     _QUOTES.forEach((_, i) => {
       const d = document.createElement('span');
       d.className = 'quote-dot' + (i === _qIdx ? ' active' : '');
+      d.title = 'Quote ' + (i + 1);
+      d.addEventListener('click', () => {
+        if (i === _qIdx) return;
+        body.classList.add('fading');
+        setTimeout(() => {
+          _qIdx = i;
+          _setQuote(_qIdx);
+          body.classList.remove('fading');
+        }, 500);
+        clearInterval(_qTimer);
+        _qTimer = _startTimer();
+      });
       dotsEl.appendChild(d);
     });
 
@@ -4452,14 +4559,17 @@
 
     _setQuote(_qIdx);
 
-    setInterval(() => {
-      body.classList.add('fading');
-      setTimeout(() => {
-        _qIdx = (_qIdx + 1) % _QUOTES.length;
-        _setQuote(_qIdx);
-        body.classList.remove('fading');
-      }, 560);
-    }, 9000);
+    function _startTimer() {
+      return setInterval(() => {
+        body.classList.add('fading');
+        setTimeout(() => {
+          _qIdx = (_qIdx + 1) % _QUOTES.length;
+          _setQuote(_qIdx);
+          body.classList.remove('fading');
+        }, 500);
+      }, 7000);
+    }
+    let _qTimer = _startTimer();
   }
 
   document.addEventListener('DOMContentLoaded', _initQuoteStrip);
