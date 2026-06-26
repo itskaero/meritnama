@@ -56,6 +56,7 @@
   <button class="tab-btn" data-tab="current">&#128203; Previous Merit Lists</button>
   <a href="simulation.html" class="tab-btn">&#127973; Induction Portal</a>
   <a href="accreditation.html" class="tab-btn">&#9989; Accreditation</a>
+  <button class="tab-btn" data-tab="jobs">&#128188; Jobs</button>
   <button class="tab-btn" data-tab="policy">&#128196; Policy</button>
   <button class="tab-btn" data-tab="candidates">&#128101; Candidates</button>
   <button class="tab-btn" data-tab="guide">&#10067; Guide</button>
@@ -168,7 +169,7 @@
 
     <div class="start-previous-merits card" style="margin-top: 24px;">
       <h3>All Previous Induction Cycles</h3>
-      <p style="color:var(--text-muted);margin-bottom:14px">Closing merit trends across every induction — see how the landscape changes.</p>
+      <p style="color:var(--text-muted);margin-bottom:14px">Closing merit trends across every induction Ã¢â‚¬â€ see how the landscape changes.</p>
       <div class="induction-summary-grid" id="inductionSummaryGrid">
         <div style="text-align:center;padding:20px;color:var(--text-muted)">Loading induction data&hellip;</div>
       </div>
@@ -929,7 +930,40 @@
 
   </section><!-- /tab-guide -->
 
-</main>
+  <!-- ===========================================================
+       TAB : JOBS — current medical job openings
+  ========================================================================== -->
+  <section class="tab-content" id="tab-jobs">
+    <div class="section-header">
+      <h2>Current Job Openings</h2>
+      <p>Browse current medical job openings. Filter by role, organization, location, or status â€” deadlines and availability update live.</p>
+    </div>
+
+    <div class="jobs-stats-row" id="jobsStatsRow"></div>
+
+    <div class="jobs-toolbar">
+      <div class="mt-filters">
+        <select id="jobsVacancySel" class="mt-filter-sel" aria-label="Vacancy"><option value="">All roles</option></select>
+        <select id="jobsOrgSel"    class="mt-filter-sel" aria-label="Organization"><option value="">All organizations</option></select>
+        <select id="jobsCitySel"   class="mt-filter-sel" aria-label="City"><option value="">All cities</option></select>
+        <select id="jobsStatusSel" class="mt-filter-sel" aria-label="Status">
+          <option value="all">All statuses</option>
+          <option value="open">Open</option>
+          <option value="closed">Closed</option>
+          <option value="unknown">Deadline N/A</option>
+        </select>
+        <input type="text" id="jobsSearch" class="mt-filter-input" placeholder="Search title, org, location&hellip;" aria-label="Search jobs" />
+      </div>
+      <div class="jobs-toolbar-aux">
+        <label class="jobs-toggle"><input type="checkbox" id="jobsOnlyVacChk" /> <span>Only with listed vacancies</span></label>
+        <span class="accent-chip" id="jobsCount">â€¦</span>
+      </div>
+    </div>
+
+    <div class="jobs-grid" id="jobsGrid">
+      <div class="jobs-empty">Loading jobs&hellip;</div>
+    </div>
+  </section><!-- /tab-jobs -->
 
 <!-- Tooltip popup -->
 <div class="tooltip-popup hidden" id="tooltipEl">
@@ -953,6 +987,7 @@
 <script src="js/app-predict-calc.js"></script>
 <script src="js/app-policy-compare.js"></script>
 <script src="js/app-candidates.js"></script>
+<script src="js/app-jobs.js"></script>
 <script src="js/app-notif-init.js"></script>
 <script src="access-request.js"></script>
 <script src="screenshot-guard.js"></script>

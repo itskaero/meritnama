@@ -188,6 +188,17 @@ service cloud.firestore {
       allow read, create, update, delete: if true;
     }
 
+    // Job board — scraped from jobz.pk via the in-browser sync button on the
+    // Jobs tab and pushed here. Public read (any visitor sees live cards),
+    // write allowed so the Scrape & sync button can merge new/changed docs.
+    // Doc IDs: {numericJobId}  Special doc: _meta (count, lastSyncAt, source)
+    // Per-doc fields see js/app-jobs.js header comment.
+    match /jobs/{jobId} {
+      allow read:          if true;
+      allow create, update: if true;   // sync button; trust-gated by client UI
+      allow delete:        if false;
+    }
+
     // Deny everything else
     match /{document=**} {
       allow read, write: if false;
