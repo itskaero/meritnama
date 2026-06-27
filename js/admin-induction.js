@@ -552,6 +552,24 @@
         </div>
       </div>
 
+      <div class="ai-detail-card" id="aiMarksEditCard">
+        <h4>✏️ Edit Marks</h4>
+        <p style="font-size:0.75rem;color:var(--text-muted);margin:0 0 10px">Override individual mark fields. Saved as a revision to browser storage.</p>
+        <div class="marks-edit-grid">
+          ${markFields.map(f => `
+            <div class="marks-edit-field">
+              <label>${esc(f.label)}</label>
+              <input type="number" step="0.001" class="cand-edit-input" data-field="${f.key}" value="${c[f.key] ?? ''}" />
+            </div>
+          `).join('')}
+        </div>
+        <div class="marks-edit-actions">
+          <button class="ai-btn-primary" id="aiSaveMarksEdit">Save Revision</button>
+          <button class="ai-btn-secondary" id="aiResetMarksEdit">Reset</button>
+          <span id="aiMarksEditStatus" style="font-size:0.78rem;color:var(--text-muted);margin-left:10px"></span>
+        </div>
+      </div>
+
       <div class="ai-detail-card ai-detail-prefs">
         <h4>🎯 Preferences (${prefs.length})</h4>
         <div class="ai-pref-list">${prefsHtml}</div>
@@ -570,6 +588,9 @@
         </div>
       </div>
     `;
+
+    document.getElementById('aiSaveMarksEdit')?.addEventListener('click', () => saveAdminCandMarks(c));
+    document.getElementById('aiResetMarksEdit')?.addEventListener('click', () => resetAdminCandMarks(c));
 
     overlay.classList.add('visible');
     overlay.style.display = 'flex';
@@ -636,6 +657,43 @@
       };
       reader.readAsText(file);
     });
+
+    const loadStaticBtn = document.getElementById('aiRevLoadStaticBtn');
+    if (loadStaticBtn) {
+      loadStaticBtn.addEventListener('click', async () => {
+        showStatus('aiRevUploadStatus', 'Loading static revisions...', 'var(--text-muted)');
+        try {
+          const resp = await fetch('data/induction21_revisions.json');
+          if (!resp.ok) throw new Error('HTTP ' + resp.status);
+          const parsed = await resp.json();
+          if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+            throw new Error('JSON must be an object keyed by applicantId');
+          }
+          let existing = {};
+          try {
+            const raw = localStorage.getItem(ADMIN_REV_KEY);
+            if (raw) existing = JSON.parse(raw);
+          } catch (_) {}
+          const beforeCount = Object.keys(existing).length;
+          let mergedCount = 0;
+          for (const [appId, revs] of Object.entries(parsed)) {
+            if (!existing[appId]) existing[appId] = {};
+            for (const [revId, revData] of Object.entries(revs)) {
+              existing[appId][revId] = revData;
+              mergedCount++;
+            }
+          }
+          localStorage.setItem(ADMIN_REV_KEY, JSON.stringify(existing));
+          AI.revisions = existing;
+          const afterCount = Object.keys(existing).length;
+          showStatus('aiRevUploadStatus',
+            `Loaded static: merged ${mergedCount} revision(s) from static file into ${afterCount - beforeCount} new candidate(s). Total: ${afterCount} candidates with revisions.`,
+            'var(--neon-green)');
+        } catch (err) {
+          showStatus('aiRevUploadStatus', 'Load static error: ' + err.message, 'var(--neon-pink)');
+        }
+      });
+    }
 
     const clearBtn = document.getElementById('aiRevClearBtn');
     if (clearBtn) {
@@ -741,6 +799,52 @@
       if (st) { st.textContent = 'Saved.'; st.style.color = 'var(--neon-green)'; }
       setTimeout(() => { if (st) st.textContent = ''; }, 2500);
     });
+  }
+
+  function saveAdminCandMarks(c) {
+    const inputs = document.querySelectorAll('.cand-edit-input[data-field]');
+    const revision = { _type: 'admin_revision', _createdAt: Date.now(), _applicantId: c.applicantId };
+    let changed = 0;
+    inputs.forEach(inp => {
+      const field = inp.dataset.field;
+      const raw = inp.value.trim();
+      const orig = c[field];
+      if (raw === '') {
+        if (orig != null) { revision[field] = null; changed++; }
+      } else {
+        const num = parseFloat(raw);
+        if (Number.isFinite(num) && num !== orig) { revision[field] = num; changed++; }
+      }
+    });
+    if (!changed) {
+      const st = document.getElementById('aiMarksEditStatus');
+      if (st) { st.textContent = 'No changes detected.'; }
+      return;
+    }
+    try {
+      const saved = JSON.parse(localStorage.getItem('mn_admin_revisions') || '{}');
+      const id = String(c.applicantId);
+      saved[id] = saved[id] || {};
+      const revId = 'admin_revision_' + Date.now();
+      saved[id][revId] = revision;
+      localStorage.setItem('mn_admin_revisions', JSON.stringify(saved));
+      const st = document.getElementById('aiMarksEditStatus');
+      if (st) { st.textContent = 'Revision saved. Refresh simulation portal to see changes.'; st.style.color = 'var(--neon-green)'; }
+      setTimeout(() => { if (st) st.textContent = ''; }, 3000);
+    } catch (e) {
+      const st = document.getElementById('aiMarksEditStatus');
+      if (st) { st.textContent = 'Error: ' + e.message; st.style.color = 'var(--neon-pink)'; }
+    }
+  }
+
+  function resetAdminCandMarks(c) {
+    document.querySelectorAll('.cand-edit-input[data-field]').forEach(inp => {
+      const field = inp.dataset.field;
+      inp.value = c[field] ?? '';
+    });
+    const st = document.getElementById('aiMarksEditStatus');
+    if (st) { st.textContent = 'Reset to original values.'; st.style.color = 'var(--text-muted)'; }
+    setTimeout(() => { if (st) st.textContent = ''; }, 2500);
   }
 
   // ── Init ───────────────────────────────────────────────────────────────

@@ -810,11 +810,15 @@ p  { color: var(--text-muted); }
 /* â”€â”€â”€ MODAL â”€â”€â”€ */
 .modal { position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px; }
 .modal-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
   background: rgba(4,7,22,0.8);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
 }
 .modal-box {
   position: relative;

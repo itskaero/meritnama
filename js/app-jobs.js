@@ -304,6 +304,17 @@ function initJobsTab() {
   if (!tab) return;
   _bindJobsFilters();
   if (!JOBS.unsubscribe) _subscribeJobs();
+
+  // Job detail modal close
+  const closeBtn = document.getElementById('jobDetailClose');
+  if (closeBtn) closeBtn.addEventListener('click', _closeJobModal);
+  const overlay = document.getElementById('jobDetailModal');
+  if (overlay) overlay.addEventListener('click', function(e) {
+    if (e.target === this) _closeJobModal();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') _closeJobModal();
+  });
 }
 
 /* Admin-side entry point — binds the Scrape&sync button inside admin.html
@@ -672,9 +683,7 @@ function renderJobsGrid() {
     const lastDt = j.expectedLastDate
       ? '<span class="job-lastdate" title="' + esc(j.expectedLastDateISO || '') + '">&#9201; Apply by ' + esc(j.expectedLastDate) + '</span>'
       : '';
-    const apply  = j.sourceUrl
-      ? '<a class="job-apply" href="' + esc(j.sourceUrl) + '" target="_blank" rel="noopener">View details &#8599;</a>'
-      : '';
+    const apply  = '<button class="job-apply job-view-details" data-job-id="' + esc(j.id) + '">View details</button>';
     return '' +
       '<article class="job-card" data-id="' + esc(j.id) + '">' +
         img +
@@ -689,6 +698,85 @@ function renderJobsGrid() {
         '</div>' +
       '</article>';
   }).join('');
+  _bindJobViewButtons();
+}
+
+function _timeLeft(iso) {
+  if (!iso) return '';
+  const now = new Date();
+  const tY = now.getUTCFullYear(), tM = now.getUTCMonth(), tD = now.getUTCDate();
+  const today = new Date(Date.UTC(tY, tM, tD));
+  const [y, m, d] = iso.split('-').map(Number);
+  const deadline = new Date(Date.UTC(y, m, d));
+  const diff = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+  if (diff < 0) return '<span style="color:#e05470">Closed ' + Math.abs(diff) + ' days ago</span>';
+  if (diff === 0) return '<span style="color:#50e070">Closing today</span>';
+  if (diff === 1) return '<span style="color:#50e070">1 day left</span>';
+  return '<span style="color:#50e070">' + diff + ' days left</span>';
+}
+
+function _openJobModal(j) {
+  const overlay = document.getElementById('jobDetailModal');
+  const body = document.getElementById('jobDetailBody');
+  if (!overlay || !body) return;
+
+  const img = j.image
+    ? '<img src="' + esc(j.image) + '" alt="' + esc(j.title || '') + '" style="width:100%;max-height:300px;object-fit:contain;border-radius:8px;margin-bottom:1rem;background:var(--bg-card)" />'
+    : '<div style="width:100%;height:160px;display:flex;align-items:center;justify-content:center;background:var(--bg-card);border-radius:8px;margin-bottom:1rem;color:var(--text-muted);font-size:2rem;">&#128188;</div>';
+
+  const timeHtml = j.expectedLastDateISO
+    ? '<div style="margin-bottom:0.75rem;">' + _timeLeft(j.expectedLastDateISO) + '</div>'
+    : '';
+
+  const org = j.organization
+    ? '<p style="margin:4px 0"><strong>Organization:</strong> ' + esc(j.organization) + '</p>'
+    : '';
+  const loc = j.city
+    ? '<p style="margin:4px 0"><strong>Location:</strong> ' + esc(j.city) + '</p>'
+    : '';
+  const date = j.datePosted
+    ? '<p style="margin:4px 0"><strong>Posted:</strong> ' + esc(j.datePosted) + '</p>'
+    : '';
+  const lastDate = j.expectedLastDate
+    ? '<p style="margin:4px 0"><strong>Apply by:</strong> ' + esc(j.expectedLastDate) + '</p>'
+    : '';
+  const edu = (j.education && j.education.length)
+    ? '<p style="margin:4px 0"><strong>Education:</strong> ' + j.education.map(e => esc(e)).join(', ') + '</p>'
+    : '';
+  const vac = (j.vacancies && j.vacancies.length)
+    ? '<p style="margin:4px 0"><strong>Vacancies:</strong> ' + j.vacancies.join(', ') + '</p>'
+    : '';
+  const type = j.jobType
+    ? '<p style="margin:4px 0"><strong>Type:</strong> ' + esc(j.jobType) + '</p>'
+    : '';
+  const src = j.sourceUrl
+    ? '<p style="margin:12px 0 0"><a href="' + esc(j.sourceUrl) + '" target="_blank" rel="noopener" style="color:var(--neon-cyan)">Open original posting &#8599;</a></p>'
+    : '';
+
+  body.innerHTML =
+    img +
+    '<h3 style="margin:0 0 0.75rem">' + esc(j.title || 'Untitled role') + '</h3>' +
+    timeHtml +
+    '<div style="font-size:0.88rem;color:var(--text-muted)">' +
+      org + loc + date + lastDate + edu + vac + type + src +
+    '</div>';
+
+  overlay.style.display = 'flex';
+}
+
+function _closeJobModal() {
+  const overlay = document.getElementById('jobDetailModal');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function _bindJobViewButtons() {
+  document.querySelectorAll('.job-view-details').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const id = this.dataset.jobId;
+      const j = JOBS.list.find(item => String(item.id) === String(id));
+      if (j) _openJobModal(j);
+    });
+  });
 }
 
 function _renderJobsCounts() {
