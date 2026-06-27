@@ -1,0 +1,5879 @@
+{
+  "generatedAt": "2026-06-27 19:31 UTC",
+  "source": "data/induction21_components.json",
+  "checkedFields": [
+    "houseJob",
+    "mdcat",
+    "position",
+    "degree"
+  ],
+  "componentRecordCount": 3474,
+  "faultCount": 488,
+  "correctedCount": 488,
+  "note": "marksTotal was corrected in induction21_components.json where it did not exactly equal houseJob + mdcat + position + degree. Previous values were stored in marksTotalBackup.",
+  "simulationMarksSource": {
+    "summary": "simulation loads induction21_candidates.json first, then merges induction21_components.json sidecar values over each candidate, including marksTotal.",
+    "loadsCandidatesAt": "js/sim-data.js:7",
+    "loadsComponentsAt": "js/sim-data.js:140-147",
+    "overwritesMarksTotalAt": "js/sim-data.js:155-169",
+    "placementUsesEffectiveMarkAt": "js/sim-placement.js:83-120"
+  },
+  "candidates": [
+    {
+      "candidateKey": "17518",
+      "previousMarksTotal": 18.341476999999998,
+      "calculatedMarksTotal": 18.341477,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.672727,
+        "position": 0.0,
+        "degree": 11.66875
+      }
+    },
+    {
+      "candidateKey": "18869",
+      "previousMarksTotal": 16.699317999999998,
+      "calculatedMarksTotal": 16.699318,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.661818,
+        "position": 0.0,
+        "degree": 10.0375
+      }
+    },
+    {
+      "candidateKey": "22999",
+      "previousMarksTotal": 14.509545000000001,
+      "calculatedMarksTotal": 14.509545,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.734545,
+        "position": 0.0,
+        "degree": 10.275
+      }
+    },
+    {
+      "candidateKey": "23297",
+      "previousMarksTotal": 16.905397999999998,
+      "calculatedMarksTotal": 16.905398,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.727273,
+        "position": 0.0,
+        "degree": 10.178125
+      }
+    },
+    {
+      "candidateKey": "23379",
+      "previousMarksTotal": 13.640170000000001,
+      "calculatedMarksTotal": 13.640170,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.074545,
+        "position": 0.0,
+        "degree": 10.065625
+      }
+    },
+    {
+      "candidateKey": "21330",
+      "previousMarksTotal": 15.765284000000001,
+      "calculatedMarksTotal": 15.765284,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 0.630909,
+        "position": 0.0,
+        "degree": 10.134375
+      }
+    },
+    {
+      "candidateKey": "21341",
+      "previousMarksTotal": 13.039090999999999,
+      "calculatedMarksTotal": 13.039091,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 0.789091,
+        "position": 0.0,
+        "degree": 9.75
+      }
+    },
+    {
+      "candidateKey": "21522",
+      "previousMarksTotal": 18.635170000000002,
+      "calculatedMarksTotal": 18.635170,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.694545,
+        "position": 0.0,
+        "degree": 11.940625
+      }
+    },
+    {
+      "candidateKey": "23354",
+      "previousMarksTotal": 17.428409000000002,
+      "calculatedMarksTotal": 17.428409,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.690909,
+        "position": 0.0,
+        "degree": 10.7375
+      }
+    },
+    {
+      "candidateKey": "25578",
+      "previousMarksTotal": 17.573807000000002,
+      "calculatedMarksTotal": 17.573807,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.658182,
+        "position": 0.0,
+        "degree": 10.915625
+      }
+    },
+    {
+      "candidateKey": "24461",
+      "previousMarksTotal": 17.598750000000003,
+      "calculatedMarksTotal": 17.59875,
+      "difference": -0.000000000000003,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.58,
+        "position": 0.0,
+        "degree": 11.01875
+      }
+    },
+    {
+      "candidateKey": "24610",
+      "previousMarksTotal": 13.588864000000001,
+      "calculatedMarksTotal": 13.588864,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.376364,
+        "position": 0.0,
+        "degree": 9.7125
+      }
+    },
+    {
+      "candidateKey": "25463",
+      "previousMarksTotal": 17.216103999999998,
+      "calculatedMarksTotal": 17.216104,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.741818,
+        "position": 0.0,
+        "degree": 10.474286
+      }
+    },
+    {
+      "candidateKey": "25775",
+      "previousMarksTotal": 16.990624999999998,
+      "calculatedMarksTotal": 16.990625,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.4,
+        "position": 0.0,
+        "degree": 10.590625
+      }
+    },
+    {
+      "candidateKey": "25917",
+      "previousMarksTotal": 18.689773000000002,
+      "calculatedMarksTotal": 18.689773,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.827273,
+        "position": 0.0,
+        "degree": 11.8625
+      }
+    },
+    {
+      "candidateKey": "26450",
+      "previousMarksTotal": 13.690795000000001,
+      "calculatedMarksTotal": 13.690795,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 0.734545,
+        "position": 0.0,
+        "degree": 10.45625
+      }
+    },
+    {
+      "candidateKey": "26766",
+      "previousMarksTotal": 17.060624999999998,
+      "calculatedMarksTotal": 17.060625,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.82,
+        "position": 0.0,
+        "degree": 10.240625
+      }
+    },
+    {
+      "candidateKey": "26928",
+      "previousMarksTotal": 14.725957000000001,
+      "calculatedMarksTotal": 14.725957,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 0.96,
+        "position": 0.0,
+        "degree": 11.265957
+      }
+    },
+    {
+      "candidateKey": "26994",
+      "previousMarksTotal": 15.086079999999999,
+      "calculatedMarksTotal": 15.086080,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.245455,
+        "position": 0.0,
+        "degree": 11.340625
+      }
+    },
+    {
+      "candidateKey": "27097",
+      "previousMarksTotal": 17.855567999999998,
+      "calculatedMarksTotal": 17.855568,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.661818,
+        "position": 0.0,
+        "degree": 11.19375
+      }
+    },
+    {
+      "candidateKey": "27185",
+      "previousMarksTotal": 15.065909000000001,
+      "calculatedMarksTotal": 15.065909,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.390909,
+        "position": 0.0,
+        "degree": 11.175
+      }
+    },
+    {
+      "candidateKey": "27276",
+      "previousMarksTotal": 12.928564000000001,
+      "calculatedMarksTotal": 12.928564,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.2275,
+        "position": 0.0,
+        "degree": 9.201064
+      }
+    },
+    {
+      "candidateKey": "27384",
+      "previousMarksTotal": 18.551192999999998,
+      "calculatedMarksTotal": 18.551193,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.741818,
+        "position": 0.0,
+        "degree": 11.809375
+      }
+    },
+    {
+      "candidateKey": "26665",
+      "previousMarksTotal": 16.767614000000002,
+      "calculatedMarksTotal": 16.767614,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.836364,
+        "position": 0.0,
+        "degree": 9.93125
+      }
+    },
+    {
+      "candidateKey": "26786",
+      "previousMarksTotal": 18.068011000000002,
+      "calculatedMarksTotal": 18.068011,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.783636,
+        "position": 0.0,
+        "degree": 11.284375
+      }
+    },
+    {
+      "candidateKey": "27616",
+      "previousMarksTotal": 15.371875,
+      "calculatedMarksTotal": 17.115511,
+      "difference": 1.743636,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.743636,
+        "position": 0.0,
+        "degree": 10.371875
+      }
+    },
+    {
+      "candidateKey": "27716",
+      "previousMarksTotal": 18.443635999999998,
+      "calculatedMarksTotal": 18.443636,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.843636,
+        "position": 0.0,
+        "degree": 11.6
+      }
+    },
+    {
+      "candidateKey": "27772",
+      "previousMarksTotal": 14.748465999999999,
+      "calculatedMarksTotal": 14.748466,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.689091,
+        "position": 0.0,
+        "degree": 10.559375
+      }
+    },
+    {
+      "candidateKey": "27826",
+      "previousMarksTotal": 17.816817999999998,
+      "calculatedMarksTotal": 17.816818,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.741818,
+        "position": 0.0,
+        "degree": 11.075
+      }
+    },
+    {
+      "candidateKey": "27872",
+      "previousMarksTotal": 13.805511000000001,
+      "calculatedMarksTotal": 13.805511,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.083636,
+        "position": 0.0,
+        "degree": 10.221875
+      }
+    },
+    {
+      "candidateKey": "27622",
+      "previousMarksTotal": 18.024715999999998,
+      "calculatedMarksTotal": 18.024716,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.809091,
+        "position": 0.0,
+        "degree": 11.215625
+      }
+    },
+    {
+      "candidateKey": "27645",
+      "previousMarksTotal": 17.709666000000002,
+      "calculatedMarksTotal": 17.709666,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.612727,
+        "position": 0.0,
+        "degree": 11.096939
+      }
+    },
+    {
+      "candidateKey": "28228",
+      "previousMarksTotal": 17.688976999999998,
+      "calculatedMarksTotal": 17.688977,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.832727,
+        "position": 0.0,
+        "degree": 10.85625
+      }
+    },
+    {
+      "candidateKey": "28326",
+      "previousMarksTotal": 15.011023000000002,
+      "calculatedMarksTotal": 15.011023,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.367273,
+        "position": 0.0,
+        "degree": 11.14375
+      }
+    },
+    {
+      "candidateKey": "28449",
+      "previousMarksTotal": 14.383272999999999,
+      "calculatedMarksTotal": 14.383273,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.587273,
+        "position": 0.0,
+        "degree": 10.296
+      }
+    },
+    {
+      "candidateKey": "28125",
+      "previousMarksTotal": 17.158367000000002,
+      "calculatedMarksTotal": 17.158367,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.94,
+        "position": 0.0,
+        "degree": 10.218367
+      }
+    },
+    {
+      "candidateKey": "28360",
+      "previousMarksTotal": 14.851083000000001,
+      "calculatedMarksTotal": 14.851083,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.343636,
+        "position": 0.0,
+        "degree": 11.007447
+      }
+    },
+    {
+      "candidateKey": "28443",
+      "previousMarksTotal": 13.476420000000001,
+      "calculatedMarksTotal": 13.476420,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 0.754545,
+        "position": 0.0,
+        "degree": 10.221875
+      }
+    },
+    {
+      "candidateKey": "28460",
+      "previousMarksTotal": 15.627346999999999,
+      "calculatedMarksTotal": 15.627347,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.86,
+        "position": 0.0,
+        "degree": 8.767347
+      }
+    },
+    {
+      "candidateKey": "28470",
+      "previousMarksTotal": 14.818997999999999,
+      "calculatedMarksTotal": 14.818998,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.678182,
+        "position": 0.0,
+        "degree": 10.640816
+      }
+    },
+    {
+      "candidateKey": "28553",
+      "previousMarksTotal": 16.561420000000002,
+      "calculatedMarksTotal": 16.561420,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.714545,
+        "position": 0.0,
+        "degree": 9.846875
+      }
+    },
+    {
+      "candidateKey": "28677",
+      "previousMarksTotal": 17.811363999999998,
+      "calculatedMarksTotal": 17.811364,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.736364,
+        "position": 0.0,
+        "degree": 11.075
+      }
+    },
+    {
+      "candidateKey": "28601",
+      "previousMarksTotal": 17.526932000000002,
+      "calculatedMarksTotal": 17.526932,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.758182,
+        "position": 0.0,
+        "degree": 10.76875
+      }
+    },
+    {
+      "candidateKey": "28643",
+      "previousMarksTotal": 16.813181999999998,
+      "calculatedMarksTotal": 16.813182,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.738182,
+        "position": 0.0,
+        "degree": 10.075
+      }
+    },
+    {
+      "candidateKey": "28809",
+      "previousMarksTotal": 17.872500000000002,
+      "calculatedMarksTotal": 17.8725,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 11.1125
+      }
+    },
+    {
+      "candidateKey": "28899",
+      "previousMarksTotal": 17.613692999999998,
+      "calculatedMarksTotal": 17.613693,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.741818,
+        "position": 0.0,
+        "degree": 10.871875
+      }
+    },
+    {
+      "candidateKey": "29245",
+      "previousMarksTotal": 15.211818000000001,
+      "calculatedMarksTotal": 15.211818,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.661818,
+        "position": 0.0,
+        "degree": 11.05
+      }
+    },
+    {
+      "candidateKey": "29455",
+      "previousMarksTotal": 17.422727000000002,
+      "calculatedMarksTotal": 17.422727,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.712727,
+        "position": 0.0,
+        "degree": 10.71
+      }
+    },
+    {
+      "candidateKey": "29089",
+      "previousMarksTotal": 17.707442999999998,
+      "calculatedMarksTotal": 17.707443,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.741818,
+        "position": 0.0,
+        "degree": 10.965625
+      }
+    },
+    {
+      "candidateKey": "29541",
+      "previousMarksTotal": 18.775114000000002,
+      "calculatedMarksTotal": 18.775114,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.756364,
+        "position": 0.0,
+        "degree": 12.01875
+      }
+    },
+    {
+      "candidateKey": "29970",
+      "previousMarksTotal": 18.193635999999998,
+      "calculatedMarksTotal": 18.193636,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.743636,
+        "position": 0.0,
+        "degree": 11.45
+      }
+    },
+    {
+      "candidateKey": "30018",
+      "previousMarksTotal": 17.113953000000002,
+      "calculatedMarksTotal": 17.113953,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.6,
+        "position": 0.0,
+        "degree": 10.513953
+      }
+    },
+    {
+      "candidateKey": "29590",
+      "previousMarksTotal": 16.596648000000002,
+      "calculatedMarksTotal": 16.596648,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.487273,
+        "position": 0.0,
+        "degree": 10.109375
+      }
+    },
+    {
+      "candidateKey": "30279",
+      "previousMarksTotal": 17.0375,
+      "calculatedMarksTotal": 18.819318,
+      "difference": 1.781818,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.781818,
+        "position": 0.0,
+        "degree": 12.0375
+      }
+    },
+    {
+      "candidateKey": "30071",
+      "previousMarksTotal": 18.360227000000002,
+      "calculatedMarksTotal": 18.360227,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.772727,
+        "position": 0.0,
+        "degree": 11.5875
+      }
+    },
+    {
+      "candidateKey": "30261",
+      "previousMarksTotal": 16.776327000000002,
+      "calculatedMarksTotal": 16.776327,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 10.016327
+      }
+    },
+    {
+      "candidateKey": "30272",
+      "previousMarksTotal": 17.324263000000002,
+      "calculatedMarksTotal": 17.324263,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.322222,
+        "position": 0.0,
+        "degree": 11.002041
+      }
+    },
+    {
+      "candidateKey": "30365",
+      "previousMarksTotal": 17.685510999999998,
+      "calculatedMarksTotal": 17.685511,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.763636,
+        "position": 0.0,
+        "degree": 10.921875
+      }
+    },
+    {
+      "candidateKey": "30405",
+      "previousMarksTotal": 17.858311999999998,
+      "calculatedMarksTotal": 17.858312,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.805455,
+        "position": 0.0,
+        "degree": 11.052857
+      }
+    },
+    {
+      "candidateKey": "30409",
+      "previousMarksTotal": 18.574830000000002,
+      "calculatedMarksTotal": 18.574830,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.665455,
+        "position": 0.0,
+        "degree": 11.909375
+      }
+    },
+    {
+      "candidateKey": "30511",
+      "previousMarksTotal": 17.683450999999998,
+      "calculatedMarksTotal": 17.683451,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.901818,
+        "position": 0.0,
+        "degree": 10.781633
+      }
+    },
+    {
+      "candidateKey": "30753",
+      "previousMarksTotal": 15.903806999999999,
+      "calculatedMarksTotal": 15.903807,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.438182,
+        "position": 0.0,
+        "degree": 9.465625
+      }
+    },
+    {
+      "candidateKey": "30785",
+      "previousMarksTotal": 17.542151999999998,
+      "calculatedMarksTotal": 17.542152,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.889091,
+        "position": 0.0,
+        "degree": 10.653061
+      }
+    },
+    {
+      "candidateKey": "30418",
+      "previousMarksTotal": 17.904374999999998,
+      "calculatedMarksTotal": 17.904375,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.82,
+        "position": 0.0,
+        "degree": 11.084375
+      }
+    },
+    {
+      "candidateKey": "30426",
+      "previousMarksTotal": 15.271847000000001,
+      "calculatedMarksTotal": 15.271847,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.310909,
+        "position": 0.0,
+        "degree": 11.460938
+      }
+    },
+    {
+      "candidateKey": "30580",
+      "previousMarksTotal": 15.280510999999999,
+      "calculatedMarksTotal": 15.280511,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.783636,
+        "position": 0.0,
+        "degree": 10.996875
+      }
+    },
+    {
+      "candidateKey": "30792",
+      "previousMarksTotal": 14.296306999999999,
+      "calculatedMarksTotal": 14.296307,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.618182,
+        "position": 0.0,
+        "degree": 10.178125
+      }
+    },
+    {
+      "candidateKey": "31069",
+      "previousMarksTotal": 17.673750000000002,
+      "calculatedMarksTotal": 17.67375,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.78,
+        "position": 0.0,
+        "degree": 10.89375
+      }
+    },
+    {
+      "candidateKey": "31078",
+      "previousMarksTotal": 18.444148000000002,
+      "calculatedMarksTotal": 18.444148,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.847273,
+        "position": 0.0,
+        "degree": 11.596875
+      }
+    },
+    {
+      "candidateKey": "30923",
+      "previousMarksTotal": 17.910567999999998,
+      "calculatedMarksTotal": 17.910568,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.841818,
+        "position": 0.0,
+        "degree": 11.06875
+      }
+    },
+    {
+      "candidateKey": "31395",
+      "previousMarksTotal": 17.357326999999998,
+      "calculatedMarksTotal": 17.357327,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.82,
+        "position": 0.0,
+        "degree": 10.537327
+      }
+    },
+    {
+      "candidateKey": "31541",
+      "previousMarksTotal": 17.923830000000002,
+      "calculatedMarksTotal": 17.92383,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 11.16383
+      }
+    },
+    {
+      "candidateKey": "31620",
+      "previousMarksTotal": 14.903011000000001,
+      "calculatedMarksTotal": 14.903011,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.743636,
+        "position": 0.0,
+        "degree": 10.659375
+      }
+    },
+    {
+      "candidateKey": "31630",
+      "previousMarksTotal": 14.463750000000001,
+      "calculatedMarksTotal": 14.46375,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.82,
+        "position": 0.0,
+        "degree": 10.14375
+      }
+    },
+    {
+      "candidateKey": "31255",
+      "previousMarksTotal": 17.514215999999998,
+      "calculatedMarksTotal": 17.514216,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.672727,
+        "position": 0.0,
+        "degree": 10.841489
+      }
+    },
+    {
+      "candidateKey": "31393",
+      "previousMarksTotal": 18.100398000000002,
+      "calculatedMarksTotal": 18.100398,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.847273,
+        "position": 0.0,
+        "degree": 11.253125
+      }
+    },
+    {
+      "candidateKey": "31521",
+      "previousMarksTotal": 13.784317999999999,
+      "calculatedMarksTotal": 13.784318,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.621818,
+        "position": 0.0,
+        "degree": 9.6625
+      }
+    },
+    {
+      "candidateKey": "31545",
+      "previousMarksTotal": 17.185000000000002,
+      "calculatedMarksTotal": 17.185,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 10.425
+      }
+    },
+    {
+      "candidateKey": "31623",
+      "previousMarksTotal": 16.825625000000002,
+      "calculatedMarksTotal": 16.825625,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 10.065625
+      }
+    },
+    {
+      "candidateKey": "31646",
+      "previousMarksTotal": 18.328580000000002,
+      "calculatedMarksTotal": 18.328580,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.825455,
+        "position": 0.0,
+        "degree": 11.503125
+      }
+    },
+    {
+      "candidateKey": "31886",
+      "previousMarksTotal": 16.952151999999998,
+      "calculatedMarksTotal": 16.952152,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.749091,
+        "position": 0.0,
+        "degree": 10.203061
+      }
+    },
+    {
+      "candidateKey": "31679",
+      "previousMarksTotal": 16.897005999999998,
+      "calculatedMarksTotal": 16.897006,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.738182,
+        "position": 0.0,
+        "degree": 10.158824
+      }
+    },
+    {
+      "candidateKey": "31732",
+      "previousMarksTotal": 17.935624999999998,
+      "calculatedMarksTotal": 17.935625,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.82,
+        "position": 0.0,
+        "degree": 11.115625
+      }
+    },
+    {
+      "candidateKey": "31924",
+      "previousMarksTotal": 13.391874999999999,
+      "calculatedMarksTotal": 13.391875,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.12,
+        "position": 0.0,
+        "degree": 9.771875
+      }
+    },
+    {
+      "candidateKey": "31947",
+      "previousMarksTotal": 17.262330000000002,
+      "calculatedMarksTotal": 17.262330,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.665455,
+        "position": 0.0,
+        "degree": 10.596875
+      }
+    },
+    {
+      "candidateKey": "31970",
+      "previousMarksTotal": 17.835565000000003,
+      "calculatedMarksTotal": 17.835565,
+      "difference": -0.000000000000003,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.934545,
+        "position": 0.0,
+        "degree": 10.90102
+      }
+    },
+    {
+      "candidateKey": "32120",
+      "previousMarksTotal": 15.920625000000001,
+      "calculatedMarksTotal": 15.920625,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 0.88,
+        "position": 0.0,
+        "degree": 10.040625
+      }
+    },
+    {
+      "candidateKey": "32094",
+      "previousMarksTotal": 17.422954999999998,
+      "calculatedMarksTotal": 17.422955,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.785455,
+        "position": 0.0,
+        "degree": 10.6375
+      }
+    },
+    {
+      "candidateKey": "32237",
+      "previousMarksTotal": 17.450511000000002,
+      "calculatedMarksTotal": 17.450511,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.603636,
+        "position": 0.0,
+        "degree": 10.846875
+      }
+    },
+    {
+      "candidateKey": "32282",
+      "previousMarksTotal": 18.216760999999998,
+      "calculatedMarksTotal": 18.216761,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.763636,
+        "position": 0.0,
+        "degree": 11.453125
+      }
+    },
+    {
+      "candidateKey": "32303",
+      "previousMarksTotal": 17.607385999999998,
+      "calculatedMarksTotal": 17.607386,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.563636,
+        "position": 0.0,
+        "degree": 11.04375
+      }
+    },
+    {
+      "candidateKey": "32328",
+      "previousMarksTotal": 17.327443000000002,
+      "calculatedMarksTotal": 17.327443,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.761818,
+        "position": 0.0,
+        "degree": 10.565625
+      }
+    },
+    {
+      "candidateKey": "32339",
+      "previousMarksTotal": 15.627832999999999,
+      "calculatedMarksTotal": 15.627833,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.692727,
+        "position": 0.0,
+        "degree": 11.435106
+      }
+    },
+    {
+      "candidateKey": "32421",
+      "previousMarksTotal": 16.526642000000002,
+      "calculatedMarksTotal": 16.526642,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.749091,
+        "position": 0.0,
+        "degree": 9.777551
+      }
+    },
+    {
+      "candidateKey": "32575",
+      "previousMarksTotal": 16.955170000000003,
+      "calculatedMarksTotal": 16.955170,
+      "difference": -0.000000000000003,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.514545,
+        "position": 0.0,
+        "degree": 10.440625
+      }
+    },
+    {
+      "candidateKey": "32601",
+      "previousMarksTotal": 17.626989000000002,
+      "calculatedMarksTotal": 17.626989,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.736364,
+        "position": 0.0,
+        "degree": 10.890625
+      }
+    },
+    {
+      "candidateKey": "32606",
+      "previousMarksTotal": 17.167787999999998,
+      "calculatedMarksTotal": 17.167788,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.674545,
+        "position": 0.0,
+        "degree": 12.993243
+      }
+    },
+    {
+      "candidateKey": "32616",
+      "previousMarksTotal": 14.850511000000001,
+      "calculatedMarksTotal": 14.850511,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.803636,
+        "position": 0.0,
+        "degree": 10.546875
+      }
+    },
+    {
+      "candidateKey": "32557",
+      "previousMarksTotal": 17.590851999999998,
+      "calculatedMarksTotal": 17.590852,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.812727,
+        "position": 0.0,
+        "degree": 10.778125
+      }
+    },
+    {
+      "candidateKey": "32602",
+      "previousMarksTotal": 15.752443000000001,
+      "calculatedMarksTotal": 15.752443,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.061818,
+        "position": 0.0,
+        "degree": 9.690625
+      }
+    },
+    {
+      "candidateKey": "32607",
+      "previousMarksTotal": 14.840226999999999,
+      "calculatedMarksTotal": 14.840227,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.552727,
+        "position": 0.0,
+        "degree": 10.7875
+      }
+    },
+    {
+      "candidateKey": "32712",
+      "previousMarksTotal": 18.067774999999997,
+      "calculatedMarksTotal": 18.067775,
+      "difference": 0.000000000000003,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.830909,
+        "position": 0.0,
+        "degree": 11.236866
+      }
+    },
+    {
+      "candidateKey": "32729",
+      "previousMarksTotal": 14.871590999999999,
+      "calculatedMarksTotal": 14.871591,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.709091,
+        "position": 0.0,
+        "degree": 10.6625
+      }
+    },
+    {
+      "candidateKey": "32783",
+      "previousMarksTotal": 17.787385999999998,
+      "calculatedMarksTotal": 17.787386,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.743636,
+        "position": 0.0,
+        "degree": 11.04375
+      }
+    },
+    {
+      "candidateKey": "32863",
+      "previousMarksTotal": 17.474489000000002,
+      "calculatedMarksTotal": 17.474489,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.596364,
+        "position": 0.0,
+        "degree": 10.878125
+      }
+    },
+    {
+      "candidateKey": "32827",
+      "previousMarksTotal": 17.763635999999998,
+      "calculatedMarksTotal": 17.763636,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.563636,
+        "position": 0.0,
+        "degree": 11.2
+      }
+    },
+    {
+      "candidateKey": "33086",
+      "previousMarksTotal": 15.252158999999999,
+      "calculatedMarksTotal": 15.252159,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.370909,
+        "position": 0.0,
+        "degree": 11.38125
+      }
+    },
+    {
+      "candidateKey": "33098",
+      "previousMarksTotal": 17.121192999999998,
+      "calculatedMarksTotal": 17.121193,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.661818,
+        "position": 0.0,
+        "degree": 10.459375
+      }
+    },
+    {
+      "candidateKey": "33062",
+      "previousMarksTotal": 17.142614000000002,
+      "calculatedMarksTotal": 17.142614,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.836364,
+        "position": 0.0,
+        "degree": 10.30625
+      }
+    },
+    {
+      "candidateKey": "34000",
+      "previousMarksTotal": 16.673864000000002,
+      "calculatedMarksTotal": 16.673864,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.436364,
+        "position": 0.0,
+        "degree": 10.2375
+      }
+    },
+    {
+      "candidateKey": "34141",
+      "previousMarksTotal": 16.464942999999998,
+      "calculatedMarksTotal": 16.464943,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.661818,
+        "position": 0.0,
+        "degree": 9.803125
+      }
+    },
+    {
+      "candidateKey": "34165",
+      "previousMarksTotal": 14.490340999999999,
+      "calculatedMarksTotal": 14.490341,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.509091,
+        "position": 0.0,
+        "degree": 10.48125
+      }
+    },
+    {
+      "candidateKey": "34113",
+      "previousMarksTotal": 18.124318000000002,
+      "calculatedMarksTotal": 18.124318,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.761818,
+        "position": 0.0,
+        "degree": 11.3625
+      }
+    },
+    {
+      "candidateKey": "34166",
+      "previousMarksTotal": 17.680388999999998,
+      "calculatedMarksTotal": 17.680389,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.901818,
+        "position": 0.0,
+        "degree": 10.778571
+      }
+    },
+    {
+      "candidateKey": "34169",
+      "previousMarksTotal": 14.919260999999999,
+      "calculatedMarksTotal": 14.919261,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.803636,
+        "position": 0.0,
+        "degree": 10.615625
+      }
+    },
+    {
+      "candidateKey": "34179",
+      "previousMarksTotal": 18.615622000000002,
+      "calculatedMarksTotal": 18.615622,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.689091,
+        "position": 0.0,
+        "degree": 11.926531
+      }
+    },
+    {
+      "candidateKey": "34191",
+      "previousMarksTotal": 13.793579999999999,
+      "calculatedMarksTotal": 13.793580,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 0.765455,
+        "position": 0.0,
+        "degree": 10.528125
+      }
+    },
+    {
+      "candidateKey": "34177",
+      "previousMarksTotal": 17.384878999999998,
+      "calculatedMarksTotal": 17.384879,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.581818,
+        "position": 0.0,
+        "degree": 10.803061
+      }
+    },
+    {
+      "candidateKey": "34186",
+      "previousMarksTotal": 19.378182000000002,
+      "calculatedMarksTotal": 19.378182,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.750909,
+        "position": 0.0,
+        "degree": 12.627273
+      }
+    },
+    {
+      "candidateKey": "34190",
+      "previousMarksTotal": 13.164952000000001,
+      "calculatedMarksTotal": 13.164952,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.230909,
+        "position": 0.0,
+        "degree": 9.434043
+      }
+    },
+    {
+      "candidateKey": "34271",
+      "previousMarksTotal": 17.026327000000002,
+      "calculatedMarksTotal": 17.026327,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.86,
+        "position": 0.0,
+        "degree": 10.166327
+      }
+    },
+    {
+      "candidateKey": "34280",
+      "previousMarksTotal": 18.031817999999998,
+      "calculatedMarksTotal": 18.031818,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.581818,
+        "position": 0.0,
+        "degree": 11.45
+      }
+    },
+    {
+      "candidateKey": "34332",
+      "previousMarksTotal": 16.574317999999998,
+      "calculatedMarksTotal": 16.574318,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.170909,
+        "position": 0.0,
+        "degree": 12.903409
+      }
+    },
+    {
+      "candidateKey": "34335",
+      "previousMarksTotal": 17.245169999999998,
+      "calculatedMarksTotal": 17.245170,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.654545,
+        "position": 0.0,
+        "degree": 10.590625
+      }
+    },
+    {
+      "candidateKey": "34346",
+      "previousMarksTotal": 14.781818000000001,
+      "calculatedMarksTotal": 14.781818,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.481818,
+        "position": 0.0,
+        "degree": 10.8
+      }
+    },
+    {
+      "candidateKey": "34365",
+      "previousMarksTotal": 17.364601999999998,
+      "calculatedMarksTotal": 17.364602,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.592727,
+        "position": 0.0,
+        "degree": 10.771875
+      }
+    },
+    {
+      "candidateKey": "34282",
+      "previousMarksTotal": 18.047556999999998,
+      "calculatedMarksTotal": 18.047557,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.738182,
+        "position": 0.0,
+        "degree": 11.309375
+      }
+    },
+    {
+      "candidateKey": "34306",
+      "previousMarksTotal": 17.584773000000002,
+      "calculatedMarksTotal": 17.584773,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.747273,
+        "position": 0.0,
+        "degree": 10.8375
+      }
+    },
+    {
+      "candidateKey": "34339",
+      "previousMarksTotal": 17.580114000000002,
+      "calculatedMarksTotal": 17.580114,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.836364,
+        "position": 0.0,
+        "degree": 10.74375
+      }
+    },
+    {
+      "candidateKey": "34423",
+      "previousMarksTotal": 17.405170000000002,
+      "calculatedMarksTotal": 17.405170,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.614545,
+        "position": 0.0,
+        "degree": 10.790625
+      }
+    },
+    {
+      "candidateKey": "34465",
+      "previousMarksTotal": 17.965056999999998,
+      "calculatedMarksTotal": 17.965057,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.818182,
+        "position": 0.0,
+        "degree": 11.146875
+      }
+    },
+    {
+      "candidateKey": "34427",
+      "previousMarksTotal": 17.417557000000002,
+      "calculatedMarksTotal": 17.417557,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.658182,
+        "position": 0.0,
+        "degree": 10.759375
+      }
+    },
+    {
+      "candidateKey": "34486",
+      "previousMarksTotal": 18.619374999999998,
+      "calculatedMarksTotal": 18.619375,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.56,
+        "position": 0.0,
+        "degree": 12.059375
+      }
+    },
+    {
+      "candidateKey": "34505",
+      "previousMarksTotal": 17.009202000000002,
+      "calculatedMarksTotal": 17.009202,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.858182,
+        "position": 0.0,
+        "degree": 10.15102
+      }
+    },
+    {
+      "candidateKey": "34534",
+      "previousMarksTotal": 17.878807000000002,
+      "calculatedMarksTotal": 17.878807,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.838182,
+        "position": 0.0,
+        "degree": 11.040625
+      }
+    },
+    {
+      "candidateKey": "34549",
+      "previousMarksTotal": 17.876761000000002,
+      "calculatedMarksTotal": 17.876761,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.623636,
+        "position": 0.0,
+        "degree": 11.253125
+      }
+    },
+    {
+      "candidateKey": "34569",
+      "previousMarksTotal": 18.833864000000002,
+      "calculatedMarksTotal": 18.833864,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.596364,
+        "position": 0.0,
+        "degree": 12.2375
+      }
+    },
+    {
+      "candidateKey": "34623",
+      "previousMarksTotal": 13.551079999999999,
+      "calculatedMarksTotal": 13.551080,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.585455,
+        "position": 0.0,
+        "degree": 9.465625
+      }
+    },
+    {
+      "candidateKey": "34602",
+      "previousMarksTotal": 15.265227000000001,
+      "calculatedMarksTotal": 15.265227,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.152727,
+        "position": 0.0,
+        "degree": 9.1125
+      }
+    },
+    {
+      "candidateKey": "34610",
+      "previousMarksTotal": 17.711515000000002,
+      "calculatedMarksTotal": 17.711515,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.598182,
+        "position": 0.0,
+        "degree": 11.113333
+      }
+    },
+    {
+      "candidateKey": "34622",
+      "previousMarksTotal": 17.158635999999998,
+      "calculatedMarksTotal": 17.158636,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.583636,
+        "position": 0.0,
+        "degree": 10.575
+      }
+    },
+    {
+      "candidateKey": "34698",
+      "previousMarksTotal": 17.644546000000002,
+      "calculatedMarksTotal": 17.644546,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.858182,
+        "position": 0.0,
+        "degree": 10.786364
+      }
+    },
+    {
+      "candidateKey": "34662",
+      "previousMarksTotal": 18.465899999999998,
+      "calculatedMarksTotal": 18.465900,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.661818,
+        "position": 0.0,
+        "degree": 11.804082
+      }
+    },
+    {
+      "candidateKey": "34671",
+      "previousMarksTotal": 15.962902999999999,
+      "calculatedMarksTotal": 15.962903,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.7,
+        "position": 0.0,
+        "degree": 11.762903
+      }
+    },
+    {
+      "candidateKey": "34718",
+      "previousMarksTotal": 17.010213999999998,
+      "calculatedMarksTotal": 17.010214,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.807273,
+        "position": 0.0,
+        "degree": 10.202941
+      }
+    },
+    {
+      "candidateKey": "34756",
+      "previousMarksTotal": 13.820851999999999,
+      "calculatedMarksTotal": 13.820852,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.792727,
+        "position": 0.0,
+        "degree": 9.528125
+      }
+    },
+    {
+      "candidateKey": "34805",
+      "previousMarksTotal": 18.395455000000002,
+      "calculatedMarksTotal": 18.395455,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.745455,
+        "position": 0.0,
+        "degree": 11.65
+      }
+    },
+    {
+      "candidateKey": "34808",
+      "previousMarksTotal": 18.620397999999998,
+      "calculatedMarksTotal": 18.620398,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.467273,
+        "position": 0.0,
+        "degree": 12.153125
+      }
+    },
+    {
+      "candidateKey": "34810",
+      "previousMarksTotal": 17.588919999999998,
+      "calculatedMarksTotal": 17.588920,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.754545,
+        "position": 0.0,
+        "degree": 10.834375
+      }
+    },
+    {
+      "candidateKey": "34769",
+      "previousMarksTotal": 18.040511000000002,
+      "calculatedMarksTotal": 18.040511,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.843636,
+        "position": 0.0,
+        "degree": 11.196875
+      }
+    },
+    {
+      "candidateKey": "34790",
+      "previousMarksTotal": 18.547330000000002,
+      "calculatedMarksTotal": 18.547330,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.825455,
+        "position": 0.0,
+        "degree": 11.721875
+      }
+    },
+    {
+      "candidateKey": "34795",
+      "previousMarksTotal": 18.959773000000002,
+      "calculatedMarksTotal": 18.959773,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.747273,
+        "position": 0.0,
+        "degree": 12.2125
+      }
+    },
+    {
+      "candidateKey": "34806",
+      "previousMarksTotal": 14.805568000000001,
+      "calculatedMarksTotal": 14.805568,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.661818,
+        "position": 0.0,
+        "degree": 10.64375
+      }
+    },
+    {
+      "candidateKey": "34869",
+      "previousMarksTotal": 16.688769999999998,
+      "calculatedMarksTotal": 16.688770,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.718182,
+        "position": 0.0,
+        "degree": 9.970588
+      }
+    },
+    {
+      "candidateKey": "34926",
+      "previousMarksTotal": 17.939489000000002,
+      "calculatedMarksTotal": 17.939489,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.836364,
+        "position": 0.0,
+        "degree": 11.103125
+      }
+    },
+    {
+      "candidateKey": "34878",
+      "previousMarksTotal": 18.344886000000002,
+      "calculatedMarksTotal": 18.344886,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.763636,
+        "position": 0.0,
+        "degree": 11.58125
+      }
+    },
+    {
+      "candidateKey": "34887",
+      "previousMarksTotal": 16.317346999999998,
+      "calculatedMarksTotal": 16.317347,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 0.0,
+        "position": 0.0,
+        "degree": 11.317347
+      }
+    },
+    {
+      "candidateKey": "34889",
+      "previousMarksTotal": 17.487783999999998,
+      "calculatedMarksTotal": 17.487784,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.590909,
+        "position": 0.0,
+        "degree": 10.896875
+      }
+    },
+    {
+      "candidateKey": "34989",
+      "previousMarksTotal": 16.376989000000002,
+      "calculatedMarksTotal": 16.376989,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.436364,
+        "position": 0.0,
+        "degree": 9.940625
+      }
+    },
+    {
+      "candidateKey": "34992",
+      "previousMarksTotal": 17.718085000000002,
+      "calculatedMarksTotal": 17.718085,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.5,
+        "position": 0.0,
+        "degree": 11.218085
+      }
+    },
+    {
+      "candidateKey": "34999",
+      "previousMarksTotal": 17.437955000000002,
+      "calculatedMarksTotal": 17.437955,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.825455,
+        "position": 0.0,
+        "degree": 10.6125
+      }
+    },
+    {
+      "candidateKey": "35036",
+      "previousMarksTotal": 17.837101999999998,
+      "calculatedMarksTotal": 17.837102,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.752727,
+        "position": 0.0,
+        "degree": 11.084375
+      }
+    },
+    {
+      "candidateKey": "34982",
+      "previousMarksTotal": 19.776135999999997,
+      "calculatedMarksTotal": 19.776136,
+      "difference": 0.000000000000003,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.663636,
+        "position": 0.6,
+        "degree": 12.5125
+      }
+    },
+    {
+      "candidateKey": "35012",
+      "previousMarksTotal": 16.436363999999998,
+      "calculatedMarksTotal": 16.436364,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.736364,
+        "position": 0.0,
+        "degree": 9.7
+      }
+    },
+    {
+      "candidateKey": "35071",
+      "previousMarksTotal": 17.864601999999998,
+      "calculatedMarksTotal": 17.864602,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.592727,
+        "position": 0.0,
+        "degree": 11.271875
+      }
+    },
+    {
+      "candidateKey": "35178",
+      "previousMarksTotal": 15.175794999999999,
+      "calculatedMarksTotal": 15.175795,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.694545,
+        "position": 0.0,
+        "degree": 10.98125
+      }
+    },
+    {
+      "candidateKey": "35062",
+      "previousMarksTotal": 13.773693000000002,
+      "calculatedMarksTotal": 13.773693,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.301818,
+        "position": 0.0,
+        "degree": 9.971875
+      }
+    },
+    {
+      "candidateKey": "35171",
+      "previousMarksTotal": 16.344205000000002,
+      "calculatedMarksTotal": 16.344205,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.825455,
+        "position": 0.0,
+        "degree": 9.51875
+      }
+    },
+    {
+      "candidateKey": "35175",
+      "previousMarksTotal": 17.133475999999998,
+      "calculatedMarksTotal": 17.133476,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.798182,
+        "position": 0.0,
+        "degree": 10.335294
+      }
+    },
+    {
+      "candidateKey": "35179",
+      "previousMarksTotal": 16.766306999999998,
+      "calculatedMarksTotal": 16.766307,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.738182,
+        "position": 0.0,
+        "degree": 10.028125
+      }
+    },
+    {
+      "candidateKey": "35192",
+      "previousMarksTotal": 18.188579999999998,
+      "calculatedMarksTotal": 18.188580,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.785455,
+        "position": 0.0,
+        "degree": 11.403125
+      }
+    },
+    {
+      "candidateKey": "35248",
+      "previousMarksTotal": 17.808441000000002,
+      "calculatedMarksTotal": 17.808441,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.772727,
+        "position": 0.0,
+        "degree": 11.035714
+      }
+    },
+    {
+      "candidateKey": "35198",
+      "previousMarksTotal": 17.876364000000002,
+      "calculatedMarksTotal": 17.876364,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 11.116364
+      }
+    },
+    {
+      "candidateKey": "35203",
+      "previousMarksTotal": 17.842897999999998,
+      "calculatedMarksTotal": 17.842898,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.727273,
+        "position": 0.0,
+        "degree": 11.115625
+      }
+    },
+    {
+      "candidateKey": "35251",
+      "previousMarksTotal": 13.858920000000001,
+      "calculatedMarksTotal": 13.858920,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 0.574545,
+        "position": 0.0,
+        "degree": 10.784375
+      }
+    },
+    {
+      "candidateKey": "35307",
+      "previousMarksTotal": 17.720226999999998,
+      "calculatedMarksTotal": 17.720227,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.832727,
+        "position": 0.0,
+        "degree": 10.8875
+      }
+    },
+    {
+      "candidateKey": "35340",
+      "previousMarksTotal": 17.259261000000002,
+      "calculatedMarksTotal": 17.259261,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.343636,
+        "position": 0.0,
+        "degree": 10.915625
+      }
+    },
+    {
+      "candidateKey": "35325",
+      "previousMarksTotal": 18.526939000000002,
+      "calculatedMarksTotal": 18.526939,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.68,
+        "position": 0.0,
+        "degree": 11.846939
+      }
+    },
+    {
+      "candidateKey": "35504",
+      "previousMarksTotal": 17.908920000000002,
+      "calculatedMarksTotal": 17.908920,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.774545,
+        "position": 0.0,
+        "degree": 11.134375
+      }
+    },
+    {
+      "candidateKey": "35550",
+      "previousMarksTotal": 14.633693000000001,
+      "calculatedMarksTotal": 14.633693,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.661818,
+        "position": 0.0,
+        "degree": 10.471875
+      }
+    },
+    {
+      "candidateKey": "35485",
+      "previousMarksTotal": 17.691466000000002,
+      "calculatedMarksTotal": 17.691466,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.836364,
+        "position": 0.0,
+        "degree": 10.855102
+      }
+    },
+    {
+      "candidateKey": "35518",
+      "previousMarksTotal": 17.790160999999998,
+      "calculatedMarksTotal": 17.790161,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.725455,
+        "position": 0.0,
+        "degree": 11.064706
+      }
+    },
+    {
+      "candidateKey": "35528",
+      "previousMarksTotal": 16.664602000000002,
+      "calculatedMarksTotal": 16.664602,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.192727,
+        "position": 0.0,
+        "degree": 10.471875
+      }
+    },
+    {
+      "candidateKey": "35538",
+      "previousMarksTotal": 17.784943000000002,
+      "calculatedMarksTotal": 17.784943,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.781818,
+        "position": 0.0,
+        "degree": 11.003125
+      }
+    },
+    {
+      "candidateKey": "35551",
+      "previousMarksTotal": 16.128396000000002,
+      "calculatedMarksTotal": 16.128396,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.825455,
+        "position": 0.0,
+        "degree": 9.302941
+      }
+    },
+    {
+      "candidateKey": "35573",
+      "previousMarksTotal": 17.798636000000002,
+      "calculatedMarksTotal": 17.798636,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.623636,
+        "position": 0.0,
+        "degree": 11.175
+      }
+    },
+    {
+      "candidateKey": "35608",
+      "previousMarksTotal": 17.565398000000002,
+      "calculatedMarksTotal": 17.565398,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.587273,
+        "position": 0.0,
+        "degree": 10.978125
+      }
+    },
+    {
+      "candidateKey": "35611",
+      "previousMarksTotal": 16.960397999999998,
+      "calculatedMarksTotal": 16.960398,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.407273,
+        "position": 0.0,
+        "degree": 10.553125
+      }
+    },
+    {
+      "candidateKey": "35565",
+      "previousMarksTotal": 17.161590999999998,
+      "calculatedMarksTotal": 17.161591,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.649091,
+        "position": 0.0,
+        "degree": 10.5125
+      }
+    },
+    {
+      "candidateKey": "35575",
+      "previousMarksTotal": 15.323125000000001,
+      "calculatedMarksTotal": 15.323125,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.62,
+        "position": 0.0,
+        "degree": 11.203125
+      }
+    },
+    {
+      "candidateKey": "35588",
+      "previousMarksTotal": 18.162784000000002,
+      "calculatedMarksTotal": 18.162784,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.590909,
+        "position": 0.0,
+        "degree": 11.571875
+      }
+    },
+    {
+      "candidateKey": "35595",
+      "previousMarksTotal": 18.908635999999998,
+      "calculatedMarksTotal": 18.908636,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.583636,
+        "position": 0.0,
+        "degree": 12.325
+      }
+    },
+    {
+      "candidateKey": "35606",
+      "previousMarksTotal": 15.381931999999999,
+      "calculatedMarksTotal": 15.381932,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.038182,
+        "position": 0.0,
+        "degree": 9.34375
+      }
+    },
+    {
+      "candidateKey": "35622",
+      "previousMarksTotal": 17.501989000000002,
+      "calculatedMarksTotal": 17.501989,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.836364,
+        "position": 0.0,
+        "degree": 10.665625
+      }
+    },
+    {
+      "candidateKey": "35655",
+      "previousMarksTotal": 18.091760999999998,
+      "calculatedMarksTotal": 18.091761,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.663636,
+        "position": 0.0,
+        "degree": 11.428125
+      }
+    },
+    {
+      "candidateKey": "35666",
+      "previousMarksTotal": 14.850283999999998,
+      "calculatedMarksTotal": 14.850284,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.290909,
+        "position": 0.0,
+        "degree": 11.059375
+      }
+    },
+    {
+      "candidateKey": "35669",
+      "previousMarksTotal": 17.281931999999998,
+      "calculatedMarksTotal": 17.281932,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.738182,
+        "position": 0.0,
+        "degree": 10.54375
+      }
+    },
+    {
+      "candidateKey": "35724",
+      "previousMarksTotal": 17.482385999999998,
+      "calculatedMarksTotal": 17.482386,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.763636,
+        "position": 0.0,
+        "degree": 10.71875
+      }
+    },
+    {
+      "candidateKey": "35665",
+      "previousMarksTotal": 16.706818000000002,
+      "calculatedMarksTotal": 16.706818,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.781818,
+        "position": 0.0,
+        "degree": 9.925
+      }
+    },
+    {
+      "candidateKey": "35670",
+      "previousMarksTotal": 16.513125000000002,
+      "calculatedMarksTotal": 16.513125,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 9.753125
+      }
+    },
+    {
+      "candidateKey": "35713",
+      "previousMarksTotal": 17.573807000000002,
+      "calculatedMarksTotal": 17.573807,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.658182,
+        "position": 0.0,
+        "degree": 10.915625
+      }
+    },
+    {
+      "candidateKey": "35871",
+      "previousMarksTotal": 17.730852000000002,
+      "calculatedMarksTotal": 17.730852,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.852727,
+        "position": 0.0,
+        "degree": 10.878125
+      }
+    },
+    {
+      "candidateKey": "35873",
+      "previousMarksTotal": 17.812955000000002,
+      "calculatedMarksTotal": 17.812955,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.825455,
+        "position": 0.0,
+        "degree": 10.9875
+      }
+    },
+    {
+      "candidateKey": "35889",
+      "previousMarksTotal": 15.603352000000001,
+      "calculatedMarksTotal": 15.603352,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.412727,
+        "position": 0.0,
+        "degree": 11.690625
+      }
+    },
+    {
+      "candidateKey": "35899",
+      "previousMarksTotal": 18.223368999999998,
+      "calculatedMarksTotal": 18.223369,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.814545,
+        "position": 0.0,
+        "degree": 11.408824
+      }
+    },
+    {
+      "candidateKey": "35906",
+      "previousMarksTotal": 13.923580000000001,
+      "calculatedMarksTotal": 13.923580,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.545455,
+        "position": 0.0,
+        "degree": 9.878125
+      }
+    },
+    {
+      "candidateKey": "36006",
+      "previousMarksTotal": 17.061550999999998,
+      "calculatedMarksTotal": 17.061551,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.652727,
+        "position": 0.0,
+        "degree": 10.408824
+      }
+    },
+    {
+      "candidateKey": "36022",
+      "previousMarksTotal": 15.754480000000001,
+      "calculatedMarksTotal": 15.754480,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.622222,
+        "position": 0.0,
+        "degree": 11.632258
+      }
+    },
+    {
+      "candidateKey": "36060",
+      "previousMarksTotal": 16.980342999999998,
+      "calculatedMarksTotal": 16.980343,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.821818,
+        "position": 0.0,
+        "degree": 10.158525
+      }
+    },
+    {
+      "candidateKey": "36069",
+      "previousMarksTotal": 14.254415999999999,
+      "calculatedMarksTotal": 14.254416,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.747273,
+        "position": 0.0,
+        "degree": 10.007143
+      }
+    },
+    {
+      "candidateKey": "36118",
+      "previousMarksTotal": 17.586591000000002,
+      "calculatedMarksTotal": 17.586591,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.849091,
+        "position": 0.0,
+        "degree": 10.7375
+      }
+    },
+    {
+      "candidateKey": "36125",
+      "previousMarksTotal": 18.293976999999998,
+      "calculatedMarksTotal": 18.293977,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.812727,
+        "position": 0.0,
+        "degree": 11.48125
+      }
+    },
+    {
+      "candidateKey": "36145",
+      "previousMarksTotal": 15.207557000000001,
+      "calculatedMarksTotal": 15.207557,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.698182,
+        "position": 0.0,
+        "degree": 11.009375
+      }
+    },
+    {
+      "candidateKey": "36148",
+      "previousMarksTotal": 17.778750000000002,
+      "calculatedMarksTotal": 17.77875,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 11.01875
+      }
+    },
+    {
+      "candidateKey": "36096",
+      "previousMarksTotal": 17.419499000000002,
+      "calculatedMarksTotal": 17.419499,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.849091,
+        "position": 0.0,
+        "degree": 10.570408
+      }
+    },
+    {
+      "candidateKey": "36111",
+      "previousMarksTotal": 17.159148000000002,
+      "calculatedMarksTotal": 17.159148,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.687273,
+        "position": 0.0,
+        "degree": 10.471875
+      }
+    },
+    {
+      "candidateKey": "36124",
+      "previousMarksTotal": 17.877273000000002,
+      "calculatedMarksTotal": 17.877273,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.736364,
+        "position": 0.0,
+        "degree": 11.140909
+      }
+    },
+    {
+      "candidateKey": "36166",
+      "previousMarksTotal": 18.346023000000002,
+      "calculatedMarksTotal": 18.346023,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.827273,
+        "position": 0.0,
+        "degree": 11.51875
+      }
+    },
+    {
+      "candidateKey": "36219",
+      "previousMarksTotal": 17.704261000000002,
+      "calculatedMarksTotal": 17.704261,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.763636,
+        "position": 0.0,
+        "degree": 10.940625
+      }
+    },
+    {
+      "candidateKey": "36239",
+      "previousMarksTotal": 15.905826000000001,
+      "calculatedMarksTotal": 15.905826,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.869091,
+        "position": 0.0,
+        "degree": 9.036735
+      }
+    },
+    {
+      "candidateKey": "36180",
+      "previousMarksTotal": 17.834260999999998,
+      "calculatedMarksTotal": 17.834261,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.743636,
+        "position": 0.0,
+        "degree": 11.090625
+      }
+    },
+    {
+      "candidateKey": "36202",
+      "previousMarksTotal": 18.032386000000002,
+      "calculatedMarksTotal": 18.032386,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.763636,
+        "position": 0.0,
+        "degree": 11.26875
+      }
+    },
+    {
+      "candidateKey": "36264",
+      "previousMarksTotal": 13.971079999999999,
+      "calculatedMarksTotal": 13.971080,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.505455,
+        "position": 0.0,
+        "degree": 9.965625
+      }
+    },
+    {
+      "candidateKey": "36315",
+      "previousMarksTotal": 17.738068000000002,
+      "calculatedMarksTotal": 17.738068,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.781818,
+        "position": 0.0,
+        "degree": 10.95625
+      }
+    },
+    {
+      "candidateKey": "36359",
+      "previousMarksTotal": 17.768124999999998,
+      "calculatedMarksTotal": 17.768125,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.74,
+        "position": 0.0,
+        "degree": 11.028125
+      }
+    },
+    {
+      "candidateKey": "36261",
+      "previousMarksTotal": 16.583529000000002,
+      "calculatedMarksTotal": 16.583529,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 9.823529
+      }
+    },
+    {
+      "candidateKey": "36365",
+      "previousMarksTotal": 18.467897999999998,
+      "calculatedMarksTotal": 18.467898,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.727273,
+        "position": 0.0,
+        "degree": 11.740625
+      }
+    },
+    {
+      "candidateKey": "36392",
+      "previousMarksTotal": 16.306364000000002,
+      "calculatedMarksTotal": 16.306364,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.829091,
+        "position": 0.0,
+        "degree": 9.477273
+      }
+    },
+    {
+      "candidateKey": "36404",
+      "previousMarksTotal": 13.191875000000001,
+      "calculatedMarksTotal": 13.191875,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 0.72,
+        "position": 0.0,
+        "degree": 9.971875
+      }
+    },
+    {
+      "candidateKey": "36412",
+      "previousMarksTotal": 16.794999999999998,
+      "calculatedMarksTotal": 16.795,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.72,
+        "position": 0.0,
+        "degree": 10.075
+      }
+    },
+    {
+      "candidateKey": "36507",
+      "previousMarksTotal": 18.113068000000002,
+      "calculatedMarksTotal": 18.113068,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.781818,
+        "position": 0.0,
+        "degree": 11.33125
+      }
+    },
+    {
+      "candidateKey": "36369",
+      "previousMarksTotal": 16.842897999999998,
+      "calculatedMarksTotal": 16.842898,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.727273,
+        "position": 0.0,
+        "degree": 10.115625
+      }
+    },
+    {
+      "candidateKey": "36375",
+      "previousMarksTotal": 16.362159000000002,
+      "calculatedMarksTotal": 16.362159,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.430909,
+        "position": 0.0,
+        "degree": 9.93125
+      }
+    },
+    {
+      "candidateKey": "36397",
+      "previousMarksTotal": 18.060000000000002,
+      "calculatedMarksTotal": 18.06,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 11.3
+      }
+    },
+    {
+      "candidateKey": "36476",
+      "previousMarksTotal": 18.266704999999998,
+      "calculatedMarksTotal": 18.266705,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.785455,
+        "position": 0.0,
+        "degree": 11.48125
+      }
+    },
+    {
+      "candidateKey": "36583",
+      "previousMarksTotal": 18.022002999999998,
+      "calculatedMarksTotal": 18.022003,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.903636,
+        "position": 0.0,
+        "degree": 11.118367
+      }
+    },
+    {
+      "candidateKey": "36522",
+      "previousMarksTotal": 18.546022999999998,
+      "calculatedMarksTotal": 18.546023,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.827273,
+        "position": 0.0,
+        "degree": 11.71875
+      }
+    },
+    {
+      "candidateKey": "36526",
+      "previousMarksTotal": 17.007044999999998,
+      "calculatedMarksTotal": 17.007045,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.494545,
+        "position": 0.0,
+        "degree": 10.5125
+      }
+    },
+    {
+      "candidateKey": "36574",
+      "previousMarksTotal": 15.748351999999999,
+      "calculatedMarksTotal": 15.748352,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.532727,
+        "position": 0.0,
+        "degree": 9.215625
+      }
+    },
+    {
+      "candidateKey": "36601",
+      "previousMarksTotal": 13.371023000000001,
+      "calculatedMarksTotal": 13.371023,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.027273,
+        "position": 0.0,
+        "degree": 9.84375
+      }
+    },
+    {
+      "candidateKey": "36647",
+      "previousMarksTotal": 15.569716000000001,
+      "calculatedMarksTotal": 15.569716,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.129091,
+        "position": 0.0,
+        "degree": 9.440625
+      }
+    },
+    {
+      "candidateKey": "36669",
+      "previousMarksTotal": 17.516761000000002,
+      "calculatedMarksTotal": 17.516761,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.763636,
+        "position": 0.0,
+        "degree": 10.753125
+      }
+    },
+    {
+      "candidateKey": "36662",
+      "previousMarksTotal": 17.506475000000002,
+      "calculatedMarksTotal": 17.506475,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.905455,
+        "position": 0.0,
+        "degree": 10.60102
+      }
+    },
+    {
+      "candidateKey": "36675",
+      "previousMarksTotal": 15.963750000000001,
+      "calculatedMarksTotal": 15.96375,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.72,
+        "position": 0.0,
+        "degree": 9.24375
+      }
+    },
+    {
+      "candidateKey": "36711",
+      "previousMarksTotal": 14.860738999999999,
+      "calculatedMarksTotal": 14.860739,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.276364,
+        "position": 0.0,
+        "degree": 11.084375
+      }
+    },
+    {
+      "candidateKey": "36741",
+      "previousMarksTotal": 16.431874999999998,
+      "calculatedMarksTotal": 16.431875,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.56,
+        "position": 0.0,
+        "degree": 9.871875
+      }
+    },
+    {
+      "candidateKey": "36721",
+      "previousMarksTotal": 17.594829999999998,
+      "calculatedMarksTotal": 17.594830,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.785455,
+        "position": 0.0,
+        "degree": 10.809375
+      }
+    },
+    {
+      "candidateKey": "36733",
+      "previousMarksTotal": 15.043750000000001,
+      "calculatedMarksTotal": 15.04375,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.4,
+        "position": 0.0,
+        "degree": 11.14375
+      }
+    },
+    {
+      "candidateKey": "36749",
+      "previousMarksTotal": 14.619261000000002,
+      "calculatedMarksTotal": 14.619261,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.303636,
+        "position": 0.0,
+        "degree": 10.815625
+      }
+    },
+    {
+      "candidateKey": "36786",
+      "previousMarksTotal": 15.289295000000001,
+      "calculatedMarksTotal": 15.289295,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.729091,
+        "position": 0.0,
+        "degree": 11.060204
+      }
+    },
+    {
+      "candidateKey": "36798",
+      "previousMarksTotal": 17.341250000000002,
+      "calculatedMarksTotal": 17.34125,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 10.58125
+      }
+    },
+    {
+      "candidateKey": "36764",
+      "previousMarksTotal": 18.328806999999998,
+      "calculatedMarksTotal": 18.328807,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.738182,
+        "position": 0.0,
+        "degree": 11.590625
+      }
+    },
+    {
+      "candidateKey": "36774",
+      "previousMarksTotal": 17.043181999999998,
+      "calculatedMarksTotal": 17.043182,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.718182,
+        "position": 0.0,
+        "degree": 10.325
+      }
+    },
+    {
+      "candidateKey": "36899",
+      "previousMarksTotal": 15.850178999999999,
+      "calculatedMarksTotal": 15.850179,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.688889,
+        "position": 0.0,
+        "degree": 11.66129
+      }
+    },
+    {
+      "candidateKey": "36901",
+      "previousMarksTotal": 19.047954999999998,
+      "calculatedMarksTotal": 19.047955,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.785455,
+        "position": 0.0,
+        "degree": 12.2625
+      }
+    },
+    {
+      "candidateKey": "36913",
+      "previousMarksTotal": 17.048750000000002,
+      "calculatedMarksTotal": 17.04875,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.78,
+        "position": 0.0,
+        "degree": 10.26875
+      }
+    },
+    {
+      "candidateKey": "36987",
+      "previousMarksTotal": 16.751989000000002,
+      "calculatedMarksTotal": 16.751989,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.836364,
+        "position": 0.0,
+        "degree": 9.915625
+      }
+    },
+    {
+      "candidateKey": "36998",
+      "previousMarksTotal": 16.108570999999998,
+      "calculatedMarksTotal": 16.108571,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 0.0,
+        "position": 0.0,
+        "degree": 11.108571
+      }
+    },
+    {
+      "candidateKey": "37016",
+      "previousMarksTotal": 17.935738999999998,
+      "calculatedMarksTotal": 17.935739,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.876364,
+        "position": 0.0,
+        "degree": 11.059375
+      }
+    },
+    {
+      "candidateKey": "37024",
+      "previousMarksTotal": 18.142101999999998,
+      "calculatedMarksTotal": 18.142102,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.832727,
+        "position": 0.0,
+        "degree": 11.309375
+      }
+    },
+    {
+      "candidateKey": "37031",
+      "previousMarksTotal": 16.121817999999998,
+      "calculatedMarksTotal": 16.121818,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 0.0,
+        "position": 0.0,
+        "degree": 11.121818
+      }
+    },
+    {
+      "candidateKey": "36982",
+      "previousMarksTotal": 18.092897999999998,
+      "calculatedMarksTotal": 18.092898,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.827273,
+        "position": 0.0,
+        "degree": 11.265625
+      }
+    },
+    {
+      "candidateKey": "36984",
+      "previousMarksTotal": 17.061647999999998,
+      "calculatedMarksTotal": 17.061648,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.827273,
+        "position": 0.0,
+        "degree": 10.234375
+      }
+    },
+    {
+      "candidateKey": "36989",
+      "previousMarksTotal": 17.476371999999998,
+      "calculatedMarksTotal": 17.476372,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.809091,
+        "position": 0.0,
+        "degree": 10.667281
+      }
+    },
+    {
+      "candidateKey": "37019",
+      "previousMarksTotal": 17.238830999999998,
+      "calculatedMarksTotal": 17.238831,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.674545,
+        "position": 0.0,
+        "degree": 10.564286
+      }
+    },
+    {
+      "candidateKey": "37051",
+      "previousMarksTotal": 15.120966000000001,
+      "calculatedMarksTotal": 15.120966,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.549091,
+        "position": 0.0,
+        "degree": 11.071875
+      }
+    },
+    {
+      "candidateKey": "37087",
+      "previousMarksTotal": 16.939204999999998,
+      "calculatedMarksTotal": 16.939205,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.645455,
+        "position": 0.0,
+        "degree": 10.29375
+      }
+    },
+    {
+      "candidateKey": "37095",
+      "previousMarksTotal": 18.158239000000002,
+      "calculatedMarksTotal": 18.158239,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.836364,
+        "position": 0.0,
+        "degree": 11.321875
+      }
+    },
+    {
+      "candidateKey": "37057",
+      "previousMarksTotal": 16.026343999999998,
+      "calculatedMarksTotal": 16.026344,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.666667,
+        "position": 0.0,
+        "degree": 11.859677
+      }
+    },
+    {
+      "candidateKey": "37066",
+      "previousMarksTotal": 18.601193000000002,
+      "calculatedMarksTotal": 18.601193,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.841818,
+        "position": 0.0,
+        "degree": 11.759375
+      }
+    },
+    {
+      "candidateKey": "37082",
+      "previousMarksTotal": 17.714033999999998,
+      "calculatedMarksTotal": 17.714034,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.810909,
+        "position": 0.0,
+        "degree": 10.903125
+      }
+    },
+    {
+      "candidateKey": "37142",
+      "previousMarksTotal": 17.167861000000002,
+      "calculatedMarksTotal": 17.167861,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.847273,
+        "position": 0.0,
+        "degree": 10.320588
+      }
+    },
+    {
+      "candidateKey": "37175",
+      "previousMarksTotal": 17.751632999999998,
+      "calculatedMarksTotal": 17.751633,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.82,
+        "position": 0.0,
+        "degree": 10.931633
+      }
+    },
+    {
+      "candidateKey": "37208",
+      "previousMarksTotal": 17.187443000000002,
+      "calculatedMarksTotal": 17.187443,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.621818,
+        "position": 0.0,
+        "degree": 10.565625
+      }
+    },
+    {
+      "candidateKey": "37176",
+      "previousMarksTotal": 16.177996999999998,
+      "calculatedMarksTotal": 16.177997,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.896364,
+        "position": 0.0,
+        "degree": 9.281633
+      }
+    },
+    {
+      "candidateKey": "37179",
+      "previousMarksTotal": 17.435510999999998,
+      "calculatedMarksTotal": 17.435511,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.663636,
+        "position": 0.0,
+        "degree": 10.771875
+      }
+    },
+    {
+      "candidateKey": "37261",
+      "previousMarksTotal": 17.997386000000002,
+      "calculatedMarksTotal": 17.997386,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.603636,
+        "position": 0.0,
+        "degree": 11.39375
+      }
+    },
+    {
+      "candidateKey": "37302",
+      "previousMarksTotal": 15.99375,
+      "calculatedMarksTotal": 17.841023,
+      "difference": 1.847273,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.847273,
+        "position": 0.0,
+        "degree": 10.99375
+      }
+    },
+    {
+      "candidateKey": "37244",
+      "previousMarksTotal": 17.565170000000002,
+      "calculatedMarksTotal": 17.565170,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.774545,
+        "position": 0.0,
+        "degree": 10.790625
+      }
+    },
+    {
+      "candidateKey": "37249",
+      "previousMarksTotal": 18.909432000000002,
+      "calculatedMarksTotal": 18.909432,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.578182,
+        "position": 0.0,
+        "degree": 12.33125
+      }
+    },
+    {
+      "candidateKey": "37277",
+      "previousMarksTotal": 18.375681999999998,
+      "calculatedMarksTotal": 18.375682,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.738182,
+        "position": 0.0,
+        "degree": 11.6375
+      }
+    },
+    {
+      "candidateKey": "37293",
+      "previousMarksTotal": 17.989886000000002,
+      "calculatedMarksTotal": 17.989886,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.783636,
+        "position": 0.0,
+        "degree": 11.20625
+      }
+    },
+    {
+      "candidateKey": "37327",
+      "previousMarksTotal": 16.900510999999998,
+      "calculatedMarksTotal": 16.900511,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.403636,
+        "position": 0.0,
+        "degree": 10.496875
+      }
+    },
+    {
+      "candidateKey": "37347",
+      "previousMarksTotal": 14.985795000000001,
+      "calculatedMarksTotal": 14.985795,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.654545,
+        "position": 0.0,
+        "degree": 10.83125
+      }
+    },
+    {
+      "candidateKey": "37373",
+      "previousMarksTotal": 17.344602000000002,
+      "calculatedMarksTotal": 17.344602,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.772727,
+        "position": 0.0,
+        "degree": 10.571875
+      }
+    },
+    {
+      "candidateKey": "37377",
+      "previousMarksTotal": 14.869091000000001,
+      "calculatedMarksTotal": 14.869091,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.469091,
+        "position": 0.0,
+        "degree": 10.9
+      }
+    },
+    {
+      "candidateKey": "37397",
+      "previousMarksTotal": 14.731193000000001,
+      "calculatedMarksTotal": 14.731193,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.821818,
+        "position": 0.0,
+        "degree": 10.409375
+      }
+    },
+    {
+      "candidateKey": "37419",
+      "previousMarksTotal": 16.796193000000002,
+      "calculatedMarksTotal": 16.796193,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.761818,
+        "position": 0.0,
+        "degree": 10.034375
+      }
+    },
+    {
+      "candidateKey": "37389",
+      "previousMarksTotal": 18.416534000000002,
+      "calculatedMarksTotal": 18.416534,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.850909,
+        "position": 0.0,
+        "degree": 11.565625
+      }
+    },
+    {
+      "candidateKey": "37424",
+      "previousMarksTotal": 17.512726999999998,
+      "calculatedMarksTotal": 17.512727,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.812727,
+        "position": 0.0,
+        "degree": 10.7
+      }
+    },
+    {
+      "candidateKey": "37429",
+      "previousMarksTotal": 18.847443000000002,
+      "calculatedMarksTotal": 18.847443,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.781818,
+        "position": 0.0,
+        "degree": 12.065625
+      }
+    },
+    {
+      "candidateKey": "37448",
+      "previousMarksTotal": 17.141080000000002,
+      "calculatedMarksTotal": 17.141080,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.825455,
+        "position": 0.0,
+        "degree": 10.315625
+      }
+    },
+    {
+      "candidateKey": "37586",
+      "previousMarksTotal": 13.870852000000001,
+      "calculatedMarksTotal": 13.870852,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.492727,
+        "position": 0.0,
+        "degree": 9.878125
+      }
+    },
+    {
+      "candidateKey": "37607",
+      "previousMarksTotal": 17.182207000000002,
+      "calculatedMarksTotal": 17.182207,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.703636,
+        "position": 0.0,
+        "degree": 12.978571
+      }
+    },
+    {
+      "candidateKey": "37619",
+      "previousMarksTotal": 18.142500000000002,
+      "calculatedMarksTotal": 18.1425,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.78,
+        "position": 0.0,
+        "degree": 11.3625
+      }
+    },
+    {
+      "candidateKey": "37624",
+      "previousMarksTotal": 17.705398000000002,
+      "calculatedMarksTotal": 17.705398,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.827273,
+        "position": 0.0,
+        "degree": 10.878125
+      }
+    },
+    {
+      "candidateKey": "37620",
+      "previousMarksTotal": 15.887008000000002,
+      "calculatedMarksTotal": 15.887008,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.655556,
+        "position": 0.0,
+        "degree": 11.731452
+      }
+    },
+    {
+      "candidateKey": "37700",
+      "previousMarksTotal": 15.347330000000001,
+      "calculatedMarksTotal": 15.347330,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.625455,
+        "position": 0.0,
+        "degree": 11.221875
+      }
+    },
+    {
+      "candidateKey": "37675",
+      "previousMarksTotal": 15.652895000000001,
+      "calculatedMarksTotal": 15.652895,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.82,
+        "position": 0.0,
+        "degree": 11.332895
+      }
+    },
+    {
+      "candidateKey": "37693",
+      "previousMarksTotal": 13.647943999999999,
+      "calculatedMarksTotal": 13.647944,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.632727,
+        "position": 0.0,
+        "degree": 9.515217
+      }
+    },
+    {
+      "candidateKey": "37819",
+      "previousMarksTotal": 16.086111000000002,
+      "calculatedMarksTotal": 16.086111,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 0.0,
+        "position": 0.0,
+        "degree": 13.586111
+      }
+    },
+    {
+      "candidateKey": "37814",
+      "previousMarksTotal": 16.162746000000002,
+      "calculatedMarksTotal": 16.162746,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.770909,
+        "position": 0.0,
+        "degree": 9.391837
+      }
+    },
+    {
+      "candidateKey": "37835",
+      "previousMarksTotal": 16.941193000000002,
+      "calculatedMarksTotal": 16.941193,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.781818,
+        "position": 0.0,
+        "degree": 10.159375
+      }
+    },
+    {
+      "candidateKey": "37839",
+      "previousMarksTotal": 17.125455000000002,
+      "calculatedMarksTotal": 17.125455,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.825455,
+        "position": 0.0,
+        "degree": 10.3
+      }
+    },
+    {
+      "candidateKey": "37853",
+      "previousMarksTotal": 16.795113999999998,
+      "calculatedMarksTotal": 16.795114,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.476364,
+        "position": 0.0,
+        "degree": 10.31875
+      }
+    },
+    {
+      "candidateKey": "37865",
+      "previousMarksTotal": 15.778685000000001,
+      "calculatedMarksTotal": 15.778685,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.388889,
+        "position": 0.0,
+        "degree": 11.889796
+      }
+    },
+    {
+      "candidateKey": "37883",
+      "previousMarksTotal": 18.408749999999998,
+      "calculatedMarksTotal": 18.40875,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.74,
+        "position": 0.0,
+        "degree": 11.66875
+      }
+    },
+    {
+      "candidateKey": "37897",
+      "previousMarksTotal": 18.254830000000002,
+      "calculatedMarksTotal": 18.254830,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.845455,
+        "position": 0.0,
+        "degree": 11.409375
+      }
+    },
+    {
+      "candidateKey": "37872",
+      "previousMarksTotal": 17.043067999999998,
+      "calculatedMarksTotal": 17.043068,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.661818,
+        "position": 0.0,
+        "degree": 10.38125
+      }
+    },
+    {
+      "candidateKey": "37893",
+      "previousMarksTotal": 14.033617999999999,
+      "calculatedMarksTotal": 14.033618,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.425455,
+        "position": 0.0,
+        "degree": 10.108163
+      }
+    },
+    {
+      "candidateKey": "37904",
+      "previousMarksTotal": 15.288238999999999,
+      "calculatedMarksTotal": 15.288239,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.516364,
+        "position": 0.0,
+        "degree": 11.271875
+      }
+    },
+    {
+      "candidateKey": "37905",
+      "previousMarksTotal": 18.008862999999998,
+      "calculatedMarksTotal": 18.008863,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.823636,
+        "position": 0.0,
+        "degree": 11.185227
+      }
+    },
+    {
+      "candidateKey": "37938",
+      "previousMarksTotal": 17.223466000000002,
+      "calculatedMarksTotal": 17.223466,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.689091,
+        "position": 0.0,
+        "degree": 10.534375
+      }
+    },
+    {
+      "candidateKey": "37911",
+      "previousMarksTotal": 18.569148000000002,
+      "calculatedMarksTotal": 18.569148,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.847273,
+        "position": 0.0,
+        "degree": 11.721875
+      }
+    },
+    {
+      "candidateKey": "37917",
+      "previousMarksTotal": 17.283749999999998,
+      "calculatedMarksTotal": 17.28375,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.74,
+        "position": 0.0,
+        "degree": 10.54375
+      }
+    },
+    {
+      "candidateKey": "37921",
+      "previousMarksTotal": 14.801988999999999,
+      "calculatedMarksTotal": 14.801989,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.336364,
+        "position": 0.0,
+        "degree": 10.965625
+      }
+    },
+    {
+      "candidateKey": "37926",
+      "previousMarksTotal": 19.091948000000002,
+      "calculatedMarksTotal": 19.091948,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.749091,
+        "position": 0.0,
+        "degree": 12.342857
+      }
+    },
+    {
+      "candidateKey": "37945",
+      "previousMarksTotal": 17.993351999999998,
+      "calculatedMarksTotal": 17.993352,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.752727,
+        "position": 0.0,
+        "degree": 11.240625
+      }
+    },
+    {
+      "candidateKey": "37963",
+      "previousMarksTotal": 17.245250000000002,
+      "calculatedMarksTotal": 17.245250,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.644444,
+        "position": 0.6,
+        "degree": 12.500806
+      }
+    },
+    {
+      "candidateKey": "37991",
+      "previousMarksTotal": 14.117669999999999,
+      "calculatedMarksTotal": 14.117670,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.714545,
+        "position": 0.0,
+        "degree": 9.903125
+      }
+    },
+    {
+      "candidateKey": "38002",
+      "previousMarksTotal": 14.307898000000002,
+      "calculatedMarksTotal": 14.307898,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.367273,
+        "position": 0.0,
+        "degree": 10.440625
+      }
+    },
+    {
+      "candidateKey": "38005",
+      "previousMarksTotal": 15.957457999999999,
+      "calculatedMarksTotal": 15.957458,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.589091,
+        "position": 0.0,
+        "degree": 11.868367
+      }
+    },
+    {
+      "candidateKey": "38007",
+      "previousMarksTotal": 15.263124999999999,
+      "calculatedMarksTotal": 15.263125,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.86,
+        "position": 0.0,
+        "degree": 10.903125
+      }
+    },
+    {
+      "candidateKey": "37967",
+      "previousMarksTotal": 17.671818000000002,
+      "calculatedMarksTotal": 17.671818,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.863636,
+        "position": 0.0,
+        "degree": 10.808182
+      }
+    },
+    {
+      "candidateKey": "37992",
+      "previousMarksTotal": 16.655414999999998,
+      "calculatedMarksTotal": 16.655415,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.494545,
+        "position": 0.0,
+        "degree": 10.16087
+      }
+    },
+    {
+      "candidateKey": "38014",
+      "previousMarksTotal": 14.557443000000001,
+      "calculatedMarksTotal": 14.557443,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.641818,
+        "position": 0.0,
+        "degree": 10.415625
+      }
+    },
+    {
+      "candidateKey": "38022",
+      "previousMarksTotal": 17.588295000000002,
+      "calculatedMarksTotal": 17.588295,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.694545,
+        "position": 0.0,
+        "degree": 10.89375
+      }
+    },
+    {
+      "candidateKey": "38019",
+      "previousMarksTotal": 17.482613999999998,
+      "calculatedMarksTotal": 17.482614,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.476364,
+        "position": 0.0,
+        "degree": 11.00625
+      }
+    },
+    {
+      "candidateKey": "38043",
+      "previousMarksTotal": 17.495682000000002,
+      "calculatedMarksTotal": 17.495682,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.758182,
+        "position": 0.0,
+        "degree": 10.7375
+      }
+    },
+    {
+      "candidateKey": "38045",
+      "previousMarksTotal": 18.028750000000002,
+      "calculatedMarksTotal": 18.02875,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 11.26875
+      }
+    },
+    {
+      "candidateKey": "38049",
+      "previousMarksTotal": 16.953580000000002,
+      "calculatedMarksTotal": 16.953580,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.825455,
+        "position": 0.0,
+        "degree": 10.128125
+      }
+    },
+    {
+      "candidateKey": "38052",
+      "previousMarksTotal": 17.228011000000002,
+      "calculatedMarksTotal": 17.228011,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.843636,
+        "position": 0.0,
+        "degree": 10.384375
+      }
+    },
+    {
+      "candidateKey": "38064",
+      "previousMarksTotal": 15.028466000000002,
+      "calculatedMarksTotal": 15.028466,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.369091,
+        "position": 0.0,
+        "degree": 11.159375
+      }
+    },
+    {
+      "candidateKey": "38084",
+      "previousMarksTotal": 17.094212000000002,
+      "calculatedMarksTotal": 17.094212,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.747273,
+        "position": 0.0,
+        "degree": 10.346939
+      }
+    },
+    {
+      "candidateKey": "38055",
+      "previousMarksTotal": 15.744990999999999,
+      "calculatedMarksTotal": 15.744991,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.377778,
+        "position": 0.0,
+        "degree": 11.867213
+      }
+    },
+    {
+      "candidateKey": "38060",
+      "previousMarksTotal": 16.959773000000002,
+      "calculatedMarksTotal": 16.959773,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.347273,
+        "position": 0.0,
+        "degree": 10.6125
+      }
+    },
+    {
+      "candidateKey": "38063",
+      "previousMarksTotal": 16.014545000000002,
+      "calculatedMarksTotal": 16.014545,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.554545,
+        "position": 0.0,
+        "degree": 9.46
+      }
+    },
+    {
+      "candidateKey": "38085",
+      "previousMarksTotal": 17.495732999999998,
+      "calculatedMarksTotal": 17.495733,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.818182,
+        "position": 0.0,
+        "degree": 10.677551
+      }
+    },
+    {
+      "candidateKey": "38112",
+      "previousMarksTotal": 15.512101999999999,
+      "calculatedMarksTotal": 15.512102,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.552727,
+        "position": 0.0,
+        "degree": 11.459375
+      }
+    },
+    {
+      "candidateKey": "38128",
+      "previousMarksTotal": 16.877784000000002,
+      "calculatedMarksTotal": 16.877784,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.530909,
+        "position": 0.0,
+        "degree": 10.346875
+      }
+    },
+    {
+      "candidateKey": "38138",
+      "previousMarksTotal": 18.353877999999998,
+      "calculatedMarksTotal": 18.353878,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.81,
+        "position": 0.0,
+        "degree": 11.543878
+      }
+    },
+    {
+      "candidateKey": "38142",
+      "previousMarksTotal": 17.892101999999998,
+      "calculatedMarksTotal": 17.892102,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.832727,
+        "position": 0.0,
+        "degree": 11.059375
+      }
+    },
+    {
+      "candidateKey": "38115",
+      "previousMarksTotal": 16.556250000000002,
+      "calculatedMarksTotal": 16.55625,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.6,
+        "position": 0.0,
+        "degree": 9.95625
+      }
+    },
+    {
+      "candidateKey": "38127",
+      "previousMarksTotal": 17.412385999999998,
+      "calculatedMarksTotal": 17.412386,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.743636,
+        "position": 0.0,
+        "degree": 10.66875
+      }
+    },
+    {
+      "candidateKey": "38158",
+      "previousMarksTotal": 14.954260999999999,
+      "calculatedMarksTotal": 14.954261,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 0.963636,
+        "position": 0.0,
+        "degree": 8.990625
+      }
+    },
+    {
+      "candidateKey": "38167",
+      "previousMarksTotal": 15.334147999999999,
+      "calculatedMarksTotal": 15.334148,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.687273,
+        "position": 0.0,
+        "degree": 11.146875
+      }
+    },
+    {
+      "candidateKey": "38182",
+      "previousMarksTotal": 14.849374999999998,
+      "calculatedMarksTotal": 14.849375,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.54,
+        "position": 0.0,
+        "degree": 10.809375
+      }
+    },
+    {
+      "candidateKey": "38153",
+      "previousMarksTotal": 15.246533999999999,
+      "calculatedMarksTotal": 15.246534,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.530909,
+        "position": 0.0,
+        "degree": 11.215625
+      }
+    },
+    {
+      "candidateKey": "38159",
+      "previousMarksTotal": 17.671122999999998,
+      "calculatedMarksTotal": 17.671123,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.718182,
+        "position": 0.0,
+        "degree": 10.952941
+      }
+    },
+    {
+      "candidateKey": "38161",
+      "previousMarksTotal": 16.817363999999998,
+      "calculatedMarksTotal": 16.817364,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.476364,
+        "position": 0.0,
+        "degree": 10.341
+      }
+    },
+    {
+      "candidateKey": "38203",
+      "previousMarksTotal": 13.053498000000001,
+      "calculatedMarksTotal": 13.053498,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.465455,
+        "position": 0.0,
+        "degree": 9.088043
+      }
+    },
+    {
+      "candidateKey": "38205",
+      "previousMarksTotal": 13.271184000000002,
+      "calculatedMarksTotal": 13.271184,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.0575,
+        "position": 0.0,
+        "degree": 9.713684
+      }
+    },
+    {
+      "candidateKey": "38210",
+      "previousMarksTotal": 14.235109000000001,
+      "calculatedMarksTotal": 14.235109,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.3525,
+        "position": 0.0,
+        "degree": 10.382609
+      }
+    },
+    {
+      "candidateKey": "38230",
+      "previousMarksTotal": 17.679147999999998,
+      "calculatedMarksTotal": 17.679148,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.807273,
+        "position": 0.0,
+        "degree": 10.871875
+      }
+    },
+    {
+      "candidateKey": "38196",
+      "previousMarksTotal": 17.225794999999998,
+      "calculatedMarksTotal": 17.225795,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.494545,
+        "position": 0.0,
+        "degree": 10.73125
+      }
+    },
+    {
+      "candidateKey": "38213",
+      "previousMarksTotal": 13.101458000000001,
+      "calculatedMarksTotal": 13.101458,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 0.973333,
+        "position": 0.0,
+        "degree": 9.628125
+      }
+    },
+    {
+      "candidateKey": "38231",
+      "previousMarksTotal": 13.565114000000001,
+      "calculatedMarksTotal": 13.565114,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.796364,
+        "position": 0.0,
+        "degree": 9.26875
+      }
+    },
+    {
+      "candidateKey": "38233",
+      "previousMarksTotal": 18.151419999999998,
+      "calculatedMarksTotal": 18.151420,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.754545,
+        "position": 0.0,
+        "degree": 11.396875
+      }
+    },
+    {
+      "candidateKey": "38235",
+      "previousMarksTotal": 16.807897999999998,
+      "calculatedMarksTotal": 16.807898,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.567273,
+        "position": 0.0,
+        "degree": 10.240625
+      }
+    },
+    {
+      "candidateKey": "38258",
+      "previousMarksTotal": 16.509999999999998,
+      "calculatedMarksTotal": 16.51,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.66,
+        "position": 0.0,
+        "degree": 9.85
+      }
+    },
+    {
+      "candidateKey": "38262",
+      "previousMarksTotal": 18.421193000000002,
+      "calculatedMarksTotal": 18.421193,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.761818,
+        "position": 0.0,
+        "degree": 11.659375
+      }
+    },
+    {
+      "candidateKey": "38264",
+      "previousMarksTotal": 17.547916999999998,
+      "calculatedMarksTotal": 17.547917,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.666667,
+        "position": 0.0,
+        "degree": 10.88125
+      }
+    },
+    {
+      "candidateKey": "38267",
+      "previousMarksTotal": 18.250455000000002,
+      "calculatedMarksTotal": 18.250455,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.825455,
+        "position": 0.0,
+        "degree": 11.425
+      }
+    },
+    {
+      "candidateKey": "38263",
+      "previousMarksTotal": 14.911534000000001,
+      "calculatedMarksTotal": 14.911534,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.470909,
+        "position": 0.0,
+        "degree": 10.940625
+      }
+    },
+    {
+      "candidateKey": "38265",
+      "previousMarksTotal": 16.294375000000002,
+      "calculatedMarksTotal": 16.294375,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 9.534375
+      }
+    },
+    {
+      "candidateKey": "38278",
+      "previousMarksTotal": 17.056957999999998,
+      "calculatedMarksTotal": 17.056958,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.318182,
+        "position": 0.0,
+        "degree": 10.738776
+      }
+    },
+    {
+      "candidateKey": "38281",
+      "previousMarksTotal": 17.470739000000002,
+      "calculatedMarksTotal": 17.470739,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.736364,
+        "position": 0.0,
+        "degree": 10.734375
+      }
+    },
+    {
+      "candidateKey": "38285",
+      "previousMarksTotal": 9.717391,
+      "calculatedMarksTotal": 12.217391,
+      "difference": 2.500000,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 0.0,
+        "position": 0.0,
+        "degree": 9.717391
+      }
+    },
+    {
+      "candidateKey": "38305",
+      "previousMarksTotal": 17.888863999999998,
+      "calculatedMarksTotal": 17.888864,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.476364,
+        "position": 0.0,
+        "degree": 11.4125
+      }
+    },
+    {
+      "candidateKey": "38309",
+      "previousMarksTotal": 17.010398000000002,
+      "calculatedMarksTotal": 17.010398,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.407273,
+        "position": 0.0,
+        "degree": 10.603125
+      }
+    },
+    {
+      "candidateKey": "38324",
+      "previousMarksTotal": 17.944247999999998,
+      "calculatedMarksTotal": 17.944248,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.663636,
+        "position": 0.0,
+        "degree": 11.280612
+      }
+    },
+    {
+      "candidateKey": "38304",
+      "previousMarksTotal": 14.165455000000001,
+      "calculatedMarksTotal": 14.165455,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.12,
+        "position": 0.0,
+        "degree": 10.545455
+      }
+    },
+    {
+      "candidateKey": "38306",
+      "previousMarksTotal": 16.856476999999998,
+      "calculatedMarksTotal": 16.856477,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.512727,
+        "position": 0.0,
+        "degree": 10.34375
+      }
+    },
+    {
+      "candidateKey": "38310",
+      "previousMarksTotal": 17.467897999999998,
+      "calculatedMarksTotal": 17.467898,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.727273,
+        "position": 0.0,
+        "degree": 10.740625
+      }
+    },
+    {
+      "candidateKey": "38312",
+      "previousMarksTotal": 14.980398000000001,
+      "calculatedMarksTotal": 14.980398,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.627273,
+        "position": 0.0,
+        "degree": 10.853125
+      }
+    },
+    {
+      "candidateKey": "38317",
+      "previousMarksTotal": 15.922215999999999,
+      "calculatedMarksTotal": 15.922216,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.769091,
+        "position": 0.0,
+        "degree": 11.653125
+      }
+    },
+    {
+      "candidateKey": "38327",
+      "previousMarksTotal": 17.114886000000002,
+      "calculatedMarksTotal": 17.114886,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.783636,
+        "position": 0.0,
+        "degree": 10.33125
+      }
+    },
+    {
+      "candidateKey": "38334",
+      "previousMarksTotal": 17.518295000000002,
+      "calculatedMarksTotal": 17.518295,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.774545,
+        "position": 0.0,
+        "degree": 10.74375
+      }
+    },
+    {
+      "candidateKey": "38349",
+      "previousMarksTotal": 17.417044999999998,
+      "calculatedMarksTotal": 17.417045,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.754545,
+        "position": 0.0,
+        "degree": 10.6625
+      }
+    },
+    {
+      "candidateKey": "38421",
+      "previousMarksTotal": 15.471926000000002,
+      "calculatedMarksTotal": 15.471926,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.345455,
+        "position": 0.6,
+        "degree": 11.026471
+      }
+    },
+    {
+      "candidateKey": "38423",
+      "previousMarksTotal": 17.380741999999998,
+      "calculatedMarksTotal": 17.380742,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.807273,
+        "position": 0.0,
+        "degree": 10.573469
+      }
+    },
+    {
+      "candidateKey": "38427",
+      "previousMarksTotal": 13.960652000000001,
+      "calculatedMarksTotal": 13.960652,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.14,
+        "position": 0.0,
+        "degree": 10.320652
+      }
+    },
+    {
+      "candidateKey": "38352",
+      "previousMarksTotal": 15.738351999999999,
+      "calculatedMarksTotal": 15.738352,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.372727,
+        "position": 0.0,
+        "degree": 11.865625
+      }
+    },
+    {
+      "candidateKey": "38492",
+      "previousMarksTotal": 17.527158999999997,
+      "calculatedMarksTotal": 17.527159,
+      "difference": 0.000000000000003,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.670909,
+        "position": 0.0,
+        "degree": 10.85625
+      }
+    },
+    {
+      "candidateKey": "38456",
+      "previousMarksTotal": 17.796022999999998,
+      "calculatedMarksTotal": 17.796023,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.827273,
+        "position": 0.0,
+        "degree": 10.96875
+      }
+    },
+    {
+      "candidateKey": "38473",
+      "previousMarksTotal": 14.438977000000001,
+      "calculatedMarksTotal": 14.438977,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.632727,
+        "position": 0.0,
+        "degree": 10.30625
+      }
+    },
+    {
+      "candidateKey": "38482",
+      "previousMarksTotal": 17.392670000000003,
+      "calculatedMarksTotal": 17.392670,
+      "difference": -0.000000000000003,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.514545,
+        "position": 0.0,
+        "degree": 10.878125
+      }
+    },
+    {
+      "candidateKey": "38493",
+      "previousMarksTotal": 15.181667000000001,
+      "calculatedMarksTotal": 15.181667,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.255,
+        "position": 0.0,
+        "degree": 11.426667
+      }
+    },
+    {
+      "candidateKey": "38506",
+      "previousMarksTotal": 18.296533999999998,
+      "calculatedMarksTotal": 18.296534,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.330909,
+        "position": 0.0,
+        "degree": 11.965625
+      }
+    },
+    {
+      "candidateKey": "38515",
+      "previousMarksTotal": 18.513125000000002,
+      "calculatedMarksTotal": 18.513125,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 11.753125
+      }
+    },
+    {
+      "candidateKey": "38527",
+      "previousMarksTotal": 17.294375000000002,
+      "calculatedMarksTotal": 17.294375,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 10.534375
+      }
+    },
+    {
+      "candidateKey": "38531",
+      "previousMarksTotal": 16.878693000000002,
+      "calculatedMarksTotal": 16.878693,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.781818,
+        "position": 0.0,
+        "degree": 10.096875
+      }
+    },
+    {
+      "candidateKey": "38537",
+      "previousMarksTotal": 15.492569000000001,
+      "calculatedMarksTotal": 15.492569,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.049091,
+        "position": 0.0,
+        "degree": 9.443478
+      }
+    },
+    {
+      "candidateKey": "38538",
+      "previousMarksTotal": 18.005454999999998,
+      "calculatedMarksTotal": 18.005455,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.405455,
+        "position": 0.0,
+        "degree": 11.6
+      }
+    },
+    {
+      "candidateKey": "38550",
+      "previousMarksTotal": 14.879432000000001,
+      "calculatedMarksTotal": 14.879432,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.698182,
+        "position": 0.0,
+        "degree": 10.68125
+      }
+    },
+    {
+      "candidateKey": "38580",
+      "previousMarksTotal": 15.039572999999999,
+      "calculatedMarksTotal": 15.039573,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.601818,
+        "position": 0.0,
+        "degree": 10.937755
+      }
+    },
+    {
+      "candidateKey": "38544",
+      "previousMarksTotal": 15.224768000000001,
+      "calculatedMarksTotal": 15.224768,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.572727,
+        "position": 0.0,
+        "degree": 11.152041
+      }
+    },
+    {
+      "candidateKey": "38573",
+      "previousMarksTotal": 16.775624999999998,
+      "calculatedMarksTotal": 16.775625,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.81,
+        "position": 0.0,
+        "degree": 9.965625
+      }
+    },
+    {
+      "candidateKey": "38579",
+      "previousMarksTotal": 16.966874999999998,
+      "calculatedMarksTotal": 16.966875,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.32,
+        "position": 0.0,
+        "degree": 10.646875
+      }
+    },
+    {
+      "candidateKey": "38583",
+      "previousMarksTotal": 18.238466000000003,
+      "calculatedMarksTotal": 18.238466,
+      "difference": -0.000000000000003,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.829091,
+        "position": 0.0,
+        "degree": 11.409375
+      }
+    },
+    {
+      "candidateKey": "38586",
+      "previousMarksTotal": 17.452272999999998,
+      "calculatedMarksTotal": 17.452273,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.727273,
+        "position": 0.0,
+        "degree": 10.725
+      }
+    },
+    {
+      "candidateKey": "38608",
+      "previousMarksTotal": 16.776673000000002,
+      "calculatedMarksTotal": 16.776673,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.774545,
+        "position": 0.0,
+        "degree": 10.002128
+      }
+    },
+    {
+      "candidateKey": "38612",
+      "previousMarksTotal": 17.573294999999998,
+      "calculatedMarksTotal": 17.573295,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.754545,
+        "position": 0.0,
+        "degree": 10.81875
+      }
+    },
+    {
+      "candidateKey": "38628",
+      "previousMarksTotal": 16.088919999999998,
+      "calculatedMarksTotal": 16.088920,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.654545,
+        "position": 0.0,
+        "degree": 9.434375
+      }
+    },
+    {
+      "candidateKey": "38652",
+      "previousMarksTotal": 17.592783999999998,
+      "calculatedMarksTotal": 17.592784,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.470909,
+        "position": 0.0,
+        "degree": 11.121875
+      }
+    },
+    {
+      "candidateKey": "38676",
+      "previousMarksTotal": 17.050568000000002,
+      "calculatedMarksTotal": 17.050568,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.781818,
+        "position": 0.0,
+        "degree": 10.26875
+      }
+    },
+    {
+      "candidateKey": "38647",
+      "previousMarksTotal": 16.569573000000002,
+      "calculatedMarksTotal": 16.569573,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.825455,
+        "position": 0.0,
+        "degree": 9.744118
+      }
+    },
+    {
+      "candidateKey": "38671",
+      "previousMarksTotal": 19.250681999999998,
+      "calculatedMarksTotal": 19.250682,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.738182,
+        "position": 0.0,
+        "degree": 12.5125
+      }
+    },
+    {
+      "candidateKey": "38730",
+      "previousMarksTotal": 15.944374999999999,
+      "calculatedMarksTotal": 15.944375,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.36,
+        "position": 0.0,
+        "degree": 9.584375
+      }
+    },
+    {
+      "candidateKey": "38686",
+      "previousMarksTotal": 17.355453999999998,
+      "calculatedMarksTotal": 17.355454,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.814545,
+        "position": 0.0,
+        "degree": 10.540909
+      }
+    },
+    {
+      "candidateKey": "38708",
+      "previousMarksTotal": 17.966250000000002,
+      "calculatedMarksTotal": 17.96625,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 11.20625
+      }
+    },
+    {
+      "candidateKey": "38719",
+      "previousMarksTotal": 13.290389000000001,
+      "calculatedMarksTotal": 13.290389,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.661818,
+        "position": 0.0,
+        "degree": 9.128571
+      }
+    },
+    {
+      "candidateKey": "38727",
+      "previousMarksTotal": 17.130625000000002,
+      "calculatedMarksTotal": 17.130625,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.44,
+        "position": 0.0,
+        "degree": 10.690625
+      }
+    },
+    {
+      "candidateKey": "38736",
+      "previousMarksTotal": 16.561363999999998,
+      "calculatedMarksTotal": 16.561364,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.736364,
+        "position": 0.0,
+        "degree": 9.825
+      }
+    },
+    {
+      "candidateKey": "38782",
+      "previousMarksTotal": 17.306666999999997,
+      "calculatedMarksTotal": 17.306667,
+      "difference": 0.000000000000003,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.5,
+        "position": 0.0,
+        "degree": 10.806667
+      }
+    },
+    {
+      "candidateKey": "38786",
+      "previousMarksTotal": 13.197662000000001,
+      "calculatedMarksTotal": 13.197662,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 0.969091,
+        "position": 0.0,
+        "degree": 9.728571
+      }
+    },
+    {
+      "candidateKey": "38810",
+      "previousMarksTotal": 15.627897999999998,
+      "calculatedMarksTotal": 15.627898,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.287273,
+        "position": 0.0,
+        "degree": 11.840625
+      }
+    },
+    {
+      "candidateKey": "38826",
+      "previousMarksTotal": 17.011307000000002,
+      "calculatedMarksTotal": 17.011307,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.658182,
+        "position": 0.0,
+        "degree": 10.353125
+      }
+    },
+    {
+      "candidateKey": "38830",
+      "previousMarksTotal": 17.922954999999998,
+      "calculatedMarksTotal": 17.922955,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.785455,
+        "position": 0.0,
+        "degree": 11.1375
+      }
+    },
+    {
+      "candidateKey": "38835",
+      "previousMarksTotal": 16.647005999999998,
+      "calculatedMarksTotal": 16.647006,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.738182,
+        "position": 0.0,
+        "degree": 9.908824
+      }
+    },
+    {
+      "candidateKey": "38848",
+      "previousMarksTotal": 14.414090999999999,
+      "calculatedMarksTotal": 14.414091,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.543636,
+        "position": 0.0,
+        "degree": 10.370455
+      }
+    },
+    {
+      "candidateKey": "38850",
+      "previousMarksTotal": 15.140965999999999,
+      "calculatedMarksTotal": 15.140966,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.369091,
+        "position": 0.0,
+        "degree": 11.271875
+      }
+    },
+    {
+      "candidateKey": "38854",
+      "previousMarksTotal": 15.718533999999998,
+      "calculatedMarksTotal": 15.718534,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.723636,
+        "position": 0.0,
+        "degree": 11.494898
+      }
+    },
+    {
+      "candidateKey": "38866",
+      "previousMarksTotal": 16.937578000000002,
+      "calculatedMarksTotal": 16.937578,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.781818,
+        "position": 0.0,
+        "degree": 10.15576
+      }
+    },
+    {
+      "candidateKey": "38868",
+      "previousMarksTotal": 18.001476999999998,
+      "calculatedMarksTotal": 18.001477,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.832727,
+        "position": 0.0,
+        "degree": 11.16875
+      }
+    },
+    {
+      "candidateKey": "38879",
+      "previousMarksTotal": 18.020965999999998,
+      "calculatedMarksTotal": 18.020966,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.649091,
+        "position": 0.0,
+        "degree": 11.371875
+      }
+    },
+    {
+      "candidateKey": "38916",
+      "previousMarksTotal": 15.871873999999998,
+      "calculatedMarksTotal": 15.871874,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.696364,
+        "position": 0.0,
+        "degree": 11.67551
+      }
+    },
+    {
+      "candidateKey": "38882",
+      "previousMarksTotal": 18.124432000000002,
+      "calculatedMarksTotal": 18.124432,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.418182,
+        "position": 0.0,
+        "degree": 11.70625
+      }
+    },
+    {
+      "candidateKey": "38968",
+      "previousMarksTotal": 17.263125000000002,
+      "calculatedMarksTotal": 17.263125,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 10.503125
+      }
+    },
+    {
+      "candidateKey": "38974",
+      "previousMarksTotal": 17.797727000000002,
+      "calculatedMarksTotal": 17.797727,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.772727,
+        "position": 0.0,
+        "degree": 11.025
+      }
+    },
+    {
+      "candidateKey": "38938",
+      "previousMarksTotal": 15.756865000000001,
+      "calculatedMarksTotal": 15.756865,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.627273,
+        "position": 0.0,
+        "degree": 11.629592
+      }
+    },
+    {
+      "candidateKey": "38967",
+      "previousMarksTotal": 16.029773000000002,
+      "calculatedMarksTotal": 16.029773,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.667273,
+        "position": 0.0,
+        "degree": 9.3625
+      }
+    },
+    {
+      "candidateKey": "38978",
+      "previousMarksTotal": 17.975398000000002,
+      "calculatedMarksTotal": 17.975398,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.847273,
+        "position": 0.0,
+        "degree": 11.128125
+      }
+    },
+    {
+      "candidateKey": "38983",
+      "previousMarksTotal": 17.345202999999998,
+      "calculatedMarksTotal": 17.345203,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.478182,
+        "position": 0.0,
+        "degree": 10.867021
+      }
+    },
+    {
+      "candidateKey": "38985",
+      "previousMarksTotal": 15.101590999999999,
+      "calculatedMarksTotal": 15.101591,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.589091,
+        "position": 0.0,
+        "degree": 11.0125
+      }
+    },
+    {
+      "candidateKey": "38987",
+      "previousMarksTotal": 17.345454999999998,
+      "calculatedMarksTotal": 17.345455,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.725455,
+        "position": 0.0,
+        "degree": 10.62
+      }
+    },
+    {
+      "candidateKey": "38996",
+      "previousMarksTotal": 14.058456999999999,
+      "calculatedMarksTotal": 14.058457,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.3425,
+        "position": 0.0,
+        "degree": 10.215957
+      }
+    },
+    {
+      "candidateKey": "39003",
+      "previousMarksTotal": 14.778182000000001,
+      "calculatedMarksTotal": 14.778182,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.378182,
+        "position": 0.0,
+        "degree": 10.9
+      }
+    },
+    {
+      "candidateKey": "39020",
+      "previousMarksTotal": 18.502898000000002,
+      "calculatedMarksTotal": 18.502898,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.687273,
+        "position": 0.0,
+        "degree": 11.815625
+      }
+    },
+    {
+      "candidateKey": "39022",
+      "previousMarksTotal": 13.885739000000001,
+      "calculatedMarksTotal": 13.885739,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.476364,
+        "position": 0.0,
+        "degree": 9.909375
+      }
+    },
+    {
+      "candidateKey": "38984",
+      "previousMarksTotal": 17.794601999999998,
+      "calculatedMarksTotal": 17.794602,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.672727,
+        "position": 0.0,
+        "degree": 11.121875
+      }
+    },
+    {
+      "candidateKey": "39009",
+      "previousMarksTotal": 13.474438000000001,
+      "calculatedMarksTotal": 13.474438,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.550909,
+        "position": 0.0,
+        "degree": 9.423529
+      }
+    },
+    {
+      "candidateKey": "39016",
+      "previousMarksTotal": 18.125681999999998,
+      "calculatedMarksTotal": 18.125682,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.738182,
+        "position": 0.0,
+        "degree": 11.3875
+      }
+    },
+    {
+      "candidateKey": "39053",
+      "previousMarksTotal": 14.339034000000002,
+      "calculatedMarksTotal": 14.339034,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.710909,
+        "position": 0.0,
+        "degree": 10.128125
+      }
+    },
+    {
+      "candidateKey": "39049",
+      "previousMarksTotal": 17.567142999999998,
+      "calculatedMarksTotal": 17.567143,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.81,
+        "position": 0.0,
+        "degree": 10.757143
+      }
+    },
+    {
+      "candidateKey": "39128",
+      "previousMarksTotal": 17.876875000000002,
+      "calculatedMarksTotal": 17.876875,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.78,
+        "position": 0.0,
+        "degree": 11.096875
+      }
+    },
+    {
+      "candidateKey": "39140",
+      "previousMarksTotal": 17.319772999999998,
+      "calculatedMarksTotal": 17.319773,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.807273,
+        "position": 0.0,
+        "degree": 10.5125
+      }
+    },
+    {
+      "candidateKey": "39150",
+      "previousMarksTotal": 16.044375000000002,
+      "calculatedMarksTotal": 16.044375,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.76,
+        "position": 0.0,
+        "degree": 11.784375
+      }
+    },
+    {
+      "candidateKey": "39155",
+      "previousMarksTotal": 14.252030999999999,
+      "calculatedMarksTotal": 14.252031,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.781818,
+        "position": 0.0,
+        "degree": 9.970213
+      }
+    },
+    {
+      "candidateKey": "39176",
+      "previousMarksTotal": 14.199442999999999,
+      "calculatedMarksTotal": 14.199443,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.554545,
+        "position": 0.0,
+        "degree": 10.144898
+      }
+    },
+    {
+      "candidateKey": "39152",
+      "previousMarksTotal": 15.947142999999999,
+      "calculatedMarksTotal": 15.947143,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.36,
+        "position": 0.0,
+        "degree": 9.587143
+      }
+    },
+    {
+      "candidateKey": "39185",
+      "previousMarksTotal": 15.161988999999998,
+      "calculatedMarksTotal": 15.161989,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.696364,
+        "position": 0.0,
+        "degree": 10.965625
+      }
+    },
+    {
+      "candidateKey": "39199",
+      "previousMarksTotal": 14.583067999999999,
+      "calculatedMarksTotal": 14.583068,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.101818,
+        "position": 0.0,
+        "degree": 10.98125
+      }
+    },
+    {
+      "candidateKey": "39232",
+      "previousMarksTotal": 14.150182000000001,
+      "calculatedMarksTotal": 14.150182,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.378182,
+        "position": 0.0,
+        "degree": 10.272
+      }
+    },
+    {
+      "candidateKey": "39194",
+      "previousMarksTotal": 15.114374999999999,
+      "calculatedMarksTotal": 15.114375,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.68,
+        "position": 0.0,
+        "degree": 10.934375
+      }
+    },
+    {
+      "candidateKey": "39204",
+      "previousMarksTotal": 16.313181999999998,
+      "calculatedMarksTotal": 16.313182,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.738182,
+        "position": 0.0,
+        "degree": 9.575
+      }
+    },
+    {
+      "candidateKey": "39244",
+      "previousMarksTotal": 17.637143000000002,
+      "calculatedMarksTotal": 17.637143,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.7,
+        "position": 0.0,
+        "degree": 10.937143
+      }
+    },
+    {
+      "candidateKey": "39257",
+      "previousMarksTotal": 16.587101999999998,
+      "calculatedMarksTotal": 16.587102,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.252727,
+        "position": 0.0,
+        "degree": 10.334375
+      }
+    },
+    {
+      "candidateKey": "39271",
+      "previousMarksTotal": 17.547727000000002,
+      "calculatedMarksTotal": 17.547727,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.772727,
+        "position": 0.0,
+        "degree": 10.775
+      }
+    },
+    {
+      "candidateKey": "39272",
+      "previousMarksTotal": 17.986250000000002,
+      "calculatedMarksTotal": 17.98625,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.68,
+        "position": 0.0,
+        "degree": 11.30625
+      }
+    },
+    {
+      "candidateKey": "39298",
+      "previousMarksTotal": 14.190795000000001,
+      "calculatedMarksTotal": 14.190795,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.734545,
+        "position": 0.0,
+        "degree": 9.95625
+      }
+    },
+    {
+      "candidateKey": "39310",
+      "previousMarksTotal": 17.555851999999998,
+      "calculatedMarksTotal": 17.555852,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.752727,
+        "position": 0.0,
+        "degree": 10.803125
+      }
+    },
+    {
+      "candidateKey": "39319",
+      "previousMarksTotal": 17.907329999999998,
+      "calculatedMarksTotal": 17.907330,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.785455,
+        "position": 0.0,
+        "degree": 11.121875
+      }
+    },
+    {
+      "candidateKey": "39336",
+      "previousMarksTotal": 17.080000000000002,
+      "calculatedMarksTotal": 17.08,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.43,
+        "position": 0.0,
+        "degree": 10.65
+      }
+    },
+    {
+      "candidateKey": "39338",
+      "previousMarksTotal": 15.294144000000001,
+      "calculatedMarksTotal": 15.294144,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.465455,
+        "position": 0.0,
+        "degree": 11.328689
+      }
+    },
+    {
+      "candidateKey": "39340",
+      "previousMarksTotal": 17.314773000000002,
+      "calculatedMarksTotal": 17.314773,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.827273,
+        "position": 0.0,
+        "degree": 10.4875
+      }
+    },
+    {
+      "candidateKey": "39325",
+      "previousMarksTotal": 16.866381999999998,
+      "calculatedMarksTotal": 16.866382,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.574545,
+        "position": 0.0,
+        "degree": 10.291837
+      }
+    },
+    {
+      "candidateKey": "39335",
+      "previousMarksTotal": 14.850632000000001,
+      "calculatedMarksTotal": 14.850632,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.674545,
+        "position": 0.0,
+        "degree": 10.676087
+      }
+    },
+    {
+      "candidateKey": "39354",
+      "previousMarksTotal": 16.691591000000003,
+      "calculatedMarksTotal": 16.691591,
+      "difference": -0.000000000000003,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.329091,
+        "position": 0.0,
+        "degree": 10.3625
+      }
+    },
+    {
+      "candidateKey": "39362",
+      "previousMarksTotal": 16.770037000000002,
+      "calculatedMarksTotal": 16.770037,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.836364,
+        "position": 0.0,
+        "degree": 9.933673
+      }
+    },
+    {
+      "candidateKey": "39384",
+      "previousMarksTotal": 14.416136000000002,
+      "calculatedMarksTotal": 14.416136,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.803636,
+        "position": 0.0,
+        "degree": 10.1125
+      }
+    },
+    {
+      "candidateKey": "39401",
+      "previousMarksTotal": 13.368011000000001,
+      "calculatedMarksTotal": 13.368011,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.583636,
+        "position": 0.0,
+        "degree": 9.284375
+      }
+    },
+    {
+      "candidateKey": "39423",
+      "previousMarksTotal": 13.230341000000001,
+      "calculatedMarksTotal": 13.230341,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.549091,
+        "position": 0.0,
+        "degree": 9.18125
+      }
+    },
+    {
+      "candidateKey": "39357",
+      "previousMarksTotal": 17.811647999999998,
+      "calculatedMarksTotal": 17.811648,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.727273,
+        "position": 0.0,
+        "degree": 11.084375
+      }
+    },
+    {
+      "candidateKey": "39365",
+      "previousMarksTotal": 16.374318000000002,
+      "calculatedMarksTotal": 16.374318,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.761818,
+        "position": 0.0,
+        "degree": 9.6125
+      }
+    },
+    {
+      "candidateKey": "39422",
+      "previousMarksTotal": 17.007125000000002,
+      "calculatedMarksTotal": 17.007125,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.504,
+        "position": 0.0,
+        "degree": 10.503125
+      }
+    },
+    {
+      "candidateKey": "39461",
+      "previousMarksTotal": 14.947367999999999,
+      "calculatedMarksTotal": 14.947368,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.6,
+        "position": 0.0,
+        "degree": 10.847368
+      }
+    },
+    {
+      "candidateKey": "39465",
+      "previousMarksTotal": 15.708580000000001,
+      "calculatedMarksTotal": 15.708580,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.705455,
+        "position": 0.0,
+        "degree": 11.503125
+      }
+    },
+    {
+      "candidateKey": "39426",
+      "previousMarksTotal": 13.740511000000001,
+      "calculatedMarksTotal": 13.740511,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.643636,
+        "position": 0.0,
+        "degree": 9.596875
+      }
+    },
+    {
+      "candidateKey": "39428",
+      "previousMarksTotal": 14.539971000000001,
+      "calculatedMarksTotal": 14.539971,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.456364,
+        "position": 0.0,
+        "degree": 10.583607
+      }
+    },
+    {
+      "candidateKey": "39444",
+      "previousMarksTotal": 17.965056999999998,
+      "calculatedMarksTotal": 17.965057,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.718182,
+        "position": 0.0,
+        "degree": 11.246875
+      }
+    },
+    {
+      "candidateKey": "39458",
+      "previousMarksTotal": 16.422876000000002,
+      "calculatedMarksTotal": 16.422876,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.838182,
+        "position": 0.0,
+        "degree": 9.584694
+      }
+    },
+    {
+      "candidateKey": "39464",
+      "previousMarksTotal": 14.650535000000001,
+      "calculatedMarksTotal": 14.650535,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.618182,
+        "position": 0.0,
+        "degree": 10.532353
+      }
+    },
+    {
+      "candidateKey": "39510",
+      "previousMarksTotal": 15.959375,
+      "calculatedMarksTotal": 17.777557,
+      "difference": 1.818182,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.818182,
+        "position": 0.0,
+        "degree": 10.959375
+      }
+    },
+    {
+      "candidateKey": "39512",
+      "previousMarksTotal": 15.004375000000001,
+      "calculatedMarksTotal": 15.004375,
+      "difference": -0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.72,
+        "position": 0.0,
+        "degree": 10.784375
+      }
+    },
+    {
+      "candidateKey": "39515",
+      "previousMarksTotal": 13.681989000000002,
+      "calculatedMarksTotal": 13.681989,
+      "difference": -0.000000000000002,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.616364,
+        "position": 0.0,
+        "degree": 9.565625
+      }
+    },
+    {
+      "candidateKey": "4698",
+      "previousMarksTotal": 15.552954999999999,
+      "calculatedMarksTotal": 15.552955,
+      "difference": 0.000000000000001,
+      "components": {
+        "houseJob": 2.5,
+        "mdcat": 1.665455,
+        "position": 0.0,
+        "degree": 11.3875
+      }
+    },
+    {
+      "candidateKey": "39504",
+      "previousMarksTotal": 18.505454999999998,
+      "calculatedMarksTotal": 18.505455,
+      "difference": 0.000000000000002,
+      "components": {
+        "houseJob": 5.0,
+        "mdcat": 1.805455,
+        "position": 0.0,
+        "degree": 11.7
+      }
+    }
+  ]
+}
