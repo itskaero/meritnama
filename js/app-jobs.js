@@ -453,10 +453,16 @@ async function syncJobsFromSource() {
 // output) and merges it into Firestore using the same fingerprint approach.
 // Reliable fallback path when public CORS proxies are flaky.
 
+function _snapshotJobId(job) {
+  if (job.id != null) return job.id;
+  const m = (job.url || '').match(/(?:_jobs-|jobs-)(\d+)\.html$/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
 function _normalizeSnapshotJob(job) {
   job = job || {};
   const out = {
-    id:         job.id != null ? job.id : null,
+    id:         _snapshotJobId(job),
     sourceUrl:  job.url || job.sourceUrl || null,
     title:      job.title || null,
     organization: job.organization || null,

@@ -152,19 +152,37 @@ function saveCustomCand(c) {
   refreshCandidateRevisionOptions();
 }
 
+function populateCustomFormFromCandidate(c) {
+  if (!c) return;
+  document.getElementById('customName').value         = c.nameFull || '';
+  document.getElementById('customId').value           = c.applicantId || '';
+  document.getElementById('customMarksTotal').value   = c.marksTotal ?? '';
+  document.getElementById('customMarksFCPS').value    = c.programMarks?.FCPS ?? '';
+  document.getElementById('customMarksFCPSD').value   = c.programMarks?.FCPSD ?? '';
+  document.getElementById('customMarksMS').value      = c.programMarks?.MS ?? '';
+  document.getElementById('customMarksMD').value      = c.programMarks?.MD ?? '';
+  document.getElementById('customMarksMDS').value     = c.programMarks?.MDS ?? '';
+  document.getElementById('customSourceId').value     = c.applicantId || '';
+  if (typeof window.populateCustomPrefRows === 'function') {
+    window.populateCustomPrefRows(c.preference || {});
+  }
+}
+
+function clearCustomForm() {
+  ['customName','customId','customMarksTotal','customMarksFCPS','customMarksFCPSD',
+   'customMarksMS','customMarksMD','customMarksMDS','customSourceId'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  if (typeof window.clearCustomPrefRows === 'function') {
+    window.clearCustomPrefRows();
+  }
+}
+
 function openCustomModal() {
   const m = document.getElementById('customModal');
   if (!m) return;
-
-  const existing = SIM.customCand;
-  if (existing) {
-    document.getElementById('customName').value      = existing.nameFull;
-    document.getElementById('customId').value        = existing.applicantId;
-    document.getElementById('customMarksTotal').value = existing.marksTotal;
-    document.getElementById('customMarksFCPS').value = existing.programMarks?.FCPS ?? '';
-    document.getElementById('customMarksMS').value   = existing.programMarks?.MS  ?? '';
-    document.getElementById('customMarksMD').value   = existing.programMarks?.MD  ?? '';
-  }
+  populateCustomFormFromCandidate(SIM.customCand);
   m.classList.remove('hidden');
 }
 
@@ -178,25 +196,45 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === this) this.classList.add('hidden');
   });
 
+  document.getElementById('customLoadByIdBtn')?.addEventListener('click', () => {
+    const id = document.getElementById('customLookupId')?.value?.trim();
+    if (!id) { showToast('Enter an Applicant ID to load.', 'warning'); return; }
+    const c = allCandidates().find(x => String(x.applicantId) === id);
+    if (!c) { showToast(`ID ${id} not found in dataset.`, 'warning'); return; }
+    populateCustomFormFromCandidate(c);
+    showToast(`Loaded: ${c.nameFull}`, 'success');
+  });
+
+  document.getElementById('customBlankBtn')?.addEventListener('click', () => {
+    clearCustomForm();
+  });
+
+  document.getElementById('customModalClose')?.addEventListener('click', closeCustomModal);
+
   document.getElementById('customSaveBtn')?.addEventListener('click', () => {
-    const name  = document.getElementById('customName')?.value?.trim() || '(Me)';
-    const id    = parseInt(document.getElementById('customId')?.value) || 99999;
-    const total = parseFloat(document.getElementById('customMarksTotal')?.value) || 0;
-    const fcps  = parseFloat(document.getElementById('customMarksFCPS')?.value) || total;
-    const ms    = parseFloat(document.getElementById('customMarksMS')?.value) || total;
-    const md    = parseFloat(document.getElementById('customMarksMD')?.value) || total;
+    const name   = document.getElementById('customName')?.value?.trim() || '(Me)';
+    const id     = parseInt(document.getElementById('customId')?.value) || 99999;
+    const total  = parseFloat(document.getElementById('customMarksTotal')?.value) || 0;
+    const fcps   = parseFloat(document.getElementById('customMarksFCPS')?.value) || total;
+    const fcpsd  = parseFloat(document.getElementById('customMarksFCPSD')?.value) || fcps;
+    const ms     = parseFloat(document.getElementById('customMarksMS')?.value) || total;
+    const md     = parseFloat(document.getElementById('customMarksMD')?.value) || total;
+    const mds    = parseFloat(document.getElementById('customMarksMDS')?.value) || total;
 
     const prefs = gatherCustomPrefs();
+    const hasPref = p => !!(prefs[p] || []).length;
 
     const cand = {
       applicantId:  id,
       nameFull:     name,
       marksTotal:   total,
-      programMarks: { FCPS: fcps, MS: ms, MD: md },
+      programMarks: { FCPS: fcps, FCPSD: fcpsd, MS: ms, MD: md, MDS: mds },
       applied_in:   {
-        FCPS: !!prefs.FCPS?.length,
-        MS:   !!prefs.MS?.length,
-        MD:   !!prefs.MD?.length,
+        FCPS:            hasPref('FCPS'),
+        'FCPS Dentistry': hasPref('FCPS Dentistry'),
+        MS:              hasPref('MS'),
+        MD:              hasPref('MD'),
+        MDS:             hasPref('MDS'),
       },
       preference:   prefs,
       _custom:      true,
