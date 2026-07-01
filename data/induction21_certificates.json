@@ -10341,9 +10341,9 @@
       "session": "February 2025",
       "passingDate": "02/02/2025",
       "reference": "percentage",
-      "certificateMarks": 0.0,
-      "computerizedMarks": 0.0,
-      "percentage": "0.000000"
+      "certificateMarks": 3.0,
+      "computerizedMarks": 3.0,
+      "percentage": "63.500000"
     }
   ],
   "31095": [
@@ -23941,8 +23941,8 @@
       "session": "April 2026",
       "passingDate": "06/04/2026",
       "reference": "percentage",
-      "certificateMarks": 0.0,
-      "computerizedMarks": 0.0,
+      "certificateMarks": 5.0,
+      "computerizedMarks": 5.0,
       "percentage": "0.000000"
     }
   ],
@@ -45969,9 +45969,9 @@
       "session": "November 2025",
       "passingDate": "10/11/2025",
       "reference": "attempt",
-      "certificateMarks": 4.0,
-      "computerizedMarks": 4.0,
-      "attempt": "2nd"
+      "certificateMarks": 5.0,
+      "computerizedMarks": 5.0,
+      "attempt": "1st"
     },
     {
       "disciplineId": 2,
@@ -54185,9 +54185,9 @@
       "session": "January 2026",
       "passingDate": "12/01/2026",
       "reference": "attempt",
-      "certificateMarks": 4.0,
-      "computerizedMarks": 4.0,
-      "attempt": "2nd"
+      "certificateMarks": 5.0,
+      "computerizedMarks": 5.0,
+      "attempt": "1st"
     }
   ],
   "38200": [

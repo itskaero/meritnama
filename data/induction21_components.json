@@ -1202,7 +1202,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 13.640170000000001,
-    "marksTotal": 13.640170
+    "marksTotal": 13.64017
   },
   "20550": {
     "degree": 11.01875,
@@ -1325,7 +1325,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 18.635170000000002,
-    "marksTotal": 18.635170
+    "marksTotal": 18.63517
   },
   "21946": {
     "degree": 10.003125,
@@ -3396,7 +3396,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 15.086079999999999,
-    "marksTotal": 15.086080
+    "marksTotal": 15.08608
   },
   "27059": {
     "degree": 10.79375,
@@ -3701,8 +3701,7 @@
       "MDS": 0.0,
       "FCPSD": 0.0
     },
-    "marksTotalBackup": 18.068011000000002,
-    "marksTotal": 18.068011
+    "marksTotal": 18.068011000000002
   },
   "26854": {
     "degree": 10.988235,
@@ -5515,7 +5514,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 13.476420000000001,
-    "marksTotal": 13.476420
+    "marksTotal": 13.47642
   },
   "28460": {
     "degree": 8.767347,
@@ -5618,7 +5617,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 16.561420000000002,
-    "marksTotal": 16.561420
+    "marksTotal": 16.56142
   },
   "28559": {
     "degree": 10.668367,
@@ -6784,8 +6783,7 @@
       "MDS": 0.0,
       "FCPSD": 3.0
     },
-    "marksTotalBackup": 17.422727000000002,
-    "marksTotal": 17.422727
+    "marksTotal": 17.422727000000002
   },
   "29482": {
     "degree": 10.105714,
@@ -8875,8 +8873,7 @@
       "MDS": 0.0,
       "FCPSD": 5.0
     },
-    "marksTotalBackup": 17.858311999999998,
-    "marksTotal": 17.858312
+    "marksTotal": 17.858311999999998
   },
   "30409": {
     "degree": 11.909375,
@@ -8897,7 +8894,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 18.574830000000002,
-    "marksTotal": 18.574830
+    "marksTotal": 18.57483
   },
   "30422": {
     "degree": 10.409375,
@@ -9934,19 +9931,18 @@
     "research": 0.0,
     "position": 0.0,
     "hardAreas": 0.0,
-    "matric": 0.0,
-    "fsc": 0.0,
+    "matric": 4.454545,
+    "fsc": 6.223636,
     "attempts": 0.0,
     "mdcat": 1.847273,
     "programMarks": {
       "FCPS": 5.0,
       "MS": 0.0,
-      "MD": 0.0,
+      "MD": 3.0,
       "MDS": 0.0,
       "FCPSD": 0.0
     },
-    "marksTotalBackup": 18.444148000000002,
-    "marksTotal": 18.444148
+    "marksTotal": 18.444148000000002
   },
   "31095": {
     "degree": 11.509375,
@@ -11133,8 +11129,7 @@
       "MDS": 0.0,
       "FCPSD": 0.0
     },
-    "marksTotalBackup": 13.784317999999999,
-    "marksTotal": 13.784318
+    "marksTotal": 13.784317999999999
   },
   "31540": {
     "degree": 9.36875,
@@ -11317,7 +11312,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 18.328580000000002,
-    "marksTotal": 18.328580
+    "marksTotal": 18.32858
   },
   "31666": {
     "degree": 11.153125,
@@ -12082,7 +12077,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 17.262330000000002,
-    "marksTotal": 17.262330
+    "marksTotal": 17.26233
   },
   "31949": {
     "degree": 8.946875,
@@ -13608,8 +13603,7 @@
       "MDS": 0.0,
       "FCPSD": 0.0
     },
-    "marksTotalBackup": 17.327443000000002,
-    "marksTotal": 17.327443
+    "marksTotal": 17.327443000000002
   },
   "32331": {
     "degree": 10.653125,
@@ -13952,7 +13946,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 16.955170000000003,
-    "marksTotal": 16.955170
+    "marksTotal": 16.95517
   },
   "32582": {
     "degree": 11.494118,
@@ -17074,7 +17068,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 13.793579999999999,
-    "marksTotal": 13.793580
+    "marksTotal": 13.79358
   },
   "34197": {
     "degree": 10.015625,
@@ -17921,7 +17915,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 17.245169999999998,
-    "marksTotal": 17.245170
+    "marksTotal": 17.24517
   },
   "34340": {
     "degree": 9.69375,
@@ -18727,7 +18721,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 17.405170000000002,
-    "marksTotal": 17.405170
+    "marksTotal": 17.40517
   },
   "34432": {
     "degree": 13.073529,
@@ -20455,7 +20449,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 13.551079999999999,
-    "marksTotal": 13.551080
+    "marksTotal": 13.55108
   },
   "34626": {
     "degree": 9.803125,
@@ -21360,7 +21354,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 18.465899999999998,
-    "marksTotal": 18.465900
+    "marksTotal": 18.4659
   },
   "34664": {
     "degree": 11.834375,
@@ -22066,7 +22060,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 17.588919999999998,
-    "marksTotal": 17.588920
+    "marksTotal": 17.58892
   },
   "34815": {
     "degree": 11.31875,
@@ -22328,7 +22322,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 18.547330000000002,
-    "marksTotal": 18.547330
+    "marksTotal": 18.54733
   },
   "34792": {
     "degree": 12.15,
@@ -22405,7 +22399,7 @@
     "programMarks": {
       "FCPS": 0.0,
       "MS": 3.0,
-      "MD": 0.0,
+      "MD": 5.0,
       "MDS": 0.0,
       "FCPSD": 0.0
     },
@@ -22711,7 +22705,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 16.688769999999998,
-    "marksTotal": 16.688770
+    "marksTotal": 16.68877
   },
   "34876": {
     "degree": 13.248238,
@@ -22851,8 +22845,7 @@
       "MDS": 0.0,
       "FCPSD": 0.0
     },
-    "marksTotalBackup": 17.939489000000002,
-    "marksTotal": 17.939489
+    "marksTotal": 17.939489000000002
   },
   "34929": {
     "degree": 11.346875,
@@ -25048,7 +25041,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 18.188579999999998,
-    "marksTotal": 18.188580
+    "marksTotal": 18.18858
   },
   "35194": {
     "degree": 11.478125,
@@ -25712,7 +25705,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 13.858920000000001,
-    "marksTotal": 13.858920
+    "marksTotal": 13.85892
   },
   "35255": {
     "degree": 9.104082,
@@ -26716,7 +26709,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 17.908920000000002,
-    "marksTotal": 17.908920
+    "marksTotal": 17.90892
   },
   "35509": {
     "degree": 10.425,
@@ -29683,7 +29676,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 13.923580000000001,
-    "marksTotal": 13.923580
+    "marksTotal": 13.92358
   },
   "35910": {
     "degree": 11.5625,
@@ -30265,7 +30258,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 15.754480000000001,
-    "marksTotal": 15.754480
+    "marksTotal": 15.75448
   },
   "36027": {
     "degree": 11.8875,
@@ -32280,7 +32273,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 13.971079999999999,
-    "marksTotal": 13.971080
+    "marksTotal": 13.97108
   },
   "36267": {
     "degree": 10.678125,
@@ -36044,7 +36037,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 17.594829999999998,
-    "marksTotal": 17.594830
+    "marksTotal": 17.59483
   },
   "36727": {
     "degree": 10.375,
@@ -38014,8 +38007,7 @@
       "MDS": 0.0,
       "FCPSD": 5.0
     },
-    "marksTotalBackup": 16.108570999999998,
-    "marksTotal": 16.108571
+    "marksTotal": 16.108570999999998
   },
   "37004": {
     "degree": 12.125,
@@ -38521,8 +38513,7 @@
       "MDS": 0.0,
       "FCPSD": 4.0
     },
-    "marksTotalBackup": 17.238830999999998,
-    "marksTotal": 17.238831
+    "marksTotal": 17.238830999999998
   },
   "37022": {
     "degree": 11.45625,
@@ -40756,7 +40747,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 17.565170000000002,
-    "marksTotal": 17.565170
+    "marksTotal": 17.56517
   },
   "37246": {
     "degree": 10.38125,
@@ -42335,18 +42326,18 @@
     "research": 0.0,
     "position": 0.0,
     "hardAreas": 0.0,
-    "matric": 0.0,
-    "fsc": 0.0,
+    "matric": 4.518182,
+    "fsc": 5.899091,
     "attempts": 0.0,
-    "mdcat": 0.0,
+    "mdcat": 1.8,
     "programMarks": {
-      "FCPS": 4.0,
+      "FCPS": 5.0,
       "MS": 0.0,
       "MD": 4.0,
       "MDS": 0.0,
       "FCPSD": 0.0
     },
-    "marksTotal": 14.434375
+    "marksTotal": 16.234375
   },
   "37404": {
     "degree": 11.675,
@@ -42569,7 +42560,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 17.141080000000002,
-    "marksTotal": 17.141080
+    "marksTotal": 17.14108
   },
   "37454": {
     "degree": 11.015625,
@@ -43695,7 +43686,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 15.347330000000001,
-    "marksTotal": 15.347330
+    "marksTotal": 15.34733
   },
   "37703": {
     "degree": 11.196875,
@@ -43975,8 +43966,7 @@
       "MDS": 0.0,
       "FCPSD": 5.0
     },
-    "marksTotalBackup": 15.652895000000001,
-    "marksTotal": 15.652895
+    "marksTotal": 15.652895000000001
   },
   "37677": {
     "degree": 10.317647,
@@ -45485,7 +45475,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 18.254830000000002,
-    "marksTotal": 18.254830
+    "marksTotal": 18.25483
   },
   "37903": {
     "degree": 10.193878,
@@ -46836,7 +46826,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 17.245250000000002,
-    "marksTotal": 17.245250
+    "marksTotal": 17.24525
   },
   "37965": {
     "degree": 9.91875,
@@ -46977,7 +46967,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 14.117669999999999,
-    "marksTotal": 14.117670
+    "marksTotal": 14.11767
   },
   "37994": {
     "degree": 10.90102,
@@ -48266,8 +48256,7 @@
       "MDS": 0.0,
       "FCPSD": 5.0
     },
-    "marksTotalBackup": 18.028750000000002,
-    "marksTotal": 18.02875
+    "marksTotal": 18.028750000000002
   },
   "38047": {
     "degree": 11.7875,
@@ -48308,7 +48297,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 16.953580000000002,
-    "marksTotal": 16.953580
+    "marksTotal": 16.95358
   },
   "38051": {
     "degree": 10.034375,
@@ -51206,7 +51195,7 @@
     "attempts": 0.0,
     "mdcat": 1.923636,
     "programMarks": {
-      "FCPS": 4.0,
+      "FCPS": 5.0,
       "MS": 0.0,
       "MD": 0.0,
       "MDS": 0.0,
@@ -51515,7 +51504,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 18.151419999999998,
-    "marksTotal": 18.151420
+    "marksTotal": 18.15142
   },
   "38235": {
     "degree": 10.240625,
@@ -52808,8 +52797,7 @@
       "MDS": 0.0,
       "FCPSD": 4.0
     },
-    "marksTotalBackup": 14.165455000000001,
-    "marksTotal": 14.165455
+    "marksTotal": 14.165455000000001
   },
   "38306": {
     "degree": 10.34375,
@@ -54644,7 +54632,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 17.392670000000003,
-    "marksTotal": 17.392670
+    "marksTotal": 17.39267
   },
   "38484": {
     "degree": 11.0,
@@ -56741,7 +56729,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 16.088919999999998,
-    "marksTotal": 16.088920
+    "marksTotal": 16.08892
   },
   "38630": {
     "degree": 10.89,
@@ -65027,8 +65015,7 @@
       "MDS": 0.0,
       "FCPSD": 4.0
     },
-    "marksTotalBackup": 15.947142999999999,
-    "marksTotal": 15.947143
+    "marksTotal": 15.947142999999999
   },
   "39154": {
     "degree": 10.28125,
@@ -66133,8 +66120,7 @@
       "MDS": 0.0,
       "FCPSD": 4.0
     },
-    "marksTotalBackup": 17.637143000000002,
-    "marksTotal": 17.637143
+    "marksTotal": 17.637143000000002
   },
   "39247": {
     "degree": 12.831429,
@@ -67060,7 +67046,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 17.907329999999998,
-    "marksTotal": 17.907330
+    "marksTotal": 17.90733
   },
   "39322": {
     "degree": 9.698182,
@@ -67200,8 +67186,7 @@
       "MDS": 0.0,
       "FCPSD": 5.0
     },
-    "marksTotalBackup": 17.080000000000002,
-    "marksTotal": 17.08
+    "marksTotal": 17.080000000000002
   },
   "39338": {
     "degree": 11.328689,
@@ -68733,8 +68718,7 @@
       "MDS": 0.0,
       "FCPSD": 5.0
     },
-    "marksTotalBackup": 14.947367999999999,
-    "marksTotal": 14.947368
+    "marksTotal": 14.947367999999999
   },
   "39463": {
     "degree": 11.13125,
@@ -68775,7 +68759,7 @@
       "FCPSD": 0.0
     },
     "marksTotalBackup": 15.708580000000001,
-    "marksTotal": 15.708580
+    "marksTotal": 15.70858
   },
   "39467": {
     "degree": 11.26875,

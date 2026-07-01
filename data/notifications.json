@@ -4,22 +4,22 @@
     "icon": "📊",
     "linkText": "View changes",
     "type": "info",
-    "title": "Data Updated — 26 June 2026, 20:59",
+    "title": "Data Updated — 1 July 2026, 23:01",
     "dismissable": false,
     "link": "candidatesChanges.html",
     "active": true,
-    "body": "Candidate records, preferences, certificates, and profile statuses refreshed with the latest portal data. Merit calculations and seat allocation now reflect the current snapshot."
+    "body": "Candidate records, preferences, certificates, and profile statuses refreshed with the latest portal data. Merit calculations and seat allocation now reflect the current snapshot. It will available shortly! Refresh in 20 minutes. Be sure to refresh / clear cache or user icognito"
   },
   {
-    "id": "fixes-2606",
+    "id": "jobs-2606",
     "icon": "🔧",
     "linkText": null,
     "type": "success",
-    "title": "Bug Fixes",
+    "title": "Jobs",
     "dismissable": true,
     "link": null,
     "active": true,
-    "body": "Accepted count now correctly includes amendment-accepted candidates. Preference marks no longer show 0.00 — certificate-matched marks are used with policy fallbacks. Speciality names display properly instead of raw IDs."
+    "body": "Job listing refreshed 1/7/2026. Its available on main page."
   },
   {
     "id": "ui-refresh-2606",
