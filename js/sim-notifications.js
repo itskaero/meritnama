@@ -279,11 +279,12 @@ function getCandidateStatusSummary(c) {
   const sid131 = st131 ? Number(st131.statusId) : null;
   const sid132 = st132 ? Number(st132.statusId) : null;
 
-  // Effective: 132 overrides 131 for allocation scope
-  // But for "accepted" counts: accepted if 131 is accepted, or 131 rejected + 132 accepted
-  const isAccepted = (sid131 === 1) || (sid131 === 2 && sid132 === 1);
-  const isRejected = !isAccepted && (sid131 === 2 && sid132 !== 1);
-  const isPending = !isAccepted && !isRejected && (sid131 === 11 || (!st131 && st132));
+  // Effective: 132 overrides 131 — matches getEffectiveProfileStatusForCandidate
+  const effective = getEffectiveProfileStatusForCandidate({ applicantId: c.applicantId });
+  const effSid = effective ? Number(effective.statusId) : null;
+  const isAccepted = effSid === 1;
+  const isRejected = effSid === 2;
+  const isPending = effSid === 11;
 
   return { st131, st132, all, isAccepted, isRejected, isPending, sid131, sid132 };
 }

@@ -234,6 +234,12 @@
       "matric": 0.0,
       "fsc": 0.0,
       "_timestamp": "2026-06-27T19:00:58"
+    },
+    "amendment_3": {
+      "_timestamp": "2026-07-02T18:44:41",
+      "programMarks": {
+        "MD": 5.0
+      }
     }
   },
   "24509": {
@@ -362,6 +368,12 @@
       "matric": 0.0,
       "fsc": 0.0,
       "_timestamp": "2026-06-27T19:00:58"
+    },
+    "amendment_3": {
+      "_timestamp": "2026-07-02T18:44:41",
+      "programMarks": {
+        "MS": 5.0
+      }
     }
   },
   "25897": {
@@ -435,6 +447,12 @@
       "matric": 0.0,
       "fsc": 0.0,
       "_timestamp": "2026-06-27T19:00:58"
+    },
+    "amendment_3": {
+      "_timestamp": "2026-07-02T18:44:41",
+      "programMarks": {
+        "MDS": 3.0
+      }
     }
   },
   "26602": {
@@ -661,6 +679,12 @@
       "matric": 0.0,
       "fsc": 0.0,
       "_timestamp": "2026-06-27T19:00:58"
+    },
+    "amendment_3": {
+      "_timestamp": "2026-07-02T18:44:41",
+      "programMarks": {
+        "MD": 5.0
+      }
     }
   },
   "28460": {
@@ -3917,6 +3941,10 @@
       "matric": 0.0,
       "fsc": 0.0,
       "_timestamp": "2026-06-27T19:00:58"
+    },
+    "amendment_3": {
+      "_timestamp": "2026-07-02T18:44:41",
+      "mdcat": 1.5
     }
   },
   "36650": {
@@ -4136,6 +4164,10 @@
       "matric": 0.0,
       "fsc": 0.0,
       "_timestamp": "2026-06-27T19:00:58"
+    },
+    "amendment_3": {
+      "_timestamp": "2026-07-02T18:44:41",
+      "mdcat": 1.58
     }
   },
   "36765": {
@@ -19285,6 +19317,20 @@
     "amendment_1": {
       "_timestamp": "2026-07-02T00:16:47",
       "mdcat": 0.0
+    }
+  },
+  "37877": {
+    "amendment_1": {
+      "_timestamp": "2026-07-02T18:44:41",
+      "mdcat": 1.68
+    }
+  },
+  "39493": {
+    "amendment_1": {
+      "_timestamp": "2026-07-02T18:44:41",
+      "programMarks": {
+        "MS": 5.0
+      }
     }
   }
 }

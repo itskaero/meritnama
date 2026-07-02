@@ -1602,7 +1602,7 @@
     "programMarks": {
       "FCPS": 0.0,
       "MS": 0.0,
-      "MD": 0.0,
+      "MD": 5.0,
       "MDS": 0.0,
       "FCPSD": 0.0
     },
@@ -2506,7 +2506,7 @@
     "mdcat": 1.572727,
     "programMarks": {
       "FCPS": 0.0,
-      "MS": 0.0,
+      "MS": 5.0,
       "MD": 0.0,
       "MDS": 0.0,
       "FCPSD": 0.0
@@ -3089,7 +3089,7 @@
       "FCPS": 0.0,
       "MS": 0.0,
       "MD": 0.0,
-      "MDS": 0.0,
+      "MDS": 3.0,
       "FCPSD": 0.0
     },
     "marksTotal": 17.923507
@@ -5489,7 +5489,7 @@
     "programMarks": {
       "FCPS": 0.0,
       "MS": 0.0,
-      "MD": 0.0,
+      "MD": 5.0,
       "MDS": 0.0,
       "FCPSD": 0.0
     },
@@ -35204,7 +35204,7 @@
     "matric": 0.0,
     "fsc": 0.0,
     "attempts": 0.0,
-    "mdcat": 0.0,
+    "mdcat": 1.5,
     "programMarks": {
       "FCPS": 3.0,
       "MS": 0.0,
@@ -35212,7 +35212,7 @@
       "MDS": 0.0,
       "FCPSD": 0.0
     },
-    "marksTotal": 13.394355
+    "marksTotal": 14.894355
   },
   "36642": {
     "degree": 11.820968,
@@ -36291,7 +36291,7 @@
     "matric": 0.0,
     "fsc": 0.0,
     "attempts": 0.0,
-    "mdcat": 0.0,
+    "mdcat": 1.58,
     "programMarks": {
       "FCPS": 5.0,
       "MS": 0.0,
@@ -36299,7 +36299,7 @@
       "MDS": 0.0,
       "FCPSD": 0.0
     },
-    "marksTotal": 15.91875
+    "marksTotal": 17.49875
   },
   "36765": {
     "degree": 11.71875,
@@ -45748,7 +45748,7 @@
     "matric": 0.0,
     "fsc": 0.0,
     "attempts": 0.0,
-    "mdcat": 0.0,
+    "mdcat": 1.68,
     "programMarks": {
       "FCPS": 5.0,
       "MS": 0.0,
@@ -45756,7 +45756,7 @@
       "MDS": 0.0,
       "FCPSD": 0.0
     },
-    "marksTotal": 13.431013
+    "marksTotal": 15.111013
   },
   "37879": {
     "degree": 11.04375,
@@ -69279,7 +69279,7 @@
     "mdcat": 0.0,
     "programMarks": {
       "FCPS": 0.0,
-      "MS": 0.0,
+      "MS": 5.0,
       "MD": 0.0,
       "MDS": 0.0,
       "FCPSD": 0.0

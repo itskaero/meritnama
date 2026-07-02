@@ -1611,7 +1611,22 @@
       "percentage": "73.000000"
     }
   ],
-  "23421": [],
+  "23421": [
+    {
+      "disciplineId": 8,
+      "disciplineName": "Psychiatry",
+      "typeId": 3,
+      "typeName": "MD",
+      "valid": true,
+      "status": "Pass",
+      "session": "February 2025",
+      "passingDate": "02/02/2025",
+      "reference": "percentage",
+      "certificateMarks": 5.0,
+      "computerizedMarks": 5.0,
+      "percentage": "75.000000"
+    }
+  ],
   "23424": [
     {
       "disciplineId": 5,
@@ -2372,7 +2387,22 @@
       "percentage": "0.000000"
     }
   ],
-  "25817": [],
+  "25817": [
+    {
+      "disciplineId": 5,
+      "disciplineName": "Obstetrics And Gynaecology",
+      "typeId": 2,
+      "typeName": "MS",
+      "valid": true,
+      "status": "Pass",
+      "session": "April 2026",
+      "passingDate": "06/04/2026",
+      "reference": "percentage",
+      "certificateMarks": 5.0,
+      "computerizedMarks": 5.0,
+      "percentage": "75.000000"
+    }
+  ],
   "25871": [
     {
       "disciplineId": 2,
@@ -2961,7 +2991,22 @@
       "attempt": "1st"
     }
   ],
-  "26381": [],
+  "26381": [
+    {
+      "disciplineId": 11,
+      "disciplineName": "Dentistry",
+      "typeId": 4,
+      "typeName": "MDS",
+      "valid": true,
+      "status": "Pass",
+      "session": "April 2025",
+      "passingDate": "13/04/2025",
+      "reference": "percentage",
+      "certificateMarks": 3.0,
+      "computerizedMarks": 3.0,
+      "percentage": "62.000000"
+    }
+  ],
   "26450": [
     {
       "disciplineId": 5,
@@ -5396,7 +5441,22 @@
       "percentage": "0.000000"
     }
   ],
-  "28411": [],
+  "28411": [
+    {
+      "disciplineId": 2,
+      "disciplineName": "Medicine And Allied",
+      "typeId": 3,
+      "typeName": "MD",
+      "valid": true,
+      "status": "Pass",
+      "session": "November 2025",
+      "passingDate": "06/11/2025",
+      "reference": "percentage",
+      "certificateMarks": 5.0,
+      "computerizedMarks": 5.0,
+      "percentage": "74.000000"
+    }
+  ],
   "28443": [
     {
       "disciplineId": 4,
@@ -70682,7 +70742,22 @@
       "attempt": "More then 3rd"
     }
   ],
-  "39493": [],
+  "39493": [
+    {
+      "disciplineId": 3,
+      "disciplineName": "Surgery And Allied",
+      "typeId": 2,
+      "typeName": "MS",
+      "valid": true,
+      "status": "Pass",
+      "session": "April 2026",
+      "passingDate": "03/04/2026",
+      "reference": "percentage",
+      "certificateMarks": 5.0,
+      "computerizedMarks": 5.0,
+      "percentage": "75.000000"
+    }
+  ],
   "39496": [
     {
       "disciplineId": 5,
