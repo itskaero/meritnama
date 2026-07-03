@@ -103,6 +103,33 @@
         </div>`,
     }));
 
+    frag.appendChild(buildSection({
+      id: 'consent-round-config',
+      icon: '\u{1F4CB}',
+      title: 'Consent Round',
+      desc: 'Sets the active consent round number and tracks when the consent data file was last updated. Stored in <code>notifications/consent_round</code>.',
+      html: `
+        <div style="display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:0.75rem;align-items:center;">
+          <div class="modal-field" style="margin:0;max-width:120px;">
+            <label>Round Number</label>
+            <input type="number" id="consentRoundInput" min="1" max="9" step="1" value="1" style="width:100%;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.88rem;" />
+          </div>
+          <div class="modal-field" style="margin:0;max-width:220px;">
+            <label>Data File Last Updated</label>
+            <input type="datetime-local" id="consentFileUpdatedAtInput" style="width:100%;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;font-family:var(--mono);" />
+          </div>
+          <div style="font-size:0.78rem;color:var(--text-muted);">
+            <span style="display:block;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:0.2rem;">Config Last Saved</span>
+            <span id="consentRoundConfigSavedAt" style="color:var(--neon-cyan);font-family:var(--mono);">—</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+          <button id="consentRoundSaveBtn" class="btn-primary" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save Round</button>
+          <button id="consentRoundReloadBtn" style="padding:8px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:8px;cursor:pointer;">Reload Config</button>
+          <span id="consentRoundStatus" style="font-size:0.8rem;color:var(--text-muted);align-self:center;"></span>
+        </div>`,
+    }));
+
     // Insert before the last child (usually the script area)
     container.appendChild(frag);
 
@@ -119,6 +146,12 @@
 
       const candVerifBtn = document.getElementById('candVerifSaveBtn');
       if (candVerifBtn) candVerifBtn.addEventListener('click', saveCandVerifConfig);
+
+      const consentSaveBtn = document.getElementById('consentRoundSaveBtn');
+      if (consentSaveBtn) consentSaveBtn.addEventListener('click', saveConsentRoundConfig);
+
+      const consentReloadBtn = document.getElementById('consentRoundReloadBtn');
+      if (consentReloadBtn) consentReloadBtn.addEventListener('click', loadConsentRoundConfig);
     }, 100);
   }
 
@@ -243,10 +276,82 @@
     }
   }
 
+  // ── Consent Round Config ──
+
+  function setConsentRoundStatus(msg, color) {
+    const el = document.getElementById('consentRoundStatus');
+    if (el) { el.textContent = msg; if (color) el.style.color = color; }
+  }
+
+  async function loadConsentRoundConfig() {
+    try {
+      const snap = await db.collection('notifications').doc('consent_round').get();
+      if (snap.exists) {
+        const data = snap.data();
+        const input = document.getElementById('consentRoundInput');
+        if (input) input.value = data.round || 1;
+
+        const fileInput = document.getElementById('consentFileUpdatedAtInput');
+        if (fileInput && data.fileUpdatedAt) {
+          const d = new Date(data.fileUpdatedAt);
+          if (!isNaN(d.getTime())) {
+            const pad = n => String(n).padStart(2, '0');
+            fileInput.value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+          }
+        }
+
+        const savedEl = document.getElementById('consentRoundConfigSavedAt');
+        if (savedEl) {
+          const ts = data.updatedAt;
+          if (ts && ts.toDate) {
+            savedEl.textContent = ts.toDate().toLocaleString();
+          } else if (ts) {
+            savedEl.textContent = String(ts);
+          } else {
+            savedEl.textContent = '—';
+          }
+        }
+      }
+      setConsentRoundStatus('Loaded consent round config.', 'var(--neon-green)');
+    } catch (e) {
+      console.error('[AdminToggles] Error loading consent round:', e);
+      setConsentRoundStatus('Error loading: ' + e.message, 'var(--neon-pink)');
+    }
+  }
+
+  async function saveConsentRoundConfig() {
+    const input = document.getElementById('consentRoundInput');
+    if (!input) return;
+    const round = parseInt(input.value, 10);
+    if (isNaN(round) || round < 1 || round > 9) {
+      setConsentRoundStatus('Round must be between 1 and 9.', 'var(--neon-pink)');
+      return;
+    }
+    const fileInput = document.getElementById('consentFileUpdatedAtInput');
+    let fileUpdatedAt = null;
+    if (fileInput && fileInput.value) {
+      fileUpdatedAt = new Date(fileInput.value).toISOString();
+    }
+    setConsentRoundStatus('Saving...');
+    try {
+      const payload = {
+        round: round,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      };
+      if (fileUpdatedAt) payload.fileUpdatedAt = fileUpdatedAt;
+      await db.collection('notifications').doc('consent_round').set(payload, { merge: true });
+      setConsentRoundStatus('Consent round saved. Merit List updates live.', 'var(--neon-green)');
+      loadConsentRoundConfig();
+    } catch (e) {
+      setConsentRoundStatus('Error saving: ' + e.message, 'var(--neon-pink)');
+    }
+  }
+
   function loadConfigs() {
     loadWatermarkConfig();
     loadSimModeConfig();
     loadCandVerifConfig();
+    loadConsentRoundConfig();
   }
 
   // ── Start ──
