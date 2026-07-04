@@ -23,7 +23,7 @@
 //
 // Public Jobs tab   ← Firestore `jobs` onSnapshot (live, read-only)
 
-const JOBS = {
+var JOBS = Object.assign(typeof JOBS !== 'undefined' ? JOBS : {}, {
   COLLECTION: 'jobs',
   BASE_LISTING: 'https://www.jobz.pk/medical-employment{pageNo}/',
   DEFAULT_PAGES: 1,
@@ -54,7 +54,7 @@ const JOBS = {
     onlyWithVacancies: false,
   },
   sort: { key: 'datePosted', dir: -1 },
-};
+});
 
 // ── helpers ──────────────────────────────────────────────
 

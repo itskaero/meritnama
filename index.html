@@ -1,440 +1,281 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MeritNama — Residency Induction Analytics</title>
-<link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<style>
-*{ margin:0; padding:0; box-sizing:border-box; }
-:root{
-  --ink:#050914;
-  --mint:#2FE39A;
-  --paper:#e8f0f0;
-  --muted:#6a7e9a;
-  --cyan:#4db8d9;
-}
-html, body{ height:100%; }
-body{
-  background:#04060c;
-  font-family:'IBM Plex Sans', sans-serif;
-  color:var(--paper);
-  overflow-x:hidden;
-}
-::selection{ background:var(--mint); color:var(--ink); }
-
-.hero{
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  padding:40px 24px;
-  position:relative;
-  overflow:hidden;
-}
-.hero-bg{ position:absolute; inset:0; z-index:0; overflow:hidden; }
-.hero-bg video, .hero-bg canvas{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
-.hero-bg video{ object-fit:cover; }
-.hero-bg canvas{ display:none; }
-.hero.canvas-mode .hero-bg canvas{ display:block; }
-.hero.canvas-mode .hero-bg video{ display:none; }
-.hero.video-mode .hero-bg video{ display:block; }
-.hero.video-mode .hero-bg canvas{ display:none; }
-.hero-overlay{
-  position:absolute; inset:0; z-index:1;
-  background:linear-gradient(180deg, rgba(4,6,12,.75) 0%, rgba(4,6,12,.35) 45%, rgba(4,6,12,.35) 55%, rgba(4,6,12,.85) 100%);
-}
-.hero-bg video, .hero-bg canvas{ z-index:0; }
-.hero-content{ position:relative; z-index:1; }
-
-.hero-logo{
-  width:480px;
-  max-width:85vw;
-  margin-bottom:40px;
-  filter:drop-shadow(0 0 60px rgba(47,227,154,.1));
-}
-.hero h1{
-  font-family:'Space Grotesk', sans-serif;
-  font-size:clamp(1.8rem,4.5vw,3.6rem);
-  font-weight:700;
-  line-height:1.1;
-  margin-bottom:16px;
-}
-.hero h1 .grad{
-  background:linear-gradient(135deg, var(--mint), var(--cyan));
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  background-clip:text;
-}
-.hero p{
-  font-size:clamp(1rem,1.8vw,1.2rem);
-  color:var(--muted);
-  max-width:520px;
-  margin:0 auto 40px;
-  line-height:1.7;
-}
-.hero-actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:14px;
-  justify-content:center;
-}
-.btn{
-  display:inline-flex; align-items:center; gap:10px;
-  padding:16px 36px; border-radius:12px;
-  font-family:'IBM Plex Mono', monospace;
-  font-size:13px; font-weight:600; letter-spacing:.5px;
-  text-decoration:none; transition:all .25s;
-}
-.btn-primary{
-  background:linear-gradient(135deg, var(--mint), #1ecb84);
-  color:var(--ink);
-  box-shadow:0 0 30px rgba(47,227,154,.25), 0 4px 20px rgba(0,0,0,.3);
-}
-.btn-primary:hover{
-  transform:translateY(-3px);
-  box-shadow:0 0 50px rgba(47,227,154,.35), 0 8px 30px rgba(0,0,0,.4);
-}
-.btn-ghost{
-  background:rgba(255,255,255,.06);
-  color:var(--paper);
-  border:1px solid rgba(255,255,255,.15);
-  backdrop-filter:blur(6px);
-}
-.btn-ghost:hover{
-  background:rgba(255,255,255,.1);
-  border-color:rgba(255,255,255,.25);
-  transform:translateY(-3px);
-}
-
-.hero-stats{
-  display:flex;
-  gap:24px;
-  margin-top:36px;
-  justify-content:center;
-}
-.hero-stat{ text-align:center; flex:1; min-width:0; }
-.hero-stat-inner{
-  display:flex; flex-direction:column; align-items:center; gap:2px;
-  padding:12px 14px; border-radius:12px;
-  background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.04);
-  backdrop-filter:blur(8px);
-}
-.hero-stat .num{
-  font-family:'Space Grotesk', sans-serif;
-  font-size:2.2rem; font-weight:700;
-  color:var(--mint); line-height:1;
-}
-.hero-stat .lab{
-  font-family:'IBM Plex Mono', monospace;
-  font-size:11px; letter-spacing:1.5px;
-  color:var(--muted); text-transform:uppercase;
-  margin-top:6px;
-}
-
-/* Mode toggles */
-.canvas-only { display: revert; }
-.video-only { display: none !important; }
-.hero.video-mode .canvas-only { display: none !important; }
-.hero.video-mode .video-only { display: flex !important; }
-.hero.canvas-mode .video-only { display: none !important; }
-
-.sound-toggle{
-  position:absolute; bottom:36px; right:36px; z-index:2;
-  width:44px; height:44px; border-radius:50%;
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1);
-  color:var(--paper); font-size:1.15rem;
-  align-items:center; justify-content:center;
-  cursor:pointer; backdrop-filter:blur(6px);
-  transition:all .2s;
-}
-.sound-toggle:hover{ background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.18); }
-
-.logout-btn{
-  position:fixed; top:20px; right:20px; z-index:100;
-  padding:8px 18px; border:1px solid rgba(224,84,112,.3);
-  border-radius:8px; background:rgba(224,84,112,.06);
-  color:#e05470; font-size:13px; font-weight:600;
-  font-family:'IBM Plex Mono',monospace;
-  cursor:pointer; backdrop-filter:blur(6px);
-  transition:all .2s; display:none;
-}
-.logout-btn:hover{
-  background:rgba(224,84,112,.14);
-  border-color:#e05470;
-  box-shadow:0 0 14px rgba(224,84,112,.22);
-  transform:translateY(-1px);
-}
-
-.hero.video-mode .hero-actions { margin-top: 40vh; }
-
-.scroll-hint{
-  position:absolute; bottom:36px; left:50%;
-  transform:translateX(-50%); z-index:1;
-  display:flex; flex-direction:column; align-items:center; gap:6px;
-  color:var(--muted); font-family:'IBM Plex Mono', monospace;
-  font-size:10px; letter-spacing:2px; text-transform:uppercase;
-  opacity:.35; animation:bounce 2.4s ease-in-out infinite;
-}
-.scroll-hint::after{
-  content:''; width:1px; height:24px;
-  background:linear-gradient(var(--muted), transparent);
-}
-@keyframes bounce{
-  0%,100%{ transform:translateX(-50%) translateY(0); }
-  50%{ transform:translateX(-50%) translateY(8px); }
-}
-
-.drawer-trigger{
-  position:absolute; bottom:90px; left:50%;
-  transform:translateX(-50%); z-index:1;
-  background:none; border:none;
-  color:var(--muted); font-family:'IBM Plex Mono', monospace;
-  font-size:11px; letter-spacing:1.5px;
-  cursor:pointer; padding:8px 20px; border-radius:8px;
-  transition:color .2s;
-}
-.drawer-trigger:hover{ color:var(--mint); }
-
-.drawer{
-  position:fixed; bottom:0; left:0; right:0; z-index:10;
-  background:rgba(4,6,12,.92); backdrop-filter:blur(20px);
-  border-top:1px solid rgba(255,255,255,.05);
-  padding:40px 24px 32px;
-  transform:translateY(100%);
-  transition:transform .4s cubic-bezier(.22,1,.36,1);
-}
-.drawer.open{ transform:translateY(0); }
-.drawer-inner{
-  max-width:960px; margin:0 auto;
-  display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-  gap:16px;
-}
-.drawer-item{
-  display:flex; align-items:center; gap:14px;
-  padding:18px 20px;
-  background:rgba(255,255,255,.02);
-  border:1px solid rgba(255,255,255,.04);
-  border-radius:12px; text-decoration:none;
-  color:var(--paper); transition:all .2s;
-}
-.drawer-item:hover{
-  background:rgba(255,255,255,.05);
-  border-color:rgba(47,227,154,.12);
-  transform:translateY(-2px);
-}
-.drawer-item .icon{ font-size:1.4rem; flex-shrink:0; }
-.drawer-item h4{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:.9rem; }
-.drawer-item p{ color:var(--muted); font-size:.78rem; margin-top:2px; }
-.drawer-close{
-  position:absolute; top:12px; right:16px;
-  background:none; border:none;
-  color:var(--muted); font-size:1.4rem;
-  cursor:pointer; padding:4px 8px; border-radius:6px;
-  transition:color .2s;
-}
-.drawer-close:hover{ color:var(--paper); }
-
-footer{
-  position:absolute; bottom:0; left:0; right:0; z-index:1;
-  text-align:center; padding:16px 24px;
-  color:rgba(124,144,172,.3); font-size:11px;
-  pointer-events:none;
-}
-
-@media(max-width:640px){
-  .hero-stats{ gap:10px; margin-top:28px; }
-  .hero-stat-inner{ padding:10px 10px; }
-  .hero-stat .num{ font-size:1.45rem; }
-  .hero-logo{ width:320px; }
-  .drawer-inner{ grid-template-columns:1fr; }
-  .scroll-hint, .sound-toggle{ display:none; }
-  .drawer-trigger{ bottom:72px; }
-}
-@media(max-width:380px){
-  .hero-stats{ gap:6px; margin-top:22px; }
-  .hero-stat-inner{ padding:8px 6px; }
-  .hero-stat .num{ font-size:1.15rem; }
-  .hero-stat .lab{ font-size:9px; letter-spacing:1px; }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MeritNama — Residency Induction Analytics</title>
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Phosphor Icons Light Weight (1.5 stroke) -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Chart.js and plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+  
+  <!-- Firebase SDKs (Compat v9) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>firebase.initializeApp(firebaseConfig);</script>
 </head>
 <body>
 
-<div class="hero" id="hero">
-  <div class="hero-bg">
-    <canvas id="heroCanvas"></canvas>
-    <video autoplay muted loop playsinline preload="auto" id="heroVideo">
-      <source src="data/promo.mp4" type="video/mp4">
-    </video>
-    <div class="hero-overlay"></div>
-  </div>
-  <div class="hero-content">
-    <img src="../animation/logo-anim.svg" alt="MeritNama" class="hero-logo canvas-only">
-    <h1 class="canvas-only">Know where you <span class="grad">stand</span>.</h1>
-    <p class="canvas-only">Independent residency induction analytics for Punjab's medical trainees.</p>
-    <div class="hero-actions">
-      <a href="app.html" class="btn btn-primary">Launch App</a>
-      <button class="btn btn-ghost" id="exploreBtn">Explore &darr;</button>
-    </div>
-    <div class="hero-stats canvas-only">
-      <div class="hero-stat"><div class="hero-stat-inner"><div class="num">3,473+</div><div class="lab">Candidates</div></div></div>
-      <div class="hero-stat"><div class="hero-stat-inner"><div class="num">476</div><div class="lab">Sim Placed</div></div></div>
-      <div class="hero-stat"><div class="hero-stat-inner"><div class="num">369</div><div class="lab">Slots</div></div></div>
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-box">
+      <div class="loading-brand">
+        <img src="logo.svg" class="loading-logo-img" alt="MeritNama Logo">
+        <h2>MeritNama</h2>
+        <p>Residency Induction Analytics</p>
+      </div>
+      <div class="loading-progress-wrap">
+        <div class="loading-progress-bar" id="loadingBar"></div>
+      </div>
+      <p class="loading-stage" id="loadingDetail">Initialising…</p>
+      <p class="loading-tip" id="loadingTip"></p>
     </div>
   </div>
-  <button class="sound-toggle video-only" id="soundToggle" aria-label="Toggle sound">🔇</button>
-  <div class="scroll-hint canvas-only">Scroll</div>
-</div>
 
-<button class="logout-btn" id="logoutBtn">&#x23FB; Logout</button>
+  <!-- Auth Overlay (hidden by default) -->
+  <div id="authGate" class="overlay hidden"></div>
 
-<div class="drawer" id="drawer">
-  <button class="drawer-close" id="drawerClose">&times;</button>
-  <div class="drawer-inner">
-    <a href="simulation.html" class="drawer-item">
-      <span class="icon">🎮</span>
-      <div><h4>Simulation Portal</h4><p>Seat allocation, slot browser, live chat</p></div>
-    </a>
-    <a href="app.html" class="drawer-item">
-      <span class="icon">📊</span>
-      <div><h4>Merit Data</h4><p>Merit Table, Predictor, Calculator</p></div>
-    </a>
-    <a href="accreditation.html" class="drawer-item">
-      <span class="icon">✅</span>
-      <div><h4>Accreditation</h4><p>CPSP hospital programmes</p></div>
-    </a>
-    <a href="reviews.html" class="drawer-item">
-      <span class="icon">💬</span>
-      <div><h4>Discussion</h4><p>Community reviews &amp; feedback</p></div>
-    </a>
-    <a href="donate.html" class="drawer-item">
-      <span class="icon">❤️</span>
-      <div><h4>Support</h4><p>Keep it free</p></div>
-    </a>
+  <!-- Landing View (Shown for unauthenticated / root route) -->
+  <div id="landing" class="view landing-view hidden">
+    <!-- Asymmetric Split Hero -->
+    <section class="landing-hero">
+      <div class="landing-hero-left">
+        <h1 class="headline">Know where you <span>stand</span>.</h1>
+        <p class="subtext">Independent residency induction analytics for Punjab's medical trainees. Find your percentile, compare options, and predict placements.</p>
+        <div class="landing-hero-actions">
+          <a href="#/analytics/merit-table" class="btn btn-primary" id="landingCta">
+            Get Started
+            <span class="btn-icon-wrapper"><i class="ph ph-arrow-right"></i></span>
+          </a>
+        </div>
+      </div>
+      <div class="landing-hero-right">
+        <div class="hero-deco-mesh"></div>
+        <svg class="hero-vector-art" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M50 250 L120 180 L200 210 L280 120 L350 150" stroke="var(--brand-primary)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M50 250 L120 180 L200 210 L280 120 L350 150 L350 280 L50 280 Z" fill="url(#hero-gradient)" opacity="0.15"/>
+          <circle cx="120" cy="180" r="6" fill="var(--brand-primary)"/>
+          <circle cx="200" cy="210" r="6" fill="var(--brand-primary)"/>
+          <circle cx="280" cy="120" r="6" fill="var(--brand-primary)"/>
+          <circle cx="350" cy="150" r="6" fill="var(--brand-primary)"/>
+          <defs>
+            <linearGradient id="hero-gradient" x1="200" y1="120" x2="200" y2="280" gradientUnits="userSpaceOnUse">
+              <stop stop-color="var(--brand-primary)"/>
+              <stop offset="1" stop-color="var(--brand-primary)" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </section>
+
+    <!-- Bento Grid Features (5 cells, matching count exactly) -->
+    <section class="landing-features">
+      <div class="features-grid">
+        <!-- Cell 1 (span 8, large highlight) -->
+        <div class="bento-cell bento-cell-lg">
+          <div class="bento-icon"><i class="ph ph-game-controller"></i></div>
+          <h3>Induction Portal Simulator</h3>
+          <p>Run simulated placement allocation algorithms based on actual preference logs and seat availability metrics. See how shifting candidate behaviors influence cutoffs.</p>
+        </div>
+        
+        <!-- Cell 2 (span 4) -->
+        <div class="bento-cell">
+          <div class="bento-icon"><i class="ph ph-target"></i></div>
+          <h3>Score Predictor</h3>
+          <p>Analyze your score against 5+ cycles of historical induction metrics. Classify results into Safe, Target, and Reach options with statistical confidence.</p>
+        </div>
+
+        <!-- Cell 3 (span 4) -->
+        <div class="bento-cell">
+          <div class="bento-icon"><i class="ph ph-buildings"></i></div>
+          <h3>Hospital Directory</h3>
+          <p>Browse detailed hospital profiles, available slots, and CPSP accreditation details across different medical specialties.</p>
+        </div>
+
+        <!-- Cell 4 (span 4) -->
+        <div class="bento-cell">
+          <div class="bento-icon"><i class="ph ph-chat-circle"></i></div>
+          <h3>Discussion Forum</h3>
+          <p>Connect with other trainees to share insights about residency programs, rotation schedules, and stipend processing across departments.</p>
+        </div>
+
+        <!-- Cell 5 (span 4) -->
+        <div class="bento-cell">
+          <div class="bento-icon"><i class="ph ph-briefcase"></i></div>
+          <h3>Job Opportunities</h3>
+          <p>Access live job postings, vacancy details, and application deadlines from verified healthcare organizations in Punjab.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Horizontal Strip -->
+    <section class="landing-metrics">
+      <div class="metrics-strip">
+        <div class="metric-item">
+          <div class="metric-number">3,473+</div>
+          <div class="metric-label">Candidates Analyzed</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-number">476</div>
+          <div class="metric-label">Simulated Placements</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-number">369</div>
+          <div class="metric-label">Induction Slots</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Minimal Footer -->
+    <footer class="minimal-footer">
+      <div>Built independently by <a href="https://github.com/itskaero" target="_blank">@itskaero</a></div>
+      <div>Data from official PHF merit lists &amp; gazette notifications</div>
+    </footer>
   </div>
-</div>
 
-<footer>
-  Built by <a href="https://github.com/itskaero" target="_blank" style="color:rgba(124,144,172,.4);text-decoration:none;">@itskaero</a>
-</footer>
+  <!-- App Shell (Shown for authenticated views) -->
+  <div id="appShell" class="app-shell hidden">
+    <!-- Mobile header with hamburger toggle -->
+    <header class="site-header">
+      <div class="mobile-logo-area">
+        <img src="logo.svg" alt="MeritNama logo">
+        <h1>MeritNama</h1>
+      </div>
+      <button class="hamburger-btn" id="sidebarToggle" aria-label="Toggle navigation menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </header>
 
-<script>
-(function(){
-  try{
-    var raw = localStorage.getItem('meritnama_auth_session');
-    if(raw){
-      var s = JSON.parse(raw);
-      if(s && s.email && typeof s.ts === 'number' && (Date.now() - s.ts) < 86400000){
-        window.location.replace('app.html');
-        return;
-      }
-    }
-  }catch(e){}
-})();
-</script>
+    <!-- Navigation Sidebar -->
+    <nav id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <img src="logo.svg" class="sidebar-logo" alt="MeritNama logo">
+        <div class="sidebar-brand-text">Merit<span>Nama</span></div>
+      </div>
 
-<script>
-(function(){
-  var hero=document.getElementById('hero'),video=document.getElementById('heroVideo'),canvas=document.getElementById('heroCanvas'),soundBtn=document.getElementById('soundToggle');
-  if(!hero)return;
-  var animId;
+      <div class="sidebar-scroll">
+        <!-- Analytics Section -->
+        <div class="sidebar-group">
+          <div class="sidebar-label">Analytics</div>
+          <a href="#/analytics/merit-table" class="sidebar-item active" data-route="/analytics/merit-table">
+            <i class="ph ph-chart-bar"></i>
+            <span>Merit Table</span>
+          </a>
+          <a href="#/analytics/prediction" class="sidebar-item" data-route="/analytics/prediction">
+            <i class="ph ph-target"></i>
+            <span>My Prediction</span>
+          </a>
+          <a href="#/analytics/what-do-i-need" class="sidebar-item" data-route="/analytics/what-do-i-need">
+            <i class="ph ph-magnifying-glass"></i>
+            <span>What Do I Need</span>
+          </a>
+          <a href="#/analytics/calculator" class="sidebar-item" data-route="/analytics/calculator">
+            <i class="ph ph-calculator"></i>
+            <span>Calculator</span>
+          </a>
+          <a href="#/analytics/compare" class="sidebar-item" data-route="/analytics/compare">
+            <i class="ph ph-scales"></i>
+            <span>Compare</span>
+          </a>
+          <a href="#/analytics/merit-lists" class="sidebar-item" data-route="/analytics/merit-lists">
+            <i class="ph ph-list-bullets"></i>
+            <span>Merit Lists</span>
+          </a>
+          <a href="#/analytics/jobs" class="sidebar-item" data-route="/analytics/jobs">
+            <i class="ph ph-briefcase"></i>
+            <span>Jobs</span>
+          </a>
+          <a href="#/analytics/policy" class="sidebar-item" data-route="/analytics/policy">
+            <i class="ph ph-file-text"></i>
+            <span>Policy</span>
+          </a>
+        </div>
 
-  // ── Canvas animation ──
-  function startCanvas(){
-    if(!canvas)return;
-    var ctx=canvas.getContext('2d'); var W,H;
-    var blobs=[
-      {cx:.3,cy:.25,r:.45,r2:.35,c:'47,227,154',sp:.11,ph:0},
-      {cx:.7,cy:.6, r:.38,r2:.3, c:'77,184,217',sp:.08,ph:1.8},
-      {cx:.5,cy:.8, r:.32,r2:.28,c:'124,101,196',sp:.06,ph:3.2},
-      {cx:.2,cy:.7, r:.28,r2:.22,c:'47,227,154',sp:.09,ph:4.5},
-      {cx:.8,cy:.3, r:.35,r2:.25,c:'77,184,217',sp:.07,ph:2.3},
-    ];
-    var n=40,ps=[],bc=14,bh=[];
-    function rz(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
-    rz(); window.addEventListener('resize',rz);
-    for(var i=0;i<n;i++) ps.push({x:Math.random()*2000-200,y:Math.random()*1200-100,vx:(Math.random()-.5)*.08,vy:(Math.random()-.5)*.08-.02,r:1+Math.random()*2,a:.02+Math.random()*.06});
-    for(var i=0;i<bc;i++) bh.push(.2+Math.random()*.6);
-    function draw(t){
-      var g=ctx.createLinearGradient(0,0,0,H);
-      g.addColorStop(0,'#04060c');g.addColorStop(.25,'#080f1a');g.addColorStop(.55,'#0c1a2e');g.addColorStop(.8,'#0a1424');g.addColorStop(1,'#04060c');
-      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-      var o=(t*.12)%80; ctx.strokeStyle='rgba(77,184,217,.025)';ctx.lineWidth=1;
-      for(var x=o-80;x<W+80;x+=80){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-      for(var y=o-80;y<H+80;y+=80){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-      var bw=8,ga=16,tw=bc*(bw+ga)-ga,sx=(W-tw)/2,by=H*.85,mh=H*.18;
-      for(var i=0;i<bc;i++){var h=bh[i]*mh*(.7+.3*Math.sin(t*.04+i*.9)),x=sx+i*(bw+ga),y=by-h;ctx.beginPath();ctx.roundRect(x,y,bw,h,3);ctx.fillStyle='rgba(47,227,154,'+(.08+.06*Math.sin(t*.03+i*.7))+')';ctx.fill();}
-      for(var b of blobs){var dx=Math.sin(t*b.sp+b.ph)*.08,dy=Math.cos(t*b.sp*.7+b.ph+1)*.06,cx=(b.cx+dx)*W,cy=(b.cy+dy)*H,rx=b.r*Math.min(W,H),ry=b.r2*Math.min(W,H),g2=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(rx,ry));g2.addColorStop(0,'rgba('+b.c+',.12)');g2.addColorStop(.5,'rgba('+b.c+',.05)');g2.addColorStop(1,'rgba('+b.c+',0)');ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.fillStyle=g2;ctx.fill();}
-      for(var p of ps){p.x+=p.vx;p.y+=p.vy;if(p.x<-100)p.x=W+100;if(p.x>W+100)p.x=-100;if(p.y<-100)p.y=H+100;if(p.y>H+100)p.y=-100;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(77,184,217,'+p.a+')';ctx.fill();}
-    }
-    function loop(n){draw(n/1000);animId=requestAnimationFrame(loop);}
-    loop(0);
-  }
+        <!-- Explore Section -->
+        <div class="sidebar-group">
+          <div class="sidebar-label">Explore</div>
+          <a href="#/simulation" class="sidebar-item" data-route="/simulation">
+            <i class="ph ph-game-controller"></i>
+            <span>Simulation</span>
+          </a>
+          <a href="#/profile" class="sidebar-item" data-route="/profile">
+            <i class="ph ph-user"></i>
+            <span>My Profile</span>
+          </a>
+          <a href="#/hospitals" class="sidebar-item" data-route="/hospitals">
+            <i class="ph ph-buildings"></i>
+            <span>Hospitals</span>
+          </a>
+          <a href="#/analytics/accreditation" class="sidebar-item" data-route="/analytics/accreditation">
+            <i class="ph ph-check-circle"></i>
+            <span>Accreditation</span>
+          </a>
+          <a href="#/reviews" class="sidebar-item" data-route="/reviews">
+            <i class="ph ph-chat-circle"></i>
+            <span>Discussion</span>
+          </a>
+        </div>
 
-  // ── Mode switching ──
-  function useCanvas(){
-    hero.classList.remove('video-mode');
-    hero.classList.add('canvas-mode');
-    if(video){video.pause();}
-    startCanvas();
-  }
-  function useVideo(){
-    hero.classList.remove('canvas-mode');
-    hero.classList.add('video-mode');
-    if(animId){cancelAnimationFrame(animId);animId=null;}
-    if(video) video.play().catch(function(){useCanvas();});
-  }
+        <!-- Support Section -->
+        <div class="sidebar-group">
+          <div class="sidebar-label">Support</div>
+          <a href="#/donate" class="sidebar-item" data-route="/donate">
+            <i class="ph ph-heart"></i>
+            <span>Donate</span>
+          </a>
+          <a href="#/analytics/guide" class="sidebar-item" data-route="/analytics/guide">
+            <i class="ph ph-question"></i>
+            <span>Guide</span>
+          </a>
+        </div>
+      </div>
 
-  // ── Network-aware boot ──
-  var conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
-  var isSlow=conn&&(conn.effectiveType==='slow-2g'||conn.effectiveType==='2g'||conn.effectiveType==='3g');
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <button class="sidebar-theme-toggle" id="themeToggle" aria-label="Toggle between dark and light mode">
+          <span>Theme Mode</span>
+          <i class="ph ph-sun" id="themeToggleIcon"></i>
+        </button>
+        <button class="sidebar-user" id="sidebarUserBtn">
+          <span class="sidebar-user-avatar" id="sidebarAvatar">?</span>
+          <div class="sidebar-user-info">
+            <span class="sidebar-user-name" id="sidebarUserName">Loading…</span>
+            <span class="sidebar-user-sub">Click to Sign Out</span>
+          </div>
+        </button>
+      </div>
+    </nav>
 
-  if(isSlow||!video){
-    useCanvas();
-  }else{
-    useCanvas(); // start with canvas, upgrade to video if it loads fast
-    var upgradeTimer=null;
-    var onReady=function(){
-      if(upgradeTimer){clearTimeout(upgradeTimer);upgradeTimer=null;}
-      useVideo();
-    };
-    video.addEventListener('canplay',onReady,{once:true});
-    video.addEventListener('error',function(){if(upgradeTimer){clearTimeout(upgradeTimer);upgradeTimer=null;}},{once:true});
-    upgradeTimer=setTimeout(function(){upgradeTimer=null;},4000);
-  }
+    <!-- SPA Main Content Area -->
+    <main id="mainContent" class="main-content">
+      <!-- Route views will be rendered here dynamically -->
+    </main>
+  </div>
 
-  // ── Sound toggle ──
-  if(soundBtn&&video){
-    soundBtn.addEventListener('click',function(){
-      video.muted=!video.muted;
-      soundBtn.textContent=video.muted?'🔇':'🔊';
-    });
-  }
-
-  // ── Logout button ──
-  var logoutBtn=document.getElementById('logoutBtn');
-  if(logoutBtn){
-    try{var _s=JSON.parse(localStorage.getItem('meritnama_auth_session'));if(_s&&_s.email)logoutBtn.style.display='block';}catch(_e){}
-    logoutBtn.addEventListener('click',function(){
-      localStorage.removeItem('meritnama_auth_session');
-      window.location.reload();
-    });
-  }
-
-  // ── Drawer toggle ──
-  var btn=document.getElementById('exploreBtn'),drawer=document.getElementById('drawer'),close=document.getElementById('drawerClose');
-  if(btn&&drawer&&close){
-    btn.addEventListener('click',function(){drawer.classList.add('open');});
-    close.addEventListener('click',function(){drawer.classList.remove('open');});
-    drawer.addEventListener('click',function(e){if(e.target===drawer)drawer.classList.remove('open');});
-  }
-})();
-</script>
+  <!-- Global scripts -->
+  <script src="router.js"></script>
+  <script src="auth.js"></script>
+  <script src="charts.js"></script>
+  <script src="app.js"></script>
+  <script src="js/app-phase2.js"></script>
+  <script src="js/app-phase3.js"></script>
+  
+  <!-- Non-blocking background features -->
+  <script src="screenshot-guard.js" defer></script>
+  <script src="presence.js" defer></script>
 </body>
 </html>
