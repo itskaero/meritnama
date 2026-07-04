@@ -47,6 +47,7 @@
   let candidatesMap = {};        // applicantId → candidate object
   let specialtyNameToId = {};    // lowercase name → specialty id (from disciplineFullData.json)
   let certificatesData = {};     // applicantId → cert[] from induction21_certificates.json
+  let showSimMatch = false;      // toggled via Firestore notifications/sim_match_config.enabled
 
   function consentFile() {
     return 'data/induction21_consent_round' + currentRound + '.json';
@@ -270,6 +271,29 @@
       if (merritListActive) updateMeta();
     }, err => {
       console.warn('[MeritList] consent_round Firestore error, using round', currentRound);
+    });
+
+    db.collection('notifications').doc('sim_match_config').onSnapshot(snap => {
+      const enabled = snap.exists ? snap.data().enabled === true : false;
+      if (enabled !== showSimMatch) {
+        showSimMatch = enabled;
+        if (merritListActive && meritData.length) {
+          if (showSimMatch) {
+            autoRunSimulations();
+          }
+          renderTable();
+          updateMeta();
+        }
+      }
+    }, err => {
+      console.warn('[MeritList] sim_match_config Firestore error, defaulting to off');
+      if (showSimMatch) {
+        showSimMatch = false;
+        if (merritListActive && meritData.length) {
+          renderTable();
+          updateMeta();
+        }
+      }
     });
   }
 
@@ -546,18 +570,17 @@
               <th>Specialty</th>
               <th>Hospital</th>
               <th>Pref</th>
-              <th>Sim</th>
+              <th id="mlSimTh" style="display:${showSimMatch ? '' : 'none'};">Sim</th>
               <th>Consent</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody id="mlBody">
-            <tr><td colspan="13" style="text-align:center;padding:2rem;color:var(--text-muted);">Loading&hellip;</td></tr>
+            <tr><td id="mlEmptyColspan" colspan="${showSimMatch ? 13 : 12}" style="text-align:center;padding:2rem;color:var(--text-muted);">Loading&hellip;</td></tr>
           </tbody>
         </table>
       </div>
-      <p id="mlCaption" class="table-caption"></p>
-      <p id="mlNextNote" style="margin:0.5rem 0 0;font-size:0.75rem;color:var(--text-muted);line-height:1.4;">Use the <strong>Next in line</strong> button on any non-consented row to see the replacement queue. For a deeper view, open <strong>Where Merit Falls</strong> and pick all four dropdowns (program + quota + specialty + hospital) — the same candidate may appear in replacement queues across multiple slots for the same specialty/program.</p>`;
+      <p id="mlCaption" class="table-caption"></p>`;
 
     document.getElementById('mlProgram')?.addEventListener('change', applyFilters);
     document.getElementById('mlSpecialty')?.addEventListener('change', applyFilters);
@@ -569,8 +592,10 @@
 
     updateMeta();
     applyFilters();
-    buildSimMatch();
-    setTimeout(autoRunSimulations, 200);
+    if (showSimMatch) {
+      buildSimMatch();
+      setTimeout(autoRunSimulations, 200);
+    }
   }
 
   // —”€—”€ Meta —”€—”€
@@ -604,9 +629,18 @@
         <div><span class="cur-meta-lbl" style="color:var(--neon-pink);">Dropped-out</span><span class="cur-meta-val">${dropped.toLocaleString()}</span></div>
         <div><span class="cur-meta-lbl" style="color:var(--neon-gold);">Awaited</span><span class="cur-meta-val">${awaited.toLocaleString()}</span></div>
         ${seatsData ? `<div><span class="cur-meta-lbl">Seats</span><span class="cur-meta-val">${seatsData.length} slots</span></div>` : ''}
-        <div><span class="cur-meta-lbl">Sim Accuracy</span><span class="cur-meta-val">${simAccLabel}</span></div>
+        ${showSimMatch ? `<div><span class="cur-meta-lbl">Sim Accuracy</span><span class="cur-meta-val">${simAccLabel}</span></div>` : ''}
         <div><span class="cur-meta-lbl">Merit File</span><span class="cur-meta-val" style="font-family:var(--mono);font-size:0.72rem;color:var(--neon-cyan);">${meritLabel}</span></div>
         <div><span class="cur-meta-lbl">Consent File</span><span class="cur-meta-val" style="font-family:var(--mono);font-size:0.72rem;color:var(--neon-pink);">Round ${currentRound}${consentAt}</span></div>
+      </div>
+      <div class="cur-meta-note" style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);font-size:0.75rem;line-height:1.5;color:var(--text-muted);">
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;">
+          <span><span style="color:var(--neon-green);font-weight:700;">&#9679; Accepted</span> — consented to this slot</span>
+          <span><span style="color:var(--neon-pink);font-weight:700;">&#9679; Dropped Out</span> — consented to another slot</span>
+          <span><span style="color:var(--neon-red);font-weight:700;">&#9679; Excluded</span> — rejected / manually excluded</span>
+          <span><span style="color:var(--neon-gold);font-weight:700;">&#9679; Awaited</span> — awaiting decision</span>
+        </div>
+        <div>Click <strong>Next in line</strong> on any non-consented row to see the replacement queue. In <strong>Where Merit Falls</strong>, select all four dropdowns for a complete view — the same candidate may appear as next-in-line across multiple slots. If one candidate occupies multiple vacant slots, you can <strong>pass</strong> to the next candidate for that slot.</div>
       </div>`;
   }
 
@@ -804,12 +838,17 @@
     const countEl = document.getElementById('mlCount');
     if (!tbody) return;
 
+    const colCount = showSimMatch ? 13 : 12;
     if (!filteredData.length) {
-      tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:2rem;color:var(--text-muted);">No entries match filters.</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;padding:2rem;color:var(--text-muted);">No entries match filters.</td></tr>`;
       if (caption) caption.textContent = '';
       if (countEl) countEl.textContent = '0 entries';
       return;
     }
+
+    // Toggle sim header column visibility
+    const simTh = document.getElementById('mlSimTh');
+    if (simTh) simTh.style.display = showSimMatch ? '' : 'none';
 
     const rows = [];
     for (const d of filteredData) {
@@ -830,12 +869,16 @@
         ? '<span style="color:var(--neon-green);font-weight:700;font-size:0.85rem;" title="Candidate listed this slot in preferences">&#10003;</span>'
         : '<span style="color:var(--neon-red);font-size:0.8rem;" title="Candidate did not list this slot or no data">&ndash;</span>';
 
-      const simResult = simMatchForSlot(program, quota, specialty, hospital, applicantId);
-      const simBadge = simResult === true
-        ? '<span class="ml-sim-match yes">&#9679; Sim</span>'
-        : simResult === false
-        ? '<span class="ml-sim-match no">&#9679; Sim</span>'
-        : '<span style="color:var(--text-muted);font-size:0.65rem;">—</span>';
+      const simBadge = showSimMatch
+        ? (() => {
+            const r = simMatchForSlot(program, quota, specialty, hospital, applicantId);
+            return r === true
+              ? '<span class="ml-sim-match yes">&#9679; Sim</span>'
+              : r === false
+              ? '<span class="ml-sim-match no">&#9679; Sim</span>'
+              : '<span style="color:var(--text-muted);font-size:0.65rem;">—</span>';
+          })()
+        : '';
 
       const consentVal = getRowConsentVal(d);
       const consentBadge = getConsentBadge(consentVal);
@@ -854,7 +897,7 @@
         <td style="font-size:0.8rem;">${esc(specialty)}</td>
         <td style="font-size:0.8rem;">${esc(hospital)}</td>
         <td style="text-align:center;font-family:var(--mono);font-size:0.82rem;color:var(--text-muted);">${prefDisplay} ${prefIcon}</td>
-        <td style="text-align:center;font-size:0.75rem;">${simBadge}</td>
+        ${showSimMatch ? `<td style="text-align:center;font-size:0.75rem;">${simBadge}</td>` : ''}
         <td>${consentBadge}</td>
         <td>${actionButtons(d)}</td>
       </tr>`);
@@ -874,7 +917,7 @@
           <td style="color:var(--neon-green);font-size:0.78rem;">${esc(specialty)}</td>
           <td style="color:var(--neon-green);font-size:0.78rem;">${esc(hospital)}</td>
           <td style="color:var(--neon-green);font-size:0.78rem;text-align:center;">${c.preferenceNo != null ? c.preferenceNo : '?'}</td>
-          <td></td>
+          ${showSimMatch ? '<td></td>' : ''}
           <td><span style="background:rgba(62,207,142,0.1);color:var(--neon-green);padding:2px 8px;border-radius:100px;font-size:0.7rem;">Next in line</span></td>
           <td></td>
         </tr>`);
