@@ -40,6 +40,7 @@
   let noConsentIds = new Set();              // locally overridden as no-consent
   let globallyPlacedAids = new Set();        // aids that have been 'placed' as next-in-line for any slot — excludes them from all other replacement lists (like simulation pass logic)
   let chainState = {};                       // { [removedId]: { candidates: [...] } }
+  let replacementLog = [];                   // [{ fromAid, fromName, toAid, toName, slot, source, ts }]
 
   let seatsData = null;
   let currentRound = 1;
@@ -574,6 +575,114 @@
         .ml-sim-match { display:inline-flex;padding:1px 5px;border-radius:4px;font-size:0.6rem;font-weight:700; }
         .ml-sim-match.yes { background:rgba(62,207,142,0.1);color:var(--neon-green); }
         .ml-sim-match.no { background:rgba(220,60,60,0.1);color:var(--neon-red); }
+
+        /* ── layout + replacement sidebar ── */
+        .ml-layout { display:flex;gap:16px;align-items:flex-start; }
+        .ml-main { flex:1;min-width:0; }
+        .ml-replace-sidebar {
+          width:300px;flex-shrink:0;position:sticky;top:12px;max-height:calc(100vh - 80px);
+          background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
+          display:flex;flex-direction:column;overflow:hidden;
+        }
+        .ml-replace-sidebar-head {
+          padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);
+          display:flex;align-items:center;justify-content:space-between;gap:8px;
+        }
+        .ml-replace-sidebar-head h3 { margin:0;font-size:0.88rem; }
+        .ml-replace-count {
+          font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:100px;
+          background:rgba(77,184,217,0.12);color:var(--neon-cyan);
+        }
+        .ml-replace-list { flex:1;overflow-y:auto;padding:8px; }
+        .ml-replace-empty { padding:1.5rem 1rem;text-align:center;font-size:0.78rem;color:var(--text-muted); }
+        .ml-replace-item {
+          padding:10px;border-radius:8px;margin-bottom:8px;
+          background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+          font-size:0.76rem;line-height:1.45;
+        }
+        .ml-replace-item:last-child { margin-bottom:0; }
+        .ml-replace-slot { font-size:0.68rem;color:var(--text-muted);margin-bottom:6px; }
+        .ml-replace-flow { display:flex;flex-direction:column;gap:4px; }
+        .ml-replace-from { color:var(--neon-red);text-decoration:line-through;opacity:0.85; }
+        .ml-replace-arrow { color:var(--text-muted);font-size:0.62rem;letter-spacing:0.04em; }
+        .ml-replace-to { color:var(--neon-green);font-weight:600; }
+        .ml-replace-meta { margin-top:6px;font-size:0.62rem;color:var(--text-muted); }
+        .ml-sidebar-toggle {
+          display:none;position:fixed;bottom:18px;right:18px;z-index:900;
+          padding:10px 16px;border-radius:100px;border:none;cursor:pointer;
+          background:var(--neon-cyan);color:#000;font-weight:700;font-size:0.82rem;
+          box-shadow:0 4px 20px rgba(0,0,0,0.4);
+        }
+        @media (max-width:960px) {
+          .ml-layout { flex-direction:column; }
+          .ml-replace-sidebar {
+            position:fixed;top:0;right:0;bottom:0;width:min(92vw,340px);max-height:none;
+            z-index:950;transform:translateX(105%);transition:transform 0.22s ease;
+            box-shadow:-8px 0 32px rgba(0,0,0,0.45);
+          }
+          .ml-replace-sidebar.ml-sidebar-open { transform:translateX(0); }
+          .ml-replace-sidebar-head #mlSidebarClose { display:block !important; }
+          .ml-sidebar-backdrop {
+            display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:940;
+          }
+          .ml-sidebar-backdrop.ml-sidebar-open { display:block; }
+          .ml-sidebar-toggle { display:block; }
+        }
+
+        /* ── seat sections inside cards ── */
+        .ml-occupants-section { }
+        .ml-section-label {
+          display:flex;align-items:center;gap:6px;padding:5px 10px 3px;
+          font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;
+          color:var(--text-muted);
+        }
+        .ml-section-label.occupants { color:var(--neon-green); }
+        .ml-section-label.vacated { color:var(--neon-red); }
+        .ml-section-label.awaiting { color:var(--neon-gold); }
+        .ml-vacated-section { border-top:1px dashed rgba(220,60,60,0.18);margin-top:6px;padding-top:4px; }
+        .ml-vacated-header { display:flex;align-items:center;gap:6px;padding:4px 10px;font-size:0.62rem;font-weight:600;color:var(--neon-red);text-transform:uppercase;letter-spacing:0.04em; }
+        #mlGrid .ml-row-vacated { opacity:0.72;background:rgba(220,60,60,0.04);pointer-events:auto; }
+        #mlGrid .ml-row-vacated .sim-row-name { text-decoration:line-through;opacity:0.75; }
+        #mlGrid .ml-row-vacated .ml-state-pill { opacity:0.8; }
+        .ml-empty-seat {
+          margin:4px 10px 8px;padding:8px 10px;border-radius:6px;
+          border:1px dashed rgba(220,60,60,0.25);background:rgba(220,60,60,0.04);
+          font-size:0.72rem;color:var(--neon-red);
+        }
+
+        /* ── conflict modal (mobile-friendly) ── */
+        .ml-conflict-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;max-height:50vh;overflow-y:auto;padding:2px; }
+        .ml-conflict-card {
+          padding:12px;border-radius:10px;background:rgba(255,255,255,0.03);
+          border:1px solid rgba(255,255,255,0.08);
+        }
+        .ml-conflict-name { font-weight:700;font-size:0.84rem;margin-bottom:8px; }
+        .ml-conflict-id { font-family:var(--mono);font-size:0.72rem;color:var(--text-muted);font-weight:400; }
+        .ml-conflict-row { margin-bottom:6px; }
+        .ml-conflict-lbl { font-size:0.62rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-muted);margin-bottom:4px; }
+        .ml-conflict-chips { display:flex;flex-wrap:wrap;gap:4px; }
+        .ml-chip { display:inline-block;padding:2px 8px;border-radius:100px;font-size:0.68rem;font-weight:600; }
+        .ml-chip-green { background:rgba(62,207,142,0.12);color:var(--neon-green);border:1px solid rgba(62,207,142,0.2); }
+        .ml-chip-gold { background:rgba(232,166,39,0.12);color:var(--neon-gold);border:1px solid rgba(232,166,39,0.2); }
+        .ml-modal-footer { display:flex;gap:10px;margin-top:1.25rem;justify-content:flex-end;flex-wrap:wrap; }
+        @media (max-width:520px) {
+          .ml-conflict-grid { grid-template-columns:1fr;max-height:55vh; }
+          .ml-modal-footer { flex-direction:column-reverse; }
+          .ml-modal-footer .btn { width:100%;text-align:center; }
+        }
+
+        /* ── simulation results timeline ── */
+        .ml-sim-timeline { display:flex;flex-direction:column;gap:10px; }
+        .ml-sim-step {
+          padding:12px;border-radius:10px;background:rgba(255,255,255,0.03);
+          border:1px solid rgba(255,255,255,0.07);border-left:3px solid var(--neon-green);
+        }
+        .ml-sim-step.cascade { border-left-color:var(--neon-cyan);margin-left:16px; }
+        .ml-sim-step-slot { font-size:0.72rem;color:var(--text-muted);margin-bottom:6px; }
+        .ml-sim-step-flow { display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:0.8rem; }
+        .ml-sim-step-from { color:var(--neon-red);text-decoration:line-through; }
+        .ml-sim-step-arrow { color:var(--text-muted); }
+        .ml-sim-step-to { color:var(--neon-green);font-weight:700; }
       </style>
       <div class="section-header">
         <h2>Merit List — Round ${currentRound}</h2>
@@ -629,18 +738,35 @@
         </div>
       </div>
 
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
-        <span id="mlCount" style="font-size:0.82rem;color:var(--text-muted);">${meritData.length.toLocaleString()} entries</span>
-        <span style="font-size:0.72rem;color:var(--text-muted);padding:6px 0;">Click a pill to toggle: <span style="color:var(--neon-green);">Accepted</span> → <span style="color:var(--neon-red);">Excluded</span> → <span style="color:var(--neon-gold);">Awaited</span></span>
-        <button id="mlSimNextRoundBtn" class="btn btn-primary btn-large" style="font-size:0.85rem;padding:8px 20px;">&#8635; Simulate Next Round</button>
-        <button id="mlRestoreBtn" style="font-size:0.82rem;padding:6px 14px;background:rgba(245,200,66,0.12);color:#f5c842;border:1px solid rgba(245,200,66,0.28);border-radius:8px;cursor:pointer;">&#8635; Restore Initial Consent</button>
-        <span id="mlStatus" style="font-size:0.78rem;color:var(--text-muted);"></span>
-      </div>
+      <div class="ml-layout">
+        <div class="ml-main">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+            <span id="mlCount" style="font-size:0.82rem;color:var(--text-muted);">${meritData.length.toLocaleString()} entries</span>
+            <span style="font-size:0.72rem;color:var(--text-muted);padding:6px 0;">Click a pill to toggle: <span style="color:var(--neon-green);">Accepted</span> → <span style="color:var(--neon-red);">Excluded</span> → <span style="color:var(--neon-gold);">Awaited</span></span>
+            <button id="mlSimNextRoundBtn" class="btn btn-primary btn-large" style="font-size:0.85rem;padding:8px 20px;">&#8635; Simulate Next Round</button>
+            <button id="mlRestoreBtn" style="font-size:0.82rem;padding:6px 14px;background:rgba(245,200,66,0.12);color:#f5c842;border:1px solid rgba(245,200,66,0.28);border-radius:8px;cursor:pointer;">&#8635; Restore Initial Consent</button>
+            <span id="mlStatus" style="font-size:0.78rem;color:var(--text-muted);"></span>
+          </div>
 
-      <div id="mlGrid" class="sim-grid">
-        <div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted);">Loading&hellip;</div>
+          <div id="mlGrid" class="sim-grid">
+            <div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted);">Loading&hellip;</div>
+          </div>
+          <p id="mlCaption" class="table-caption"></p>
+        </div>
+
+        <div id="mlSidebarBackdrop" class="ml-sidebar-backdrop" aria-hidden="true"></div>
+        <aside id="mlReplaceSidebar" class="ml-replace-sidebar" aria-label="Replacement history">
+          <div class="ml-replace-sidebar-head">
+            <h3>Replacements</h3>
+            <span id="mlReplaceCount" class="ml-replace-count">0</span>
+            <button id="mlSidebarClose" type="button" aria-label="Close sidebar" style="display:none;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.1rem;padding:0 4px;">&times;</button>
+          </div>
+          <div id="mlReplaceList" class="ml-replace-list">
+            <div class="ml-replace-empty">No replacements yet.<br>Exclude a candidate or run simulation to track who replaces whom.</div>
+          </div>
+        </aside>
       </div>
-      <p id="mlCaption" class="table-caption"></p>`;
+      <button id="mlSidebarToggle" type="button" class="ml-sidebar-toggle" aria-label="Open replacement history">&#8644; Replacements</button>`;
 
     document.getElementById('mlProgram')?.addEventListener('change', applyFilters);
     document.getElementById('mlSpecialty')?.addEventListener('change', applyFilters);
@@ -650,6 +776,7 @@
     document.getElementById('mlConsent')?.addEventListener('change', applyFilters);
     document.getElementById('mlRestoreBtn')?.addEventListener('click', restoreInitial);
     document.getElementById('mlSimNextRoundBtn')?.addEventListener('click', mlSimulateNextRound);
+    setupReplacementSidebar();
 
     updateMeta();
     applyFilters();
@@ -701,7 +828,7 @@
           <span><span style="color:var(--neon-red);font-weight:700;">&#9679; Excluded</span> — rejected / manually excluded</span>
           <span><span style="color:var(--neon-gold);font-weight:700;">&#9679; Awaited</span> — awaiting decision</span>
         </div>
-        <div>Toggle <strong>Exclude</strong> mode then click any unconsented candidate to remove them and start a replacement chain. Click any candidate (mode off) for details. <strong>Pass</strong> to assign the first replacement (globally removed from all queues). <strong>Where Merit Falls</strong> shows the full ranked queue per slot.</div>
+        <div>Each card shows <strong>seat holders</strong> separately from <strong>vacated</strong> (excluded) slots. Vacated rows are struck through and show the next-in-line candidate below. Use <strong>Simulate Next Round</strong> to batch-fill vacancies. The <strong>Replacements</strong> sidebar tracks who replaced whom. <strong>Where Merit Falls</strong> shows the full ranked queue per slot.</div>
       </div>`;
   }
 
@@ -888,6 +1015,102 @@
     renderMeritGrid();
   }
 
+  // —”€—”€ Grid helpers —”€—”€
+
+  function entryIsReplacedOriginal(d) {
+    if (d.isSimulatedOccupant) return false;
+    const aid = String(fval(d, 'applicantId'));
+    return meritData.some(m =>
+      m.isSimulatedOccupant && m.replacedAid === aid && m.rowNo === d.rowNo
+    );
+  }
+
+  function entryIsActiveOccupant(d) {
+    if (d.isSimulatedOccupant) return true;
+    return getRowConsentVal(d) === 'Accepted';
+  }
+
+  function formatSlotShort(program, quota, specialty, hospital) {
+    return `${specialty || '?'} @ ${hospital || '?'} (${program || '?'}, ${quota || '?'})`;
+  }
+
+  function logReplacement({ fromAid, fromName, toAid, toName, program, q, s, h, source }) {
+    replacementLog.unshift({
+      fromAid: String(fromAid),
+      fromName: fromName || '—',
+      toAid: String(toAid),
+      toName: toName || '—',
+      slot: formatSlotShort(program, q, s, h),
+      program, q, s, h,
+      source: source || 'pass',
+      ts: Date.now(),
+    });
+    renderReplacementSidebar();
+    maybeOpenReplacementSidebar();
+  }
+
+  function setupReplacementSidebar() {
+    const sidebar = document.getElementById('mlReplaceSidebar');
+    const backdrop = document.getElementById('mlSidebarBackdrop');
+    const toggle = document.getElementById('mlSidebarToggle');
+    const closeBtn = document.getElementById('mlSidebarClose');
+    if (!sidebar) return;
+
+    const isMobile = () => window.matchMedia('(max-width:960px)').matches;
+
+    function openSidebar() {
+      sidebar.classList.add('ml-sidebar-open');
+      backdrop?.classList.add('ml-sidebar-open');
+      if (closeBtn) closeBtn.style.display = isMobile() ? 'block' : 'none';
+    }
+    function closeSidebar() {
+      sidebar.classList.remove('ml-sidebar-open');
+      backdrop?.classList.remove('ml-sidebar-open');
+    }
+
+    toggle?.addEventListener('click', openSidebar);
+    closeBtn?.addEventListener('click', closeSidebar);
+    backdrop?.addEventListener('click', closeSidebar);
+
+    renderReplacementSidebar();
+  }
+
+  function renderReplacementSidebar() {
+    const listEl = document.getElementById('mlReplaceList');
+    const countEl = document.getElementById('mlReplaceCount');
+    const toggle = document.getElementById('mlSidebarToggle');
+    if (!listEl) return;
+
+    const count = replacementLog.length;
+    if (countEl) countEl.textContent = String(count);
+    if (toggle) toggle.textContent = count ? `\u8644 Replacements (${count})` : '\u8644 Replacements';
+
+    if (!count) {
+      listEl.innerHTML = '<div class="ml-replace-empty">No replacements yet.<br>Exclude a candidate or run simulation to track who replaces whom.</div>';
+      return;
+    }
+
+    listEl.innerHTML = replacementLog.map(item => {
+      const srcLabel = item.source === 'simulate' ? 'Simulated' : item.source === 'pass' ? 'Manual pass' : 'Replacement';
+      const time = new Date(item.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return `<div class="ml-replace-item">
+        <div class="ml-replace-slot">${esc(item.slot)}</div>
+        <div class="ml-replace-flow">
+          <span class="ml-replace-from">#${esc(item.fromAid)} ${esc(item.fromName)}</span>
+          <span class="ml-replace-arrow">\u2193 replaced by</span>
+          <span class="ml-replace-to">#${esc(item.toAid)} ${esc(item.toName)}</span>
+        </div>
+        <div class="ml-replace-meta">${esc(srcLabel)} &middot; ${esc(time)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function maybeOpenReplacementSidebar() {
+    if (!window.matchMedia('(max-width:960px)').matches) return;
+    document.getElementById('mlReplaceSidebar')?.classList.add('ml-sidebar-open');
+    document.getElementById('mlSidebarBackdrop')?.classList.add('ml-sidebar-open');
+  }
+
   // —”€—”€ Grid (simulation-style) —”€—”€
 
   function droppedReasonForEntry(d) {
@@ -937,20 +1160,25 @@
       const specialty = parts[2];
       const hospital = parts[3];
 
-      // Group entries by consent state
-      const accepted = [], dropped = [], others = [];
-      for (const d of entries) {
+      // Group entries by consent state — hide originals already replaced
+      const visibleEntries = entries.filter(d => !entryIsReplacedOriginal(d));
+      const occupants = [], vacated = [], awaited = [], dropped = [];
+      for (const d of visibleEntries) {
         const v = getRowConsentVal(d);
-        if (v === 'Accepted') accepted.push(d);
+        if (entryIsActiveOccupant(d)) occupants.push(d);
         else if (v === 'Excluded-Dropped') dropped.push(d);
-        else others.push(d);
+        else if (v === 'Excluded' || noConsentIds.has(slotKey(d))) vacated.push(d);
+        else awaited.push(d);
       }
 
-      const filled = entries.length;
-      const acceptedCount = accepted.length;
+      const seatCount = visibleEntries.filter(d => getRowConsentVal(d) !== 'Excluded-Dropped').length;
+      const activeCount = occupants.length;
+      const vacatedCount = vacated.length;
 
       // Build rows helper
-      function rowForEntry(d, withToggle) {
+      function rowForEntry(d, opts) {
+        opts = opts || {};
+        const inVacatedSection = !!opts.inVacatedSection;
         const applicantId = fval(d, 'applicantId');
         const name = fval(d, 'nameFull', 'name') || '—';
         const marks = fval(d, 'marksTotal', 'marks');
@@ -966,10 +1194,12 @@
         if (consentVal === 'Accepted') { stateClass = 'ml-row-accepted'; stateLabel = 'Accepted'; }
         else if (consentVal === 'Excluded-Dropped') { stateClass = 'ml-row-dropped'; stateLabel = 'Dropped'; }
         else if (consentVal === 'Excluded') { stateClass = 'ml-row-excluded'; stateLabel = 'Excluded'; }
+        if (inVacatedSection) stateClass += ' ml-row-vacated';
 
         const isSim = d.isSimulatedOccupant === true;
         if (isSim) {
           stateClass += ' ml-row-simulated';
+          stateLabel = 'Simulated';
         }
 
         const simBadge = showSimMatch
@@ -979,13 +1209,9 @@
             })()
           : '';
 
-        const isReplaced = !isSim && meritData.some(m => m.isSimulatedOccupant && m.replacedAid === String(applicantId) && m.rowNo === d.rowNo);
-
         let badgeHtml = '';
         if (isSim) {
           badgeHtml = ` <span class="ml-badge-sim" style="font-size:0.55rem;background:rgba(77,184,217,0.1);color:var(--neon-cyan);padding:1px 5px;border-radius:4px;border:1px solid rgba(77,184,217,0.22);margin-left:6px;font-weight:700;letter-spacing:0.02em;text-transform:uppercase;vertical-align:middle;display:inline-block;">Simulated</span>`;
-        } else if (isReplaced) {
-          badgeHtml = ` <span class="ml-badge-replaced" style="font-size:0.55rem;background:rgba(220,60,60,0.08);color:var(--neon-pink);padding:1px 5px;border-radius:4px;border:1px solid rgba(220,60,60,0.18);margin-left:6px;font-weight:700;letter-spacing:0.02em;text-transform:uppercase;vertical-align:middle;display:inline-block;">Replaced</span>`;
         }
 
         let nameHtml = consentVal === 'Excluded-Dropped'
@@ -996,6 +1222,12 @@
         const isChained = noConsentIds.has(key);
         const chainCount = chain ? chain.candidates.length : 0;
 
+        let pillClass = 'ml-pill-awaiting';
+        if (isSim) pillClass = 'ml-pill-accepted';
+        else if (consentVal === 'Accepted') pillClass = 'ml-pill-accepted';
+        else if (consentVal === 'Excluded-Dropped') pillClass = 'ml-pill-dropped';
+        else if (consentVal === 'Excluded') pillClass = 'ml-pill-excluded';
+
         let rowHtml = `<div class="sim-row ${stateClass}" data-key="${esc(key)}">
           <span class="ml-state-bar"></span>
           <span class="ml-row-id">${esc(String(applicantId || ''))}</span>
@@ -1003,23 +1235,23 @@
           <span class="sim-row-marks">${marksStr}</span>
           <span class="ml-row-pref">${prefDisplay}${slotMatch ? '<span class="ml-pref-ok">&#10003;</span>' : ''}</span>
           ${simBadge ? `<span class="ml-sim-dot">${simBadge}</span>` : ''}
-          <span class="ml-state-pill ${stateClass.replace('ml-row-', 'ml-pill-')}" data-key="${esc(key)}">${stateLabel}</span>
-          ${isChained ? `<span class="ml-chain-badge">&#9879; ${chainCount} in line</span>` : ''}
+          <span class="ml-state-pill ${pillClass}" data-key="${esc(key)}">${stateLabel}</span>
+          ${isChained && !isSim ? `<span class="ml-chain-badge">&#9879; ${chainCount} in line</span>` : ''}
         </div>`;
 
-        // chain rows only for non-dropped (dropped are gone permanently)
-        if (consentVal !== 'Excluded-Dropped') {
+        if (consentVal !== 'Excluded-Dropped' && (inVacatedSection || isChained)) {
           let chainHtml = '';
           if (chain && chain.candidates.length) {
             const nextIdx = chain._nextIdx || 0;
             const c = chain.candidates[nextIdx];
-            const chainKey = slotKeyFor(c.applicantId, program, quota, specialty, hospital);
-            chainHtml = `<div class="sim-next-line ml-next-candidate" data-next-key="${esc(chainKey)}" data-parent-key="${esc(key)}">
+            chainHtml = `<div class="sim-next-line ml-next-candidate" data-next-key="${esc(slotKeyFor(c.applicantId, program, quota, specialty, hospital))}" data-parent-key="${esc(key)}">
               <span class="sim-next-lbl">Next in line:</span>
               <span class="sim-next-name">${esc(c.nameFull || '—')}</span>
               <span class="sim-next-marks">${c.marksTotal != null ? Number(c.marksTotal).toFixed(2) : '—'}</span>
               <span class="sim-row-pref">P${c.preferenceNo != null ? c.preferenceNo : '?'}</span>
             </div>`;
+          } else if (inVacatedSection) {
+            chainHtml = `<div class="ml-empty-seat">Seat vacant — no replacement candidates found</div>`;
           }
           if (chainHtml) {
             rowHtml += `<div class="ml-chain-row" data-parent-key="${esc(key)}">
@@ -1031,39 +1263,61 @@
         return rowHtml;
       }
 
-      // Accepted rows
-      let candRows = accepted.map(d => rowForEntry(d, true)).join('');
+      let candRows = '';
+
+      // Active seat holders
+      if (occupants.length) {
+        candRows += `<div class="ml-occupants-section">
+          <div class="ml-section-label occupants">&#9679; Seat holder${occupants.length !== 1 ? 's' : ''} (${occupants.length})</div>
+          ${occupants.map(d => rowForEntry(d)).join('')}
+        </div>`;
+      }
+
+      // Awaiting decision (still on merit, not yet excluded)
+      if (awaited.length) {
+        candRows += `<div class="ml-awaiting-section">
+          <div class="ml-section-label awaiting">&#9679; Awaiting consent (${awaited.length})</div>
+          ${awaited.map(d => rowForEntry(d)).join('')}
+        </div>`;
+      }
+
+      // Vacated seats — excluded originals with replacement queue
+      if (vacated.length) {
+        candRows += `<div class="ml-vacated-section">
+          <div class="ml-vacated-header">&#9650; Vacated seat${vacated.length !== 1 ? 's' : ''} (${vacated.length}) — not occupying</div>
+          ${vacated.map(d => rowForEntry(d, { inVacatedSection: true })).join('')}
+        </div>`;
+      }
 
       // Dropped-out section
       if (dropped.length) {
         const droppedReason = droppedReasonForEntry(dropped[0]);
         candRows += `<div class="ml-dropped-section">
           <div class="ml-dropped-header">&#9660; Dropped Out${droppedReason ? ' — ' + esc(droppedReason) : ''}</div>
-          ${dropped.map(d => rowForEntry(d, false)).join('')}
+          ${dropped.map(d => rowForEntry(d)).join('')}
         </div>`;
       }
 
-      // Excluded + Awaited rows
-      candRows += others.map(d => rowForEntry(d, true)).join('');
+      if (!candRows) {
+        candRows = `<div class="ml-empty-seat" style="margin:8px 10px;">No visible entries for this slot.</div>`;
+      }
 
-      const allGood = acceptedCount === filled;
+      const allGood = vacatedCount === 0 && activeCount >= seatCount;
       let statusBar = '';
       if (allGood) {
-        statusBar = `<div class="ml-card-status ml-card-status-full">&#10003; ${acceptedCount}/${filled} filled</div>`;
-      } else {
-        let totalNeeded = 0;
+        statusBar = `<div class="ml-card-status ml-card-status-full">&#10003; ${activeCount}/${seatCount} seat${seatCount !== 1 ? 's' : ''} filled</div>`;
+      } else if (vacatedCount) {
         let availReplacements = 0;
-        for (const d of entries) {
+        for (const d of vacated) {
           const k = slotKey(d);
-          if (noConsentIds.has(k)) {
-            totalNeeded++;
-            if (chainState[k]?.candidates?.length) {
-              availReplacements += chainState[k].candidates.length;
-            }
+          if (chainState[k]?.candidates?.length) {
+            availReplacements += chainState[k].candidates.length;
           }
         }
-        const supplyOk = availReplacements >= totalNeeded;
-        statusBar = `<div class="ml-card-status ml-card-status-${supplyOk ? 'ok' : 'warn'}">&#9650; ${totalNeeded} need replacement &middot; ${availReplacements} candidate${availReplacements !== 1 ? 's' : ''} ${supplyOk ? 'available' : 'queued'}</div>`;
+        const supplyOk = availReplacements >= vacatedCount;
+        statusBar = `<div class="ml-card-status ml-card-status-${supplyOk ? 'ok' : 'warn'}">&#9650; ${vacatedCount} vacant seat${vacatedCount !== 1 ? 's' : ''} &middot; ${availReplacements} replacement${availReplacements !== 1 ? 's' : ''} ${supplyOk ? 'available' : 'queued'}</div>`;
+      } else if (awaited.length) {
+        statusBar = `<div class="ml-card-status ml-card-status-ok">&#9679; ${awaited.length} awaiting consent</div>`;
       }
       cards.push(`<div class="sim-card ${allGood ? 'ml-card-ok' : 'ml-card-attn'}" style="position:relative;">
         <div class="sim-card-head">
@@ -1073,8 +1327,8 @@
             <span class="sim-card-meta">${esc(program)} &middot; ${esc(quota)}</span>
           </div>
           <div class="sim-card-badges">
-            <span class="sim-badge ${allGood ? 'badge-full' : 'badge-open'}">${acceptedCount}/${filled}</span>
-            ${!allGood ? '<span class="sim-badge badge-open">pending</span>' : ''}
+            <span class="sim-badge ${allGood ? 'badge-full' : 'badge-open'}">${activeCount}/${seatCount}</span>
+            ${vacatedCount ? `<span class="sim-badge badge-open">${vacatedCount} vacant</span>` : ''}
           </div>
         </div>
         ${statusBar}
@@ -1379,6 +1633,15 @@
       noConsentIds.delete(nextKey);
       consentBySlot[nextKey] = 'Accepted';
       consentBySlot[slotKeyStr] = 'Rejected';
+
+      logReplacement({
+        fromAid: entry.isSimulatedOccupant ? entry.replacedAid : String(entry.applicantId),
+        fromName: fval(entry, 'nameFull', 'name'),
+        toAid: replacementAid,
+        toName: next.nameFull,
+        program, q, s, h,
+        source: 'pass',
+      });
     }
 
     // Cascade: if the placed replacement held a merit position elsewhere,
@@ -1511,6 +1774,7 @@
     userOverrides = {};
     globallyPlacedAids = new Set();
     chainState = {};
+    replacementLog = [];
     meritData = JSON.parse(JSON.stringify(originalMeritData));
     // Re-derive cumulative sets from the raw consent files.
     const cumulative = await buildCumulativeConsentSets(currentRound);
@@ -1518,6 +1782,7 @@
     cumulativeDroppedByProgram = cumulative.droppedByProgram;
     batchAutoChain();
     setStatus('Consent states restored to initial (round ' + currentRound + ').', 'var(--neon-green)');
+    renderReplacementSidebar();
     updateMeta();
     applyFilters();
     buildSimMatch();
@@ -2666,23 +2931,42 @@
     return new Promise(resolve => {
       const overlay = document.createElement('div');
       overlay.className = 'ml-modal-overlay';
-      overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;';
-      const rows = conflicts.map(c =>
-        `<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:0.82rem;">
-          <strong>#${c.aid} ${esc(c.name)}</strong> —
-          Accepted: <span style="color:var(--neon-green);">${c.accepted.join(', ')}</span>,
-          Pending: <span style="color:var(--neon-gold);">${c.pending.join(', ')}</span>
-        </div>`
-      ).join('');
-      overlay.innerHTML = `<div class="ml-modal" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:640px;width:90%;max-height:80vh;overflow-y:auto;">
-        <h2 style="margin:0 0 0.5rem;">⚠ Conflicting Candidates</h2>
-        <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 1rem;">
-          ${conflicts.length} candidate(s) Accepted in one program but pending in another. Proceed with simulation?
-        </p>
-        ${rows}
-        <div style="display:flex;gap:12px;margin-top:1.5rem;justify-content:flex-end;">
+      overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:12px;box-sizing:border-box;';
+
+      const cards = conflicts.map(c => {
+        const acceptedChips = c.accepted.map(p =>
+          `<span class="ml-chip ml-chip-green">${esc(p)}</span>`
+        ).join('');
+        const pendingChips = c.pending.map(p =>
+          `<span class="ml-chip ml-chip-gold">${esc(p)}</span>`
+        ).join('');
+        return `<article class="ml-conflict-card">
+          <div class="ml-conflict-name"><span class="ml-conflict-id">#${esc(c.aid)}</span> ${esc(c.name)}</div>
+          <div class="ml-conflict-row">
+            <div class="ml-conflict-lbl">Accepted in</div>
+            <div class="ml-conflict-chips">${acceptedChips}</div>
+          </div>
+          <div class="ml-conflict-row">
+            <div class="ml-conflict-lbl">Still pending in</div>
+            <div class="ml-conflict-chips">${pendingChips}</div>
+          </div>
+        </article>`;
+      }).join('');
+
+      overlay.innerHTML = `<div class="ml-modal" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:720px;width:100%;max-height:90vh;overflow-y:auto;box-sizing:border-box;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:0.75rem;">
+          <div>
+            <h2 style="margin:0 0 0.35rem;font-size:1.05rem;">Multi-program conflicts</h2>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin:0;">
+              ${conflicts.length} candidate${conflicts.length !== 1 ? 's' : ''} accepted in one program but still pending elsewhere.
+            </p>
+          </div>
+          <span class="ml-replace-count" style="flex-shrink:0;">${conflicts.length}</span>
+        </div>
+        <div class="ml-conflict-grid">${cards}</div>
+        <div class="ml-modal-footer">
           <button class="ml-modal-cancel-btn btn" style="padding:8px 20px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--text);">Cancel</button>
-          <button class="ml-modal-confirm-btn btn btn-primary" style="padding:8px 20px;background:var(--neon-blue);border:none;border-radius:8px;cursor:pointer;color:#fff;font-weight:600;">Proceed</button>
+          <button class="ml-modal-confirm-btn btn btn-primary" style="padding:8px 20px;background:var(--neon-blue);border:none;border-radius:8px;cursor:pointer;color:#fff;font-weight:600;">Proceed anyway</button>
         </div>
       </div>`;
       document.body.appendChild(overlay);
@@ -2696,29 +2980,18 @@
   }
 
   function _renderChain(chain, depth) {
-    // chain = { record, cascades: [chain, ...] }
     const r = chain.record;
-    const indent = '  '.repeat(depth);
     const vacatingPrefStr = r.vacatingPref != null ? 'P' + r.vacatingPref : 'P?';
     const newPrefStr = r.replacement.prefNo != null ? 'P' + r.replacement.prefNo : 'P?';
     const marksStr = r.replacement.marks != null ? Number(r.replacement.marks).toFixed(2) : '—';
-    let html = '<div style="padding:6px 0;' + (depth > 0 ? 'margin-left:' + (depth * 18) + 'px;border-left:2px solid rgba(255,255,255,0.06);padding-left:10px;' : '') + '">';
-    if (depth === 0) {
-      html += '<div style="font-weight:600;font-size:0.82rem;margin-bottom:4px;color:var(--neon-pink);">' +
-              '● Slot vacant: ' + _slotLabel(r.program, r.q, r.s, r.h) +
-              ' (was #' + esc(r.vacatingAid) + ' ' + esc(r.vacatingName) + ', ' + vacatingPrefStr + ')</div>';
-      html += '<div style="font-size:0.78rem;color:var(--neon-green);">' +
-              '  → #' + esc(r.replacement.aid) + ' ' + esc(r.replacement.name) +
-              ' (marks ' + marksStr + ', ' + newPrefStr + ' for this slot)</div>';
-    } else {
-      // Cascade line: this fills the slot vacated by the previous step's replacement.
-      html += '<div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">' +
-              '↓ Cascade: ' + _slotLabel(r.program, r.q, r.s, r.h) +
-              ' vacant because #' + esc(r.vacatingAid) + ' moved up</div>';
-      html += '<div style="font-size:0.78rem;color:var(--neon-green);">' +
-              '  → #' + esc(r.replacement.aid) + ' ' + esc(r.replacement.name) +
-              ' (marks ' + marksStr + ', ' + newPrefStr + ')</div>';
-    }
+    const stepClass = depth > 0 ? 'ml-sim-step cascade' : 'ml-sim-step';
+    let html = `<div class="${stepClass}">`;
+    html += `<div class="ml-sim-step-slot">${depth === 0 ? 'Vacant slot' : 'Cascade'} · ${_slotLabel(r.program, r.q, r.s, r.h)}</div>`;
+    html += `<div class="ml-sim-step-flow">
+      <span class="ml-sim-step-from">#${esc(r.vacatingAid)} ${esc(r.vacatingName)} (${vacatingPrefStr})</span>
+      <span class="ml-sim-step-arrow">\u2192</span>
+      <span class="ml-sim-step-to">#${esc(r.replacement.aid)} ${esc(r.replacement.name)} (${marksStr}, ${newPrefStr})</span>
+    </div>`;
     html += '</div>';
     if (chain.cascades && chain.cascades.length) {
       for (const c of chain.cascades) html += _renderChain(c, depth + 1);
@@ -2744,29 +3017,30 @@
     if (chains.length === 0) {
       summaryHtml = '<div style="text-align:center;padding:2rem;color:var(--text-muted);">No vacant slots to fill.</div>';
     } else {
-      for (const chain of chains) summaryHtml += _renderChain(chain, 0);
+      summaryHtml = chains.map(chain => _renderChain(chain, 0)).join('');
     }
 
     const overlay = document.createElement('div');
     overlay.className = 'ml-modal-overlay';
     overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;';
 
-    overlay.innerHTML = '<div class="ml-modal" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:760px;width:92%;max-height:85vh;overflow-y:auto;">' +
-      '<h2 style="margin:0 0 0.5rem;">Simulate Next Round — Results</h2>' +
+    overlay.innerHTML = '<div class="ml-modal" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:720px;width:100%;max-height:90vh;overflow-y:auto;box-sizing:border-box;">' +
+      '<h2 style="margin:0 0 0.35rem;font-size:1.05rem;">Simulate Next Round</h2>' +
       '<p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 1rem;">' +
         totalReplacements + ' slot(s) filled &middot; ' + totalCascades + ' cascade(s)' +
       '</p>' +
-      '<div style="margin-bottom:1rem;font-size:0.78rem;color:var(--text-muted);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;">' +
-        '<strong>Note:</strong> Applying will mutate in-memory consent state. The original data files are not modified. Use <em>Restore Initial Consent</em> to revert.' +
+      '<div style="margin-bottom:1rem;font-size:0.76rem;color:var(--text-muted);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;">' +
+        'Preview only — applying updates in-memory consent. Use <em>Restore Initial Consent</em> to revert. Replacements are logged in the sidebar.' +
       '</div>' +
-      summaryHtml +
-      '<div style="display:flex;gap:12px;margin-top:1.5rem;justify-content:flex-end;">' +
+      '<div class="ml-sim-timeline">' + summaryHtml + '</div>' +
+      '<div class="ml-modal-footer">' +
         '<button class="ml-modal-cancel-btn btn" style="padding:8px 20px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--text);">Discard</button>' +
         '<button class="ml-modal-apply-btn btn btn-primary" style="padding:8px 20px;background:var(--neon-green);border:none;border-radius:8px;cursor:pointer;color:#000;font-weight:600;">Apply Results</button>' +
       '</div>' +
     '</div>';
 
     document.body.appendChild(overlay);
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:12px;box-sizing:border-box;';
     overlay.querySelector('.ml-modal-cancel-btn').addEventListener('click', () => overlay.remove());
     overlay.querySelector('.ml-modal-apply-btn').addEventListener('click', () => {
       overlay.remove();
@@ -2820,6 +3094,18 @@
         consentBySlot[vacatingSlotKey] = 'Rejected';
         
         globallyPlacedAids.add(replacementAid);
+
+        logReplacement({
+          fromAid: r.vacatingAid,
+          fromName: r.vacatingName,
+          toAid: r.replacement.aid,
+          toName: r.replacement.name,
+          program: r.program,
+          q: r.q,
+          s: r.s,
+          h: r.h,
+          source: 'simulate',
+        });
         changes++;
       }
       
@@ -2833,6 +3119,7 @@
     buildSimMatch();
     applyFilters();
     updateMeta();
+    if (changes) maybeOpenReplacementSidebar();
   }
   // —”€—”€ Start —”€—”€
   // Inject modal animations
