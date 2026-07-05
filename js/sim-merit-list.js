@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 /**
  * Merit List Mode — replaces the Seat Allocation tab with a published
@@ -536,6 +536,7 @@
         #mlGrid .sim-card { transition:border-color 0.15s,box-shadow 0.15s; }
         #mlGrid .ml-card-attn { border-color:rgba(62,207,142,0.25);box-shadow:0 0 12px rgba(62,207,142,0.06); }
         #mlGrid .ml-card-ok   { border-color:rgba(255,255,255,0.06); }
+        #mlGrid.sim-grid { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); }
 
         /* ── exclude mode glow ── */
         #mlGrid.ml-excluding .sim-row:not(.ml-row-accepted):hover { background:rgba(220,60,60,0.10) !important;box-shadow:inset 0 0 0 1px rgba(220,60,60,0.25); }
