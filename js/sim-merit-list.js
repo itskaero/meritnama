@@ -1076,6 +1076,17 @@
         continue;
       }
 
+      // Exclude candidates rejected in profile status (132 overrides 131)
+      const effStatus = getEffectiveProfileStatusForCandidate(c);
+      if (effStatus && Number(effStatus.statusId) === 2) {
+        skipped.push({
+          applicantId: c.applicantId, nameFull: c.nameFull || '',
+          marksTotal: effectiveMarks, preferenceNo: pref.preferenceNo,
+          reason: 'Rejected in profile status'
+        });
+        continue;
+      }
+
       candidates.push({
         applicantId: c.applicantId,
         nameFull: c.nameFull || '',
@@ -1643,6 +1654,10 @@
       // another programme for THIS programme's slot — they're unavailable.
       if (cumulativeRejected.has(aid)) continue;
       if (cumulativeDroppedByProgram.has(aid + '::' + program)) continue;
+
+      // Exclude candidates rejected in profile status (132 overrides 131)
+      const effStatus = getEffectiveProfileStatusForCandidate(c);
+      if (effStatus && Number(effStatus.statusId) === 2) continue;
 
       const bonus = prefBonus(c, pref, program);
       const effectiveMarks = (c.marksTotal || 0) + bonus;

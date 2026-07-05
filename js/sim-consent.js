@@ -173,9 +173,9 @@ function candidateMatchesSimStatusScope(candidate, scope) {
 
 function _candidateMatchesScopeStatus(cand, scope) {
   if (!scope || scope.includeAll) return true;
-  const allStatuses = getAllProfileStatusesForCandidate(cand);
-  if (!allStatuses.length) return false;
-  return allStatuses.some(st => scope.statusIds.includes(Number(st.statusId)));
+  const effective = getEffectiveProfileStatusForCandidate(cand);
+  if (!effective) return false;
+  return scope.statusIds.includes(Number(effective.statusId));
 }
 
 function simulationCandidatePool(program) {
