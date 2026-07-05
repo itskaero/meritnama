@@ -36,7 +36,9 @@
   let cumulativeRejected = new Set();        // Set<aid> rejected in ANY round up to current
   let cumulativeDroppedByProgram = new Set(); // Set<'aid::program'> consented-away-from-this-programme OR rejected, in/by ANY round up to current
   let noConsentIds = new Set();              // locally overridden as no-consent
+  let globallyPlacedAids = new Set();        // aids that have been 'placed' as next-in-line for any slot — excludes them from all other replacement lists (like simulation pass logic)
   let chainState = {};                       // { [removedId]: { candidates: [...] } }
+  let mlExcludeMode = false;                 // toggle: true click excludes, false click opens info modal
   let seatsData = null;
   let currentRound = 1;
   let consentFileUpdatedAt = null;
@@ -281,7 +283,7 @@
           if (showSimMatch) {
             autoRunSimulations();
           }
-          renderTable();
+          renderMeritGrid();
           updateMeta();
         }
       }
@@ -290,7 +292,7 @@
       if (showSimMatch) {
         showSimMatch = false;
         if (merritListActive && meritData.length) {
-          renderTable();
+          renderMeritGrid();
           updateMeta();
         }
       }
@@ -477,22 +479,74 @@
 
     $tabContent.innerHTML = `
       <style>
-        #mlTable thead th { position:sticky; top:0; z-index:2; }
-        #mlTable tbody tr:nth-child(even) { background:rgba(255,255,255,0.02); }
-        #mlTable tbody tr:nth-child(even):hover { background:rgba(77,184,217,0.07); }
-        #mlTable td:first-child, #mlTable th:first-child { padding-left:18px; }
-        #mlTable td:last-child, #mlTable th:last-child { padding-right:18px; }
-        .ml-consent-badge { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:100px;font-size:0.72rem;font-weight:600;letter-spacing:0.02em;white-space:nowrap; }
-        .ml-consent-badge.accepted { background:rgba(62,207,142,0.12);color:var(--neon-green); }
-        .ml-consent-badge.excluded { background:rgba(220,60,60,0.12);color:var(--neon-red); }
-        .ml-consent-badge.awaited { background:rgba(232,166,39,0.12);color:var(--neon-gold); }
-        .ml-consent-badge .dot { width:6px;height:6px;border-radius:50%;display:inline-block; }
-        .ml-consent-badge.accepted .dot { background:var(--neon-green); }
-        .ml-consent-badge.excluded .dot { background:var(--neon-red); }
-        .ml-consent-badge.awaited .dot { background:var(--neon-gold); }
-        #mlTable tr.excluded-row { opacity:0.55;text-decoration:line-through; }
-        #mlTable tr.dropped-row { opacity:0.6; }
-        .ml-sim-match { display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:4px;font-size:0.65rem;font-weight:700; }
+        /* ── state pill ── */
+        .ml-state-pill { display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:100px;font-size:0.65rem;font-weight:700;letter-spacing:0.01em;white-space:nowrap; }
+        .ml-pill-accepted { background:rgba(62,207,142,0.12);color:var(--neon-green); }
+        .ml-pill-excluded { background:rgba(220,60,60,0.10);color:var(--neon-red); }
+        .ml-pill-dropped  { background:rgba(220,60,60,0.10);color:var(--neon-pink); }
+        .ml-pill-awaiting { background:rgba(232,166,39,0.10);color:var(--neon-gold); }
+
+        /* ── row state bar (left border) ── */
+        .ml-state-bar { display:inline-block;width:3px;height:24px;border-radius:2px;flex-shrink:0; }
+        .ml-row-accepted .ml-state-bar { background:var(--neon-green); }
+        .ml-row-excluded .ml-state-bar { background:var(--neon-red); }
+        .ml-row-dropped  .ml-state-bar { background:var(--neon-pink); }
+        .ml-row-awaiting .ml-state-bar { background:var(--neon-gold); }
+
+        /* ── row container ── */
+        #mlGrid .sim-row { display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:6px 10px;border-radius:6px;cursor:pointer;transition:background 0.12s, opacity 0.15s; }
+        #mlGrid .sim-row:hover { background:rgba(77,184,217,0.08); }
+        /* selective dimming — no row-level opacity, only de-emphasize state elements */
+        #mlGrid .ml-row-excluded, #mlGrid .ml-row-dropped { opacity:1;background:rgba(220,60,60,0.03);pointer-events:none; }
+        #mlGrid .ml-row-excluded:hover, #mlGrid .ml-row-dropped:hover { background:rgba(220,60,60,0.06) !important; }
+        #mlGrid .ml-row-excluded .ml-state-pill, #mlGrid .ml-row-dropped .ml-state-pill { opacity:0.35; }
+        #mlGrid .ml-row-excluded .ml-state-bar, #mlGrid .ml-row-dropped .ml-state-bar { opacity:0.45; }
+        #mlGrid .ml-row-excluded .sim-row-name, #mlGrid .ml-row-dropped .sim-row-name,
+        #mlGrid .ml-row-excluded .sim-row-marks, #mlGrid .ml-row-dropped .sim-row-marks,
+        #mlGrid .ml-row-excluded .ml-row-id, #mlGrid .ml-row-dropped .ml-row-id,
+        #mlGrid .ml-row-excluded .ml-row-pref, #mlGrid .ml-row-dropped .ml-row-pref,
+        #mlGrid .ml-row-excluded .ml-chain-badge, #mlGrid .ml-row-dropped .ml-chain-badge { opacity:0.85; }
+        #mlGrid .sim-row .sim-row-name { flex:1 1 80px;font-size:0.82rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+        #mlGrid .sim-row .sim-row-marks { font-weight:700;min-width:48px;text-align:right;font-family:var(--mono);font-size:0.82rem; }
+        .ml-row-id { font-family:var(--mono);font-size:0.78rem;min-width:52px;color:var(--text-muted); }
+        .ml-row-pref  { color:var(--text-muted);font-size:0.78rem;min-width:36px;font-family:var(--mono);text-align:center; }
+        .ml-pref-ok   { color:var(--neon-green);margin-left:2px;font-weight:700;font-size:0.85rem; }
+        .ml-sim-dot   { margin:0 2px; }
+
+        /* ── chain badge ── */
+        .ml-chain-badge { font-size:0.64rem;color:var(--neon-gold);background:rgba(232,166,39,0.08);padding:2px 6px;border-radius:100px;white-space:nowrap; }
+
+        /* ── Chain row (sibling after .sim-row, full opacity) ── */
+        .ml-chain-row { display:flex;align-items:stretch;gap:0;margin:-2px 0 0 0;padding:0 0 2px 0;cursor:pointer; }
+        .ml-chain-row:hover .ml-next-candidate { background:rgba(62,207,142,0.08); }
+        .ml-chain-connector { width:3px;flex-shrink:0;background:linear-gradient(to bottom,var(--neon-gold),var(--neon-green));border-radius:2px;margin:0 14px 0 10px; }
+        .ml-chain-row .ml-next-candidate { flex:1;padding:6px 10px;border-radius:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;transition:background 0.12s; }
+        .ml-chain-row .ml-next-candidate .sim-next-name { color:var(--neon-green);font-weight:600;font-size:0.8rem; }
+        .ml-chain-row .ml-next-candidate .sim-next-marks { color:var(--neon-green);font-weight:700;font-size:0.8rem; }
+        .ml-chain-row .ml-next-candidate .sim-row-pref { color:var(--neon-green);font-size:0.78rem; }
+        .ml-chain-row .ml-next-candidate .sim-next-lbl { color:var(--text-muted);font-size:0.7rem; }
+
+        /* ── card status bar ── */
+        .ml-card-status { padding:4px 14px;font-size:0.68rem;font-weight:600;letter-spacing:0.01em;margin-bottom:2px; }
+        .ml-card-status-full { color:var(--neon-green);background:rgba(62,207,142,0.06);border-bottom:1px solid rgba(62,207,142,0.08); }
+        .ml-card-status-ok { color:var(--neon-gold);background:rgba(232,166,39,0.06);border-bottom:1px solid rgba(232,166,39,0.10); }
+        .ml-card-status-warn { color:var(--neon-pink);background:rgba(220,60,60,0.06);border-bottom:1px solid rgba(220,60,60,0.10); }
+
+        /* ── card states ── */
+        #mlGrid .sim-card { transition:border-color 0.15s,box-shadow 0.15s; }
+        #mlGrid .ml-card-attn { border-color:rgba(62,207,142,0.25);box-shadow:0 0 12px rgba(62,207,142,0.06); }
+        #mlGrid .ml-card-ok   { border-color:rgba(255,255,255,0.06); }
+
+        /* ── exclude mode glow ── */
+        #mlGrid.ml-excluding .sim-row:not(.ml-row-accepted):hover { background:rgba(220,60,60,0.10) !important;box-shadow:inset 0 0 0 1px rgba(220,60,60,0.25); }
+        #mlGrid .sim-row { position:relative; }
+        #mlGrid .sim-row::after { content:'click for info';position:absolute;right:10px;bottom:2px;font-size:0.55rem;color:var(--text-muted);opacity:0;transition:opacity 0.12s;pointer-events:none; }
+        #mlGrid .sim-row:hover::after { opacity:0.5; }
+        #mlGrid .ml-row-excluded::after, #mlGrid .ml-row-dropped::after { display:none; }
+        #mlGrid.ml-excluding .sim-row:not(.ml-row-accepted):not(.ml-row-excluded):not(.ml-row-dropped)::after { content:'click to exclude';color:var(--neon-red); }
+
+        /* ── sim match ── */
+        .ml-sim-match { display:inline-flex;padding:1px 5px;border-radius:4px;font-size:0.6rem;font-weight:700; }
         .ml-sim-match.yes { background:rgba(62,207,142,0.1);color:var(--neon-green); }
         .ml-sim-match.no { background:rgba(220,60,60,0.1);color:var(--neon-red); }
       </style>
@@ -552,33 +606,16 @@
 
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
         <span id="mlCount" style="font-size:0.82rem;color:var(--text-muted);">${meritData.length.toLocaleString()} entries</span>
+        <label style="display:inline-flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--text-muted);cursor:pointer;padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);">
+          <input type="checkbox" id="mlExcludeToggle" style="accent-color:var(--neon-red);" />
+          <span>Exclude <span id="mlExcludeHint" style="color:var(--text-muted);font-size:0.72rem;">(click to exclude)</span></span>
+        </label>
         <button id="mlRestoreBtn" style="font-size:0.82rem;padding:6px 14px;background:rgba(245,200,66,0.12);color:#f5c842;border:1px solid rgba(245,200,66,0.28);border-radius:8px;cursor:pointer;">&#8635; Restore Initial Consent</button>
         <span id="mlStatus" style="font-size:0.78rem;color:var(--text-muted);"></span>
       </div>
 
-      <div class="table-wrap">
-        <table class="data-table" id="mlTable">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>ID</th>
-              <th>Name</th>
-              <th>PMDC</th>
-              <th>Marks</th>
-              <th>Program</th>
-              <th>Quota</th>
-              <th>Specialty</th>
-              <th>Hospital</th>
-              <th>Pref</th>
-              <th id="mlSimTh" style="display:${showSimMatch ? '' : 'none'};">Sim</th>
-              <th>Consent</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="mlBody">
-            <tr><td id="mlEmptyColspan" colspan="${showSimMatch ? 13 : 12}" style="text-align:center;padding:2rem;color:var(--text-muted);">Loading&hellip;</td></tr>
-          </tbody>
-        </table>
+      <div id="mlGrid" class="sim-grid">
+        <div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted);">Loading&hellip;</div>
       </div>
       <p id="mlCaption" class="table-caption"></p>`;
 
@@ -589,6 +626,13 @@
     document.getElementById('mlSearch')?.addEventListener('input', applyFilters);
     document.getElementById('mlConsent')?.addEventListener('change', applyFilters);
     document.getElementById('mlRestoreBtn')?.addEventListener('click', restoreInitial);
+    document.getElementById('mlExcludeToggle')?.addEventListener('change', function () {
+      mlExcludeMode = this.checked;
+      const hint = document.getElementById('mlExcludeHint');
+      if (hint) hint.textContent = mlExcludeMode ? '&#9888; click unconsented to remove' : '(click for details)';
+      const grid = document.getElementById('mlGrid');
+      if (grid) grid.classList.toggle('ml-excluding', mlExcludeMode);
+    });
 
     updateMeta();
     applyFilters();
@@ -640,7 +684,7 @@
           <span><span style="color:var(--neon-red);font-weight:700;">&#9679; Excluded</span> — rejected / manually excluded</span>
           <span><span style="color:var(--neon-gold);font-weight:700;">&#9679; Awaited</span> — awaiting decision</span>
         </div>
-        <div>Click <strong>Next in line</strong> on any non-consented row to see the replacement queue. In <strong>Where Merit Falls</strong>, select all four dropdowns for a complete view — the same candidate may appear as next-in-line across multiple slots. If one candidate occupies multiple vacant slots, you can <strong>pass</strong> to the next candidate for that slot.</div>
+        <div>Toggle <strong>Exclude</strong> mode then click any unconsented candidate to remove them and start a replacement chain. Click any candidate (mode off) for details. <strong>Pass</strong> to assign the first replacement (globally removed from all queues). <strong>Where Merit Falls</strong> shows the full ranked queue per slot.</div>
       </div>`;
   }
 
@@ -670,7 +714,7 @@
     }
     simAccuracy = total > 0 ? { match, total, pct: (match / total * 100).toFixed(1) } : null;
     updateMeta();
-    renderTable();
+    renderMeritGrid();
   }
 
   function buildSimMatch() {
@@ -827,103 +871,151 @@
       return true;
     });
 
-    renderTable();
+    renderMeritGrid();
   }
 
-  // —”€—”€ Table —”€—”€
+  // —”€—”€ Grid (simulation-style) —”€—”€
 
-  function renderTable() {
-    const tbody = document.getElementById('mlBody');
+  function renderMeritGrid() {
+    const grid = document.getElementById('mlGrid');
     const caption = document.getElementById('mlCaption');
     const countEl = document.getElementById('mlCount');
-    if (!tbody) return;
+    if (!grid) return;
 
-    const colCount = showSimMatch ? 13 : 12;
     if (!filteredData.length) {
-      tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;padding:2rem;color:var(--text-muted);">No entries match filters.</td></tr>`;
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted);">No entries match filters.</div>';
       if (caption) caption.textContent = '';
       if (countEl) countEl.textContent = '0 entries';
       return;
     }
 
-    // Toggle sim header column visibility
-    const simTh = document.getElementById('mlSimTh');
-    if (simTh) simTh.style.display = showSimMatch ? '' : 'none';
-
-    const rows = [];
+    // Group filteredData by slot (program :: quota :: specialty :: hospital)
+    const slotMap = {};
     for (const d of filteredData) {
-      const applicantId = fval(d, 'applicantId');
-      const rank = fval(d, 'rowNo');
-      const name = fval(d, 'nameFull', 'name') || '—';
-      const pmdc = fval(d, 'pmdcNo') || '—';
-      const marks = fval(d, 'marksTotal', 'marks');
-      const marksStr = marks != null ? Number(marks).toFixed(2) : '—';
-      const program = fval(d, 'typeName', 'type', 'program') || '—';
-      const quota = fval(d, 'quotaName', 'quota') || '—';
-      const specialty = fval(d, 'specialityName', 'speciality', 'specialty') || '—';
-      const hospital = fval(d, 'hospitalName', 'hospital') || '—';
-      const preferenceNo = prefNoFromCandidate(applicantId, program, quota, specialty, hospital);
-      const prefDisplay = preferenceNo != null ? preferenceNo : '—';
-      const slotMatch = prefMatchFromCandidate(applicantId, program, quota, specialty, hospital);
-      const prefIcon = slotMatch
-        ? '<span style="color:var(--neon-green);font-weight:700;font-size:0.85rem;" title="Candidate listed this slot in preferences">&#10003;</span>'
-        : '<span style="color:var(--neon-red);font-size:0.8rem;" title="Candidate did not list this slot or no data">&ndash;</span>';
-
-      const simBadge = showSimMatch
-        ? (() => {
-            const r = simMatchForSlot(program, quota, specialty, hospital, applicantId);
-            return r === true
-              ? '<span class="ml-sim-match yes">&#9679; Sim</span>'
-              : r === false
-              ? '<span class="ml-sim-match no">&#9679; Sim</span>'
-              : '<span style="color:var(--text-muted);font-size:0.65rem;">—</span>';
-          })()
-        : '';
-
-      const consentVal = getRowConsentVal(d);
-      const consentBadge = getConsentBadge(consentVal);
-      const isExcluded = consentVal === 'Excluded';
-      const isDropped = consentVal === 'Excluded-Dropped';
-      const rowClass = isExcluded ? ' class="excluded-row"' : isDropped ? ' class="dropped-row"' : '';
-
-      rows.push(`<tr${rowClass}>
-        <td>${rank != null ? rank : '—'}</td>
-        <td style="font-family:var(--mono);font-size:0.82rem;">${esc(String(applicantId || ''))}</td>
-        <td><strong>${esc(name)}</strong></td>
-        <td style="font-family:var(--mono);font-size:0.82rem;">${esc(pmdc)}</td>
-        <td style="font-weight:700;">${marksStr}</td>
-        <td>${esc(program)}</td>
-        <td style="font-size:0.75rem;font-family:var(--mono);color:var(--text-muted);">${esc(quota)}</td>
-        <td style="font-size:0.8rem;">${esc(specialty)}</td>
-        <td style="font-size:0.8rem;">${esc(hospital)}</td>
-        <td style="text-align:center;font-family:var(--mono);font-size:0.82rem;color:var(--text-muted);">${prefDisplay} ${prefIcon}</td>
-        ${showSimMatch ? `<td style="text-align:center;font-size:0.75rem;">${simBadge}</td>` : ''}
-        <td>${consentBadge}</td>
-        <td>${actionButtons(d)}</td>
-      </tr>`);
-
-      // Render single "Next in line" sub-row under the removed candidate
-      const chain = chainState[slotKey(d)];
-      if (chain && chain.candidates.length) {
-        const c = chain.candidates[0];
-        rows.push(`<tr style="background:rgba(62,207,142,0.04);border-left:2px solid var(--neon-green);">
-          <td style="color:var(--neon-green);font-size:0.75rem;text-align:center;">&#8594;</td>
-          <td style="font-family:var(--mono);font-size:0.82rem;color:var(--neon-green);">${esc(String(c.applicantId || ''))}</td>
-          <td><strong style="color:var(--neon-green);">${esc(c.nameFull || '—')}</strong></td>
-          <td style="font-size:0.75rem;color:var(--text-muted)">—</td>
-          <td style="font-weight:700;color:var(--neon-green);">${c.marksTotal != null ? Number(c.marksTotal).toFixed(2) : '—'}</td>
-          <td style="color:var(--neon-green);font-size:0.78rem;">${esc(program)}</td>
-          <td style="font-size:0.75rem;font-family:var(--mono);color:var(--text-muted);">${esc(c._trackLabel || quota)}</td>
-          <td style="color:var(--neon-green);font-size:0.78rem;">${esc(specialty)}</td>
-          <td style="color:var(--neon-green);font-size:0.78rem;">${esc(hospital)}</td>
-          <td style="color:var(--neon-green);font-size:0.78rem;text-align:center;">${c.preferenceNo != null ? c.preferenceNo : '?'}</td>
-          ${showSimMatch ? '<td></td>' : ''}
-          <td><span style="background:rgba(62,207,142,0.1);color:var(--neon-green);padding:2px 8px;border-radius:100px;font-size:0.7rem;">Next in line</span></td>
-          <td></td>
-        </tr>`);
-      }
+      const program = fval(d, 'typeName', 'type', 'program') || '';
+      const quota = fval(d, 'quotaName', 'quota') || '';
+      const specialty = fval(d, 'specialityName', 'speciality', 'specialty') || '';
+      const hospital = fval(d, 'hospitalName', 'hospital') || '';
+      const groupKey = program + '::' + quota + '::' + specialty + '::' + hospital;
+      if (!slotMap[groupKey]) slotMap[groupKey] = [];
+      slotMap[groupKey].push(d);
     }
-    tbody.innerHTML = rows.join('');
+
+    const cards = [];
+    for (const [groupKey, entries] of Object.entries(slotMap)) {
+      const parts = groupKey.split('::');
+      const program = parts[0];
+      const quota = parts[1];
+      const specialty = parts[2];
+      const hospital = parts[3];
+
+      const filled = entries.length;
+
+      // Count consent states
+      const acceptedCount = entries.filter(d => getRowConsentVal(d) === 'Accepted').length;
+
+      // Build candidate rows for this slot card
+      const candRows = entries.map(d => {
+        const applicantId = fval(d, 'applicantId');
+        const name = fval(d, 'nameFull', 'name') || '—';
+        const marks = fval(d, 'marksTotal', 'marks');
+        const marksStr = marks != null ? Number(marks).toFixed(2) : '—';
+        const preferenceNo = prefNoFromCandidate(applicantId, program, quota, specialty, hospital);
+        const prefDisplay = preferenceNo != null ? 'P' + preferenceNo : 'P?';
+        const slotMatch = prefMatchFromCandidate(applicantId, program, quota, specialty, hospital);
+        const consentVal = getRowConsentVal(d);
+        const isExcluded = consentVal === 'Excluded' || consentVal === 'Excluded-Dropped';
+        const key = slotKey(d);
+
+        // State-specific styling
+        let stateClass = 'ml-row-awaiting';
+        let stateLabel = 'Awaited';
+        if (consentVal === 'Accepted') { stateClass = 'ml-row-accepted'; stateLabel = 'Accepted'; }
+        else if (consentVal === 'Excluded-Dropped') { stateClass = 'ml-row-dropped'; stateLabel = 'Dropped'; }
+        else if (consentVal === 'Excluded') { stateClass = 'ml-row-excluded'; stateLabel = 'Excluded'; }
+
+        const simBadge = showSimMatch
+          ? (() => {
+              const r = simMatchForSlot(program, quota, specialty, hospital, applicantId);
+              return r === true ? '<span class="ml-sim-match yes">&#9679;</span>' : r === false ? '<span class="ml-sim-match no">&#9679;</span>' : '';
+            })()
+          : '';
+
+        let chainHtml = '';
+        const chain = chainState[key];
+        if (chain && chain.candidates.length) {
+          const nextIdx = chain._nextIdx || 0;
+          const c = chain.candidates[nextIdx];
+          const chainKey = slotKeyFor(c.applicantId, program, quota, specialty, hospital);
+          chainHtml = `<div class="sim-next-line ml-next-candidate" data-next-key="${esc(chainKey)}" data-parent-key="${esc(key)}">
+            <span class="sim-next-lbl">Next in line:</span>
+            <span class="sim-next-name">${esc(c.nameFull || '—')}</span>
+            <span class="sim-next-marks">${c.marksTotal != null ? Number(c.marksTotal).toFixed(2) : '—'}</span>
+            <span class="sim-row-pref">P${c.preferenceNo != null ? c.preferenceNo : '?'}</span>
+          </div>`;
+        }
+
+        const isChained = noConsentIds.has(key);
+        const chainCount = chain ? chain.candidates.length : 0;
+
+        let rowHtml = `<div class="sim-row ${stateClass}" data-key="${esc(key)}">
+          <span class="ml-state-bar"></span>
+          <span class="ml-row-id">${esc(String(applicantId || ''))}</span>
+          <span class="sim-row-name"><strong>${esc(name)}</strong></span>
+          <span class="sim-row-marks">${marksStr}</span>
+          <span class="ml-row-pref">${prefDisplay}${slotMatch ? '<span class="ml-pref-ok">&#10003;</span>' : ''}</span>
+          ${simBadge ? `<span class="ml-sim-dot">${simBadge}</span>` : ''}
+          <span class="ml-state-pill ${stateClass.replace('ml-row-', 'ml-pill-')}">${stateLabel}</span>
+          ${isChained ? `<span class="ml-chain-badge">&#9879; ${chainCount} in line</span>` : ''}
+        </div>`;
+        if (chainHtml) {
+          rowHtml += `<div class="ml-chain-row" data-parent-key="${esc(key)}">
+            <div class="ml-chain-connector"></div>
+            ${chainHtml}
+          </div>`;
+        }
+        return rowHtml;
+      }).join('');
+
+      const allGood = acceptedCount === filled;
+      let statusBar = '';
+      if (allGood) {
+        statusBar = `<div class="ml-card-status ml-card-status-full">&#10003; ${acceptedCount}/${filled} filled</div>`;
+      } else {
+        let totalNeeded = 0;
+        let availReplacements = 0;
+        for (const d of entries) {
+          const k = slotKey(d);
+          if (noConsentIds.has(k)) {
+            totalNeeded++;
+            if (chainState[k]?.candidates?.length) {
+              availReplacements += chainState[k].candidates.length;
+            }
+          }
+        }
+        const supplyOk = availReplacements >= totalNeeded;
+        statusBar = `<div class="ml-card-status ml-card-status-${supplyOk ? 'ok' : 'warn'}">&#9650; ${totalNeeded} need replacement &middot; ${availReplacements} candidate${availReplacements !== 1 ? 's' : ''} ${supplyOk ? 'available' : 'queued'}</div>`;
+      }
+      cards.push(`<div class="sim-card ${allGood ? 'ml-card-ok' : 'ml-card-attn'}" style="position:relative;">
+        <div class="sim-card-head">
+          <div class="sim-card-title">
+            <span class="sim-card-spec">${esc(specialty)}</span>
+            <span class="sim-card-hosp">${esc(hospital)}</span>
+            <span class="sim-card-meta">${esc(program)} &middot; ${esc(quota)}</span>
+          </div>
+          <div class="sim-card-badges">
+            <span class="sim-badge ${allGood ? 'badge-full' : 'badge-open'}">${acceptedCount}/${filled}</span>
+            ${!allGood ? '<span class="sim-badge badge-open">pending</span>' : ''}
+          </div>
+        </div>
+        ${statusBar}
+        <div class="sim-placed">
+          ${candRows}
+        </div>
+      </div>`);
+    }
+
+    grid.innerHTML = cards.join('');
 
     if (caption) {
       caption.textContent = `Showing ${filteredData.length} of ${meritData.length.toLocaleString()} entries`;
@@ -933,51 +1025,37 @@
     }
   }
 
-  function getConsentBadge(val) {
-    if (val === 'Accepted') return '<span class="ml-consent-badge accepted"><span class="dot"></span>Accepted</span>';
-    if (val === 'Excluded-Dropped') return '<span class="ml-consent-badge excluded" title="Candidate consented to another programme"><span class="dot"></span>Dropped Out</span>';
-    if (val === 'Excluded') return '<span class="ml-consent-badge excluded"><span class="dot"></span>Excluded</span>';
-    return '<span class="ml-consent-badge awaited"><span class="dot"></span>Awaited</span>';
-  }
-
-  function actionButtons(d) {
-    const id = String(fval(d, 'applicantId'));
-    const key = slotKey(d);
-    const chain = chainState[key];
-    if (chain && chain.candidates.length) {
-      return `<button class="ml-next-inline-btn" data-key="${esc(key)}" style="padding:4px 10px;background:rgba(232,166,39,0.12);color:var(--neon-gold);border:1px solid rgba(232,166,39,0.3);border-radius:6px;cursor:pointer;font-size:0.7rem;">Next in line (${chain.candidates.length})</button>`;
-    }
-    if (noConsentIds.has(key)) {
-      return `<button class="ml-restore-consent-btn" data-key="${esc(key)}" style="padding:4px 10px;background:rgba(62,207,142,0.12);color:var(--neon-green);border:1px solid rgba(62,207,142,0.3);border-radius:6px;cursor:pointer;font-size:0.75rem;">Restore</button>`;
-    }
-    // Use per-slot resolution: a row published here with Rejected consent
-    // for THIS slot is a true "consented away" exclusion that can be
-    // overridden. A Dropped row (consented to another programme) is also
-    // overrideable in the local what-if.
-    const bySlot = consentBySlot[key];
-    if (bySlot === 'Rejected' || bySlot === 'Dropped') {
-      return `<button class="ml-override-btn" data-key="${esc(key)}" style="padding:4px 10px;background:rgba(232,166,39,0.12);color:var(--neon-gold);border:1px solid rgba(232,166,39,0.3);border-radius:6px;cursor:pointer;font-size:0.72rem;">Override Excluded</button>`;
-    }
-    return `<button class="ml-no-consent-btn" data-key="${esc(key)}" style="padding:4px 10px;background:rgba(220,60,60,0.12);color:var(--neon-red);border:1px solid rgba(220,60,60,0.3);border-radius:6px;cursor:pointer;font-size:0.75rem;">Exclude</button>`;
-  }
-
-  // —”€—”€ Event delegation for action buttons —”€—”€
+  // —”€—”€ Event delegation —”€—”€
+  // Click on a candidate row → exclude if exclude-mode ON, else show info modal.
+  // Click on next-in-line → open the chain's modal for the parent slot.
+  // Button clicks inside info modal — handled via overlay's own listeners.
 
   document.addEventListener('click', function (e) {
-    const noConsentBtn = e.target.closest('.ml-no-consent-btn, .ml-override-btn');
-    if (noConsentBtn) {
-      startChain(noConsentBtn.dataset.key);
+    const chainRow = e.target.closest('.ml-chain-row');
+    if (chainRow) {
+      const parentKey = chainRow.dataset.parentKey;
+      if (parentKey) showNextInLineModal(parentKey);
       return;
     }
-    const nextBtn = e.target.closest('.ml-next-inline-btn');
-    if (nextBtn) {
-      showNextInLineModal(nextBtn.dataset.key);
+    const nextCandidate = e.target.closest('.ml-next-candidate');
+    if (nextCandidate) {
+      const parentKey = nextCandidate.dataset.parentKey;
+      if (parentKey) showNextInLineModal(parentKey);
       return;
     }
-    const restoreBtn = e.target.closest('.ml-restore-consent-btn');
-    if (restoreBtn) {
-      restoreConsent(restoreBtn.dataset.key);
-      return;
+    const row = e.target.closest('.sim-row[data-key]');
+    if (!row) return;
+    const key = row.dataset.key;
+    if (!key) return;
+    e.stopPropagation();
+    // In exclude mode: skip Accepted rows (show info) and skip already-excluded/dropped rows (show info)
+    const entry = meritData.find(d => slotKey(d) === key);
+    const consentVal = entry ? getRowConsentVal(entry) : null;
+    const alreadyChained = chainState[key] && chainState[key].candidates.length > 0;
+    if (mlExcludeMode && consentVal !== 'Accepted' && !alreadyChained) {
+      startChain(key);
+    } else {
+      showCandidateInfoModal(key);
     }
   });
 
@@ -1037,6 +1115,11 @@
 
       if (excludedInSlot.has(aid)) { skipped.push({ applicantId: c.applicantId, nameFull: c.nameFull || '', marksTotal: effectiveMarks, preferenceNo: pref.preferenceNo, reason: 'Manually excluded from this slot' }); continue; }
       if (placedInSlot.has(aid)) continue;
+      // Exclude candidates already placed as next-in-line for another slot (simulation-style pass logic)
+      if (globallyPlacedAids.has(aid)) {
+        skipped.push({ applicantId: c.applicantId, nameFull: c.nameFull || '', marksTotal: effectiveMarks, preferenceNo: pref.preferenceNo, reason: 'Already assigned as replacement to another slot' });
+        continue;
+      }
 
       // Skip if candidate is already placed at a better preference than their own for this slot
       const bestPref = placedBestPref[aid];
@@ -1076,9 +1159,12 @@
         continue;
       }
 
-      // Exclude candidates rejected in profile status (132 overrides 131)
-      const effStatus = getEffectiveProfileStatusForCandidate(c);
-      if (effStatus && Number(effStatus.statusId) === 2) {
+      // Exclude candidates rejected in ANY profile status type (not just effective)
+      const allStatuses = typeof getAllProfileStatusesForCandidate === 'function'
+        ? getAllProfileStatusesForCandidate(c)
+        : [];
+      const anyRejected = allStatuses.some(s => Number(s.statusId) === 2);
+      if (anyRejected) {
         skipped.push({
           applicantId: c.applicantId, nameFull: c.nameFull || '',
           marksTotal: effectiveMarks, preferenceNo: pref.preferenceNo,
@@ -1127,6 +1213,8 @@
     }
 
     chainState[slotKeyStr] = result;
+    // Dedup next-in-line with sibling slots in the same group
+    _dedupNextInLineForGroup(program, q, s, h);
     updateMeta();
     applyFilters();
     buildSimMatch();
@@ -1144,8 +1232,12 @@
     const q = parts[2] || '';
     const s = parts[3] || '';
     const h = parts[4] || '';
-    const next = chain.candidates[0];
-    // Add the passed candidate's slot key for this slot
+    const nextIdx = chain._nextIdx || 0;
+    const next = chain.candidates[nextIdx];
+    // Mark the passed candidate as globally placed (simulation-style pass logic) —
+    // they get "assigned" this slot and are removed from all other replacement queues.
+    globallyPlacedAids.add(String(next.applicantId));
+    // Also add their slot key for this specific slot
     const nextKey = slotKeyFor(next.applicantId, program, q, s, h);
     noConsentIds.add(nextKey);
 
@@ -1155,6 +1247,8 @@
         const refreshed = listReplacementCandidates(program, q, s, h, [...noConsentIds]);
         chain.candidates = refreshed.candidates;
         chain.skipped = refreshed.skipped;
+        chain._nextIdx = 0; // reset after refresh
+        _dedupNextInLineForGroup(program, q, s, h);
       }
     } catch (e) {
       console.warn('[MeritList] Refresh failed:', e);
@@ -1166,8 +1260,8 @@
 
     const remaining = chain.candidates.length;
     setStatus(remaining
-      ? `Passed ID ${next.applicantId}. ${remaining} candidate(s) still in line.`
-      : `Passed ID ${next.applicantId}. End of line.`, 'var(--neon-gold)');
+      ? `Passed ID ${next.applicantId} (globally placed). ${remaining} candidate(s) still in line.`
+      : `Passed ID ${next.applicantId} (globally placed). End of line.`, 'var(--neon-gold)');
   }
 
   function restoreConsent(slotKeyStr) {
@@ -1184,8 +1278,11 @@
     if (chain) {
       for (const c of chain.candidates) {
         noConsentIds.delete(slotKeyFor(c.applicantId, program, q, s, h));
+        globallyPlacedAids.delete(String(c.applicantId));
       }
       delete chainState[slotKeyStr];
+      // Re-dedup siblings: a previously claimed #1 may now be available
+      _dedupNextInLineForGroup(program, q, s, h);
     }
     setStatus(`Restored consent for candidate #${parts[0]} in ${program}/${s}.`, 'var(--neon-green)');
     updateMeta();
@@ -1197,7 +1294,15 @@
 
   async function restoreInitial() {
     noConsentIds = new Set();
+    globallyPlacedAids = new Set();
     chainState = {};
+    mlExcludeMode = false;
+    const toggle = document.getElementById('mlExcludeToggle');
+    if (toggle) toggle.checked = false;
+    const grid = document.getElementById('mlGrid');
+    if (grid) grid.classList.remove('ml-excluding');
+    const hint = document.getElementById('mlExcludeHint');
+    if (hint) hint.textContent = '(click for details)';
     // Re-derive cumulative sets from the raw consent files. consentBySlot
     // itself is unchanged (it was derived read-only from the raw array and
     // no local overrides mutate it).
@@ -1228,9 +1333,16 @@
       // slots sharing the same program as a dropped/rejected one.
       if (cv === 'Accepted') continue;
       const aidProg = aid + '::' + (fval(d, 'typeName', 'type', 'program') || '');
+      // Also check profile status rejection (any type)
+      const cand = candidatesMap[aid];
+      const allStatuses = cand && typeof getAllProfileStatusesForCandidate === 'function'
+        ? getAllProfileStatusesForCandidate(cand)
+        : [];
+      const profileRejected = allStatuses.some(s => Number(s.statusId) === 2);
       if (cv === 'Rejected' || cv === 'Dropped'
           || cumulativeRejected.has(aid)
-          || cumulativeDroppedByProgram.has(aidProg)) {
+          || cumulativeDroppedByProgram.has(aidProg)
+          || profileRejected) {
         entries.push(d);
       }
     }
@@ -1256,10 +1368,67 @@
         }
       } catch (e) { chainState[key] = { candidates: [], skipped: [] }; }
     }
+
+    // Dedup next-in-line across sibling slots in the same group
+    for (const [key, ch] of Object.entries(chainState)) {
+      if (!ch._nextIdx) ch._nextIdx = 0;
+    }
+    _dedupAllGroups();
+
     updateMeta();
     applyFilters();
     buildSimMatch();
     setStatus(`Auto-resolved ${entries.length} non-consented candidate(s).`, 'var(--neon-gold)');
+  }
+
+  // —”€—”€ Shared dedup helpers —”€—”€
+
+  function _dedupNextInLineForGroup(program, quota, specialty, hospital) {
+    const gk = [program, quota, specialty, hospital].join('::');
+    const chains = [];
+    for (const [key, ch] of Object.entries(chainState)) {
+      const p = key.split('::');
+      if (p.slice(1, 5).join('::') === gk && ch.candidates && ch.candidates.length) {
+        chains.push(ch);
+      }
+    }
+    if (chains.length < 2) return;
+    const claimedNext = new Set();
+    for (const chain of chains) {
+      let idx = chain._nextIdx || 0;
+      while (idx < chain.candidates.length && claimedNext.has(String(chain.candidates[idx].applicantId))) {
+        idx++;
+      }
+      if (idx < chain.candidates.length) {
+        claimedNext.add(String(chain.candidates[idx].applicantId));
+        chain._nextIdx = idx;
+      }
+    }
+  }
+
+  function _dedupAllGroups() {
+    const groups = {};
+    for (const [key, ch] of Object.entries(chainState)) {
+      if (!ch.candidates || !ch.candidates.length) continue;
+      const p = key.split('::');
+      const gk = p.slice(1, 5).join('::');
+      if (!groups[gk]) groups[gk] = [];
+      groups[gk].push(ch);
+    }
+    for (const chains of Object.values(groups)) {
+      if (chains.length < 2) continue;
+      const claimedNext = new Set();
+      for (const chain of chains) {
+        let idx = chain._nextIdx || 0;
+        while (idx < chain.candidates.length && claimedNext.has(String(chain.candidates[idx].applicantId))) {
+          idx++;
+        }
+        if (idx < chain.candidates.length) {
+          claimedNext.add(String(chain.candidates[idx].applicantId));
+          chain._nextIdx = idx;
+        }
+      }
+    }
   }
 
   // —”€—”€ Next in Line Modal —”€—”€
@@ -1270,6 +1439,7 @@
     if (reason.startsWith('Already placed at preference')) return `<span style="display:inline-block;padding:1px 8px;border-radius:10px;background:rgba(232,166,39,0.1);color:var(--neon-gold);font-size:0.7rem;border:1px solid rgba(232,166,39,0.2);">${esc(reason)}</span>`;
     if (reason.startsWith('Rejected')) return `<span style="display:inline-block;padding:1px 8px;border-radius:10px;background:rgba(255,107,107,0.08);color:var(--neon-pink);font-size:0.7rem;border:1px solid rgba(255,107,107,0.15);">${esc(reason)}</span>`;
     if (reason.startsWith('Consented to another')) return `<span style="display:inline-block;padding:1px 8px;border-radius:10px;background:rgba(232,166,39,0.08);color:var(--neon-gold);font-size:0.7rem;border:1px solid rgba(232,166,39,0.18);">${esc(reason)}</span>`;
+    if (reason.startsWith('Already assigned')) return `<span style="display:inline-block;padding:1px 8px;border-radius:10px;background:rgba(77,184,217,0.08);color:var(--neon-cyan);font-size:0.7rem;border:1px solid rgba(77,184,217,0.18);">${esc(reason)}</span>`;
     return `<span style="color:var(--text-muted);font-size:0.7rem;">${esc(reason)}</span>`;
   }
 
@@ -1376,6 +1546,109 @@
     }
   }
 
+  function showCandidateInfoModal(slotKeyStr) {
+    if (!slotKeyStr) return;
+    const entry = meritData.find(d => slotKey(d) === slotKeyStr);
+    if (!entry) return;
+    const applicantId = fval(entry, 'applicantId');
+    const name = fval(entry, 'nameFull', 'name') || '—';
+    const program = fval(entry, 'typeName', 'type', 'program') || '—';
+    const quota = fval(entry, 'quotaName', 'quota') || '—';
+    const specialty = fval(entry, 'specialityName', 'speciality', 'specialty') || '—';
+    const hospital = fval(entry, 'hospitalName', 'hospital') || '—';
+    const marks = fval(entry, 'marksTotal', 'marks');
+    const marksStr = marks != null ? Number(marks).toFixed(2) : '—';
+    const prefNo = prefNoFromCandidate(applicantId, program, quota, specialty, hospital);
+    const consentVal = getRowConsentVal(entry);
+
+    const isAccepted = consentVal === 'Accepted';
+    const isExcluded = consentVal === 'Excluded';
+    const isDropped = consentVal === 'Excluded-Dropped';
+    const hasChain = !!chainState[slotKeyStr];
+
+    const stateLabel = isAccepted ? 'Accepted' : isDropped ? 'Dropped Out' : isExcluded ? 'Excluded' : 'Awaited';
+    const stateColor = isAccepted ? 'var(--neon-green)' : isDropped ? 'var(--neon-pink)' : isExcluded ? 'var(--neon-red)' : 'var(--neon-gold)';
+
+    // Build action buttons
+    let actionHtml = '';
+    if (isAccepted) {
+      actionHtml = '<span style="color:var(--neon-green);font-weight:600;font-size:0.9rem;">&#10003; Consented — no action needed</span>';
+    } else if (hasChain) {
+      const chain = chainState[slotKeyStr];
+      const count = chain.candidates.length;
+      const firstName = chain.candidates[0]?.nameFull || '—';
+      actionHtml = `
+        <button class="ml-info-pass" data-key="${esc(slotKeyStr)}" style="flex:1;padding:8px;background:rgba(62,207,142,0.15);color:var(--neon-green);border:1px solid rgba(62,207,142,0.3);border-radius:8px;cursor:pointer;font-size:0.82rem;">Pass ${esc(firstName)}</button>
+        <button class="ml-info-view-chain" data-key="${esc(slotKeyStr)}" style="flex:1;padding:8px;background:rgba(232,166,39,0.12);color:var(--neon-gold);border:1px solid rgba(232,166,39,0.3);border-radius:8px;cursor:pointer;font-size:0.82rem;">Queue (${count})</button>
+        <button class="ml-info-restore" data-key="${esc(slotKeyStr)}" style="flex:1;padding:8px;background:rgba(62,207,142,0.12);color:var(--neon-green);border:1px solid rgba(62,207,142,0.3);border-radius:8px;cursor:pointer;font-size:0.82rem;">Restore</button>`;
+    } else {
+      const bySlot = consentBySlot[slotKeyStr];
+      if (bySlot === 'Rejected' || bySlot === 'Dropped') {
+        actionHtml = `<button class="ml-info-override" data-key="${esc(slotKeyStr)}" style="flex:1;padding:8px;background:rgba(232,166,39,0.12);color:var(--neon-gold);border:1px solid rgba(232,166,39,0.3);border-radius:8px;cursor:pointer;font-size:0.82rem;">Override &amp; Show Next</button>`;
+      } else {
+        actionHtml = `<button class="ml-info-exclude" data-key="${esc(slotKeyStr)}" style="flex:1;padding:8px;background:rgba(220,60,60,0.12);color:var(--neon-red);border:1px solid rgba(220,60,60,0.3);border-radius:8px;cursor:pointer;font-size:0.82rem;">Exclude &amp; Show Next</button>`;
+      }
+    }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'ml-info-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:13000;backdrop-filter:blur(8px);animation:mlFadeIn 0.18s ease;';
+    overlay.innerHTML = `
+      <div style="background:rgba(10,17,32,0.98);border:1px solid var(--border);border-top:3px solid ${stateColor};border-radius:16px;padding:1.8rem;width:min(520px,90vw);box-shadow:0 12px 56px rgba(0,0,0,0.85),0 0 60px rgba(77,184,217,0.05);animation:mlSlideUp 0.22s cubic-bezier(0.22,1,0.36,1) both;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">
+          <div>
+            <div style="color:var(--neon-cyan);font-size:1.1rem;font-weight:700;">${esc(name)}</div>
+            <div style="font-size:0.85rem;color:var(--text-muted);margin-top:2px;">
+              ID <span style="font-family:var(--mono);color:var(--text);">${esc(String(applicantId))}</span>
+              &middot; Marks <strong>${marksStr}</strong>
+              &middot; Pref #${prefNo != null ? prefNo : '?'}
+            </div>
+          </div>
+          <button class="ml-info-close-btn" style="background:none;border:none;color:var(--text-muted);font-size:1.5rem;cursor:pointer;padding:0 4px;line-height:1;">&times;</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.2rem;">
+          <div style="padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:10px;">
+            <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">Program</div>
+            <div style="font-size:0.88rem;font-weight:600;margin-top:2px;">${esc(program)}</div>
+          </div>
+          <div style="padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:10px;">
+            <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">Quota</div>
+            <div style="font-size:0.88rem;margin-top:2px;">${esc(quota)}</div>
+          </div>
+          <div style="padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:10px;">
+            <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">Specialty</div>
+            <div style="font-size:0.88rem;font-weight:600;margin-top:2px;">${esc(specialty)}</div>
+          </div>
+          <div style="padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:10px;">
+            <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">Hospital</div>
+            <div style="font-size:0.88rem;margin-top:2px;">${esc(hospital)}</div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.02);border-radius:10px;margin-bottom:1.2rem;">
+          <span style="font-size:0.82rem;color:var(--text-muted);">Consent status</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:100px;font-size:0.78rem;font-weight:700;background:${stateColor}15;color:${stateColor};">${stateLabel}</span>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          ${actionHtml}
+        </div>
+      </div>`;
+
+    document.body.appendChild(overlay);
+
+    const close = () => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); };
+    overlay.querySelectorAll('.ml-info-close-btn').forEach(btn => btn.addEventListener('click', close));
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+    overlay.querySelector('.ml-info-exclude')?.addEventListener('click', () => { close(); startChain(slotKeyStr); });
+    overlay.querySelector('.ml-info-override')?.addEventListener('click', () => { close(); startChain(slotKeyStr); });
+    overlay.querySelector('.ml-info-restore')?.addEventListener('click', () => { close(); restoreConsent(slotKeyStr); });
+    overlay.querySelector('.ml-info-view-chain')?.addEventListener('click', () => { close(); showNextInLineModal(slotKeyStr); });
+    overlay.querySelector('.ml-info-pass')?.addEventListener('click', () => { close(); nextInLine(slotKeyStr); });
+  }
+
   // —”€—”€ Where Merit Falls + Consent What-If — mode-aware content swap —”€—”€
   //
   // In merit-list mode (simulation_mode = 'merit-list'), the
@@ -1425,7 +1698,7 @@
         <div style="display:flex;flex-direction:column;gap:0.8rem;font-size:0.86rem;line-height:1.5;">
           <div style="padding:0.7rem 0.9rem;background:rgba(77,184,217,0.06);border:1px solid rgba(77,184,217,0.18);border-radius:10px;">
             <div style="color:var(--neon-cyan);font-weight:700;margin-bottom:2px;">📊 Merit List tab <span style="color:var(--text-muted);font-weight:400;">(was: Seat Allocation)</span></div>
-            Shows published merit placements with per-row consent — green <strong>Accepted</strong>, red <strong>Excluded</strong>, red <strong>Dropped Out</strong> (consented to another programme), gold <strong>Awaited</strong>. Click <em>Next in line</em> on any non-consented row to see the replacement queue. The ⚡ <em>Run Simulation</em> button is hidden in this mode.
+            Simulation-style grid of published merit placements with per-candidate consent — green <strong>Accepted</strong>, red <strong>Excluded</strong>, red <strong>Dropped Out</strong> (consented to another programme), gold <strong>Awaited</strong>. Click <strong>Exclude</strong> to start a replacement chain; the first candidate becomes <em>Next in line</em> and is globally removed from other slots (simulation-pass logic). Click <strong>Restore</strong> to undo. The ⚡ <em>Run Simulation</em> button is hidden in this mode.
           </div>
           <div style="padding:0.7rem 0.9rem;background:rgba(232,166,39,0.05);border:1px solid rgba(232,166,39,0.18);border-radius:10px;">
             <div style="color:var(--neon-gold);font-weight:700;margin-bottom:2px;">🎯 Where Merit Falls tab</div>
@@ -1655,9 +1928,11 @@
       if (cumulativeRejected.has(aid)) continue;
       if (cumulativeDroppedByProgram.has(aid + '::' + program)) continue;
 
-      // Exclude candidates rejected in profile status (132 overrides 131)
-      const effStatus = getEffectiveProfileStatusForCandidate(c);
-      if (effStatus && Number(effStatus.statusId) === 2) continue;
+      // Exclude candidates rejected in ANY profile status type
+      const allStatuses = typeof getAllProfileStatusesForCandidate === 'function'
+        ? getAllProfileStatusesForCandidate(c)
+        : [];
+      if (allStatuses.some(s => Number(s.statusId) === 2)) continue;
 
       const bonus = prefBonus(c, pref, program);
       const effectiveMarks = (c.marksTotal || 0) + bonus;
