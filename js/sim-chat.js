@@ -162,6 +162,10 @@ function _chatRoomPresenceDocId(roomId, uid) {
 }
 
 function setupChat() {
+  if (typeof firebase === 'undefined' || !firebase.apps.length) {
+    setTimeout(setupChat, 100);
+    return;
+  }
   // Pre-populate display name from Firestore profile if not already set
   if (!_chatName()) {
     try {
