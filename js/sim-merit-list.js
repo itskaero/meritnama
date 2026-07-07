@@ -2861,6 +2861,279 @@
     return null;
   }
 
+  function buildNextRoundCandidateStates() {
+    const states = new Map();
+    for (const c of candidatesData) {
+      const aid = String(c.applicantId);
+      const state = {
+        applicantId: aid,
+        candidate: c,
+        active: true,
+        effectivelyAccepted: isEffectivelyProfileAccepted(c),
+        rejected: cumulativeRejected.has(aid),
+        consentStatus: null,
+        locked: false,
+        currentSeat: null,
+        currentProgram: null,
+        currentPreference: null,
+        acceptedPrograms: new Set(),
+        droppedPrograms: new Set(),
+      };
+      if (cumulativeInactiveAids.has(aid)) state.active = false;
+      for (const item of cumulativeDroppedByProgram) {
+        const parts = String(item).split('::');
+        if (parts[0] === aid && parts[1]) state.droppedPrograms.add(parts[1]);
+      }
+      states.set(aid, state);
+    }
+
+    for (const d of meritData) {
+      if (getRowConsentVal(d) !== 'Accepted') continue;
+      const aid = String(fval(d, 'applicantId'));
+      const state = states.get(aid);
+      if (!state) continue;
+      const seat = {
+        seatKey: slotKey(d),
+        applicantId: aid,
+        rowNo: fval(d, 'rowNo'),
+        program: fval(d, 'typeName', 'type', 'program') || '',
+        quota: fval(d, 'quotaName', 'quota') || '',
+        specialty: fval(d, 'specialityName', 'speciality', 'specialty') || '',
+        hospital: fval(d, 'hospitalName', 'hospital') || '',
+        preferenceNo: prefNoFromCandidate(
+          aid,
+          fval(d, 'typeName', 'type', 'program') || '',
+          fval(d, 'quotaName', 'quota') || '',
+          fval(d, 'specialityName', 'speciality', 'specialty') || '',
+          fval(d, 'hospitalName', 'hospital') || ''
+        ),
+      };
+      state.acceptedPrograms.add(seat.program);
+      if (!state.currentSeat || (seat.preferenceNo != null && (state.currentPreference == null || seat.preferenceNo < state.currentPreference))) {
+        state.currentSeat = seat;
+        state.currentProgram = seat.program;
+        state.currentPreference = seat.preferenceNo;
+        state.locked = seat.preferenceNo === 1;
+        state.consentStatus = 'Accepted';
+      }
+    }
+
+    return states;
+  }
+
+  function buildNextRoundVacancyQueue() {
+    const queue = [];
+    for (const d of meritData) {
+      const cv = getRowConsentVal(d);
+      if (cv === 'Accepted') continue;
+      const aid = String(fval(d, 'applicantId'));
+      if (!d.isSimulatedOccupant) {
+        const isReplaced = meritData.some(m => m.isSimulatedOccupant && m.replacedAid === aid && fval(m, 'rowNo') === fval(d, 'rowNo'));
+        if (isReplaced) continue;
+      }
+      queue.push({
+        seatKey: slotKey(d),
+        rowNo: fval(d, 'rowNo'),
+        vacatingAid: aid,
+        vacatingName: fval(d, 'nameFull', 'name') || '',
+        vacatingPref: prefNoFromCandidate(
+          aid,
+          fval(d, 'typeName', 'type', 'program') || '',
+          fval(d, 'quotaName', 'quota') || '',
+          fval(d, 'specialityName', 'speciality', 'specialty') || '',
+          fval(d, 'hospitalName', 'hospital') || ''
+        ),
+        program: fval(d, 'typeName', 'type', 'program') || '',
+        q: fval(d, 'quotaName', 'quota') || '',
+        s: fval(d, 'specialityName', 'speciality', 'specialty') || '',
+        h: fval(d, 'hospitalName', 'hospital') || '',
+        source: cv,
+      });
+    }
+    return queue;
+  }
+
+  function buildNextRoundSeatStates() {
+    const seats = new Map();
+    for (const d of meritData) {
+      const seat = {
+        seatKey: slotKey(d),
+        rowNo: fval(d, 'rowNo'),
+        program: fval(d, 'typeName', 'type', 'program') || '',
+        q: fval(d, 'quotaName', 'quota') || '',
+        s: fval(d, 'specialityName', 'speciality', 'specialty') || '',
+        h: fval(d, 'hospitalName', 'hospital') || '',
+        occupant: getRowConsentVal(d) === 'Accepted' ? String(fval(d, 'applicantId')) : null,
+        vacant: getRowConsentVal(d) !== 'Accepted',
+        history: [],
+        queueState: getRowConsentVal(d),
+      };
+      seats.set(seat.seatKey, seat);
+    }
+    return seats;
+  }
+
+  function candidateIsActiveForProgram(candidateState, program) {
+    if (!candidateState || !candidateState.active) return false;
+    if (!candidateState.effectivelyAccepted) return false;
+    if (candidateState.droppedPrograms.has(program)) return false;
+    return true;
+  }
+
+  function candidateIsLocked(candidateState) {
+    return !!(candidateState && candidateState.locked && candidateState.currentSeat);
+  }
+
+  function candidateCanUpgradeToSeat(candidateState, vacancy, pref) {
+    if (!candidateState || !pref) return false;
+    if (!candidateState.currentSeat) return true;
+    const cur = candidateState.currentSeat;
+    const sameSlot = cur.program === vacancy.program && cur.q === vacancy.q && cur.s === vacancy.s && cur.h === vacancy.h;
+    if (sameSlot) return false;
+    if (candidateIsLocked(candidateState)) return false;
+    if (candidateState.currentPreference == null || pref.preferenceNo == null) return false;
+    return pref.preferenceNo < candidateState.currentPreference;
+  }
+
+  function getBestAcceptedPreferenceMapFromStates(candidateStates) {
+    const out = {};
+    for (const [aid, state] of candidateStates.entries()) {
+      if (state.currentPreference != null) out[aid] = state.currentPreference;
+    }
+    return out;
+  }
+
+  function evaluateCandidateForVacancy(candidateState, vacancy, bestAcceptedPrefMap) {
+    if (!candidateIsActiveForProgram(candidateState, vacancy.program)) return null;
+
+    const c = candidateState.candidate;
+    const aid = String(c.applicantId);
+    const pref = candidatePreferenceForSlot(c, vacancy.program, vacancy.q, vacancy.s, vacancy.h);
+    if (!pref) return null;
+
+    const bestAcceptedPref = bestAcceptedPrefMap[aid];
+    if (bestAcceptedPref != null && pref.preferenceNo != null && bestAcceptedPref < pref.preferenceNo) return null;
+
+    if (!candidateCanUpgradeToSeat(candidateState, vacancy, pref)) return null;
+
+    const bonus = prefBonus(c, pref, vacancy.program);
+    return {
+      applicantId: aid,
+      nameFull: c.nameFull || '',
+      marksTotal: (c.marksTotal || 0) + bonus,
+      preferenceNo: pref.preferenceNo,
+      pref,
+      currentSeat: candidateState.currentSeat,
+    };
+  }
+
+  function runNextMeritRoundQueueEngine() {
+    const candidateStates = buildNextRoundCandidateStates();
+    const seatStates = buildNextRoundSeatStates();
+    let vacancyQueue = buildNextRoundVacancyQueue();
+    const seenVacancyKeys = new Set(vacancyQueue.map(v => v.seatKey));
+    const results = [];
+    const movementLog = [];
+    let guard = 0;
+
+    while (vacancyQueue.length && guard < 5000) {
+      const nextQueue = [];
+      const bestAcceptedPrefMap = getBestAcceptedPreferenceMapFromStates(candidateStates);
+
+      for (const vacancy of vacancyQueue) {
+        if (!vacancy.program || !vacancy.q || !vacancy.s || !vacancy.h) continue;
+
+        const ranked = [];
+        for (const state of candidateStates.values()) {
+          const evaluation = evaluateCandidateForVacancy(state, vacancy, bestAcceptedPrefMap);
+          if (!evaluation) continue;
+          ranked.push(evaluation);
+        }
+        ranked.sort((a, b) => b.marksTotal - a.marksTotal || (a.preferenceNo || 999) - (b.preferenceNo || 999));
+        const chosen = ranked[0];
+        if (!chosen) continue;
+
+        const chosenState = candidateStates.get(String(chosen.applicantId));
+        const priorSeat = chosenState ? chosenState.currentSeat : null;
+        if (!chosenState) continue;
+        const seatState = seatStates.get(vacancy.seatKey);
+        if (!seatState) continue;
+
+        if (priorSeat) {
+          const oldVacancy = {
+            seatKey: slotKeyFor(chosen.applicantId, priorSeat.program, priorSeat.q, priorSeat.s, priorSeat.h),
+            rowNo: priorSeat.rowNo,
+            vacatingAid: String(chosen.applicantId),
+            vacatingName: chosen.nameFull,
+            vacatingPref: priorSeat.preferenceNo,
+            program: priorSeat.program,
+            q: priorSeat.q,
+            s: priorSeat.s,
+            h: priorSeat.h,
+            source: 'upgrade',
+          };
+          if (!seenVacancyKeys.has(oldVacancy.seatKey)) {
+            nextQueue.push(oldVacancy);
+            seenVacancyKeys.add(oldVacancy.seatKey);
+          }
+        }
+
+        const newSeat = {
+          seatKey: slotKeyFor(chosen.applicantId, vacancy.program, vacancy.q, vacancy.s, vacancy.h),
+          rowNo: vacancy.rowNo,
+          program: vacancy.program,
+          q: vacancy.q,
+          s: vacancy.s,
+          h: vacancy.h,
+          preferenceNo: chosen.preferenceNo,
+        };
+
+        chosenState.currentSeat = newSeat;
+        chosenState.currentProgram = vacancy.program;
+        chosenState.currentPreference = chosen.preferenceNo;
+        chosenState.acceptedPrograms.add(vacancy.program);
+        chosenState.locked = chosen.preferenceNo === 1;
+        chosenState.consentStatus = 'Accepted';
+        seatState.occupant = String(chosen.applicantId);
+        seatState.vacant = false;
+        seatState.queueState = 'Accepted';
+        seatState.history.push({
+          action: priorSeat ? 'upgrade' : 'fill',
+          applicantId: String(chosen.applicantId),
+          fromSeat: priorSeat ? slotKeyFor(chosen.applicantId, priorSeat.program, priorSeat.q, priorSeat.s, priorSeat.h) : null,
+        });
+
+        const record = {
+          program: vacancy.program,
+          q: vacancy.q,
+          s: vacancy.s,
+          h: vacancy.h,
+          vacatingAid: String(vacancy.vacatingAid),
+          vacatingPref: vacancy.vacatingPref,
+          vacatingName: vacancy.vacatingName,
+          replacement: {
+            aid: String(chosen.applicantId),
+            name: chosen.nameFull || '—',
+            marks: chosen.marksTotal,
+            prefNo: chosen.preferenceNo,
+          },
+        };
+        results.push({ record, cascades: [] });
+        movementLog.push({
+          fromSeat: priorSeat ? { program: priorSeat.program, q: priorSeat.q, s: priorSeat.s, h: priorSeat.h, prefNo: priorSeat.preferenceNo } : null,
+          toSeat: { program: vacancy.program, q: vacancy.q, s: vacancy.s, h: vacancy.h, prefNo: chosen.preferenceNo },
+          applicantId: String(chosen.applicantId),
+          nameFull: chosen.nameFull || '',
+        });
+      }
+
+      vacancyQueue = nextQueue;
+      guard++;
+    }
+
+    return { chains: results, movementLog, candidateStates, seatStates };
+  }
+
   /**
    * Recursive cascade resolver.
    * Fills a vacant slot (program/q/s/h) and cascades if the chosen
@@ -2948,44 +3221,12 @@
         }
       }
 
-      // Find all vacant slots: merit entries whose current consent is Excluded
-      // (manual toggle) or Excluded-Dropped (auto-excluded due to consent elsewhere).
-      const vacantSlots = [];
-      for (const d of meritData) {
-        const cv = getRowConsentVal(d);
-        if (cv !== 'Excluded' && cv !== 'Excluded-Dropped') continue;
-        
-        // Skip if this candidate is an original occupant who has already been replaced by a simulated occupant
-        const aid = String(fval(d, 'applicantId'));
-        if (!d.isSimulatedOccupant) {
-          const isReplaced = meritData.some(m => m.isSimulatedOccupant && m.replacedAid === aid && m.rowNo === d.rowNo);
-          if (isReplaced) continue;
-        }
-        
-        const program = fval(d, 'typeName', 'type', 'program') || '';
-        const q = fval(d, 'quotaName', 'quota') || '';
-        const s = fval(d, 'specialityName', 'speciality', 'specialty') || '';
-        const h = fval(d, 'hospitalName', 'hospital') || '';
-        if (!program) continue;
-        const vacatingPref = prefNoFromCandidate(aid, program, q, s, h);
-        vacantSlots.push({ program, q, s, h, aid, vacatingPref });
-      }
-
-      if (!vacantSlots.length) {
+      const engine = runNextMeritRoundQueueEngine();
+      const allChains = engine.chains || [];
+      if (!allChains.length) {
         setStatus('No vacant slots to simulate.', 'var(--text-muted)');
         return;
       }
-
-      // Resolve each vacant slot, cascading recursively.
-      const allChains = [];
-      const assignedAids = new Set();
-      for (const v of vacantSlots) {
-        // Skip if this vacancy was already filled as part of another cascade
-        if (assignedAids.has(v.aid)) continue;
-        const result = resolveSlot(v.program, v.q, v.s, v.h, v.aid, v.vacatingPref, assignedAids, 0);
-        if (result) allChains.push(result);
-      }
-
       showMlRoundResults(allChains);
     } catch (err) {
       console.error('Simulate Next Round error:', err);
