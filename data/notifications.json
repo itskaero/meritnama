@@ -1,5 +1,16 @@
 [
   {
+    "id": "cascade-sim-260708",
+    "icon": "⚡",
+    "linkText": "Open Merit List",
+    "type": "success",
+    "title": "Cascade Simulation Engine — Now Live",
+    "dismissable": false,
+    "link": "simulation.html?mode=merit-list",
+    "active": true,
+    "body": "The Simulate Next Round feature has been redesigned over two days to match the published merit list. The cascade engine now achieves 93.9% agreement with official Round 2 placements — 1131 out of 1204 candidates land in the exact same seat. Five algorithmic bugs were fixed: real preference numbers, beat-check only on full seats, multi-track quota restriction, specialty-specific sorting, and per-quota seat holding. Toggle consent pills, run the cascade in-browser with a live progress bar, and chain multiple simulated rounds with carry-forward rejected candidates."
+  },
+  {
     "id": "data-update-26062026",
     "icon": "📊",
     "linkText": "View changes",
