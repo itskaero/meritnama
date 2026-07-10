@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editorial — MeritNama</title>
+  <meta name="description" content="In-depth analysis, policy commentary, and data-driven insights on Pakistan medical residency admissions." />
+  <meta property="og:title" content="Editorial — MeritNama" />
+  <meta property="og:description" content="In-depth analysis, policy commentary, and data-driven insights on Pakistan medical residency admissions." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="logo.svg" />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="auth.css" />
+  <link rel="stylesheet" href="editorial-styles.css" />
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>firebase.initializeApp(firebaseConfig);</script>
+  <!-- Markdown renderer -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    .ed-admin-link {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 1.5rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      border: 1px solid rgba(124, 101, 196, 0.3);
+      background: rgba(124, 101, 196, 0.1);
+      color: #a08ee0;
+      font-size: 0.76rem;
+      font-weight: 600;
+      text-decoration: none;
+      z-index: 100;
+      transition: all 0.2s;
+    }
+    .ed-admin-link:hover { background: rgba(124, 101, 196, 0.2); }
+  </style>
+</head>
+<body class="auth-locked">
+
+<!-- ======= HEADER ======= -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <a href="simulation.html" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px;">
+        <img src="logo.png" class="logo-img" alt="MeritNama" />
+      </a>
+    </div>
+    <div class="header-meta" id="headerMeta">
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ======= NAV ======= -->
+<nav class="tab-nav" id="mainNav">
+  <a href="simulation.html" class="tab-btn">&#127973; Induction Portal</a>
+  <a href="app.html" class="tab-btn">&#128202; Historical Data</a>
+  <a href="editorial.html" class="tab-btn active">&#128214; Editorial</a>
+  <a href="reviews.html" class="tab-btn">&#128172; Discussion</a>
+  <a href="accreditation.html" class="tab-btn">&#9989; Accreditation</a>
+  <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
+</nav>
+
+<!-- ======= AUTHOR BAR ======= -->
+<div class="author-bar">
+  Independent, community-built tool by
+  <a href="https://github.com/itskaero" target="_blank" rel="noopener">@itskaero</a>
+  &middot;
+  <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a>
+</div>
+
+<!-- ======= MAIN ======= -->
+<main id="edMain">
+
+  <!-- LISTING VIEW (default) -->
+  <div id="edListView">
+    <div class="ed-hero">
+      <h2>Editorial</h2>
+      <p>In-depth analysis, policy commentary, and data-driven insights on Pakistan medical residency admissions.</p>
+    </div>
+
+    <div class="ed-filters" id="edFilters">
+      <button class="ed-chip active" data-cat="all">All</button>
+    </div>
+
+    <div class="ed-grid" id="edGrid">
+      <div class="ed-loading">Loading articles&hellip;</div>
+    </div>
+  </div>
+
+  <!-- ARTICLE DETAIL VIEW (hidden by default) -->
+  <div id="edDetailView" style="display:none;">
+    <div class="ed-article" id="edArticle">
+      <div class="ed-loading">Loading article&hellip;</div>
+    </div>
+  </div>
+
+</main>
+
+<!-- AI Assistant FAB -->
+<button class="ed-ai-fab" id="edAiFab" title="AI Assistant">&#9733;</button>
+<div class="ed-ai-panel" id="edAiPanel">
+  <div class="ed-ai-header">
+    <h4>&#9733; AI Assistant</h4>
+    <button class="ed-ai-close" id="edAiClose">&times;</button>
+  </div>
+  <div class="ed-ai-body" id="edAiBody">
+    <p style="margin:0;color:var(--text-muted);font-size:0.82rem;">Ask a question about this article or Pakistan residency admissions.</p>
+  </div>
+  <div class="ed-ai-input">
+    <input type="text" id="edAiInput" placeholder="Ask a question&hellip;" />
+    <button class="ed-ai-send" id="edAiSend">Ask</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="ed-toast" id="edToast"></div>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <p>MeritNama &middot; Data from official PHF merit lists</p>
+  <p style="margin-top:4px;font-size:0.73rem">All predictions are based on historical data only. Always verify with official PHF / PGMI sources before making application decisions.</p>
+</footer>
+
+<!-- Scripts -->
+<script src="auth.js"></script>
+<script src="editorial.js"></script>
+
+</body>
+</html>

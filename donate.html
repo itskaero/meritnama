@@ -4,651 +4,630 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Support MeritNama — Keep the Data Flowing</title>
+  <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="auth.css" />
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script>firebase.initializeApp(firebaseConfig);</script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    .support-page { max-width: 880px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
 
-    :root {
-      --bg:        #080b12;
-      --surface:   #0e1420;
-      --card:      #131926;
-      --border:    rgba(99,179,237,.12);
-      --accent1:   #38bdf8;
-      --accent2:   #818cf8;
-      --danger:    #f472b6;
-      --text:      #e2e8f0;
-      --muted:     #64748b;
-      --radius:    14px;
-      --glow:      0 0 28px rgba(56,189,248,.18);
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      overflow-x: hidden;
-      line-height: 1.6;
-    }
-
-    /* ── animated mesh background ── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 60% 50% at 20% 0%,   rgba(56,189,248,.07) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 40% at 80% 100%, rgba(129,140,248,.07) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 60% at 60% 50%,  rgba(244,114,182,.04) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .container {
-      position: relative;
-      z-index: 1;
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 2rem 1.25rem 4rem;
-    }
-
-    /* ── header ── */
-    .header {
+    /* ── Hero ── */
+    .sp-hero {
       text-align: center;
-      padding: 3rem 0 2rem;
+      padding: 3.5rem 0 2rem;
+      position: relative;
     }
-    .header .badge {
+    .sp-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse, rgba(124,101,196,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .sp-hero-badge {
       display: inline-flex;
       align-items: center;
-      gap: .45rem;
-      background: rgba(56,189,248,.1);
-      border: 1px solid rgba(56,189,248,.25);
-      border-radius: 999px;
-      padding: .3rem .9rem;
-      font-size: .78rem;
-      font-weight: 600;
-      color: var(--accent1);
-      letter-spacing: .05em;
+      gap: 0.5rem;
+      background: rgba(124,101,196,0.1);
+      border: 1px solid rgba(124,101,196,0.25);
+      border-radius: 100px;
+      padding: 0.35rem 1rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--neon-purple);
+      letter-spacing: 0.07em;
       text-transform: uppercase;
       margin-bottom: 1.2rem;
     }
-    .header .badge .dot {
+    .sp-hero-badge .pulse-dot {
       width: 6px; height: 6px;
       border-radius: 50%;
-      background: var(--accent1);
-      animation: pulse 1.8s ease infinite;
+      background: var(--neon-purple);
+      animation: spPulse 2s ease infinite;
     }
-    @keyframes pulse {
+    @keyframes spPulse {
       0%,100% { opacity: 1; transform: scale(1); }
-      50%      { opacity: .4; transform: scale(1.4); }
+      50% { opacity: 0.4; transform: scale(1.5); }
     }
-    .header h1 {
-      font-size: clamp(1.9rem, 5vw, 2.8rem);
+    .sp-hero h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
       font-weight: 800;
-      letter-spacing: -.02em;
-      background: linear-gradient(135deg, var(--accent1) 0%, var(--accent2) 60%, var(--danger) 100%);
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-purple) 55%, var(--neon-pink) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      margin-bottom: .6rem;
+      margin-bottom: 0.7rem;
+      line-height: 1.15;
     }
-    .header p {
-      color: var(--muted);
-      font-size: 1rem;
-      max-width: 480px;
+    .sp-hero p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      max-width: 520px;
       margin: 0 auto;
-    }
-    .supporter-hero {
-      background:
-        linear-gradient(135deg, rgba(232,166,39,.1), rgba(129,140,248,.07)),
-        var(--card);
-      border: 1px solid rgba(232,166,39,.22);
-      border-radius: 20px;
-      padding: 1.35rem 1.45rem;
-      margin: 0 0 1.5rem;
-      box-shadow: 0 0 34px rgba(232,166,39,.08);
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 1rem;
-      align-items: center;
-    }
-    .supporter-hero h2 {
-      font-size: 1.15rem;
-      color: var(--text);
-      margin-bottom: .25rem;
-    }
-    .supporter-hero p {
-      color: #94a3b8;
-      font-size: .86rem;
-      line-height: 1.6;
-    }
-    .supporter-cta-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .55rem;
-      justify-content: flex-end;
-    }
-    .supporter-cta {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: .35rem;
-      padding: .65rem .9rem;
-      border-radius: 999px;
-      border: 1px solid rgba(56,189,248,.24);
-      background: rgba(56,189,248,.08);
-      color: var(--accent1);
-      text-decoration: none;
-      font-size: .78rem;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-    .supporter-cta.primary {
-      background: linear-gradient(135deg, rgba(232,166,39,.95), rgba(244,114,182,.82));
-      color: #0b1020;
-      border-color: transparent;
+      line-height: 1.65;
     }
 
-    /* ── why it costs section ── */
-    .why-card {
-      background: linear-gradient(135deg, rgba(244,114,182,.06) 0%, rgba(129,140,248,.06) 100%);
-      border: 1px solid rgba(244,114,182,.18);
-      border-radius: var(--radius);
-      padding: 1.4rem 1.6rem;
-      margin: 2rem 0;
+    /* ── Stats row ── */
+    .sp-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.85rem;
+      margin: 2rem 0 2.5rem;
+    }
+    .sp-stat {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 1rem;
+      text-align: center;
       position: relative;
       overflow: hidden;
     }
-    .why-card::before {
+    .sp-stat::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+    .sp-stat:nth-child(1)::before { background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent); }
+    .sp-stat:nth-child(2)::before { background: linear-gradient(90deg, transparent, var(--neon-purple), transparent); }
+    .sp-stat:nth-child(3)::before { background: linear-gradient(90deg, transparent, var(--neon-gold), transparent); }
+    .sp-stat .sp-stat-val {
+      font-size: 1.4rem;
+      font-weight: 800;
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+    .sp-stat:nth-child(1) .sp-stat-val { color: var(--neon-cyan); }
+    .sp-stat:nth-child(2) .sp-stat-val { color: var(--neon-purple); }
+    .sp-stat:nth-child(3) .sp-stat-val { color: var(--neon-gold); }
+    .sp-stat .sp-stat-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    /* ── Section titles ── */
+    .sp-section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .sp-section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    /* ── Why card ── */
+    .sp-why {
+      background: linear-gradient(135deg, rgba(224,84,112,0.05) 0%, rgba(124,101,196,0.05) 100%);
+      border: 1px solid rgba(224,84,112,0.15);
+      border-radius: 14px;
+      padding: 1.6rem 1.75rem;
+      margin-bottom: 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .sp-why::before {
       content: '';
       position: absolute;
       top: 0; left: 0;
       width: 3px; height: 100%;
-      background: linear-gradient(180deg, var(--danger), var(--accent2));
-      border-radius: 3px 0 0 3px;
+      background: linear-gradient(180deg, var(--neon-pink), var(--neon-purple));
     }
-    .why-card .why-icon {
-      font-size: 1.4rem;
-      margin-bottom: .6rem;
-      display: block;
-    }
-    .why-card h3 {
-      font-size: 1rem;
+    .sp-why h3 {
+      font-size: 1.05rem;
       font-weight: 700;
-      color: var(--danger);
-      margin-bottom: .5rem;
-      letter-spacing: .01em;
+      color: var(--neon-pink);
+      margin-bottom: 0.65rem;
     }
-    .why-card p {
-      font-size: .88rem;
-      color: #94a3b8;
-      margin-bottom: .5rem;
+    .sp-why p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 0.5rem;
     }
-    .why-card p:last-child { margin-bottom: 0; }
-    .why-card strong { color: var(--text); }
+    .sp-why p:last-child { margin-bottom: 0; }
+    .sp-why strong { color: var(--text); }
 
-    /* ── cost breakdown ── */
-    .cost-strip {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .75rem;
-      margin: 1.5rem 0 2rem;
-      justify-content: center;
-    }
-    .cost-item {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: .7rem 1.1rem;
-      text-align: center;
-      flex: 1 1 140px;
-    }
-    .cost-item .cost-val {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: var(--accent1);
-      display: block;
-    }
-    .cost-item .cost-label {
-      font-size: .72rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
-
-    /* ── amount cards (display only) ── */
-    .section-title {
-      font-size: .72rem;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .1em;
-      margin-bottom: .9rem;
-    }
-    .amounts {
+    /* ── Cost cards ── */
+    .sp-costs {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: .75rem;
-      margin-bottom: 2rem;
+      gap: 0.85rem;
+      margin-bottom: 2.5rem;
     }
-    .amount-card {
-      background: var(--card);
+    .sp-cost {
+      background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.1rem .9rem;
+      border-radius: 12px;
+      padding: 1.2rem 1rem;
+      text-align: center;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .sp-cost:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+    .sp-cost .sp-cost-icon { font-size: 1.6rem; margin-bottom: 0.4rem; display: block; }
+    .sp-cost .sp-cost-val {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text);
+      display: block;
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    .sp-cost .sp-cost-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Amounts ── */
+    .sp-amounts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.85rem;
+      margin-bottom: 2.5rem;
+    }
+    .sp-amount {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.3rem 1rem;
       text-align: center;
       position: relative;
       overflow: hidden;
-      cursor: default;
-      user-select: none;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .sp-amount:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .sp-amount::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(77,184,217,0.04), rgba(124,101,196,0.04));
+      pointer-events: none;
+    }
+    .sp-amount .sp-amt-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--neon-purple);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.4rem;
+    }
+    .sp-amount .sp-amt-val {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+    .sp-amount .sp-amt-note {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .sp-amount.featured {
+      border-color: rgba(124,101,196,0.3);
+      background: linear-gradient(135deg, rgba(124,101,196,0.08), rgba(77,184,217,0.04));
+    }
+    .sp-amount.featured::before {
+      content: '★ Most Popular';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      background: linear-gradient(135deg, var(--neon-purple), rgba(124,101,196,0.8));
+      color: #fff;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.25rem 0;
+      text-align: center;
     }
 
-    /* ── contributors wall ── */
-    .contributors-section {
-      margin: 1.25rem 0 2rem;
-    }
-    .contributors-section.is-featured {
-      padding: 1.25rem;
-      border-radius: 18px;
-      background: rgba(255,255,255,.025);
-      border: 1px solid rgba(232,166,39,.16);
-    }
-    .contributors-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: .85rem;
-    }
-    .contributor-card {
-      background: var(--card);
+    /* ── Payment section ── */
+    .sp-payment {
+      background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1rem 1.2rem;
+      border-radius: 16px;
+      padding: 1.75rem;
+      margin-bottom: 2.5rem;
+    }
+    .sp-payment-header {
       display: flex;
       align-items: center;
-      gap: .85rem;
-      transition: border-color .2s, transform .15s;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
     }
-    .contributor-card:hover {
-      border-color: rgba(56,189,248,.3);
-      transform: translateY(-2px);
-    }
-    .contributor-avatar {
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, rgba(56,189,248,.15), rgba(129,140,248,.15));
-      border: 1px solid rgba(56,189,248,.25);
-      display: flex; align-items: center; justify-content: center;
-      font-size: .85rem;
-      font-weight: 700;
-      color: var(--accent1);
+    .sp-payment-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(77,184,217,0.12), rgba(124,101,196,0.12));
+      border: 1px solid rgba(77,184,217,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
       flex-shrink: 0;
     }
-    .contributor-info {
-      flex: 1;
-      min-width: 0;
+    .sp-payment-title { font-weight: 700; font-size: 1.05rem; }
+    .sp-payment-sub { font-size: 0.78rem; color: var(--text-muted); }
+
+    /* ── Payment tabs ── */
+    .sp-tabs {
+      display: flex;
+      gap: 0.4rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.3rem;
+      margin-bottom: 1.25rem;
     }
-    .contributor-name {
-      font-size: .88rem;
+    .sp-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-family: var(--font);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    .sp-tab.active {
+      background: var(--bg-card);
+      color: var(--neon-cyan);
+      box-shadow: 0 1px 8px rgba(0,0,0,0.3);
+    }
+    .sp-tab:hover:not(.active) { color: var(--text); }
+
+    .sp-panel { display: none; }
+    .sp-panel.active { display: block; }
+
+    /* ── Bank fields ── */
+    .sp-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      margin-bottom: 1rem;
+    }
+    .sp-field:last-child { margin-bottom: 0; }
+    .sp-field-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .sp-field-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .sp-field-val {
+      flex: 1;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+      font-family: var(--mono);
+      letter-spacing: 0.03em;
+      word-break: break-all;
+    }
+    .sp-copy-btn {
+      background: rgba(77,184,217,0.1);
+      border: 1px solid rgba(77,184,217,0.25);
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      color: var(--neon-cyan);
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: var(--font);
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .sp-copy-btn:hover { background: rgba(77,184,217,0.18); }
+    .sp-copy-btn:active { transform: scale(0.95); }
+    .sp-copy-btn.copied {
+      background: rgba(62,207,142,0.12);
+      border-color: rgba(62,207,142,0.3);
+      color: var(--neon-green);
+    }
+    .sp-field-note {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-family: var(--font);
+    }
+
+    /* ── QR ── */
+    .sp-qr-wrap {
+      text-align: center;
+      padding: 1rem 0;
+    }
+    .sp-qr-box {
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px;
+      display: inline-block;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    #qrcode canvas, #qrcode img { display: block; }
+    .sp-qr-hint {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.75rem;
+    }
+    .sp-qr-hint strong { color: var(--text); }
+
+    /* ── Contributors wall ── */
+    .sp-contributors {
+      margin-bottom: 2.5rem;
+    }
+    .sp-contrib-total {
+      text-align: center;
+      margin-bottom: 1.25rem;
+      padding: 1.1rem;
+      background: linear-gradient(135deg, rgba(62,207,142,0.06), rgba(77,184,217,0.06));
+      border: 1px solid rgba(62,207,142,0.15);
+      border-radius: 12px;
+    }
+    .sp-contrib-total .total-val {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--neon-green);
+    }
+    .sp-contrib-total .total-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .sp-contrib-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 0.75rem;
+    }
+    .sp-contrib-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.9rem 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .sp-contrib-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-1px);
+    }
+    .sp-contrib-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(77,184,217,0.12), rgba(124,101,196,0.12));
+      border: 1px solid rgba(77,184,217,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--neon-cyan);
+      flex-shrink: 0;
+    }
+    .sp-contrib-info { flex: 1; min-width: 0; }
+    .sp-contrib-name {
+      font-size: 0.85rem;
       font-weight: 700;
       color: var(--text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .contributor-amount {
-      font-size: .75rem;
-      color: var(--accent1);
+    .sp-contrib-amt {
+      font-size: 0.72rem;
+      color: var(--neon-green);
       font-weight: 600;
     }
-    .contributor-date {
-      font-size: .68rem;
-      color: var(--muted);
+    .sp-contrib-date {
+      font-size: 0.66rem;
+      color: var(--text-light);
     }
-    .contributors-empty {
+    .sp-contrib-empty {
       text-align: center;
-      padding: 2rem;
-      color: var(--muted);
-      font-size: .85rem;
-    }
-    .contributors-total {
-      text-align: center;
-      margin-bottom: 1.5rem;
-      padding: 1rem;
-      background: linear-gradient(135deg, rgba(56,189,248,.06), rgba(129,140,248,.06));
-      border: 1px solid rgba(56,189,248,.15);
-      border-radius: var(--radius);
-    }
-    .contributors-total .total-val {
-      font-size: 1.6rem;
-      font-weight: 800;
-      color: var(--accent1);
-    }
-    .contributors-total .total-label {
-      font-size: .72rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
-    .amount-card::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(56,189,248,.05), rgba(129,140,248,.05));
-      pointer-events: none;
-    }
-    .amount-card .pkr {
-      font-size: .7rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .08em;
-    }
-    .amount-card .amount-val {
-      font-size: 1.55rem;
-      font-weight: 800;
-      color: var(--text);
-      line-height: 1;
-      margin: .25rem 0;
-    }
-    .amount-card .amount-note {
-      font-size: .72rem;
-      color: var(--muted);
-    }
-    /* ── payment tabs ── */
-    .tabs {
-      display: flex;
-      gap: .5rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: .3rem;
-      margin-bottom: 1.25rem;
-    }
-    .tab-btn {
-      flex: 1;
-      background: transparent;
-      border: none;
-      border-radius: 8px;
-      padding: .65rem 1rem;
-      font-size: .88rem;
-      font-weight: 600;
-      color: var(--muted);
-      cursor: pointer;
-      transition: background .2s, color .2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: .45rem;
-    }
-    .tab-btn.active {
-      background: var(--card);
-      color: var(--accent1);
-      box-shadow: 0 1px 8px rgba(0,0,0,.3);
-    }
-    .tab-btn svg { flex-shrink: 0; }
-
-    /* ── panel ── */
-    .panel { display: none; }
-    .panel.active { display: block; }
-
-    /* ── bank transfer card ── */
-    .bank-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-    }
-    .bank-header {
-      display: flex;
-      align-items: center;
-      gap: .75rem;
-      margin-bottom: 1.25rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--border);
-    }
-    .bank-logo {
-      width: 44px; height: 44px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #1a3a5c, #0d2240);
-      border: 1px solid rgba(56,189,248,.2);
-      display: flex; align-items: center; justify-content: center;
-      font-size: .6rem;
-      font-weight: 800;
-      color: var(--accent1);
-      letter-spacing: .04em;
-      flex-shrink: 0;
-      line-height: 1.2;
-      text-align: center;
-    }
-    .bank-name { font-weight: 700; font-size: 1rem; }
-    .bank-sub  { font-size: .78rem; color: var(--muted); }
-
-    .field-row {
-      display: flex;
-      flex-direction: column;
-      gap: .2rem;
-      margin-bottom: 1rem;
-    }
-    .field-row:last-of-type { margin-bottom: 0; }
-    .field-label {
-      font-size: .7rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .08em;
-    }
-    .field-value-wrap {
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-    }
-    .field-value {
-      flex: 1;
-      background: rgba(255,255,255,.04);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: .55rem .85rem;
-      font-size: .92rem;
-      font-weight: 600;
-      color: var(--text);
-      font-family: 'Courier New', monospace;
-      letter-spacing: .03em;
-      word-break: break-all;
-    }
-    .copy-btn {
-      background: rgba(56,189,248,.1);
-      border: 1px solid rgba(56,189,248,.25);
-      border-radius: 8px;
-      padding: .55rem .75rem;
-      color: var(--accent1);
-      cursor: pointer;
-      transition: background .2s, transform .1s;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      gap: .35rem;
-      font-size: .8rem;
-      font-weight: 600;
-    }
-    .copy-btn:hover  { background: rgba(56,189,248,.18); }
-    .copy-btn:active { transform: scale(.95); }
-    .copy-btn.copied {
-      background: rgba(52,211,153,.15);
-      border-color: rgba(52,211,153,.35);
-      color: #34d399;
+      padding: 2.5rem 1rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
     }
 
-    /* ── Raast panel ── */
-    .raast-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      text-align: center;
+    /* ── Process steps ── */
+    .sp-process {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.85rem;
+      margin-bottom: 2.5rem;
     }
-    .raast-badge {
+    .sp-step {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem 1rem;
+      text-align: center;
+      position: relative;
+    }
+    .sp-step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(124,101,196,0.12);
+      border: 1px solid rgba(124,101,196,0.25);
       display: inline-flex;
       align-items: center;
-      gap: .4rem;
-      background: linear-gradient(135deg, rgba(56,189,248,.15), rgba(129,140,248,.15));
-      border: 1px solid rgba(129,140,248,.25);
-      border-radius: 999px;
-      padding: .28rem .8rem;
-      font-size: .72rem;
-      font-weight: 700;
-      color: var(--accent2);
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      margin-bottom: 1rem;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--neon-purple);
+      margin-bottom: 0.6rem;
     }
-    .qr-wrapper {
-      background: #fff;
-      border-radius: 12px;
-      padding: 14px;
-      display: inline-block;
-      margin: .5rem auto 1.25rem;
-      box-shadow: 0 4px 24px rgba(0,0,0,.4);
-    }
-    #qrcode canvas, #qrcode img { display: block; }
-    .raast-id-row {
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-      max-width: 320px;
-      margin: 0 auto;
-    }
-    .raast-id {
-      flex: 1;
-      background: rgba(255,255,255,.04);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: .55rem .85rem;
-      font-size: .92rem;
+    .sp-step h4 {
+      font-size: 0.88rem;
       font-weight: 700;
       color: var(--text);
-      font-family: 'Courier New', monospace;
-      letter-spacing: .06em;
-      text-align: center;
+      margin-bottom: 0.3rem;
     }
-    .raast-hint {
-      font-size: .78rem;
-      color: var(--muted);
-      margin-top: .75rem;
+    .sp-step p {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      line-height: 1.5;
     }
 
-    /* ── toast ── */
-    .toast {
+    /* ── Footer ── */
+    .sp-footer {
+      text-align: center;
+      padding: 2rem 0 0;
+      border-top: 1px solid var(--border);
+    }
+    .sp-footer p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 0.3rem;
+    }
+    .sp-footer strong { color: var(--text); }
+    .sp-footer a {
+      color: var(--neon-cyan);
+      text-decoration: none;
+    }
+    .sp-footer a:hover { text-decoration: underline; }
+
+    /* ── Toast ── */
+    .sp-toast {
       position: fixed;
       bottom: 2rem;
       left: 50%;
       transform: translateX(-50%) translateY(120%);
-      background: linear-gradient(135deg, #0f2a1e, #0d2532);
-      border: 1px solid rgba(52,211,153,.35);
+      background: linear-gradient(135deg, rgba(15,42,30,0.95), rgba(13,37,50,0.95));
+      border: 1px solid rgba(62,207,142,0.35);
       border-radius: 12px;
-      padding: .75rem 1.4rem;
+      padding: 0.7rem 1.3rem;
       display: flex;
       align-items: center;
-      gap: .6rem;
-      font-size: .88rem;
+      gap: 0.6rem;
+      font-size: 0.85rem;
       font-weight: 600;
-      color: #34d399;
-      box-shadow: 0 8px 32px rgba(0,0,0,.5), 0 0 16px rgba(52,211,153,.15);
+      color: var(--neon-green);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 16px rgba(62,207,142,0.12);
       z-index: 9999;
-      transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .35s;
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.35s;
       opacity: 0;
       white-space: nowrap;
     }
-    .toast.show {
+    .sp-toast.show {
       transform: translateX(-50%) translateY(0);
       opacity: 1;
     }
-    .toast-icon {
-      width: 22px; height: 22px;
-      background: rgba(52,211,153,.15);
+    .sp-toast-icon {
+      width: 20px; height: 20px;
+      background: rgba(62,207,142,0.15);
       border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
     }
 
-    /* ── footer note ── */
-    .footer-note {
-      text-align: center;
-      margin-top: 2.5rem;
-      font-size: .78rem;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-    .footer-note a {
-      color: var(--accent1);
-      text-decoration: none;
-    }
-    .footer-note a:hover { text-decoration: underline; }
-
-    /* ── divider ── */
-    .divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border), transparent);
-      margin: 2rem 0;
-    }
-
-    /* ── mobile ── */
-    @media (max-width: 480px) {
-      .amounts { grid-template-columns: repeat(3, 1fr); gap: .5rem; }
-      .amount-card { padding: .85rem .5rem; }
-      .amount-card .amount-val { font-size: 1.3rem; }
-      .cost-strip { flex-direction: row; }
-      .cost-item { flex: 1 1 100px; }
-      .tabs { flex-direction: column; }
-      .supporter-hero { grid-template-columns: 1fr; }
-      .supporter-cta-row { justify-content: flex-start; }
+    /* ── Mobile ── */
+    @media (max-width: 600px) {
+      .sp-stats { grid-template-columns: 1fr; }
+      .sp-costs { grid-template-columns: 1fr; }
+      .sp-amounts { grid-template-columns: 1fr; }
+      .sp-process { grid-template-columns: 1fr; }
+      .sp-contrib-grid { grid-template-columns: 1fr; }
+      .sp-tabs { flex-direction: column; }
     }
   </style>
 </head>
 <body>
 
-<div class="container">
+<div class="support-page">
 
-  <!-- Header -->
-  <div class="header">
-    <div class="badge"><span class="dot"></span> Open Source · No Ads · Community-Funded</div>
-    <h1>Keep MeritNama Running</h1>
-    <p>Supporters keep live merit data, simulations, and candidate tools online for everyone.</p>
+  <!-- Hero -->
+  <div class="sp-hero">
+    <div class="sp-hero-badge"><span class="pulse-dot"></span> Community-Funded · No Ads</div>
+    <h1>Keep MeritNama<br>Running</h1>
+    <p>Supporters keep live merit data, simulations, and candidate tools online for every applicant in Pakistan.</p>
   </div>
 
-  <div class="supporter-hero">
-    <div>
-      <h2>Supporters get a visible MeritNama badge</h2>
-      <p>Verified contributions appear on public profiles and help unlock donor-only downloads as export tools are added.</p>
+  <!-- Stats -->
+  <div class="sp-stats">
+    <div class="sp-stat">
+      <span class="sp-stat-val" id="statTotal">$0.00</span>
+      <span class="sp-stat-label">Total Raised</span>
     </div>
-    <div class="supporter-cta-row">
-      <a class="supporter-cta primary" href="#payment">Support now</a>
-      <a class="supporter-cta" href="#contributors">View contributors</a>
+    <div class="sp-stat">
+      <span class="sp-stat-val" id="statSupporters">0</span>
+      <span class="sp-stat-label">Supporters</span>
     </div>
-  </div>
-
-  <!-- Contributors Wall -->
-  <div class="contributors-section is-featured" id="contributors">
-    <p class="section-title">★ MeritNama Supporters</p>
-    <div class="contributors-total" id="contributorsTotal" style="display:none;">
-      <div class="total-label">Total Contributed</div>
-      <div class="total-val" id="totalContributed">—</div>
-    </div>
-    <div class="contributors-grid" id="contributorsGrid">
-      <div class="contributors-empty">Loading contributors…</div>
+    <div class="sp-stat">
+      <span class="sp-stat-val">$2.40</span>
+      <span class="sp-stat-label">Per Data Fetch</span>
     </div>
   </div>
 
-  <!-- Why it costs -->
-  <div class="why-card">
-    <span class="why-icon">⚠️</span>
+  <!-- Why section -->
+  <div class="sp-why">
     <h3>Why Does This Cost Money Now?</h3>
     <p>
       Until recently, PRP merit list data was openly accessible — no barriers, no restrictions.
@@ -661,192 +640,190 @@
       infrastructure. Running this now requires <strong>rotating proxies and cloud VMs</strong> just to fetch
       the same data that was completely free to read before.
     </p>
-    <p>
-      This isn't a technical problem. It's a <strong>political one</strong>.
-    </p>
+    <p>This isn't a technical problem. It's a <strong>political one</strong>.</p>
   </div>
 
   <!-- Cost breakdown -->
-  <p class="section-title">Cost per full data fetch</p>
-  <div class="cost-strip">
-    <div class="cost-item">
-      <span class="cost-val">$0.40</span>
-      <span class="cost-label">per hour (VM + proxy)</span>
+  <div class="sp-section-label">What it costs</div>
+  <div class="sp-costs">
+    <div class="sp-cost">
+      <span class="sp-cost-icon">⚡</span>
+      <span class="sp-cost-val">$0.40</span>
+      <span class="sp-cost-label">per hour (VM + proxy)</span>
     </div>
-    <div class="cost-item">
-      <span class="cost-val">~6 hrs</span>
-      <span class="cost-label">avg. full fetch time</span>
+    <div class="sp-cost">
+      <span class="sp-cost-icon">⏱</span>
+      <span class="sp-cost-val">~6 hrs</span>
+      <span class="sp-cost-label">avg. full fetch time</span>
     </div>
-    <div class="cost-item">
-      <span class="cost-val">~$2.40</span>
-      <span class="cost-label">≈ PKR 670 per run</span>
-    </div>
-  </div>
-
-  <div class="divider"></div>
-
-  <!-- What a run costs -->
-  <p class="section-title">What it costs to keep data flowing</p>
-  <p style="font-size:.85rem; color:var(--muted); margin-bottom:1rem; line-height:1.7;">
-    There's no fixed donation amount — send whatever you can. Each data fetch run costs roughly <strong style="color:var(--text)">PKR 670 (~$2.40 USD)</strong>.
-    Even a small contribution covers part of a fetch; larger ones fund multiple runs and keep the data fresh for everyone.
-  </p>
-  <div class="amounts">
-    <div class="amount-card">
-      <div class="pkr">1 RUN</div>
-      <div class="amount-val">≈ $2.40</div>
-      <div class="amount-note">PKR 670</div>
-    </div>
-    <div class="amount-card">
-      <div class="pkr">WEEKLY</div>
-      <div class="amount-val">≈ $7</div>
-      <div class="amount-note">3 full runs</div>
-    </div>
-    <div class="amount-card">
-      <div class="pkr">MONTHLY</div>
-      <div class="amount-val">≈ $29</div>
-      <div class="amount-note">12 runs 🔥</div>
+    <div class="sp-cost">
+      <span class="sp-cost-icon">💰</span>
+      <span class="sp-cost-val">~$2.40</span>
+      <span class="sp-cost-label">≈ PKR 670 per run</span>
     </div>
   </div>
 
-  <!-- Payment tabs -->
-  <div id="payment"></div>
-  <p class="section-title">Payment details</p>
-  <p style="font-size:.82rem;color:var(--muted);margin:-.35rem 0 1rem;line-height:1.6;">
-    Donation details are kept compact here. After transfer, request access with the transaction reference so admin can verify it and link your supporter badge.
-  </p>
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('bank', this)">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="2" y="5" width="20" height="14" rx="2"/>
-        <line x1="2" y1="10" x2="22" y2="10"/>
-      </svg>
-      Bank Transfer
-    </button>
-    <button class="tab-btn" onclick="switchTab('raast', this)">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-        <rect x="3" y="14" width="7" height="7"/>
-        <path d="M14 14h3v3M17 14h3M17 20h3M14 17v3"/>
-      </svg>
-      Raast / QR
-    </button>
+  <!-- Suggested amounts -->
+  <div class="sp-section-label">Suggested amounts</div>
+  <div class="sp-amounts">
+    <div class="sp-amount">
+      <div class="sp-amt-tag">1 Run</div>
+      <div class="sp-amt-val">≈ $2.40</div>
+      <div class="sp-amt-note">PKR 670</div>
+    </div>
+    <div class="sp-amount featured">
+      <div class="sp-amt-tag">Weekly</div>
+      <div class="sp-amt-val">≈ $7</div>
+      <div class="sp-amt-note">3 full runs</div>
+    </div>
+    <div class="sp-amount">
+      <div class="sp-amt-tag">Monthly</div>
+      <div class="sp-amt-val">≈ $29</div>
+      <div class="sp-amt-note">12 runs 🔥</div>
+    </div>
   </div>
 
-  <!-- Bank Transfer Panel -->
-  <div class="panel active" id="panel-bank">
-    <div class="bank-card">
-      <div class="bank-header">
-        <div class="bank-logo">MASH<br>REQ</div>
-        <div>
-          <div class="bank-name">Mashreq Pakistan</div>
-          <div class="bank-sub">Direct Bank Transfer</div>
-        </div>
+  <!-- Payment section -->
+  <div class="sp-payment" id="payment">
+    <div class="sp-payment-header">
+      <div class="sp-payment-icon">💳</div>
+      <div>
+        <div class="sp-payment-title">Make a Transfer</div>
+        <div class="sp-payment-sub">Send any amount — every contribution counts</div>
       </div>
+    </div>
 
-      <div class="field-row">
-        <span class="field-label">Account Title</span>
-        <div class="field-value">A** T****</div>
+    <div class="sp-tabs">
+      <button class="sp-tab active" onclick="switchTab('bank', this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        Bank Transfer
+      </button>
+      <button class="sp-tab" onclick="switchTab('raast', this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M17 14v6"/></svg>
+        Raast / QR
+      </button>
+    </div>
+
+    <!-- Bank Transfer Panel -->
+    <div class="sp-panel active" id="panel-bank">
+      <div class="sp-field">
+        <span class="sp-field-label">Account Title</span>
+        <div class="sp-field-note">A** T****</div>
       </div>
-
-      <div class="field-row">
-        <span class="field-label">Account / Raast Number</span>
-        <div class="field-value-wrap">
-          <div class="field-value" id="acc-num-display">0891-2007-4774</div>
-          <button class="copy-btn" id="copy-acc-btn" onclick="copyText('0891 2007 4774', 'copy-acc-btn', 'Account number')">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2"/>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-            </svg>
+      <div class="sp-field">
+        <span class="sp-field-label">Account / Raast Number</span>
+        <div class="sp-field-row">
+          <div class="sp-field-val">0891-2007-4774</div>
+          <button class="sp-copy-btn" id="copy-acc-btn" onclick="copyText('0891 2007 4774', 'copy-acc-btn', 'Account number')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             Copy
           </button>
         </div>
       </div>
-
-      <div class="field-row">
-        <span class="field-label">Bank</span>
-        <div class="field-value">Mashreq Pakistan</div>
+      <div class="sp-field">
+        <span class="sp-field-label">Bank</span>
+        <div class="sp-field-note">Mashreq Pakistan</div>
       </div>
-
-      <div class="field-row" style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border);">
-        <span class="field-label">Transfer Reference (optional)</span>
-        <div class="field-value" style="font-family:'Segoe UI',sans-serif; letter-spacing:0; font-weight:400;">MeritNama Support</div>
+      <div class="sp-field" style="margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid var(--border);">
+        <span class="sp-field-label">Transfer Reference (optional)</span>
+        <div class="sp-field-note" style="font-family:var(--font);letter-spacing:0;font-weight:400;">MeritNama Support</div>
       </div>
+    </div>
+
+    <!-- Raast / QR Panel -->
+    <div class="sp-panel" id="panel-raast">
+      <div class="sp-qr-wrap">
+        <div class="sp-qr-box">
+          <div id="qrcode"></div>
+        </div>
+        <p class="sp-qr-hint">Scan with any Pakistani banking app</p>
+      </div>
+      <div class="sp-field" style="margin-top:0.5rem;">
+        <span class="sp-field-label">Raast ID</span>
+        <div class="sp-field-row">
+          <div class="sp-field-val" style="text-align:center;">0891-2007-4774</div>
+          <button class="sp-copy-btn" id="copy-raast-btn" onclick="copyText('089120074774', 'copy-raast-btn', 'Raast ID')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+      </div>
+      <p class="sp-qr-hint">Account holder: <strong>A** T****</strong> · Mashreq Pakistan</p>
     </div>
   </div>
 
-  <!-- Raast / QR Panel -->
-  <div class="panel" id="panel-raast">
-    <div class="raast-card">
-      <div class="raast-badge">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
-        Raast Instant Payment
-      </div>
-      <p style="font-size:.83rem; color:var(--muted); margin-bottom:.75rem;">
-        Scan with any Pakistani banking app — HBL, MCB, UBL, Meezan, JazzCash, Easypaisa, and more.
-      </p>
-      <div class="qr-wrapper">
-        <div id="qrcode"></div>
-      </div>
-      <p style="font-size:.75rem; color:var(--muted); margin-bottom:.75rem;">— or send directly to —</p>
-      <div class="raast-id-row">
-        <div class="raast-id" id="raast-id-display">0891-200-74774</div>
-        <button class="copy-btn" id="copy-raast-btn" onclick="copyText('089120074774', 'copy-raast-btn', 'Raast ID')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2"/>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-          </svg>
-          Copy
-        </button>
-      </div>
-      <p class="raast-hint">Account holder: <strong style="color:var(--text)">A** T****</strong> · Mashreq Pakistan</p>
+  <!-- Process steps -->
+  <div class="sp-section-label">How it works</div>
+  <div class="sp-process">
+    <div class="sp-step">
+      <div class="sp-step-num">1</div>
+      <h4>Transfer</h4>
+      <p>Send any amount via bank transfer or Raast to the details above.</p>
+    </div>
+    <div class="sp-step">
+      <div class="sp-step-num">2</div>
+      <h4>Request Access</h4>
+      <p>Submit your transaction reference through the access request form.</p>
+    </div>
+    <div class="sp-step">
+      <div class="sp-step-num">3</div>
+      <h4>Get Verified</h4>
+      <p>Admin verifies your contribution and your supporter badge is activated.</p>
+    </div>
+  </div>
+
+  <!-- Contributors Wall -->
+  <div class="sp-contributors" id="contributors">
+    <div class="sp-section-label">★ MeritNama Supporters</div>
+    <div class="sp-contrib-total" id="contributorsTotal" style="display:none;">
+      <div class="total-label">Total Contributed</div>
+      <div class="total-val" id="totalContributed">—</div>
+    </div>
+    <div class="sp-contrib-grid" id="contributorsGrid">
+      <div class="sp-contrib-empty">Loading contributors…</div>
     </div>
   </div>
 
   <!-- Footer -->
-  <div class="divider"></div>
-
-  <div class="divider"></div>
-  <div class="footer-note">
-    Every rupee goes directly toward <strong style="color:var(--text)">VM and proxy costs</strong> for fetching
-    PRP merit list data.<br>
-    No salaries, no overhead — just keeping the lights on for every candidate who deserves transparency.<br><br>
-    <a href="app.html">← Back to MeritNama</a>
+  <div class="sp-footer">
+    <p>Every rupee goes directly toward <strong>VM and proxy costs</strong> for fetching PRP merit list data.</p>
+    <p>No salaries, no overhead — just keeping the lights on for every candidate who deserves transparency.</p>
+    <p style="margin-top:1rem;"><a href="app.html">← Back to MeritNama</a></p>
   </div>
 
 </div>
 
 <!-- Toast -->
-<div class="toast" id="toast">
-  <div class="toast-icon">✓</div>
-  <span id="toast-msg">Copied to clipboard!</span>
+<div class="sp-toast" id="spToast">
+  <div class="sp-toast-icon">✓</div>
+  <span id="spToastMsg">Copied!</span>
 </div>
 
 <script>
-  // ── QR code generation ──
+  // ── QR code ──
   try {
     new QRCode(document.getElementById('qrcode'), {
       text: '089120074774',
-      width: 180,
-      height: 180,
+      width: 170,
+      height: 170,
       colorDark: '#000000',
       colorLight: '#ffffff',
       correctLevel: QRCode.CorrectLevel.M
     });
   } catch(e) {
     document.getElementById('qrcode').innerHTML =
-      '<div style="width:180px;height:180px;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#555;text-align:center;">QR unavailable.<br>Use Raast ID below.</div>';
+      '<div style="width:170px;height:170px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;color:#555;text-align:center;">QR unavailable.<br>Use Raast ID below.</div>';
   }
 
-  // ── tab switching ──
+  // ── Tab switching ──
   function switchTab(name, btn) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sp-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.sp-panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('panel-' + name).classList.add('active');
   }
 
-  // ── copy to clipboard with toast ──
+  // ── Copy to clipboard ──
   let toastTimer = null;
 
   function copyText(text, btnId, label) {
@@ -855,16 +832,13 @@
       btn.classList.add('copied');
       btn.querySelector('svg').style.display = 'none';
       btn.childNodes[btn.childNodes.length - 1].textContent = ' Copied!';
-
       setTimeout(() => {
         btn.classList.remove('copied');
         btn.querySelector('svg').style.display = '';
         btn.childNodes[btn.childNodes.length - 1].textContent = ' Copy';
       }, 2200);
-
-      showToast(label + ' copied to clipboard!');
+      showToast(label + ' copied!');
     }).catch(() => {
-      // Fallback for older browsers
       const ta = document.createElement('textarea');
       ta.value = text;
       ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
@@ -877,16 +851,16 @@
   }
 
   function showToast(msg) {
-    const toast = document.getElementById('toast');
-    document.getElementById('toast-msg').textContent = msg;
+    const toast = document.getElementById('spToast');
+    document.getElementById('spToastMsg').textContent = msg;
     toast.classList.add('show');
     if (toastTimer) clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
   }
 
-  // ── Load contributors from Firestore ──
+  // ── Load contributors ──
   const db = firebase.firestore();
-  const PKR_TO_USD = 0.0036; // approximate conversion rate
+  const PKR_TO_USD = 0.0036;
 
   function getInitials(name) {
     if (!name) return '?';
@@ -896,12 +870,10 @@
   }
 
   function formatCurrency(amountPKR, amountUSD) {
-    if (amountUSD) {
-      return `$${Number(amountUSD).toFixed(2)} USD`;
-    }
+    if (amountUSD) return '$' + Number(amountUSD).toFixed(2) + ' USD';
     if (amountPKR) {
       const usd = (Number(amountPKR) * PKR_TO_USD).toFixed(2);
-      return `PKR ${Number(amountPKR).toLocaleString()} (~$${usd})`;
+      return 'PKR ' + Number(amountPKR).toLocaleString() + ' (~$' + usd + ')';
     }
     return '—';
   }
@@ -910,51 +882,43 @@
     const grid = document.getElementById('contributorsGrid');
     const totalEl = document.getElementById('contributorsTotal');
     try {
-      const snapshot = await db.collection('contributions')
-        .orderBy('date', 'desc')
-        .get();
-
+      const snapshot = await db.collection('contributions').orderBy('date', 'desc').get();
       if (snapshot.empty) {
-        grid.innerHTML = '<div class="contributors-empty">No contributions yet — be the first to support!</div>';
+        grid.innerHTML = '<div class="sp-contrib-empty">No contributions yet — be the first to support!</div>';
         return;
       }
-
       let totalUSD = 0;
       const cards = [];
-
       snapshot.forEach(doc => {
         const d = doc.data();
         const name = d.name || 'Anonymous';
         const amountPKR = d.amountPKR || 0;
         const amountUSD = d.amountUSD || (amountPKR * PKR_TO_USD);
         const date = d.date ? d.date.toDate() : null;
-
         totalUSD += amountUSD;
-
         const dateStr = date
           ? date.toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })
           : '';
-
-        cards.push(`
-          <div class="contributor-card">
-            <div class="contributor-avatar">${getInitials(name)}</div>
-            <div class="contributor-info">
-              <div class="contributor-name">${name.replace(/</g,'&lt;')}</div>
-              <div class="contributor-amount">${formatCurrency(amountPKR, d.amountUSD)}</div>
-              ${dateStr ? `<div class="contributor-date">${dateStr}</div>` : ''}
-            </div>
-          </div>
-        `);
+        cards.push(
+          '<div class="sp-contrib-card">' +
+            '<div class="sp-contrib-avatar">' + getInitials(name) + '</div>' +
+            '<div class="sp-contrib-info">' +
+              '<div class="sp-contrib-name">' + name.replace(/</g, '&lt;') + '</div>' +
+              '<div class="sp-contrib-amt">' + formatCurrency(amountPKR, d.amountUSD) + '</div>' +
+              (dateStr ? '<div class="sp-contrib-date">' + dateStr + '</div>' : '') +
+            '</div>' +
+          '</div>'
+        );
       });
-
       grid.innerHTML = cards.join('');
       totalEl.style.display = '';
       document.getElementById('totalContributed').textContent =
-        `$${totalUSD.toFixed(2)} USD (≈ PKR ${Math.round(totalUSD / PKR_TO_USD).toLocaleString()})`;
-
+        '$' + totalUSD.toFixed(2) + ' USD (≈ PKR ' + Math.round(totalUSD / PKR_TO_USD).toLocaleString() + ')';
+      document.getElementById('statTotal').textContent = '$' + totalUSD.toFixed(2);
+      document.getElementById('statSupporters').textContent = snapshot.size;
     } catch (err) {
       console.warn('Failed to load contributors:', err);
-      grid.innerHTML = '<div class="contributors-empty">Could not load contributors.</div>';
+      grid.innerHTML = '<div class="sp-contrib-empty">Could not load contributors.</div>';
     }
   }
 

@@ -199,20 +199,6 @@ service cloud.firestore {
       allow delete:        if false;
     }
 
-    // Deny everything else
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    function _sim21ChatReactionOnlyUpdate() {
-      let diff = request.resource.data.diff(resource.data);
-      return diff.affectedKeys().hasOnly(['reactions'])
-        && request.resource.data.text == resource.data.text
-        && request.resource.data.name == resource.data.name
-        && request.resource.data.uid == resource.data.uid
-        && request.resource.data.ts == resource.data.ts;
-    }
-
     // Live update notifications — admin writes, everyone reads
     // Doc IDs: latest (banner), simulation_feed, marks_config, access_config (request page payment)
     // fetch_progress fields: active, status, percent, fetched, total, title, message, icon,
@@ -241,6 +227,39 @@ service cloud.firestore {
       allow create: if true;
       allow read: if true;   // Admin dashboard reads these; protect via admin PIN check in app
       allow update, delete: if false;
+    }
+
+    // Editorial articles — public read for published, full CRUD for admin
+    match /editorial_articles/{articleId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
+    // Editorial comments
+    match /editorial_comments/{commentId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
+    // Editorial votes
+    match /editorial_votes/{voteId} {
+      allow read: if true;
+      allow create, delete: if true;
+      allow update: if false;
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function _sim21ChatReactionOnlyUpdate() {
+      let diff = request.resource.data.diff(resource.data);
+      return diff.affectedKeys().hasOnly(['reactions'])
+        && request.resource.data.text == resource.data.text
+        && request.resource.data.name == resource.data.name
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.ts == resource.data.ts;
     }
   }
 }

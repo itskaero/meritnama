@@ -1,0 +1,20 @@
+// Firebase Storage Security Rules
+// Deploy via Firebase Console → Storage → Rules
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Editorial cover images — publicly readable, writable by anyone (trust-gated in UI)
+    match /editorial/covers/{fileName} {
+      allow read: if true;
+      allow write: if request.resource.size < 5 * 1024 * 1024
+                    && request.resource.contentType.matches('image/.*');
+    }
+
+    // Deny everything else by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

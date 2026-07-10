@@ -1,4 +1,4 @@
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+﻿/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    PRP Merit Intelligence â€“ Dark Neon Dashboard
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
@@ -437,6 +437,54 @@ p  { color: var(--text-muted); }
 }
 
 /* â”€â”€â”€ MAIN â”€â”€â”€ */
+.editorial-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 24px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.4;
+  border-bottom: 1px solid rgba(124,101,196,0.2);
+  background: linear-gradient(90deg, rgba(124,101,196,0.10) 0%, rgba(77,184,217,0.04) 100%);
+  color: #b8c8e0;
+  animation: bannerSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.editorial-banner .eb-icon { font-size: 1rem; flex-shrink: 0; }
+.editorial-banner .eb-label {
+  color: #7c65c4;
+  font-weight: 700; font-size: 0.72rem;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+.editorial-banner .eb-title { flex: 1; min-width: 0; }
+.editorial-banner .eb-title a {
+  color: #c8daf0; text-decoration: none; transition: color 0.15s;
+}
+.editorial-banner .eb-title a:hover { color: #7c65c4; }
+.editorial-banner .eb-cta {
+  color: #7c65c4; text-decoration: none;
+  font-weight: 600; font-size: 0.78rem; white-space: nowrap;
+  border-bottom: 1px solid transparent; transition: border-color 0.2s;
+}
+.editorial-banner .eb-cta:hover { border-bottom-color: #7c65c4; }
+.editorial-banner .eb-close {
+  background: none; border: none; color: inherit; opacity: 0.4;
+  font-size: 1.15rem; line-height: 1; cursor: pointer;
+  padding: 0 2px; flex-shrink: 0;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.editorial-banner .eb-close:hover { opacity: 1; transform: scale(1.1); }
+.tab-btn.editorial-link {
+  color: #7c65c4;
+  border-bottom-color: #7c65c4;
+  font-weight: 700;
+}
+.tab-btn.editorial-link:hover {
+  color: #9b87e0;
+  text-shadow: 0 0 12px rgba(124,101,196,0.45);
+}
+
 .main-content {
   max-width: 1400px;
   margin: 0 auto;

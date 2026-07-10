@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editorial Admin — MeritNama</title>
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="auth.css" />
+  <link rel="stylesheet" href="editorial-styles.css" />
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>firebase.initializeApp(firebaseConfig);</script>
+  <!-- Markdown renderer -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="auth-locked">
+
+<!-- ======= HEADER ======= -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <a href="editorial.html" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px;">
+        <img src="logo.png" class="logo-img" alt="MeritNama" />
+        <span style="font-size:0.82rem;color:var(--text-muted);">Editorial Admin</span>
+      </a>
+    </div>
+    <div class="header-meta" id="headerMeta">
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ======= NAV ======= -->
+<nav class="tab-nav" id="mainNav">
+  <a href="editorial.html" class="tab-btn">&#128214; Reading Mode</a>
+  <a href="simulation.html" class="tab-btn">&#127973; Induction Portal</a>
+  <a href="app.html" class="tab-btn">&#128202; Historical Data</a>
+</nav>
+
+<!-- ======= ADMIN LAYOUT ======= -->
+<div class="ed-admin-layout" id="edAdminLayout">
+
+  <!-- SIDEBAR -->
+  <aside class="ed-admin-sidebar">
+    <h3>Editorial Admin</h3>
+    <button class="ed-admin-nav-item active" data-view="list" onclick="edAdmin.showList()">
+      &#128196; Articles <span class="ed-admin-nav-badge" id="edAdminCount">0</span>
+    </button>
+    <button class="ed-admin-nav-item" data-view="new" onclick="edAdmin.newArticle()">
+      &#10010; New Article
+    </button>
+    <div style="margin-top:1rem;padding-top:0.7rem;border-top:1px solid var(--border);">
+      <button class="ed-admin-nav-item" onclick="window.open('editorial.html','_blank')">
+        &#128065; View Site
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="ed-admin-main" id="edAdminMain">
+
+    <!-- LIST VIEW -->
+    <div id="edAdminListView">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <h3 style="margin:0;font-size:1.05rem;color:var(--text);">All Articles</h3>
+        <button class="ed-admin-new-btn" onclick="edAdmin.newArticle()">&#10010; New Article</button>
+      </div>
+      <div class="ed-admin-list" id="edAdminList">
+        <div class="ed-loading">Loading articles&hellip;</div>
+      </div>
+    </div>
+
+    <!-- EDITOR VIEW -->
+    <div id="edAdminEditorView" style="display:none;">
+      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem;">
+        <button class="ed-back-btn" onclick="edAdmin.showList()">&#8592; Back</button>
+        <h3 style="margin:0;font-size:1.05rem;color:var(--text);" id="edEditorTitle">New Article</h3>
+      </div>
+
+      <div class="ed-editor">
+        <!-- Basic fields -->
+        <div class="ed-editor-grid">
+          <div class="ed-editor-full ed-field">
+            <label>Title</label>
+            <input type="text" id="edTitle" placeholder="Article title" maxlength="200" />
+          </div>
+          <div class="ed-editor-full ed-field">
+            <label>Subtitle</label>
+            <input type="text" id="edSubtitle" placeholder="Optional subtitle" maxlength="300" />
+          </div>
+          <div class="ed-field">
+            <label>Slug</label>
+            <input type="text" id="edSlug" placeholder="auto-generated-from-title" maxlength="120" />
+            <div class="ed-field-hint">URL-friendly identifier. Auto-generated from title if left blank.</div>
+          </div>
+          <div class="ed-field">
+            <label>Category</label>
+            <select id="edCategory">
+              <option value="analysis">Analysis</option>
+              <option value="policy">Policy</option>
+              <option value="trend">Trend</option>
+              <option value="comparison">Comparison</option>
+              <option value="opinion">Opinion</option>
+              <option value="guide">Guide</option>
+              <option value="data">Data</option>
+            </select>
+          </div>
+          <div class="ed-field">
+            <label>Tags</label>
+            <input type="text" id="edTags" placeholder="policy, merit, FCPS (comma-separated)" />
+          </div>
+          <div class="ed-field">
+            <label>Author Name</label>
+            <input type="text" id="edAuthorName" placeholder="MeritNama" value="MeritNama" />
+          </div>
+          <div class="ed-editor-full ed-field">
+            <label>Excerpt</label>
+            <textarea id="edExcerpt" rows="2" placeholder="Short summary for article cards (150-200 chars)" maxlength="300"></textarea>
+          </div>
+        </div>
+
+        <!-- Cover image -->
+        <div class="ed-field" style="margin-bottom:1rem;">
+          <label>Cover Image</label>
+          <div class="ed-cover-upload" id="edCoverUpload">
+            <input type="file" id="edCoverInput" accept="image/jpeg,image/png,image/webp" />
+            <div class="ed-cover-upload-text" id="edCoverText">
+              <strong>Click to upload</strong> or drag an image<br/>
+              <span style="font-size:0.75rem;color:var(--text-muted);">JPEG, PNG, or WebP. Max 5MB. Recommended: 1200x675px</span>
+            </div>
+            <img class="ed-cover-preview" id="edCoverPreview" style="display:none;" />
+          </div>
+        </div>
+
+        <!-- Markdown editor with live preview -->
+        <div class="ed-field" style="margin-bottom:0;">
+          <label>Content (Markdown)</label>
+        </div>
+        <div class="ed-md-editor-wrap">
+          <div class="ed-md-editor-pane">
+            <div class="ed-md-pane-header">Markdown</div>
+            <textarea class="ed-md-editor-textarea" id="edContent" placeholder="Write your article in Markdown..."></textarea>
+          </div>
+          <div class="ed-md-editor-pane">
+            <div class="ed-md-pane-header">Preview</div>
+            <div class="ed-md-preview ed-md" id="edPreview"></div>
+          </div>
+        </div>
+
+        <!-- SEO fields -->
+        <div style="margin-top:1rem;">
+          <details>
+            <summary style="font-size:0.82rem;color:var(--text-muted);cursor:pointer;padding:0.5rem 0;">SEO &amp; Metadata</summary>
+            <div class="ed-editor-grid" style="margin-top:0.5rem;">
+              <div class="ed-editor-full ed-field">
+                <label>SEO Title</label>
+                <input type="text" id="edSeoTitle" placeholder="Defaults to article title" maxlength="70" />
+              </div>
+              <div class="ed-editor-full ed-field">
+                <label>SEO Description</label>
+                <textarea id="edSeoDesc" rows="2" placeholder="Defaults to excerpt" maxlength="160"></textarea>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <!-- Related articles -->
+        <div class="ed-field" style="margin-top:1rem;">
+          <label>Related Article Slugs</label>
+          <input type="text" id="edRelatedSlugs" placeholder="slug-1, slug-2 (comma-separated)" />
+          <div class="ed-field-hint">Slugs of other published articles to show as related.</div>
+        </div>
+
+        <!-- Actions -->
+        <div class="ed-editor-actions">
+          <button class="ed-btn-save" id="edSaveBtn" onclick="edAdmin.save('draft')">Save Draft</button>
+          <button class="ed-btn-publish" id="edPublishBtn" onclick="edAdmin.save('published')">Publish</button>
+          <button class="ed-btn-preview" onclick="edAdmin.previewInNewTab()">Open Preview</button>
+          <button class="ed-btn-archive" id="edArchiveBtn" onclick="edAdmin.save('archived')" style="display:none;">Archive</button>
+          <button class="ed-btn-delete" id="edDeleteBtn" onclick="edAdmin.deleteArticle()" style="display:none;">Delete</button>
+          <span class="ed-autosave-hint" id="edAutosaveHint"></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="ed-toast" id="edToast"></div>
+
+<!-- Scripts -->
+<script src="auth.js"></script>
+<script src="editorial-admin.js"></script>
+<script src="seed-editorial.js"></script>
+
+</body>
+</html>

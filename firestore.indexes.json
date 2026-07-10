@@ -34,10 +34,35 @@
       ]
     },
     {
-      "collectionGroup": "user_profiles",
+      "collectionGroup": "editorial_articles",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+        { "fieldPath": "status",      "order": "ASCENDING" },
+        { "fieldPath": "publishedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "editorial_articles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "slug", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "editorial_comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "articleId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "editorial_votes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "articleId", "order": "ASCENDING" },
+        { "fieldPath": "email",     "order": "ASCENDING" }
       ]
     }
   ],

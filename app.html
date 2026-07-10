@@ -60,8 +60,18 @@
   <button class="tab-btn" data-tab="policy">&#128196; Policy</button>
   <button class="tab-btn" data-tab="guide">&#10067; Guide</button>
   <a href="reviews.html" class="tab-btn">&#128172; Discussion</a>
+  <a href="editorial.html" class="tab-btn editorial-link">&#128214; Editorial</a>
   <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
 </nav>
+
+<!-- ======= EDITORIAL BANNER ======= -->
+<div id="editorialBanner" class="editorial-banner" style="display:none;" role="complementary" aria-label="Latest editorial">
+  <span class="eb-icon">&#128214;</span>
+  <span class="eb-label">New Editorial</span>
+  <span class="eb-title" id="ebTitle"><a href="editorial.html">Loading&hellip;</a></span>
+  <a class="eb-cta" id="ebCta" href="editorial.html">Read Now &#8594;</a>
+  <button class="eb-close" id="ebClose" aria-label="Dismiss">&times;</button>
+</div>
 
 <!-- ======= LIVE UPDATE BANNER ======= -->
 <div id="liveUpdateBanner" class="live-update-banner" style="display:none;" role="alert" aria-live="polite">
@@ -936,6 +946,7 @@
 <script src="access-request.js"></script>
 <script src="screenshot-guard.js"></script>
 <script src="auth.js"></script>
+<script src="editorial-banner.js"></script>
 <script src="presence.js"></script>
 </body>
 </html>
