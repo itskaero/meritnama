@@ -1641,6 +1641,11 @@
           </div>
         </div>
       </details>
+      ${!showingSimulated ? `
+      <div style="margin-bottom:12px;padding:10px 14px;background:rgba(232,166,39,0.08);border:1px solid rgba(232,166,39,0.25);border-radius:8px;font-size:0.75rem;line-height:1.5;color:var(--neon-gold);display:flex;align-items:flex-start;gap:8px;">
+        <span style="font-size:1rem;flex-shrink:0;margin-top:1px;">&#9888;</span>
+        <div><strong>Unofficial &mdash; Round 5 not yet published.</strong> This data is pulled directly from the backend and is reliable, but has not been officially released as a merit list. Please wait for the official gazette notification before making any decisions.</div>
+      </div>` : ''}
       <div style="display:flex;gap:16px;align-items:flex-start;">
         ${renderSidebar()}
         <div style="flex:1;min-width:0;">
