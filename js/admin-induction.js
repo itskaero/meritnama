@@ -11,7 +11,6 @@
 (function () {
 
   const ADMIN_CFG_KEY = 'mn_admin_sim_config';
-  const ADMIN_REV_KEY = 'mn_admin_revisions';
 
   const AI = {
     candidates: null,
@@ -138,12 +137,23 @@
         }
       }
 
-      // Load revisions
+      // Load revisions — static baseline, with admin-entered overrides from the
+      // candidate_revisions Firestore collection merged additively on top (per
+      // candidate, keyed by revId) so admin edits layer onto the shipped file
+      // instead of replacing it.
       try {
-        const localRev = localStorage.getItem(ADMIN_REV_KEY);
-        AI.revisions = localRev ? JSON.parse(localRev) : await loadJson('data/induction21_revisions.json');
+        AI.revisions = await loadJson('data/induction21_revisions.json');
       } catch (_) {
         AI.revisions = {};
+      }
+      try {
+        const snap = await firebase.firestore().collection('candidate_revisions').get();
+        snap.forEach(doc => {
+          const overrides = doc.data() || {};
+          AI.revisions[doc.id] = { ...(AI.revisions[doc.id] || {}), ...overrides };
+        });
+      } catch (_) {
+        // Firestore unavailable — fall back to the static baseline only.
       }
 
       AI.loaded = true;
@@ -554,7 +564,7 @@
 
       <div class="ai-detail-card" id="aiMarksEditCard">
         <h4>✏️ Edit Marks</h4>
-        <p style="font-size:0.75rem;color:var(--text-muted);margin:0 0 10px">Override individual mark fields. Saved as a revision to browser storage.</p>
+        <p style="font-size:0.75rem;color:var(--text-muted);margin:0 0 10px">Override individual mark fields. Saved as a revision on the server, visible to every admin and reflected on the simulation portal after refresh.</p>
         <div class="marks-edit-grid">
           ${markFields.map(f => `
             <div class="marks-edit-field">
@@ -625,34 +635,33 @@
         return;
       }
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = async () => {
         try {
           const parsed = JSON.parse(reader.result);
           if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
             throw new Error('JSON must be an object keyed by applicantId');
           }
-          let existing = {};
-          try {
-            const raw = localStorage.getItem(ADMIN_REV_KEY);
-            if (raw) existing = JSON.parse(raw);
-          } catch (_) {}
-          const beforeCount = Object.keys(existing).length;
+          showStatus('aiRevUploadStatus', 'Uploading to server…', 'var(--text-muted)');
+          const db = firebase.firestore();
+          const col = db.collection('candidate_revisions');
+          const entries = Object.entries(parsed).filter(([, revs]) => revs && typeof revs === 'object' && !Array.isArray(revs));
           let mergedCount = 0;
-          for (const [appId, revs] of Object.entries(parsed)) {
-            if (!existing[appId]) existing[appId] = {};
-            for (const [revId, revData] of Object.entries(revs)) {
-              existing[appId][revId] = revData;
-              mergedCount++;
+          for (let i = 0; i < entries.length; i += 400) {
+            const batch = db.batch();
+            for (const [appId, revs] of entries.slice(i, i + 400)) {
+              batch.set(col.doc(String(appId)), revs, { merge: true });
+              mergedCount += Object.keys(revs).length;
             }
+            await batch.commit();
           }
-          localStorage.setItem(ADMIN_REV_KEY, JSON.stringify(existing));
-          const afterCount = Object.keys(existing).length;
-          AI.revisions = existing;
+          for (const [appId, revs] of entries) {
+            AI.revisions[appId] = { ...(AI.revisions[appId] || {}), ...revs };
+          }
           showStatus('aiRevUploadStatus',
-            `Merged ${mergedCount} revision(s) into ${afterCount - beforeCount} new candidate(s). Total: ${afterCount} candidates with revisions.`,
+            `Uploaded ${mergedCount} revision(s) across ${entries.length} candidate(s) to the server — visible to every admin.`,
             'var(--neon-green)');
         } catch (err) {
-          showStatus('aiRevUploadStatus', 'Parse error: ' + err.message, 'var(--neon-pink)');
+          showStatus('aiRevUploadStatus', 'Upload error: ' + err.message, 'var(--neon-pink)');
         }
       };
       reader.readAsText(file);
@@ -661,36 +670,20 @@
     const loadStaticBtn = document.getElementById('aiRevLoadStaticBtn');
     if (loadStaticBtn) {
       loadStaticBtn.addEventListener('click', async () => {
-        showStatus('aiRevUploadStatus', 'Loading static revisions...', 'var(--text-muted)');
+        showStatus('aiRevUploadStatus', 'Reloading revisions from server…', 'var(--text-muted)');
         try {
-          const resp = await fetch('data/induction21_revisions.json');
-          if (!resp.ok) throw new Error('HTTP ' + resp.status);
-          const parsed = await resp.json();
-          if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-            throw new Error('JSON must be an object keyed by applicantId');
-          }
-          let existing = {};
-          try {
-            const raw = localStorage.getItem(ADMIN_REV_KEY);
-            if (raw) existing = JSON.parse(raw);
-          } catch (_) {}
-          const beforeCount = Object.keys(existing).length;
-          let mergedCount = 0;
-          for (const [appId, revs] of Object.entries(parsed)) {
-            if (!existing[appId]) existing[appId] = {};
-            for (const [revId, revData] of Object.entries(revs)) {
-              existing[appId][revId] = revData;
-              mergedCount++;
-            }
-          }
-          localStorage.setItem(ADMIN_REV_KEY, JSON.stringify(existing));
-          AI.revisions = existing;
-          const afterCount = Object.keys(existing).length;
+          let baseline = {};
+          try { baseline = await loadJson('data/induction21_revisions.json'); } catch (_) {}
+          const snap = await firebase.firestore().collection('candidate_revisions').get();
+          snap.forEach(doc => {
+            baseline[doc.id] = { ...(baseline[doc.id] || {}), ...(doc.data() || {}) };
+          });
+          AI.revisions = baseline;
           showStatus('aiRevUploadStatus',
-            `Loaded static: merged ${mergedCount} revision(s) from static file into ${afterCount - beforeCount} new candidate(s). Total: ${afterCount} candidates with revisions.`,
+            `Reloaded — ${Object.keys(baseline).length} candidate(s) have revisions (static file + admin overrides).`,
             'var(--neon-green)');
         } catch (err) {
-          showStatus('aiRevUploadStatus', 'Load static error: ' + err.message, 'var(--neon-pink)');
+          showStatus('aiRevUploadStatus', 'Reload error: ' + err.message, 'var(--neon-pink)');
         }
       });
     }
@@ -698,10 +691,8 @@
     const clearBtn = document.getElementById('aiRevClearBtn');
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
-        if (!confirm('Clear all locally-stored revisions? This removes the override and reverts to the static JSON file.')) return;
-        localStorage.removeItem(ADMIN_REV_KEY);
-        AI.revisions = null;
-        showStatus('aiRevUploadStatus', 'Local revisions cleared. Static JSON will be used.', 'var(--neon-gold)');
+        if (!confirm('Discard any unsaved local changes and reload revisions from the server?')) return;
+        loadStaticBtn?.click();
       });
     }
   }
@@ -801,7 +792,7 @@
     });
   }
 
-  function saveAdminCandMarks(c) {
+  async function saveAdminCandMarks(c) {
     const inputs = document.querySelectorAll('.cand-edit-input[data-field]');
     const revision = { _type: 'admin_revision', _createdAt: Date.now(), _applicantId: c.applicantId };
     let changed = 0;
@@ -817,23 +808,20 @@
       }
     });
     if (!changed) {
-      const st = document.getElementById('aiMarksEditStatus');
-      if (st) { st.textContent = 'No changes detected.'; }
+      showStatus('aiMarksEditStatus', 'No changes detected.', 'var(--text-muted)');
       return;
     }
+    const id = String(c.applicantId);
+    const revId = 'admin_revision_' + Date.now();
+    showStatus('aiMarksEditStatus', 'Saving…', 'var(--text-muted)');
     try {
-      const saved = JSON.parse(localStorage.getItem('mn_admin_revisions') || '{}');
-      const id = String(c.applicantId);
-      saved[id] = saved[id] || {};
-      const revId = 'admin_revision_' + Date.now();
-      saved[id][revId] = revision;
-      localStorage.setItem('mn_admin_revisions', JSON.stringify(saved));
-      const st = document.getElementById('aiMarksEditStatus');
-      if (st) { st.textContent = 'Revision saved. Refresh simulation portal to see changes.'; st.style.color = 'var(--neon-green)'; }
-      setTimeout(() => { if (st) st.textContent = ''; }, 3000);
+      await firebase.firestore().collection('candidate_revisions').doc(id).set({ [revId]: revision }, { merge: true });
+      AI.revisions = AI.revisions || {};
+      AI.revisions[id] = { ...(AI.revisions[id] || {}), [revId]: revision };
+      showStatus('aiMarksEditStatus', 'Saved — visible to every admin, and on the simulation portal after refresh.', 'var(--neon-green)');
+      setTimeout(() => showStatus('aiMarksEditStatus', '', ''), 4000);
     } catch (e) {
-      const st = document.getElementById('aiMarksEditStatus');
-      if (st) { st.textContent = 'Error: ' + e.message; st.style.color = 'var(--neon-pink)'; }
+      showStatus('aiMarksEditStatus', 'Error saving to server: ' + e.message, 'var(--neon-pink)');
     }
   }
 

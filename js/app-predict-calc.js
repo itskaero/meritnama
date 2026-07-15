@@ -95,10 +95,10 @@ function runPredictor() {
   const merit  = parseFloat(document.getElementById('predMerit').value);
   const prog   = document.getElementById('predProgram').value;
   const quota  = document.getElementById('predQuota').value;
-  if (isNaN(merit)) { alert('Please enter a valid merit score.'); return; }
+  if (isNaN(merit)) { (window.MN ? MN.toast.warning : alert)('Please enter a valid merit score.'); return; }
 
   const policyMax = getActivePolicyMax();
-  if (!policyMax) { alert('Policy data not loaded.'); return; }
+  if (!policyMax) { (window.MN ? MN.toast.warning : alert)('Policy data not loaded.'); return; }
 
   const userPct = (merit / policyMax) * 100;
 
@@ -565,7 +565,7 @@ function runReverseCalc() {
   const hosp = document.getElementById('revHospital').value;
 
   if (!spec) {
-    alert('Please select at least a specialty.');
+    (window.MN ? MN.toast.warning : alert)('Please select at least a specialty.');
     return;
   }
 

@@ -602,12 +602,6 @@
 </head>
 <body>
 
-<!-- ======= AUTH ======= -->
-<script src="access-request.js"></script>
-<script src="screenshot-guard.js"></script>
-<script src="auth.js"></script>
-<script src="presence.js"></script>
-
 <!-- ======= HEADER ======= -->
 <header class="site-header">
   <div class="header-inner">
@@ -616,7 +610,7 @@
         <img src="logo.png" class="logo-img" alt="Meritnama" />
       </a>
     </div>
-    <div class="header-meta">
+    <div class="header-meta" id="headerMeta">
       <span class="badge badge-info">Discussion</span>
       <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation">
         <span></span><span></span><span></span>
@@ -625,20 +619,24 @@
   </div>
 </header>
 
+<div class="app-shell">
 <!-- ======= NAV ======= -->
 <nav class="tab-nav" id="mainNav">
+  <div class="nav-group-label">Analyze</div>
   <a href="app.html" class="tab-btn">&#128202; Merit Table</a>
   <a href="app.html#predictor" class="tab-btn">&#127919; My Prediction</a>
   <a href="app.html#calculator" class="tab-btn">&#129518; Calculator</a>
   <a href="app.html#current" class="tab-btn">&#128203; Current Merit</a>
   <a href="app.html#policy" class="tab-btn">&#128196; Policy</a>
   <a href="app.html#guide" class="tab-btn">&#10067; Guide</a>
+  <div class="nav-group-label">Explore</div>
   <a href="simulation.html" class="tab-btn">&#127973; Induction 21</a>
   <a href="accreditation.html" class="tab-btn">&#9989; Accreditation</a>
   <a href="simulation.html?tab=hospitals" class="tab-btn">&#127968; Hospitals</a>
   <a href="reviews.html" class="tab-btn active">&#128172; Discussion</a>
   <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
 </nav>
+<div class="app-main">
 
 <!-- ======= AUTHOR BAR ======= -->
 <div class="author-bar">
@@ -654,6 +652,13 @@
   <div class="reviews-hero">
     <h2>&#128172; Community Discussion</h2>
     <p>Ask questions, share experiences, and connect with fellow trainees. Hospital reviews are now on each hospital&rsquo;s profile page.</p>
+  </div>
+
+  <div style="max-width:800px;margin:0 auto;padding:0 1rem;">
+    <a href="simulation.html?tab=community" class="policy-notice" style="text-decoration:none;display:flex;">
+      <span class="policy-icon">&#9889;</span>
+      <span>This is the async discussion forum &mdash; for <strong>live chat during induction rounds</strong>, open the Induction Portal&rsquo;s Chat tab &rarr;</span>
+    </a>
   </div>
 
   <div style="max-width:800px;margin:0 auto;padding:0 1rem 4rem;display:flex;flex-direction:column;gap:1.5rem;">
@@ -802,8 +807,14 @@
 
   </div>
 </main>
+</div><!-- /app-main -->
+</div><!-- /app-shell -->
 
 <script src="reviews.js"></script>
+<script src="access-request.js"></script>
+<script src="screenshot-guard.js"></script>
+<script src="auth.js"></script>
+<script src="presence.js"></script>
 <script>
   // Hamburger nav toggle (mirrors index.html)
   const hamburgerBtn = document.getElementById('hamburgerBtn');

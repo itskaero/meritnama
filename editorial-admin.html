@@ -16,6 +16,26 @@
   <script>firebase.initializeApp(firebaseConfig);</script>
   <!-- Markdown renderer -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    /* This page has its own two-column admin layout (.ed-admin-sidebar +
+       .ed-admin-main) below, so the shared top nav stays a slim horizontal
+       utility bar here rather than the app-wide sidebar. */
+    .tab-nav {
+      flex-direction: row;
+      align-items: center;
+      width: auto;
+      height: auto;
+      position: sticky;
+      top: 62px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+    }
+    .tab-btn { border-left: none; border-radius: 0; border-bottom: 2px solid transparent; padding: 13px 18px; }
+    .tab-btn:hover { background: none; color: var(--neon-cyan); }
+  </style>
 </head>
 <body class="auth-locked">
 

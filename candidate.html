@@ -2432,7 +2432,7 @@ document.getElementById('pfPicFile').addEventListener('change', async function()
     renderProfileStrength(profileDraftFromForm());
   } catch (e) {
     console.warn('Image compress failed:', e);
-    alert('Could not process image. Try a smaller file.');
+    (window.MN ? MN.toast.danger : alert)('Could not process image. Try a smaller file.');
   }
 });
 
@@ -3601,7 +3601,7 @@ function prefillMentorForm() {
 
 document.getElementById('mentorRegBtn')?.addEventListener('click', async () => {
   const email = getSessionEmail();
-  if (!email) { alert('Please log in first.'); return; }
+  if (!email) { (window.MN ? MN.dialog.alert : alert)('Please log in first.'); return; }
   const name      = document.getElementById('mrName').value.trim();
   const hospital  = document.getElementById('mrHospital').value.trim();
   const specialty = document.getElementById('mrSpecialty').value.trim();
@@ -3659,11 +3659,11 @@ document.getElementById('mentorMatchModal')?.addEventListener('click', function 
 
 document.getElementById('requestMentorBtn')?.addEventListener('click', async () => {
   const email    = getSessionEmail();
-  if (!email) { alert('Please log in first.'); return; }
+  if (!email) { (window.MN ? MN.dialog.alert : alert)('Please log in first.'); return; }
   const hospital  = document.getElementById('pfHospital')?.value?.trim() || '';
   const specialty = document.getElementById('pfSpecialty')?.value?.trim() || '';
   if (!hospital && !specialty) {
-    alert('Please set your aspiring hospital or specialty in your profile first — so we can find matching mentors.');
+    (window.MN ? MN.dialog.alert : alert)('Please set your aspiring hospital or specialty in your profile first — so we can find matching mentors.');
     return;
   }
 
@@ -3735,7 +3735,7 @@ document.getElementById('requestMentorBtn')?.addEventListener('click', async () 
       }
     };
   } catch (e) {
-    alert('Error searching mentors: ' + e.message);
+    (window.MN ? MN.toast.danger : alert)('Error searching mentors: ' + e.message);
   } finally {
     btn.disabled = false; btn.textContent = '💬 Find a Mentor';
   }
@@ -3986,6 +3986,7 @@ document.getElementById('grSendBtn')?.addEventListener('click', submitGrievanceM
 initResponderSources();
 subscribeGrievanceInbox();
 </script>
+<script src="js/design-system.js"></script>
 <script src="access-request.js"></script>
 <script src="screenshot-guard.js"></script>
 <script src="auth.js"></script>

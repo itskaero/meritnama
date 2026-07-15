@@ -12,9 +12,9 @@
 *{ margin:0; padding:0; box-sizing:border-box; }
 :root{
   --ink:#050914;
-  --mint:#2FE39A;
-  --paper:#e8f0f0;
-  --muted:#6a7e9a;
+  --mint:#3ecf8e;
+  --paper:#e5e8ee;
+  --muted:#8992a6;
   --cyan:#4db8d9;
 }
 html, body{ height:100%; }
@@ -56,7 +56,7 @@ body{
   width:480px;
   max-width:85vw;
   margin-bottom:40px;
-  filter:drop-shadow(0 0 60px rgba(47,227,154,.1));
+  filter:drop-shadow(0 0 40px rgba(62,207,142,.1));
 }
 .hero h1{
   font-family:'Space Grotesk', sans-serif;
@@ -94,11 +94,11 @@ body{
 .btn-primary{
   background:linear-gradient(135deg, var(--mint), #1ecb84);
   color:var(--ink);
-  box-shadow:0 0 30px rgba(47,227,154,.25), 0 4px 20px rgba(0,0,0,.3);
+  box-shadow:0 0 18px rgba(62,207,142,.18), 0 4px 16px rgba(0,0,0,.28);
 }
 .btn-primary:hover{
-  transform:translateY(-3px);
-  box-shadow:0 0 50px rgba(47,227,154,.35), 0 8px 30px rgba(0,0,0,.4);
+  transform:translateY(-2px);
+  box-shadow:0 0 26px rgba(62,207,142,.25), 0 6px 20px rgba(0,0,0,.32);
 }
 .btn-ghost{
   background:rgba(255,255,255,.06);
@@ -225,7 +225,7 @@ body{
 }
 .drawer-item:hover{
   background:rgba(255,255,255,.05);
-  border-color:rgba(47,227,154,.12);
+  border-color:rgba(62,207,142,.15);
   transform:translateY(-2px);
 }
 .drawer-item .icon{ font-size:1.4rem; flex-shrink:0; }
@@ -240,12 +240,9 @@ body{
 }
 .drawer-close:hover{ color:var(--paper); }
 
-footer{
-  position:absolute; bottom:0; left:0; right:0; z-index:1;
-  text-align:center; padding:16px 24px;
-  color:rgba(124,144,172,.3); font-size:11px;
-  pointer-events:none;
-}
+/* Footer moved out of the hero and into normal document flow —
+   see .site-footer below (was previously position:absolute, which
+   only worked when the hero was the entire page). */
 
 @media(max-width:640px){
   .hero-stats{ gap:10px; margin-top:28px; }
@@ -261,6 +258,71 @@ footer{
   .hero-stat-inner{ padding:8px 6px; }
   .hero-stat .num{ font-size:1.15rem; }
   .hero-stat .lab{ font-size:9px; letter-spacing:1px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Below-the-fold sections — how it works / what's inside / trust / CTA
+   ═══════════════════════════════════════════════════════════════ */
+.lp-section{ max-width:1080px; margin:0 auto; padding:96px 24px; }
+.lp-section-head{ text-align:center; max-width:640px; margin:0 auto 48px; }
+.lp-kicker{
+  display:inline-block; font-family:'IBM Plex Mono', monospace;
+  font-size:11px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--mint); margin-bottom:14px;
+}
+.lp-section-head h2{
+  font-family:'Space Grotesk', sans-serif; font-weight:700;
+  font-size:clamp(1.5rem,3vw,2.1rem); line-height:1.25;
+}
+
+.lp-steps{ display:grid; grid-template-columns:repeat(3,1fr); gap:28px; }
+.lp-step{
+  padding:28px 24px; border-radius:16px;
+  background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.06);
+}
+.lp-step-num{
+  font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:1.6rem;
+  background:linear-gradient(135deg, var(--mint), var(--cyan));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  margin-bottom:12px;
+}
+.lp-step h3{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:1.05rem; margin-bottom:8px; }
+.lp-step p{ color:var(--muted); font-size:.9rem; line-height:1.6; }
+
+.lp-feature-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
+.lp-feature-card{
+  display:block; padding:26px 22px; border-radius:16px; text-decoration:none; color:var(--paper);
+  background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.06);
+  transition:all .2s;
+}
+.lp-feature-card:hover{
+  background:rgba(255,255,255,.04); border-color:rgba(62,207,142,.2); transform:translateY(-3px);
+}
+.lp-feature-icon{ font-size:1.7rem; display:block; margin-bottom:14px; }
+.lp-feature-card h3{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:1rem; margin-bottom:6px; }
+.lp-feature-card p{ color:var(--muted); font-size:.85rem; line-height:1.55; }
+
+.lp-trust{ background:rgba(255,255,255,.015); border-top:1px solid rgba(255,255,255,.05); border-bottom:1px solid rgba(255,255,255,.05); }
+.lp-trust-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:28px; margin-top:8px; }
+.lp-trust-item h4{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:.95rem; margin-bottom:8px; color:var(--mint); }
+.lp-trust-item p{ color:var(--muted); font-size:.86rem; line-height:1.6; }
+
+.lp-cta{ text-align:center; padding:100px 24px 120px; }
+.lp-cta h2{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:clamp(1.6rem,3.4vw,2.3rem); margin-bottom:12px; }
+.lp-cta p{ color:var(--muted); margin-bottom:32px; }
+
+.site-footer{
+  border-top:1px solid rgba(255,255,255,.05);
+  text-align:center; padding:28px 24px;
+  color:rgba(124,144,172,.5); font-size:12px; line-height:2;
+}
+.site-footer a{ color:rgba(124,144,172,.7); text-decoration:none; }
+.site-footer a:hover{ color:var(--mint); }
+.site-footer .foot-sep{ margin:0 8px; opacity:.4; }
+
+@media(max-width:800px){
+  .lp-steps{ grid-template-columns:1fr; }
+  .lp-section{ padding:64px 24px; }
 }
 </style>
 </head>
@@ -292,6 +354,93 @@ footer{
   <div class="scroll-hint canvas-only">Scroll</div>
 </div>
 
+<!-- ======= HOW IT WORKS ======= -->
+<section class="lp-section" id="how">
+  <div class="lp-section-head">
+    <span class="lp-kicker">How it works</span>
+    <h2>From your marks to your merit, in three steps.</h2>
+  </div>
+  <div class="lp-steps">
+    <div class="lp-step">
+      <div class="lp-step-num">01</div>
+      <h3>Calculate your merit</h3>
+      <p>Enter your marks, experience, and publications — the calculator applies the current PHF policy automatically, no manual percentage math.</p>
+    </div>
+    <div class="lp-step">
+      <div class="lp-step-num">02</div>
+      <h3>See where you stand</h3>
+      <p>Compare your score against years of historical cutoffs to get Safe, Target, and Reach options with year-on-year trend confidence.</p>
+    </div>
+    <div class="lp-step">
+      <div class="lp-step-num">03</div>
+      <h3>Simulate your induction</h3>
+      <p>Run the live seat-allocation simulator to see how your real preference list plays out, round by round.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======= WHAT'S INSIDE ======= -->
+<section class="lp-section" id="explore-section">
+  <div class="lp-section-head">
+    <span class="lp-kicker">What's inside</span>
+    <h2>Everything for Punjab's residency induction, in one place.</h2>
+  </div>
+  <div class="lp-feature-grid">
+    <a href="app.html" class="lp-feature-card">
+      <span class="lp-feature-icon">📊</span>
+      <h3>Analyze</h3>
+      <p>Merit tables, score prediction, the calculator, and specialty comparisons across 13 induction cycles.</p>
+    </a>
+    <a href="simulation.html" class="lp-feature-card">
+      <span class="lp-feature-icon">🎓</span>
+      <h3>Induction Portal</h3>
+      <p>Live seat allocation simulation, candidate pool browser, and consent what-if analysis.</p>
+    </a>
+    <a href="hospitals.html" class="lp-feature-card">
+      <span class="lp-feature-icon">🏥</span>
+      <h3>Directory</h3>
+      <p>Every training hospital and CPSP-accredited programme, searchable by specialty and city.</p>
+    </a>
+    <a href="reviews.html" class="lp-feature-card">
+      <span class="lp-feature-icon">💬</span>
+      <h3>Community</h3>
+      <p>Discussion forum, live chat during induction rounds, and independent editorial analysis.</p>
+    </a>
+  </div>
+</section>
+
+<!-- ======= WHY TRUST ======= -->
+<section class="lp-section lp-trust">
+  <div class="lp-section-head" style="margin-bottom:8px;">
+    <span class="lp-kicker">Why trust MeritNama</span>
+  </div>
+  <div class="lp-trust-grid">
+    <div class="lp-trust-item">
+      <h4>Independent</h4>
+      <p>Built and maintained independently — not affiliated with PHF or CPSP, with no institutional agenda.</p>
+    </div>
+    <div class="lp-trust-item">
+      <h4>Sourced from official data</h4>
+      <p>Every merit list comes from the official PHF gazette, not scraped estimates or forum rumors.</p>
+    </div>
+    <div class="lp-trust-item">
+      <h4>Community-verified</h4>
+      <p>Corrections, discussion, and mentorship come from real trainees who've been through induction themselves.</p>
+    </div>
+    <div class="lp-trust-item">
+      <h4>Always verify officially</h4>
+      <p>Predictions reflect historical patterns, not guarantees — always confirm with PHF/PGME before deciding.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======= FINAL CTA ======= -->
+<section class="lp-cta">
+  <h2>Ready to see where you stand?</h2>
+  <p>Free, independent, and updated every induction cycle.</p>
+  <a href="app.html" class="btn btn-primary">Launch App &rarr;</a>
+</section>
+
 <button class="logout-btn" id="logoutBtn">&#x23FB; Logout</button>
 
 <div class="drawer" id="drawer">
@@ -320,8 +469,15 @@ footer{
   </div>
 </div>
 
-<footer>
-  Built by <a href="https://github.com/itskaero" target="_blank" style="color:rgba(124,144,172,.4);text-decoration:none;">@itskaero</a>
+<footer class="site-footer">
+  <div>MeritNama &middot; Independent residency induction analytics for Punjab</div>
+  <div>
+    Built by <a href="https://github.com/itskaero" target="_blank" rel="noopener">@itskaero</a>
+    <span class="foot-sep">&middot;</span>
+    <a href="donate.html">Support this project</a>
+    <span class="foot-sep">&middot;</span>
+    <a href="request-access.html">Request access</a>
+  </div>
 </footer>
 
 <script>
@@ -350,16 +506,19 @@ footer{
     if(!canvas)return;
     var ctx=canvas.getContext('2d'); var W,H;
     var blobs=[
-      {cx:.3,cy:.25,r:.45,r2:.35,c:'47,227,154',sp:.11,ph:0},
+      {cx:.3,cy:.25,r:.45,r2:.35,c:'62,207,142',sp:.11,ph:0},
       {cx:.7,cy:.6, r:.38,r2:.3, c:'77,184,217',sp:.08,ph:1.8},
       {cx:.5,cy:.8, r:.32,r2:.28,c:'124,101,196',sp:.06,ph:3.2},
-      {cx:.2,cy:.7, r:.28,r2:.22,c:'47,227,154',sp:.09,ph:4.5},
+      {cx:.2,cy:.7, r:.28,r2:.22,c:'62,207,142',sp:.09,ph:4.5},
       {cx:.8,cy:.3, r:.35,r2:.25,c:'77,184,217',sp:.07,ph:2.3},
     ];
-    var n=40,ps=[],bc=14,bh=[];
+    // Candidate network — nodes drift slowly and link when close, evoking
+    // seat-allocation matching / a connected candidate network. A handful
+    // are "hubs" (hospitals) rendered larger and brighter.
+    var n=26,nodes=[],LINK_DIST=140,bc=14,bh=[];
     function rz(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
     rz(); window.addEventListener('resize',rz);
-    for(var i=0;i<n;i++) ps.push({x:Math.random()*2000-200,y:Math.random()*1200-100,vx:(Math.random()-.5)*.08,vy:(Math.random()-.5)*.08-.02,r:1+Math.random()*2,a:.02+Math.random()*.06});
+    for(var i=0;i<n;i++) nodes.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.15,vy:(Math.random()-.5)*.15,r:1.4+Math.random()*1.6,hub:Math.random()<.18});
     for(var i=0;i<bc;i++) bh.push(.2+Math.random()*.6);
     function draw(t){
       var g=ctx.createLinearGradient(0,0,0,H);
@@ -368,10 +527,42 @@ footer{
       var o=(t*.12)%80; ctx.strokeStyle='rgba(77,184,217,.025)';ctx.lineWidth=1;
       for(var x=o-80;x<W+80;x+=80){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
       for(var y=o-80;y<H+80;y+=80){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-      var bw=8,ga=16,tw=bc*(bw+ga)-ga,sx=(W-tw)/2,by=H*.85,mh=H*.18;
-      for(var i=0;i<bc;i++){var h=bh[i]*mh*(.7+.3*Math.sin(t*.04+i*.9)),x=sx+i*(bw+ga),y=by-h;ctx.beginPath();ctx.roundRect(x,y,bw,h,3);ctx.fillStyle='rgba(47,227,154,'+(.08+.06*Math.sin(t*.03+i*.7))+')';ctx.fill();}
       for(var b of blobs){var dx=Math.sin(t*b.sp+b.ph)*.08,dy=Math.cos(t*b.sp*.7+b.ph+1)*.06,cx=(b.cx+dx)*W,cy=(b.cy+dy)*H,rx=b.r*Math.min(W,H),ry=b.r2*Math.min(W,H),g2=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(rx,ry));g2.addColorStop(0,'rgba('+b.c+',.12)');g2.addColorStop(.5,'rgba('+b.c+',.05)');g2.addColorStop(1,'rgba('+b.c+',0)');ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.fillStyle=g2;ctx.fill();}
-      for(var p of ps){p.x+=p.vx;p.y+=p.vy;if(p.x<-100)p.x=W+100;if(p.x>W+100)p.x=-100;if(p.y<-100)p.y=H+100;if(p.y>H+100)p.y=-100;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(77,184,217,'+p.a+')';ctx.fill();}
+
+      // Flowing merit-trend line — reads as an ascending analytics curve
+      ctx.beginPath();
+      for(var px=0;px<=W;px+=Math.max(16,W/48)){
+        var py=H*.22-(px/W)*H*.10+Math.sin(px*.008+t*.5)*H*.02+Math.sin(px*.021-t*.3)*H*.0125;
+        if(px===0)ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      }
+      var tg=ctx.createLinearGradient(0,0,W,0);
+      tg.addColorStop(0,'rgba(62,207,142,0)');tg.addColorStop(.5,'rgba(62,207,142,.3)');tg.addColorStop(1,'rgba(77,184,217,.3)');
+      ctx.strokeStyle=tg;ctx.lineWidth=1.6;ctx.stroke();
+
+      // Candidate network: drift, link within range, draw nodes (hubs brighter)
+      for(var i=0;i<nodes.length;i++){
+        var a=nodes[i];
+        a.x+=a.vx;a.y+=a.vy;
+        if(a.x<-20)a.x=W+20; if(a.x>W+20)a.x=-20;
+        if(a.y<-20)a.y=H+20; if(a.y>H+20)a.y=-20;
+        for(var j=i+1;j<nodes.length;j++){
+          var nb=nodes[j],ddx=a.x-nb.x,ddy=a.y-nb.y,dist=Math.sqrt(ddx*ddx+ddy*ddy);
+          if(dist<LINK_DIST){
+            ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(nb.x,nb.y);
+            ctx.strokeStyle='rgba(77,184,217,'+((1-dist/LINK_DIST)*.14)+')';ctx.lineWidth=1;ctx.stroke();
+          }
+        }
+      }
+      for(var i=0;i<nodes.length;i++){
+        var a=nodes[i];
+        ctx.beginPath();ctx.arc(a.x,a.y,a.hub?a.r*1.8:a.r,0,Math.PI*2);
+        ctx.fillStyle=a.hub?'rgba(62,207,142,.5)':'rgba(150,190,220,.35)';
+        ctx.fill();
+      }
+
+      // Seat-capacity bars along the bottom
+      var bw=8,ga=16,tw=bc*(bw+ga)-ga,sx=(W-tw)/2,by=H*.85,mh=H*.18;
+      for(var i=0;i<bc;i++){var h=bh[i]*mh*(.7+.3*Math.sin(t*.04+i*.9)),x=sx+i*(bw+ga),y=by-h;ctx.beginPath();ctx.roundRect(x,y,bw,h,3);ctx.fillStyle='rgba(62,207,142,'+(.08+.06*Math.sin(t*.03+i*.7))+')';ctx.fill();}
     }
     function loop(n){draw(n/1000);animId=requestAnimationFrame(loop);}
     loop(0);

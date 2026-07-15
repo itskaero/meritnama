@@ -6,6 +6,7 @@
   <link rel="icon" href="logo.svg" type="image/svg+xml" />
   <title>Admin Dashboard — MeritNama</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -16,20 +17,20 @@
     ::selection { background: rgba(77,184,217,0.2); color: var(--text); }
 
     :root {
-      --bg:          #0a1120;
-      --bg-deep:     #060b16;
-      --surface:     rgba(14, 24, 48, 0.9);
-      --card-bg:     rgba(14, 24, 48, 0.85);
-      --card-bg-hv:  rgba(18, 30, 60, 0.9);
-      --border:      rgba(77, 184, 217, 0.10);
-      --border-hv:   rgba(77, 184, 217, 0.25);
-      --border-acc:  rgba(77, 184, 217, 0.35);
+      --bg:          #0a0e16;
+      --bg-deep:     #060911;
+      --surface:     rgba(20, 25, 37, 0.75);
+      --card-bg:     rgba(20, 25, 37, 0.72);
+      --card-bg-hv:  rgba(24, 30, 44, 0.8);
+      --border:      rgba(255, 255, 255, 0.08);
+      --border-hv:   rgba(255, 255, 255, 0.16);
+      --border-acc:  rgba(77, 184, 217, 0.5);
       --accent:      #4db8d9;
       --accent2:     #7c65c4;
       --accent-grad: linear-gradient(135deg, #4db8d9 0%, #7c65c4 100%);
-      --text:        #d0ddf0;
-      --muted:       #5d7494;
-      --text-muted:  #5d7494;
+      --text:        #e5e8ee;
+      --muted:       #8992a6;
+      --text-muted:  #8992a6;
       --success:     #3ecf8e;
       --danger:      #e05470;
       --warning:     #f5c842;
@@ -38,18 +39,18 @@
       --neon-pink:   #e05470;
       --neon-gold:   #f5c842;
       --neon-purple: #7c65c4;
-      --bg-card:     rgba(14, 24, 48, 0.85);
+      --bg-card:     rgba(20, 25, 37, 0.72);
       --radius-xs:   4px;
       --radius-sm:   6px;
-      --radius:      10px;
-      --radius-lg:   14px;
-      --font:        'Segoe UI', system-ui, -apple-system, sans-serif;
-      --mono:        'Consolas', 'Courier New', monospace;
-      --shadow-sm:   0 2px 8px rgba(0,0,0,0.25);
-      --shadow-md:   0 4px 20px rgba(0,0,0,0.35);
-      --shadow-lg:   0 8px 40px rgba(0,0,0,0.5);
-      --glow-c:      0 0 14px rgba(77,184,217,0.18), 0 0 32px rgba(77,184,217,0.06);
-      --glow-p:      0 0 14px rgba(124,101,196,0.22), 0 0 32px rgba(124,101,196,0.08);
+      --radius:      8px;
+      --radius-lg:   12px;
+      --font:        'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      --mono:        ui-monospace, 'Cascadia Code', 'SF Mono', Consolas, monospace;
+      --shadow-sm:   0 1px 2px rgba(0,0,0,0.24), 0 1px 1px rgba(0,0,0,0.16);
+      --shadow-md:   0 2px 8px rgba(0,0,0,0.28), 0 1px 2px rgba(0,0,0,0.2);
+      --shadow-lg:   0 12px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.25);
+      --glow-c:      0 0 0 3px rgba(77,184,217,0.12);
+      --glow-p:      0 0 0 3px rgba(124,101,196,0.14);
       --trs:         0.2s cubic-bezier(0.4, 0, 0.2, 1);
       --trs-fast:    0.12s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -110,7 +111,7 @@
       mix-blend-mode: screen;
       animation: float 3.5s ease-in-out infinite;
     }
-    .topbar-title { font-size: 0.95rem; font-weight: 700; color: var(--accent); text-shadow: 0 0 20px rgba(77,184,217,0.3); }
+    .topbar-title { font-size: 0.95rem; font-weight: 700; color: var(--accent); }
     .topbar-sub   { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
 
     .logout-btn {
@@ -127,7 +128,7 @@
     .logout-btn:hover {
       background: rgba(224,84,112,0.12);
       border-color: var(--danger);
-      box-shadow: 0 0 12px rgba(224,84,112,0.18);
+      box-shadow: 0 0 6px rgba(224,84,112,0.1);
       transform: translateY(-1px);
     }
 
@@ -159,7 +160,6 @@
     }
     #adminLogin h2 {
       color: var(--accent); font-size: 1.25rem;
-      text-shadow: 0 0 16px rgba(77,184,217,0.4);
       margin-bottom: 0.2rem;
     }
     .login-subtitle { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.8rem; }
@@ -242,9 +242,8 @@
     .stat-card:hover { border-color: var(--border-hv); box-shadow: var(--shadow-md), var(--glow-c); transform: translateY(-3px); }
     .stat-card .stat-value {
       font-size: 2rem; font-weight: 700; color: var(--accent); line-height: 1;
-      text-shadow: 0 0 18px rgba(77,184,217,0.25);
-    }
-    .stat-card .stat-value.online-count { color: var(--success); text-shadow: 0 0 18px rgba(62,207,142,0.25); }
+      }
+    .stat-card .stat-value.online-count { color: var(--success); }
     .stat-card .stat-label {
       font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 0.4rem;
     }
@@ -295,7 +294,7 @@
     }
     .controls button:hover {
       border-color: var(--border-acc); background: rgba(77,184,217,0.06);
-      box-shadow: 0 0 10px rgba(77,184,217,0.12); transform: translateY(-1px);
+      box-shadow: 0 0 5px rgba(77,184,217,0.07); transform: translateY(-1px);
     }
     .controls button:active { transform: translateY(0); }
 
@@ -344,7 +343,7 @@
       font-family: var(--font); white-space: nowrap;
       transition: background var(--trs-fast), border-color var(--trs-fast), box-shadow var(--trs-fast);
     }
-    .action-btn:hover { background: rgba(77,184,217,0.08); border-color: var(--border-acc); box-shadow: 0 0 6px rgba(77,184,217,0.15); }
+    .action-btn:hover { background: rgba(77,184,217,0.08); border-color: var(--border-acc); box-shadow: 0 0 3px rgba(77,184,217,0.08); }
 
     /* ── Modal ───────────────────────────────────────── */
     .modal-overlay {
@@ -498,7 +497,7 @@
     }
     .remove-btn:hover {
       background: rgba(224,84,112,0.08); border-color: var(--danger);
-      box-shadow: 0 0 6px rgba(224,84,112,0.15);
+      box-shadow: 0 0 3px rgba(224,84,112,0.08);
     }
 
     /* ── Dashboard layout (sidebar) ─────────────────── */
@@ -2092,15 +2091,16 @@
         <summary>📥 Bulk Revision Upload (JSON)</summary>
         <div class="broadcast-section-body">
           <p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 0.75rem;max-width:640px;">
-            Upload a JSON file keyed by applicantId with revision data. Revisions are merged into
-            <code>localStorage</code> key <code>mn_admin_revisions</code> and override the static
-            <code>induction21_revisions.json</code> on the simulation portal (same browser only).
+            Upload a JSON file keyed by applicantId with revision data. Revisions are saved to the
+            <code>candidate_revisions</code> collection and override the static
+            <code>induction21_revisions.json</code> on the simulation portal for every admin and every
+            candidate, everywhere &mdash; not just this browser.
           </p>
           <div class="ai-upload-bar">
             <input type="file" id="aiRevFile" accept=".json,application/json" />
             <button id="aiRevUploadBtn" class="ai-btn-primary">Upload &amp; Merge</button>
-            <button id="aiRevLoadStaticBtn" class="ai-btn-secondary">Load Static</button>
-            <button id="aiRevClearBtn" class="ai-btn-danger">Clear Local</button>
+            <button id="aiRevLoadStaticBtn" class="ai-btn-secondary">Reload from Server</button>
+            <button id="aiRevClearBtn" class="ai-btn-danger">Discard Local Changes</button>
           </div>
           <div id="aiRevUploadStatus" style="font-size:0.78rem;min-height:1.2em;"></div>
         </div>

@@ -30,6 +30,9 @@
     </div>
     <div class="header-meta" id="headerMeta">
       <span class="badge badge-info" id="dataStatus">Loading data&hellip;</span>
+      <button class="mn-cmdk-trigger" type="button" onclick="MN.commandPalette.open()" title="Jump to anywhere in MeritNama" aria-label="Open command palette">
+        <span>&#128269;</span><span>Jump to&hellip;</span><kbd>&#8984;K</kbd>
+      </button>
       <button class="notif-bell-btn" id="notifBellBtn" title="Subscribe to data updates" aria-label="Subscribe to data updates">
         <svg class="bell-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="17" height="17">
           <path d="M18 8A6 6 0 1 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -45,24 +48,28 @@
   </div>
 </header>
 
+<div class="app-shell">
 <!-- ======= NAV ======= -->
 <nav class="tab-nav" id="mainNav">
+  <div class="nav-group-label">Analyze</div>
   <button class="tab-btn active" data-tab="start">&#127891; Start Here</button>
   <button class="tab-btn" data-tab="merit">&#128202; Merit Table</button>
   <button class="tab-btn" data-tab="predictor">&#127919; My Prediction</button>
-  <button class="tab-btn" data-tab="reverse">&#128269; What Do I Need?</button>
   <button class="tab-btn" data-tab="calculator">&#129518; Calculator</button>
   <button class="tab-btn" data-tab="compare">&#9878; Compare</button>
   <button class="tab-btn" data-tab="current">&#128203; Previous Merit Lists</button>
+  <div class="nav-group-label">Tools</div>
   <a href="simulation.html" class="tab-btn">&#127973; Induction Portal</a>
   <a href="accreditation.html" class="tab-btn">&#9989; Accreditation</a>
   <button class="tab-btn" data-tab="jobs">&#128188; Jobs</button>
+  <div class="nav-group-label">Resources</div>
   <button class="tab-btn" data-tab="policy">&#128196; Policy</button>
   <button class="tab-btn" data-tab="guide">&#10067; Guide</button>
   <a href="reviews.html" class="tab-btn">&#128172; Discussion</a>
   <a href="editorial.html" class="tab-btn editorial-link">&#128214; Editorial</a>
   <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
 </nav>
+<div class="app-main">
 
 <!-- ======= EDITORIAL BANNER ======= -->
 <div id="editorialBanner" class="editorial-banner" style="display:none;" role="complementary" aria-label="Latest editorial">
@@ -130,7 +137,7 @@
         <ol class="start-checklist">
           <li>Calculate or enter your merit score.</li>
           <li>Run My Prediction for Safe, Target, and Reach options.</li>
-          <li>Use What Do I Need? for specific specialty goals.</li>
+          <li>Switch My Prediction to &ldquo;I have a target&rdquo; mode for specific specialty goals.</li>
           <li>Open the Induction Portal guide before using live simulation tools.</li>
         </ol>
       </div>
@@ -153,7 +160,7 @@
         <div class="start-card-icon">&#128269;</div>
         <h3>3. Check a target seat</h3>
         <p>Pick a program, quota, specialty, and hospital to see what score has historically been required.</p>
-        <button class="start-link" data-tab="reverse">Use What Do I Need? &rarr;</button>
+        <button class="start-link" onclick="switchToTab('predictor'); goToPredictorMode('target');">Find my target score &rarr;</button>
       </article>
       <article class="start-card">
         <div class="start-card-icon">&#127973;</div>
@@ -247,10 +254,16 @@
   ============================================================ -->
   <section class="tab-content" id="tab-predictor">
     <div class="section-header">
-      <h2>My Prediction</h2>
-      <p>Enter your merit score to see your percentile ranking and a personalised list of safe, target, and reach options &#8212; with year-on-year trend and confidence for each combination.</p>
+      <h2 id="predModeHeading">My Prediction</h2>
+      <p id="predModeSub">Enter your merit score to see your percentile ranking and a personalised list of safe, target, and reach options &#8212; with year-on-year trend and confidence for each combination.</p>
     </div>
 
+    <div class="mode-switch" role="group" aria-label="Prediction mode">
+      <button class="mode-switch-btn active" type="button" data-pred-mode="score">&#128202; I know my score</button>
+      <button class="mode-switch-btn" type="button" data-pred-mode="target">&#127919; I have a target</button>
+    </div>
+
+    <div id="predModeScore" class="predictor-subpanel">
     <!-- Input card -->
     <div class="card input-card">
       <div class="input-grid">
@@ -350,7 +363,67 @@
       </div>
       <div id="predBuckets" class="pred-buckets pred-buckets-3col"></div>
     </div>
+    </div><!-- /predModeScore -->
+
+    <div id="predModeTarget" class="predictor-subpanel hidden">
+      <div class="card input-card">
+        <div class="input-grid">
+          <div class="form-group">
+            <label for="revProgram">Program</label>
+            <select id="revProgram"><option value="">Select Program</option></select>
+          </div>
+          <div class="form-group">
+            <label for="revQuota">Quota</label>
+            <select id="revQuota"><option value="">Select Quota</option></select>
+          </div>
+          <div class="form-group">
+            <label for="revSpecialty">Specialty</label>
+            <select id="revSpecialty"><option value="">Select Specialty</option></select>
+          </div>
+          <div class="form-group">
+            <label for="revHospital">Hospital (optional)</label>
+            <select id="revHospital"><option value="">All Hospitals</option></select>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-large" id="revBtn">Show Requirements</button>
+      </div>
+
+      <div id="revResults" class="hidden">
+        <div id="revResultsContent"></div>
+      </div>
+    </div><!-- /predModeTarget -->
   </section>
+
+  <!-- New, additive script: toggles the two "My Prediction" sub-panels
+       (merged "My Prediction" + "What Do I Need?"). Does not modify
+       js/app-predict-calc.js — runPredictor()/runReverseCalc() and all
+       their element IDs are untouched, so this is safe to delete to
+       revert to two separate panels shown/hidden together. -->
+  <script>
+  function goToPredictorMode(mode) {
+    var scoreBtn  = document.querySelector('.mode-switch-btn[data-pred-mode="score"]');
+    var targetBtn = document.querySelector('.mode-switch-btn[data-pred-mode="target"]');
+    var scorePanel  = document.getElementById('predModeScore');
+    var targetPanel = document.getElementById('predModeTarget');
+    if (!scoreBtn || !targetBtn || !scorePanel || !targetPanel) return;
+    var isTarget = mode === 'target';
+    scorePanel.classList.toggle('hidden', isTarget);
+    targetPanel.classList.toggle('hidden', !isTarget);
+    scoreBtn.classList.toggle('active', !isTarget);
+    targetBtn.classList.toggle('active', isTarget);
+    scoreBtn.disabled = !isTarget;
+    targetBtn.disabled = isTarget;
+    var heading = document.getElementById('predModeHeading');
+    var sub     = document.getElementById('predModeSub');
+    if (heading) heading.textContent = isTarget ? 'What Score Do I Need?' : 'My Prediction';
+    if (sub) sub.textContent = isTarget
+      ? 'Select a target specialty and hospital to find out what minimum merit score is historically required.'
+      : 'Enter your merit score to see your percentile ranking and a personalised list of safe, target, and reach options.';
+  }
+  document.querySelectorAll('.mode-switch-btn[data-pred-mode]').forEach(function (btn) {
+    btn.addEventListener('click', function () { goToPredictorMode(btn.dataset.predMode); });
+  });
+  </script>
 
   <!-- ============================================================
        TAB 3 : CALCULATOR
@@ -475,7 +548,13 @@
           </tr>
         </thead>
         <tbody id="currentTableBody">
-          <tr><td colspan="10" class="cur-loading-cell">Select an induction cycle and round to view merit data.</td></tr>
+          <tr><td colspan="10" class="cur-loading-cell">
+            <div class="mn-empty-state">
+              <div class="mn-empty-icon">&#128203;</div>
+              <div class="mn-empty-title">No merit list loaded yet</div>
+              <div class="mn-empty-desc">Select an induction cycle and round above, then click Load to view candidate-level merit data.</div>
+            </div>
+          </td></tr>
         </tbody>
       </table>
     </div>
@@ -508,43 +587,6 @@
 
     <div id="policyTimeline" class="policy-timeline"></div>
   </section>
-
-  <!-- ============================================================
-       TAB: REVERSE SCORE CALCULATOR ("What Do I Need?")
-  ============================================================ -->
-  <section class="tab-content" id="tab-reverse">
-    <div class="section-header">
-      <h2>&#128269; What Score Do I Need?</h2>
-      <p>Select a target specialty and hospital to find out what minimum merit score is historically required. Shows the average closing merit, latest cutoff, and projected range for the next induction.</p>
-    </div>
-
-    <div class="card input-card">
-      <div class="input-grid">
-        <div class="form-group">
-          <label for="revProgram">Program</label>
-          <select id="revProgram"><option value="">Select Program</option></select>
-        </div>
-        <div class="form-group">
-          <label for="revQuota">Quota</label>
-          <select id="revQuota"><option value="">Select Quota</option></select>
-        </div>
-        <div class="form-group">
-          <label for="revSpecialty">Specialty</label>
-          <select id="revSpecialty"><option value="">Select Specialty</option></select>
-        </div>
-        <div class="form-group">
-          <label for="revHospital">Hospital (optional)</label>
-          <select id="revHospital"><option value="">All Hospitals</option></select>
-        </div>
-      </div>
-      <button class="btn btn-primary btn-large" id="revBtn">Show Requirements</button>
-    </div>
-
-    <div id="revResults" class="hidden">
-      <div id="revResultsContent"></div>
-    </div>
-  </section>
-
 
   <!-- ============================================================
        TAB: SPECIALTY COMPARISON TOOL
@@ -909,6 +951,10 @@
     </div>
   </section><!-- /tab-jobs -->
 
+</main><!-- /main-content (was previously unclosed; closing explicitly for the new sidebar layout) -->
+</div><!-- /app-main -->
+</div><!-- /app-shell -->
+
 <!-- Tooltip popup -->
 <div class="tooltip-popup hidden" id="tooltipEl">
   <div class="tooltip-title"></div>
@@ -936,6 +982,7 @@
   <p style="margin-top:6px;font-size:0.72rem;opacity:0.55">Built by <a href="https://github.com/itskaero" target="_blank" rel="noopener" style="color:inherit">@itskaero</a> &middot; <a href="mailto:itskaero@gmail.com" style="color:inherit">itskaero@gmail.com</a></p>
 </footer>
 
+<script src="js/design-system.js"></script>
 <script src="charts.js"></script>
 <script src="js/app-core.js"></script>
 <script src="js/app-tabs.js"></script>

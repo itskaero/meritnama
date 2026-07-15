@@ -150,6 +150,23 @@ async function loadCertificateAwareSidecars() {
   SIM.specialtyGroups = groups || null;
   SIM.revisionsByApplicantId = revisions || null;
   SIM._specialtyGroupIndex = null;
+
+  // Admin-entered mark corrections (candidate_revisions collection, written from
+  // admin.html's Candidates tab) layer on top of the static revisions file above,
+  // per candidate, keyed by revId — same shape, just centrally stored.
+  try {
+    const snap = await firebase.firestore().collection('candidate_revisions').get();
+    if (!snap.empty) {
+      const merged = { ...(SIM.revisionsByApplicantId || {}) };
+      snap.forEach(doc => {
+        const overrides = doc.data() || {};
+        merged[doc.id] = { ...(merged[doc.id] || {}), ...overrides };
+      });
+      SIM.revisionsByApplicantId = merged;
+    }
+  } catch (_) {
+    // Firestore unavailable — proceed with the static revisions file only.
+  }
 }
 
 function mergeCertificateAwareCandidateData() {

@@ -42,7 +42,12 @@ function renderCurrentMerit() {
   }
   // Otherwise show prompt
   const tbody = document.getElementById('currentTableBody');
-  if (tbody) tbody.innerHTML = '<tr><td colspan="10" class="cur-loading-cell">Select an induction cycle and round, then click Load.</td></tr>';
+  if (tbody) tbody.innerHTML = '<tr><td colspan="10" class="cur-loading-cell">' +
+    '<div class="mn-empty-state">' +
+    '<div class="mn-empty-icon">\u{1F4CB}</div>' +
+    '<div class="mn-empty-title">No merit list loaded yet</div>' +
+    '<div class="mn-empty-desc">Select an induction cycle and round above, then click Load to view candidate-level merit data.</div>' +
+    '</div></td></tr>';
 }
 
 function wireCurrentFilters() {

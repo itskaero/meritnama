@@ -136,26 +136,58 @@
   showAuthGate();
 
   // ────────────────────────────────────────────────────
+  // Signs the current user out everywhere. Single shared implementation so
+  // every gated page behaves identically (previously only index.html and
+  // simulation.html had their own separate, slightly different copies).
+  function mnLogout() {
+    localStorage.removeItem('meritnama_auth_session');
+    localStorage.removeItem('mn_profile_pic');
+    window.location.reload();
+  }
+  window.mnLogout = mnLogout;
+
   function injectProfileBtn(email) {
-    if (document.getElementById('profileNavBtn')) return;
-    var initial = email ? email.charAt(0).toUpperCase() : '?';
-    var savedPic = localStorage.getItem('mn_profile_pic') || '';
-    var avatarHtml = savedPic
-      ? '<img src="' + savedPic + '" class="profile-nav-avatar-img" alt="" />'
-      : initial;
-    var btn = document.createElement('a');
-    btn.id = 'profileNavBtn';
-    btn.href = 'candidate.html';
-    btn.title = 'My Profile \u2014 ' + email;
-    btn.innerHTML =
-      '<span class="profile-nav-avatar">' + avatarHtml + '</span>' +
-      '<span class="profile-nav-label">My Profile</span>';
-    var headerMeta = document.getElementById('headerMeta');
-    if (headerMeta) {
-      headerMeta.insertBefore(btn, headerMeta.firstChild);
-    } else {
-      btn.classList.add('profile-nav-floating');
-      document.body.appendChild(btn);
+    if (!document.getElementById('profileNavBtn')) {
+      var initial = email ? email.charAt(0).toUpperCase() : '?';
+      var savedPic = localStorage.getItem('mn_profile_pic') || '';
+      var avatarHtml = savedPic
+        ? '<img src="' + savedPic + '" class="profile-nav-avatar-img" alt="" />'
+        : initial;
+      var btn = document.createElement('a');
+      btn.id = 'profileNavBtn';
+      btn.href = 'candidate.html';
+      btn.title = 'My Profile — ' + email;
+      btn.innerHTML =
+        '<span class="profile-nav-avatar">' + avatarHtml + '</span>' +
+        '<span class="profile-nav-label">My Profile</span>';
+      var headerMeta = document.getElementById('headerMeta');
+      if (headerMeta) {
+        headerMeta.insertBefore(btn, headerMeta.firstChild);
+      } else {
+        btn.classList.add('profile-nav-floating');
+        document.body.appendChild(btn);
+      }
+    }
+
+    if (!document.getElementById('mnLogoutBtn')) {
+      var logoutBtn = document.createElement('button');
+      logoutBtn.id = 'mnLogoutBtn';
+      logoutBtn.type = 'button';
+      logoutBtn.className = 'mn-logout-btn';
+      logoutBtn.title = 'Log out';
+      logoutBtn.setAttribute('aria-label', 'Log out');
+      logoutBtn.innerHTML = '&#9211;';
+      logoutBtn.addEventListener('click', function () {
+        if (confirm('Log out of MeritNama?')) mnLogout();
+      });
+      var profileBtnEl = document.getElementById('profileNavBtn');
+      var hm = document.getElementById('headerMeta');
+      if (hm && profileBtnEl && profileBtnEl.parentElement === hm) {
+        hm.insertBefore(logoutBtn, profileBtnEl.nextSibling);
+      } else {
+        logoutBtn.classList.add('mn-logout-floating');
+        document.body.appendChild(logoutBtn);
+      }
     }
   }
 

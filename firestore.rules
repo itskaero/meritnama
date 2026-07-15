@@ -229,6 +229,17 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Candidate mark revisions — admin-entered corrections/overrides to a candidate's
+    // marks, layered on top of data/induction21_revisions.json in the simulation portal.
+    // Doc ID = applicantId. Fields: { [revId]: { _type, _createdAt, _applicantId, ...changedFields } }
+    // Security note: same trust model as notifications/authorized_users — writes are
+    // gated by the admin dashboard UI, not Firestore rules.
+    match /candidate_revisions/{applicantId} {
+      allow read: if true;
+      allow create, update: if true;   // admin dashboard writes; gated by PIN-based auth in client
+      allow delete: if false;
+    }
+
     // Editorial articles — public read for published, full CRUD for admin
     match /editorial_articles/{articleId} {
       allow read: if true;
