@@ -17,3 +17,8 @@ scripts/
 
 donate.html
 firebase-config.js
+
+# Cloud Functions
+functions/node_modules/
+functions/.env
+functions/*.log

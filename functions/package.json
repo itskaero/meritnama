@@ -1,0 +1,11 @@
+{
+  "name": "meritnama-functions",
+  "description": "Server-side gate for authorized_users writes — see functions/README.md",
+  "engines": { "node": "20" },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^5.0.0"
+  },
+  "private": true
+}
