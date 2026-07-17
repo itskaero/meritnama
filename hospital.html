@@ -253,6 +253,24 @@
     .hp-star-picker button.active { color: var(--neon-gold); transform: scale(1.2); }
     .hp-star-label { font-size: 0.78rem; color: var(--text-muted); margin-left: 6px; }
 
+    /* ── Optional sub-ratings (teaching / work-life / seniors' support) ── */
+    .hp-subratings { margin: 0.2rem 0 0.9rem; padding-top: 0.7rem; border-top: 1px solid var(--border); }
+    .hp-subratings-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .hp-subrating-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .hp-subrating-row .hp-subrating-name { font-size: 0.82rem; color: var(--text); width: 130px; flex-shrink: 0; }
+    .hp-subrating-picker { display: flex; gap: 3px; }
+    .hp-subrating-picker button {
+      background: none; border: none; cursor: pointer; font-size: 1.05rem;
+      color: var(--text-light); padding: 0; transition: color 0.15s, transform 0.12s;
+    }
+    .hp-subrating-picker button:hover, .hp-subrating-picker button.active { color: var(--neon-gold); transform: scale(1.15); }
+
+    /* ── Sub-rating breakdown shown on submitted reviews ── */
+    .hp-review-breakdown { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 6px 0; font-size: 0.76rem; color: var(--text-muted); }
+    .hp-review-breakdown .hp-bd-chip { display: inline-flex; align-items: center; gap: 4px; }
+    .hp-review-breakdown .hp-bd-chip .hp-bd-stars { color: var(--neon-gold); letter-spacing: 1px; }
+    .hp-review-breakdown .hp-bd-chip .hp-bd-stars .empty { color: var(--text-light); }
+
     .hp-submit-btn {
       width: 100%;
       padding: 0.65rem;
@@ -402,6 +420,9 @@
   let hospitalName = '';
   let selectedStars = 0;
   let selectedSpecialty = null;
+  const SUBRATING_KEYS = ['teaching', 'worklife', 'support'];
+  const SUBRATING_LABELS = { teaching: 'Teaching', worklife: 'Balance', support: 'Support' };
+  let selectedSubratings = { teaching: 0, worklife: 0, support: 0 };
 
   function esc(str) {
     if (!str) return '';
@@ -570,6 +591,27 @@
               <button data-val="5">★</button>
               <span class="hp-star-label" id="starLabel">Select rating</span>
             </div>
+            <div class="hp-subratings">
+              <div class="hp-subratings-label">Optional — rate specific aspects</div>
+              <div class="hp-subrating-row" data-subrating="teaching">
+                <span class="hp-subrating-name">Teaching quality</span>
+                <div class="hp-subrating-picker">
+                  <button data-val="1">★</button><button data-val="2">★</button><button data-val="3">★</button><button data-val="4">★</button><button data-val="5">★</button>
+                </div>
+              </div>
+              <div class="hp-subrating-row" data-subrating="worklife">
+                <span class="hp-subrating-name">Work-life balance</span>
+                <div class="hp-subrating-picker">
+                  <button data-val="1">★</button><button data-val="2">★</button><button data-val="3">★</button><button data-val="4">★</button><button data-val="5">★</button>
+                </div>
+              </div>
+              <div class="hp-subrating-row" data-subrating="support">
+                <span class="hp-subrating-name">Seniors' support</span>
+                <div class="hp-subrating-picker">
+                  <button data-val="1">★</button><button data-val="2">★</button><button data-val="3">★</button><button data-val="4">★</button><button data-val="5">★</button>
+                </div>
+              </div>
+            </div>
             <div class="hp-form-row">
               <input type="text" id="revName" placeholder="Your name (optional)" maxlength="50" />
               <select id="revYear">
@@ -614,6 +656,19 @@
           b.classList.toggle('active', i < selectedStars);
         });
         document.getElementById('starLabel').textContent = STAR_LABELS[selectedStars];
+      });
+    });
+
+    // Wire up optional sub-rating pickers (teaching / work-life / support)
+    document.querySelectorAll('.hp-subrating-row').forEach(row => {
+      const key = row.dataset.subrating;
+      row.querySelectorAll('.hp-subrating-picker button').forEach(btn => {
+        btn.addEventListener('click', function() {
+          selectedSubratings[key] = parseInt(this.dataset.val, 10);
+          row.querySelectorAll('.hp-subrating-picker button').forEach((b, i) => {
+            b.classList.toggle('active', i < selectedSubratings[key]);
+          });
+        });
       });
     });
 
@@ -719,6 +774,13 @@
         const d = doc.data();
         const date = d.createdAt ? d.createdAt.toDate() : new Date();
         const specTag = d.specialty ? `<div><span class="hp-review-spec">📌 ${esc(d.specialty)}</span></div>` : '';
+        // Older reviews predate sub-ratings — render the breakdown row only
+        // when at least one dimension was actually rated.
+        const breakdown = (d.subratings && SUBRATING_KEYS.some(k => d.subratings[k]))
+          ? `<div class="hp-review-breakdown">${SUBRATING_KEYS.filter(k => d.subratings[k]).map(k =>
+              `<span class="hp-bd-chip">${SUBRATING_LABELS[k]} <span class="hp-bd-stars">${starsHtml(d.subratings[k])}</span></span>`
+            ).join('')}</div>`
+          : '';
         return `
           <div class="hp-review-card">
             <div class="hp-review-top">
@@ -728,6 +790,7 @@
             <div class="hp-review-stars">${starsHtml(d.rating || 0)}</div>
             ${specTag}
             <div class="hp-review-text">${esc(d.text)}</div>
+            ${breakdown}
           </div>`;
       }).join('');
 
@@ -753,6 +816,12 @@
     status.className = 'hp-form-status'; status.textContent = 'Submitting…';
 
     try {
+      // Sub-ratings are optional — only include the ones the reviewer actually
+      // set, so old code paths reading a review without them see no field at
+      // all rather than a misleading 0.
+      const subratings = {};
+      SUBRATING_KEYS.forEach(k => { if (selectedSubratings[k] > 0) subratings[k] = selectedSubratings[k]; });
+
       await db.collection('hospital_reviews').add({
         hospitalId: hospitalId,
         hospitalName: hospitalName,
@@ -761,6 +830,7 @@
         year: document.getElementById('revYear').value || null,
         rating: selectedStars,
         text: text,
+        subratings: Object.keys(subratings).length ? subratings : null,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
@@ -772,6 +842,8 @@
       selectedStars = 0;
       document.querySelectorAll('#starPicker button').forEach(b => b.classList.remove('active'));
       document.getElementById('starLabel').textContent = 'Select rating';
+      selectedSubratings = { teaching: 0, worklife: 0, support: 0 };
+      document.querySelectorAll('.hp-subrating-picker button').forEach(b => b.classList.remove('active'));
 
       // Reload reviews
       setTimeout(() => loadReviews(selectedSpecialty), 1000);
