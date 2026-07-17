@@ -470,6 +470,8 @@ function updatePreview() {
   } catch (e) {
     preview.innerHTML = (content.value || '').replace(/\n/g, '<br>');
   }
+
+  if (window.EdCharts) EdCharts.render('#edPreview');
 }
 
 // ── Slug auto-generation ─────────────────────────────────────────

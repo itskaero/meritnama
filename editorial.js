@@ -384,6 +384,8 @@ function renderArticle(article) {
   // Load votes and comments
   edLoadVotes(article.id);
   edSubscribeComments(article.id);
+
+  if (window.EdCharts) EdCharts.render('#edArticleContent');
 }
 
 // ── Show listing ─────────────────────────────────────────────────

@@ -101,8 +101,8 @@ const Charts = {
   },
 
   // ─── Trend: closing merit over years ───
-  drawTrendLineChart(rows, mode = 'raw') {
-    const ctx = getOrDestroyChart('trendLineChart');
+  drawTrendLineChart(rows, mode = 'raw', canvasId = 'trendLineChart') {
+    const ctx = getOrDestroyChart(canvasId);
     if (!ctx) return;
 
     const isPercentile = mode === 'percentile';
@@ -172,7 +172,7 @@ const Charts = {
       },
     });
 
-    registerChart('trendLineChart', chart);
+    registerChart(canvasId, chart);
   },
 
   // ─── Distribution histogram (Predictor tab) ───
