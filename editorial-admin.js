@@ -472,6 +472,7 @@ function updatePreview() {
   }
 
   if (window.EdCharts) EdCharts.render('#edPreview');
+  if (window.EdStats) EdStats.render('#edPreview');
 }
 
 // ── Slug auto-generation ─────────────────────────────────────────

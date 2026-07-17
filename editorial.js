@@ -386,6 +386,7 @@ function renderArticle(article) {
   edSubscribeComments(article.id);
 
   if (window.EdCharts) EdCharts.render('#edArticleContent');
+  if (window.EdStats) EdStats.render('#edArticleContent');
 }
 
 // ── Show listing ─────────────────────────────────────────────────
