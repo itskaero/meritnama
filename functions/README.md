@@ -69,19 +69,29 @@ any existing data. Nothing on the live site changes yet.
 
 ## Verify it works before touching anything else
 
-From the Firebase Console → Functions → `grantPortalAccess` → Testing tab,
-or from browser devtools on any page that has the Firebase SDK loaded:
+From the Firebase Console → Functions → `grantPortalAccess` → Testing tab
+(easiest — no SDK setup needed), or from browser devtools on any live
+MeritNama page: none of them currently load the Firebase **Functions**
+client SDK (only `app`/`firestore`/`storage`/`messaging`), so
+`firebase.functions()` will throw `firebase.functions is not a function`
+until you load it. Paste this whole block into devtools console — it loads
+the missing SDK piece first, then calls the function:
 
 ```js
-firebase.functions().httpsCallable('grantPortalAccess')({
-  mode: 'admin_grant',
-  callerEmail: '<a real admin email>',
-  callerPin: '<that admin\'s real PIN>',
-  email: 'smoke-test@example.com',
-  pin: '1234',
-  level: 'Standard User',
-  sendEmail: false,
-}).then(r => console.log(r.data)).catch(e => console.error(e.code, e.message));
+var s = document.createElement('script');
+s.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js';
+s.onload = function () {
+  firebase.functions().httpsCallable('grantPortalAccess')({
+    mode: 'admin_grant',
+    callerEmail: '<a real admin email>',
+    callerPin: '<that admin\'s real PIN>',
+    email: 'smoke-test@example.com',
+    pin: '1234',
+    level: 'Standard User',
+    sendEmail: false,
+  }).then(r => console.log(r.data)).catch(e => console.error(e.code, e.message));
+};
+document.head.appendChild(s);
 ```
 
 Confirm: (1) it succeeds and a `smoke-test@example.com` doc appears in
