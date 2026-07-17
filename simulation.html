@@ -3295,6 +3295,17 @@
   <button class="lub-close" id="lubClose" aria-label="Dismiss">&times;</button>
 </div>
 
+<!-- ═══════════ EDITORIAL BANNER ═══════════ -->
+<!-- Also lives outside .app-shell (see author-bar comment below) — was
+     nested inside .app-main and visibly narrower than the header/author-bar. -->
+<div id="editorialBanner" class="editorial-banner" style="display:none;" role="complementary" aria-label="Latest editorial">
+  <span class="eb-icon">&#128214;</span>
+  <span class="eb-label">New Editorial</span>
+  <span class="eb-title" id="ebTitle"><a href="editorial.html">Loading&hellip;</a></span>
+  <a class="eb-cta" id="ebCta" href="editorial.html">Read Now &#8594;</a>
+  <button class="eb-close" id="ebClose" aria-label="Dismiss">&times;</button>
+</div>
+
 <!-- ═══════════ AUTHOR BAR ═══════════ -->
 <!-- Lives outside .app-shell so its background spans the full viewport width,
      matching .site-header — it was previously nested inside .app-main, whose
@@ -3344,15 +3355,6 @@
   </div>
 </nav>
 <div class="app-main">
-
-<!-- ═══════════ EDITORIAL BANNER ═══════════ -->
-<div id="editorialBanner" class="editorial-banner" style="display:none;" role="complementary" aria-label="Latest editorial">
-  <span class="eb-icon">&#128214;</span>
-  <span class="eb-label">New Editorial</span>
-  <span class="eb-title" id="ebTitle"><a href="editorial.html">Loading&hellip;</a></span>
-  <a class="eb-cta" id="ebCta" href="editorial.html">Read Now &#8594;</a>
-  <button class="eb-close" id="ebClose" aria-label="Dismiss">&times;</button>
-</div>
 
 <!-- ═══════════ DATA UPDATE TICKER ═══════════ -->
 <div class="update-ticker">

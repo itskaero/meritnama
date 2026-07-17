@@ -61,6 +61,25 @@
   &middot;
   <span class="author-bar-note">Evolved from <em>prpdatastat</em> &mdash; now trend-based from official PHF gazette &amp; merit lists</span>
 </div>
+
+<!-- ======= EDITORIAL BANNER ======= -->
+<!-- Also lives outside .app-shell (see author-bar comment above) — was
+     nested inside .app-main and visibly narrower than the header/author-bar. -->
+<div id="editorialBanner" class="editorial-banner" style="display:none;" role="complementary" aria-label="Latest editorial">
+  <span class="eb-icon">&#128214;</span>
+  <span class="eb-label">New Editorial</span>
+  <span class="eb-title" id="ebTitle"><a href="editorial.html">Loading&hellip;</a></span>
+  <a class="eb-cta" id="ebCta" href="editorial.html">Read Now &#8594;</a>
+  <button class="eb-close" id="ebClose" aria-label="Dismiss">&times;</button>
+</div>
+
+<!-- ======= LIVE UPDATE BANNER ======= -->
+<div id="liveUpdateBanner" class="live-update-banner" style="display:none;" role="alert" aria-live="polite">
+  <span class="lub-icon" id="lubIcon">&#128276;</span>
+  <span class="lub-text" id="lubText"></span>
+  <a class="lub-link" id="lubLink" href="#" style="display:none;"></a>
+  <button class="lub-close" id="lubClose" aria-label="Dismiss">&times;</button>
+</div>
 <script src="js/sticky-offset.js"></script>
 
 <div class="app-shell">
@@ -85,23 +104,6 @@
   <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
 </nav>
 <div class="app-main">
-
-<!-- ======= EDITORIAL BANNER ======= -->
-<div id="editorialBanner" class="editorial-banner" style="display:none;" role="complementary" aria-label="Latest editorial">
-  <span class="eb-icon">&#128214;</span>
-  <span class="eb-label">New Editorial</span>
-  <span class="eb-title" id="ebTitle"><a href="editorial.html">Loading&hellip;</a></span>
-  <a class="eb-cta" id="ebCta" href="editorial.html">Read Now &#8594;</a>
-  <button class="eb-close" id="ebClose" aria-label="Dismiss">&times;</button>
-</div>
-
-<!-- ======= LIVE UPDATE BANNER ======= -->
-<div id="liveUpdateBanner" class="live-update-banner" style="display:none;" role="alert" aria-live="polite">
-  <span class="lub-icon" id="lubIcon">&#128276;</span>
-  <span class="lub-text" id="lubText"></span>
-  <a class="lub-link" id="lubLink" href="#" style="display:none;"></a>
-  <button class="lub-close" id="lubClose" aria-label="Dismiss">&times;</button>
-</div>
 
 <!-- ======= VERSE BANNER ======= -->
 <div class="daily-verse hidden" id="dailyVerse"></div>
