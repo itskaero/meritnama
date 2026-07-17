@@ -228,6 +228,11 @@ function renderPredBuckets(results, filter = 'all') {
   }
 }
 
+function slotShortlistId(r) {
+  return 'slot-' + [r.specialty, r.hospital, r.program, r.quota || '']
+    .join('|').toLowerCase().replace(/[^a-z0-9|]/g, '').replace(/\|/g, '-');
+}
+
 function predItemsHtml(rows, showBucket = false) {
   if (!rows.length) return '<p class="pred-empty">None in this category for your filters.</p>';
   return rows.slice(0, 40).map(r => {
@@ -246,10 +251,17 @@ function predItemsHtml(rows, showBucket = false) {
       ? `<span class="pred-bucket-tag pred-bucket-tag-${r.bucket}">${r.bucket}</span>`
       : '';
 
+    const slotMeta = `${r.program}${r.quota ? ' · ' + r.quota : ''} · Avg ${r.avg_pct_of_max != null ? num(r.avg_pct_of_max, 1) + '%' : num(r.avg_closing_merit)}`;
+
     return `<div class="pred-item pred-item-${r.bucket}">
       ${bucketTag}
       <div class="pred-item-main">
-        <div class="pred-item-spec">${esc(r.specialty)}</div>
+        <div class="pred-item-spec">${esc(r.specialty)}
+          <button class="mn-shortlist-btn" style="width:22px;height:22px;font-size:0.8rem;vertical-align:middle;margin-left:4px;"
+            data-shortlist-id="${slotShortlistId(r)}" data-shortlist-type="specialty"
+            data-shortlist-label="${esc(r.specialty)} — ${esc(r.hospital)}" data-shortlist-meta="${esc(slotMeta)}"
+            title="Save to shortlist">&#9734;</button>
+        </div>
         <div class="pred-item-hosp">${esc(r.hospital)}</div>
         <div class="pred-item-meta">${esc(r.program)}${r.quota ? ' &middot; ' + esc(r.quota) : ''}</div>
       </div>

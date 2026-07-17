@@ -162,7 +162,12 @@ function renderMeritTable() {
 
     const sel = MT.selectedIdx === i;
     return `<tr class="mt-row${sel ? ' mt-row-selected' : ''}" data-idx="${i}">
-      <td class="mt-cell-spec">${esc(r.specialty)}</td>
+      <td class="mt-cell-spec">
+        <button class="mn-shortlist-btn" style="width:20px;height:20px;font-size:0.72rem;vertical-align:middle;margin-right:4px;"
+          data-shortlist-id="${slotShortlistId(r)}" data-shortlist-type="specialty"
+          data-shortlist-label="${esc(r.specialty)} — ${esc(r.hospital)}"
+          data-shortlist-meta="${esc(r.program)}${r.quota ? ' · ' + esc(r.quota) : ''}"
+          title="Save to shortlist">&#9734;</button>${esc(r.specialty)}</td>
       <td class="mt-cell-hosp">${esc(r.hospital)}</td>
       <td class="mt-cell-sm">${esc(r.program)}</td>
       <td class="mt-cell-sm">${esc(r.quota)}</td>

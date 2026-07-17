@@ -34,6 +34,9 @@
       <button class="mn-cmdk-trigger" type="button" onclick="MN.commandPalette.open()" title="Jump to anywhere in MeritNama" aria-label="Open command palette">
         <span>&#128269;</span><span>Jump to&hellip;</span><kbd>&#8984;K</kbd>
       </button>
+      <button class="mn-shortlist-trigger" data-shortlist-trigger title="My Shortlist" aria-label="My Shortlist">
+        &#11088; <span class="mn-shortlist-count" style="display:none;">0</span>
+      </button>
       <button class="notif-bell-btn" id="notifBellBtn" title="Subscribe to data updates" aria-label="Subscribe to data updates">
         <svg class="bell-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="17" height="17">
           <path d="M18 8A6 6 0 1 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -993,6 +996,7 @@
 </footer>
 
 <script src="js/design-system.js"></script>
+<script src="js/shortlist.js"></script>
 <script src="charts.js"></script>
 <script src="js/app-core.js"></script>
 <script src="js/app-tabs.js"></script>
