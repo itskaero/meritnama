@@ -333,6 +333,8 @@ function renderInductionSummary() {
     return;
   }
 
+  if (typeof Charts !== 'undefined') Charts.drawAggregateMeritTrendChart('startTrendChart', flat);
+
   // Build policy_by_induction from scoring_policy.json
   const inductionMax = sp._induction_max || {};
   const inductionMap = {};

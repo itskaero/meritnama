@@ -819,6 +819,63 @@ const Charts = {
     registerChart(canvasId, chart);
   },
 
+  // ─── Aggregate average closing merit trend across ALL specialties/hospitals
+  // (Start Here tab) — a single landscape-level line, distinct from
+  // drawTrendLineChart which plots up to 15 individually-selected series. ───
+  drawAggregateMeritTrendChart(canvasId, flatLookup) {
+    const ctx = getOrDestroyChart(canvasId);
+    if (!ctx || !flatLookup?.length) return;
+
+    const yearStats = {};
+    flatLookup.forEach(row => {
+      const ym = row.yearly_pct_of_max || {};
+      Object.entries(ym).forEach(([y, v]) => {
+        if (v == null) return;
+        (yearStats[y] ||= { sum: 0, count: 0 }).sum += v;
+        yearStats[y].count += 1;
+      });
+    });
+    const years = Object.keys(yearStats).map(Number).sort((a, b) => a - b);
+    if (!years.length) return;
+    const avgValues = years.map(y => +(yearStats[y].sum / yearStats[y].count).toFixed(1));
+
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: years.map(String),
+        datasets: [{
+          label: 'Average Closing Merit (% of Max)',
+          data: avgValues,
+          borderColor: colorAt(0),
+          backgroundColor: colorAt(0, 0.12),
+          pointBackgroundColor: colorAt(0),
+          tension: 0.3,
+          fill: true,
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        }],
+      },
+      options: {
+        ...BASE_OPTIONS,
+        plugins: {
+          ...BASE_OPTIONS.plugins,
+          legend: { display: false },
+          tooltip: {
+            ...BASE_OPTIONS.plugins.tooltip,
+            callbacks: { label: ctx => `Avg: ${ctx.parsed.y}% of max across ${flatLookup.length} tracked slots` },
+          },
+        },
+        scales: {
+          ...BASE_OPTIONS.scales,
+          y: { ...BASE_OPTIONS.scales.y, min: 0, max: 100, title: { display: true, text: 'Avg % of Max', color: '#5a6e85' } },
+          x: { ...BASE_OPTIONS.scales.x, title: { display: true, text: 'Induction Year', color: '#5a6e85' } },
+        },
+      },
+    });
+    registerChart(canvasId, chart);
+  },
+
 };
 
 function ordinalSuffix(n) {

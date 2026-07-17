@@ -2497,6 +2497,7 @@ tr.clickable-row.active { background: rgba(77,184,217,0.12); outline: 1px solid 
      rather than let the row overflow. */
   .header-meta { gap: 6px; }
   .share-header-btn { display: none; }
+  #headerMeta .mn-shortlist-trigger { display: none; }
   .bell-label { display: none; }
   .notif-bell-btn { padding: 6px; }
   .mn-cmdk-trigger span:nth-child(2), .mn-cmdk-trigger kbd { display: none; }
