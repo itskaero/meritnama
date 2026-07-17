@@ -63,6 +63,7 @@ function setupPredictorTab() {
     const f = document.querySelector('#tab-predictor .pill.active')?.dataset.filter || 'all';
     renderPredBuckets(App.ui.predResults, f);
   });
+  document.getElementById('predExportPdfBtn')?.addEventListener('click', exportPredictionPdf);
 
   // Live % of max preview as user types
   function updateMeritPctPreview() {
@@ -136,6 +137,8 @@ function runPredictor() {
   const allPcts    = App.data.flatLookup.map(r => r.avg_pct_of_max).filter(v => v != null);
   const percentile = getPercentile(userPct, allPcts);
   const band       = getMeritBand(userPct, allPcts);
+
+  App.ui.predContext = { merit, prog, quota, userPct, percentile, band };
 
   const safeN   = results.filter(r => r.bucket === 'safe').length;
   const targetN = results.filter(r => r.bucket === 'target').length;
@@ -258,6 +261,103 @@ function predItemsHtml(rows, showBucket = false) {
       </div>
     </div>`;
   }).join('');
+}
+
+// ── Lightweight jsPDF table drawer (self-contained — the donor-gated,
+// watermarked table drawer in js/sim-placement.js is specific to the
+// simulation portal's bulk candidate-PII exports and isn't loaded here) ──
+function drawSimpleTable(doc, columns, rows, yStart, left, maxY) {
+  let y = yStart;
+  const rowH = 14;
+  function drawHeader() {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    let x = left;
+    columns.forEach(c => { doc.text(String(c.label), x, y); x += c.w; });
+    y += 12;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(left, y - 8, left + columns.reduce((s, c) => s + c.w, 0), y - 8);
+    doc.setFont('helvetica', 'normal');
+  }
+  drawHeader();
+  rows.forEach(r => {
+    if (y > maxY) { doc.addPage(); y = 48; drawHeader(); }
+    let x = left;
+    columns.forEach(c => {
+      let val = String(c.value(r));
+      if (val.length > 34) val = val.slice(0, 32) + '…';
+      doc.text(val, x, y);
+      x += c.w;
+    });
+    y += rowH;
+  });
+  return y;
+}
+
+function exportPredictionPdf() {
+  const jsPDF = window.jspdf?.jsPDF;
+  if (!jsPDF) { (window.MN ? MN.toast.danger : alert)('PDF library did not load. Check your connection and retry.'); return; }
+  const ctx = App.ui.predContext;
+  const results = App.ui.predResults;
+  if (!ctx || !results || !results.length) {
+    (window.MN ? MN.toast.warning : alert)('Run a prediction first.');
+    return;
+  }
+
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  const left = 42;
+  const maxY = 770;
+  let y = 48;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.text('MeritNama — My Prediction Report', left, y);
+  y += 22;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(110, 120, 140);
+  doc.text(`Generated: ${new Date().toLocaleString('en-PK')}`, left, y);
+  doc.setTextColor(20, 35, 55);
+  y += 20;
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Merit Score: ${ctx.merit}  (${ctx.userPct.toFixed(1)}% of policy max)`, left, y);
+  y += 16;
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Percentile: ${ctx.percentile}  ·  Band: ${ctx.band.label}`, left, y);
+  y += 14;
+  doc.text(`Program: ${ctx.prog || 'All Programs'}  ·  Quota: ${ctx.quota || 'All Quotas'}`, left, y);
+  y += 20;
+
+  const safeN = results.filter(r => r.bucket === 'safe').length;
+  const targetN = results.filter(r => r.bucket === 'target').length;
+  const reachN = results.filter(r => r.bucket === 'reach').length;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Safe: ${safeN}   Target: ${targetN}   Reach: ${reachN}`, left, y);
+  y += 22;
+  doc.setFont('helvetica', 'normal');
+
+  const order = { safe: 0, target: 1, reach: 2 };
+  const sorted = results.slice().sort((a, b) => order[a.bucket] - order[b.bucket] || b.delta - a.delta);
+
+  y = drawSimpleTable(doc, [
+    { label: 'Bucket', w: 46, value: r => r.bucket },
+    { label: 'Specialty', w: 150, value: r => r.specialty },
+    { label: 'Hospital', w: 150, value: r => r.hospital },
+    { label: 'Quota', w: 70, value: r => r.quota || '—' },
+    { label: 'Avg %', w: 46, value: r => r.avg_pct_of_max != null ? num(r.avg_pct_of_max, 1) : '—' },
+    { label: 'Delta', w: 46, value: r => (r.delta >= 0 ? '+' : '') + num(r.delta, 1) },
+  ], sorted.slice(0, 200), y, left, maxY);
+
+  if (sorted.length > 200) {
+    y += 8;
+    doc.setFontSize(8);
+    doc.text(`Note: showing first 200 of ${sorted.length} matching combinations.`, left, y);
+  }
+
+  doc.save('meritnama-prediction-report.pdf');
 }
 
 // ═══════════════════════════════════════════════════════

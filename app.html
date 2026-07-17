@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="auth.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -48,6 +49,20 @@
   </div>
 </header>
 
+<!-- ======= AUTHOR BAR ======= -->
+<!-- Lives outside .app-shell so its background spans the full viewport width,
+     matching .site-header — it was previously nested inside .app-main, whose
+     width is offset by the sidebar, making the two bars visibly mismatched. -->
+<div class="author-bar">
+  Independent, community-built tool by
+  <a href="https://github.com/itskaero" target="_blank" rel="noopener">@itskaero</a>
+  &middot;
+  <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a>
+  &middot;
+  <span class="author-bar-note">Evolved from <em>prpdatastat</em> &mdash; now trend-based from official PHF gazette &amp; merit lists</span>
+</div>
+<script src="js/sticky-offset.js"></script>
+
 <div class="app-shell">
 <!-- ======= NAV ======= -->
 <nav class="tab-nav" id="mainNav">
@@ -86,14 +101,6 @@
   <span class="lub-text" id="lubText"></span>
   <a class="lub-link" id="lubLink" href="#" style="display:none;"></a>
   <button class="lub-close" id="lubClose" aria-label="Dismiss">&times;</button>
-</div>
-<div class="author-bar">
-  Independent, community-built tool by
-  <a href="https://github.com/itskaero" target="_blank" rel="noopener">@itskaero</a>
-  &middot;
-  <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a>
-  &middot;
-  <span class="author-bar-note">Evolved from <em>prpdatastat</em> &mdash; now trend-based from official PHF gazette &amp; merit lists</span>
 </div>
 
 <!-- ======= VERSE BANNER ======= -->
@@ -360,6 +367,7 @@
           <button class="pill" data-filter="reach">&#128640; Reach</button>
         </div>
         <input type="text" id="predSearch" placeholder="Filter specialty / hospital&hellip;" class="search-input" />
+        <button class="btn btn-xs" id="predExportPdfBtn" type="button" title="Download this prediction as a PDF report">&#128196; Export PDF</button>
       </div>
       <div id="predBuckets" class="pred-buckets pred-buckets-3col"></div>
     </div>

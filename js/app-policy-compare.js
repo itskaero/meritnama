@@ -601,14 +601,73 @@ function runComparison() {
     return `<tr><td style="font-weight:600;font-size:0.8rem;white-space:nowrap;">${m.label}</td>${cells}</tr>`;
   }).join('');
 
+  App.ui.compareResults = { rows, metrics, prog };
+
   document.getElementById('cmpResults').classList.remove('hidden');
   document.getElementById('cmpResults').innerHTML = `
     <div class="card" style="margin-top:1.5rem;overflow-x:auto;">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:0.6rem;">
+        <button class="btn btn-xs" id="cmpExportPdfBtn" type="button" title="Download this comparison as a PDF report">&#128196; Export PDF</button>
+      </div>
       <table class="data-table">
         <thead><tr><th>Metric</th>${headerCells}</tr></thead>
         <tbody>${metricRows}</tbody>
       </table>
     </div>`;
+  document.getElementById('cmpExportPdfBtn')?.addEventListener('click', exportComparePdf);
+}
+
+function exportComparePdf() {
+  const jsPDF = window.jspdf?.jsPDF;
+  if (!jsPDF) { (window.MN ? MN.toast.danger : alert)('PDF library did not load. Check your connection and retry.'); return; }
+  const data = App.ui.compareResults;
+  if (!data || !data.rows?.length) {
+    (window.MN ? MN.toast.warning : alert)('Run a comparison first.');
+    return;
+  }
+  const { rows, metrics, prog } = data;
+
+  const doc = new jsPDF({ unit: 'pt', format: 'a4', orientation: rows.length > 2 ? 'landscape' : 'portrait' });
+  const left = 42;
+  const maxY = doc.internal.pageSize.getHeight() - 40;
+  let y = 48;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.text('MeritNama — Comparison Report', left, y);
+  y += 22;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(110, 120, 140);
+  doc.text(`Generated: ${new Date().toLocaleString('en-PK')}  ·  Program: ${prog}`, left, y);
+  doc.setTextColor(20, 35, 55);
+  y += 18;
+
+  doc.setFontSize(9);
+  rows.forEach((r, i) => {
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${i + 1}. ${r.specialty}`, left, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`   ${r.hospital} (${r.quota})`, left, y + 12);
+    y += 24;
+  });
+  y += 6;
+
+  const colW = Math.max(90, Math.floor((doc.internal.pageSize.getWidth() - left - 42 - 130) / rows.length));
+  const columns = [{ label: 'Metric', w: 130, value: m => m.label }].concat(
+    rows.map(r => ({ label: r.specialty.slice(0, 16), w: colW, value: m => stripHtml(m.fn(r)) }))
+  );
+
+  drawSimpleTable(doc, columns, metrics, y, left, maxY);
+
+  doc.save('meritnama-comparison-report.pdf');
+}
+
+function stripHtml(s) {
+  const d = document.createElement('div');
+  d.innerHTML = String(s == null ? '' : s);
+  return d.textContent || '';
 }
 
 // Handle URL params
