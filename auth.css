@@ -63,6 +63,16 @@
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
 }
 
+/* Phone-width header is crowded (profile, logout, status badge, command
+   palette trigger, notif bell, hamburger all in one row) — collapse the
+   profile pill to just its avatar. Lives here rather than in styles.css
+   because auth.css loads after it, so an equal-specificity override placed
+   in styles.css loses the cascade regardless of being inside a media query. */
+@media (max-width: 640px) {
+  #profileNavBtn { padding: 0.25rem; gap: 0; }
+  .profile-nav-label { display: none; }
+}
+
 /* ═══════════════════════════════════════════════════════
    Logout button — injected by auth.js next to the profile
    button on every gated page, so logout is never missing.

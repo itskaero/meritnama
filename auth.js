@@ -169,7 +169,10 @@
       }
     }
 
-    if (!document.getElementById('mnLogoutBtn')) {
+    // Skip if this page already has its own working logout control
+    // (index.html and simulation.html predate this shared one).
+    var existingLogout = document.getElementById('logoutBtn');
+    if (!document.getElementById('mnLogoutBtn') && !existingLogout) {
       var logoutBtn = document.createElement('button');
       logoutBtn.id = 'mnLogoutBtn';
       logoutBtn.type = 'button';
