@@ -234,6 +234,17 @@
   </div>
 </header>
 
+<!-- Lives outside .app-shell so its background spans the full viewport width,
+     matching .site-header — it was previously nested inside .app-main, whose
+     width is offset by the sidebar, making the two bars visibly mismatched. -->
+<div class="author-bar">
+  Independent, community-built tool by
+  <a href="https://github.com/itskaero" target="_blank" rel="noopener">@itskaero</a>
+  &middot;
+  <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a>
+</div>
+<script src="js/sticky-offset.js"></script>
+
 <div class="app-shell">
 <nav class="tab-nav" id="mainNav">
   <a href="app.html" class="tab-btn" style="text-decoration:none;">&#128202; Merit Table</a>
@@ -244,13 +255,6 @@
   <a href="donate.html" class="tab-btn donate-btn" style="text-decoration:none;">&#9829; Support</a>
 </nav>
 <div class="app-main">
-
-<div class="author-bar">
-  Independent, community-built tool by
-  <a href="https://github.com/itskaero" target="_blank" rel="noopener">@itskaero</a>
-  &middot;
-  <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a>
-</div>
 
 <main class="main-content" style="padding-top:0.5rem;">
 
