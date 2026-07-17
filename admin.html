@@ -611,6 +611,7 @@
       background: var(--card-bg); border: 1px solid var(--border);
       border-radius: var(--radius-lg); padding: 1.1rem 1.15rem;
       backdrop-filter: blur(8px);
+      min-width: 0;
     }
     .panel-head {
       display: flex; align-items: center; justify-content: space-between;
@@ -653,7 +654,7 @@
     .activity-dot.fail { background: var(--danger); }
     .activity-meta { color: var(--muted); font-size: 0.68rem; margin-top: 0.15rem; }
 
-    .page-bar-row { display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.45rem; font-size: 0.75rem; }
+    .page-bar-row { display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.45rem; font-size: 0.75rem; min-width: 0; }
     .page-bar-label { width: 38%; flex-shrink: 0; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .page-bar-track { flex: 1; height: 8px; background: rgba(255,255,255,0.04); border-radius: 99px; overflow: hidden; }
     .page-bar-fill { height: 100%; background: var(--accent-grad); border-radius: 99px; transition: width 0.5s ease; }
@@ -974,6 +975,10 @@
       padding-top:4px; border-top:1px solid rgba(77,184,217,0.06);
     }
   </style>
+  <!-- Editorial tab reuses editorial.html's admin markup/CSS classes (.ed-admin-layout,
+       .ed-editor, .ed-md-editor-wrap, etc.) — its variable names (--border, --text-muted,
+       --neon-cyan…) match this page's own :root, so no color conflicts. -->
+  <link rel="stylesheet" href="editorial-styles.css" />
 </head>
 <body>
 
@@ -1034,7 +1039,8 @@
       <div class="sidebar-section">Site</div>
       <button class="sidebar-link" data-tab="broadcast"><span class="nav-icon">📢</span> Broadcast</button>
       <button class="sidebar-link" data-tab="config"><span class="nav-icon">⚙️</span> Config</button>
-
+      <button class="sidebar-link" data-tab="homepage"><span class="nav-icon">🏠</span> Homepage</button>
+      <button class="sidebar-link" data-tab="editorial"><span class="nav-icon">📖</span> Editorial</button>
       <button class="sidebar-link" data-tab="jobs-sync"><span class="nav-icon">&#128188;</span> Jobs Sync</button>
       <div class="sidebar-section">Induction 21</div>
       <button class="sidebar-link" data-tab="candidates"><span class="nav-icon">🎓</span> Candidates</button>
@@ -2107,6 +2113,180 @@
       </details>
     </div><!-- /tab-candidates -->
 
+    <!-- ═══ Editorial (merged from editorial-admin.html) ═══ -->
+    <div id="tab-editorial" style="display:none;">
+      <div class="ed-admin-layout" id="edAdminLayout" style="padding:0;max-width:none;min-height:0;">
+        <aside class="ed-admin-sidebar">
+          <h3>Editorial Admin</h3>
+          <button class="ed-admin-nav-item active" data-view="list" onclick="edAdmin.showList()">
+            📄 Articles <span class="ed-admin-nav-badge" id="edAdminCount">0</span>
+          </button>
+          <button class="ed-admin-nav-item" data-view="new" onclick="edAdmin.newArticle()">
+            ✚ New Article
+          </button>
+          <div style="margin-top:1rem;padding-top:0.7rem;border-top:1px solid var(--border);">
+            <button class="ed-admin-nav-item" onclick="window.open('editorial.html','_blank')">
+              👁 View Site
+            </button>
+          </div>
+        </aside>
+        <div class="ed-admin-main" id="edAdminMain">
+          <div id="edAdminListView">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+              <h3 style="margin:0;font-size:1.05rem;color:var(--text);">All Articles</h3>
+              <button class="ed-admin-new-btn" onclick="edAdmin.newArticle()">✚ New Article</button>
+            </div>
+            <div class="ed-admin-list" id="edAdminList">
+              <div class="ed-loading">Loading articles…</div>
+            </div>
+          </div>
+          <div id="edAdminEditorView" style="display:none;">
+            <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem;">
+              <button class="ed-back-btn" onclick="edAdmin.showList()">← Back</button>
+              <h3 style="margin:0;font-size:1.05rem;color:var(--text);" id="edEditorTitle">New Article</h3>
+            </div>
+            <div class="ed-editor">
+              <div class="ed-editor-grid">
+                <div class="ed-editor-full ed-field">
+                  <label>Title</label>
+                  <input type="text" id="edTitle" placeholder="Article title" maxlength="200" />
+                </div>
+                <div class="ed-editor-full ed-field">
+                  <label>Subtitle</label>
+                  <input type="text" id="edSubtitle" placeholder="Optional subtitle" maxlength="300" />
+                </div>
+                <div class="ed-field">
+                  <label>Slug</label>
+                  <input type="text" id="edSlug" placeholder="auto-generated-from-title" maxlength="120" />
+                  <div class="ed-field-hint">URL-friendly identifier. Auto-generated from title if left blank.</div>
+                </div>
+                <div class="ed-field">
+                  <label>Category</label>
+                  <select id="edCategory">
+                    <option value="analysis">Analysis</option>
+                    <option value="policy">Policy</option>
+                    <option value="trend">Trend</option>
+                    <option value="comparison">Comparison</option>
+                    <option value="opinion">Opinion</option>
+                    <option value="guide">Guide</option>
+                    <option value="data">Data</option>
+                  </select>
+                </div>
+                <div class="ed-field">
+                  <label>Tags</label>
+                  <input type="text" id="edTags" placeholder="policy, merit, FCPS (comma-separated)" />
+                </div>
+                <div class="ed-field">
+                  <label>Author Name</label>
+                  <input type="text" id="edAuthorName" placeholder="MeritNama" value="MeritNama" />
+                </div>
+                <div class="ed-editor-full ed-field">
+                  <label>Excerpt</label>
+                  <textarea id="edExcerpt" rows="2" placeholder="Short summary for article cards (150-200 chars)" maxlength="300"></textarea>
+                </div>
+              </div>
+              <div class="ed-field" style="margin-bottom:1rem;">
+                <label>Cover Image</label>
+                <div class="ed-cover-upload" id="edCoverUpload">
+                  <input type="file" id="edCoverInput" accept="image/jpeg,image/png,image/webp" />
+                  <div class="ed-cover-upload-text" id="edCoverText">
+                    <strong>Click to upload</strong> or drag an image<br/>
+                    <span style="font-size:0.75rem;color:var(--text-muted);">JPEG, PNG, or WebP. Max 5MB. Recommended: 1200x675px</span>
+                  </div>
+                  <img class="ed-cover-preview" id="edCoverPreview" style="display:none;" />
+                </div>
+              </div>
+              <div class="ed-field" style="margin-bottom:0;">
+                <label>Content (Markdown)</label>
+              </div>
+              <div class="ed-md-editor-wrap">
+                <div class="ed-md-editor-pane">
+                  <div class="ed-md-pane-header">Markdown</div>
+                  <textarea class="ed-md-editor-textarea" id="edContent" placeholder="Write your article in Markdown..."></textarea>
+                </div>
+                <div class="ed-md-editor-pane">
+                  <div class="ed-md-pane-header">Preview</div>
+                  <div class="ed-md-preview ed-md" id="edPreview"></div>
+                </div>
+              </div>
+              <div style="margin-top:1rem;">
+                <details>
+                  <summary style="font-size:0.82rem;color:var(--text-muted);cursor:pointer;padding:0.5rem 0;">SEO &amp; Metadata</summary>
+                  <div class="ed-editor-grid" style="margin-top:0.5rem;">
+                    <div class="ed-editor-full ed-field">
+                      <label>SEO Title</label>
+                      <input type="text" id="edSeoTitle" placeholder="Defaults to article title" maxlength="70" />
+                    </div>
+                    <div class="ed-editor-full ed-field">
+                      <label>SEO Description</label>
+                      <textarea id="edSeoDesc" rows="2" placeholder="Defaults to excerpt" maxlength="160"></textarea>
+                    </div>
+                  </div>
+                </details>
+              </div>
+              <div class="ed-field" style="margin-top:1rem;">
+                <label>Related Article Slugs</label>
+                <input type="text" id="edRelatedSlugs" placeholder="slug-1, slug-2 (comma-separated)" />
+                <div class="ed-field-hint">Slugs of other published articles to show as related.</div>
+              </div>
+              <div class="ed-editor-actions">
+                <button class="ed-btn-save" id="edSaveBtn" onclick="edAdmin.save('draft')">Save Draft</button>
+                <button class="ed-btn-publish" id="edPublishBtn" onclick="edAdmin.save('published')">Publish</button>
+                <button class="ed-btn-preview" onclick="edAdmin.previewInNewTab()">Open Preview</button>
+                <button class="ed-btn-archive" id="edArchiveBtn" onclick="edAdmin.save('archived')" style="display:none;">Archive</button>
+                <button class="ed-btn-delete" id="edDeleteBtn" onclick="edAdmin.deleteArticle()" style="display:none;">Delete</button>
+                <span class="ed-autosave-hint" id="edAutosaveHint"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-editorial -->
+    <div class="ed-toast" id="edToast"></div>
+
+    <!-- ═══ Homepage / Hero content ═══ -->
+    <div id="tab-homepage" style="display:none;">
+      <div class="panel" style="max-width:640px;">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Hero &amp; stats</div>
+            <div class="panel-sub">Shown on index.html — no code deploy needed to update</div>
+          </div>
+        </div>
+        <div style="padding:1.25rem;display:flex;flex-direction:column;gap:1rem;">
+          <div class="ed-field">
+            <label>Subhead (under the headline)</label>
+            <textarea id="hpSubhead" rows="2" maxlength="200" placeholder="Independent residency induction analytics for Punjab's medical trainees."></textarea>
+          </div>
+          <div class="ed-editor-grid" style="grid-template-columns:repeat(3,1fr);">
+            <div class="ed-field">
+              <label>Stat 1 value</label>
+              <input type="text" id="hpStat1Val" maxlength="12" placeholder="3,473+" />
+              <label style="margin-top:0.4rem;">Stat 1 label</label>
+              <input type="text" id="hpStat1Lab" maxlength="20" placeholder="Candidates" />
+            </div>
+            <div class="ed-field">
+              <label>Stat 2 value</label>
+              <input type="text" id="hpStat2Val" maxlength="12" placeholder="476" />
+              <label style="margin-top:0.4rem;">Stat 2 label</label>
+              <input type="text" id="hpStat2Lab" maxlength="20" placeholder="Sim Placed" />
+            </div>
+            <div class="ed-field">
+              <label>Stat 3 value</label>
+              <input type="text" id="hpStat3Val" maxlength="12" placeholder="369" />
+              <label style="margin-top:0.4rem;">Stat 3 label</label>
+              <input type="text" id="hpStat3Lab" maxlength="20" placeholder="Slots" />
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <button class="ai-btn-primary" onclick="saveHomepageContent()">Save</button>
+            <button class="ai-btn-secondary" onclick="loadHomepageContent()">Reload</button>
+            <span id="hpSaveStatus" style="font-size:0.8rem;color:var(--text-muted);"></span>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-homepage -->
+
     </div><!-- /dash-content -->
   </main>
 </div>
@@ -2236,6 +2416,7 @@
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="notifications.js"></script>
 <script src="access-request.js"></script>
@@ -2273,6 +2454,8 @@ const TAB_META = {
   contributions: { title: 'Contributions',      sub: 'Financial contribution records' },
   broadcast:     { title: 'Broadcast', sub: 'Live banners, simulation feed, schedule, notifications' },
   config:        { title: 'Config', sub: 'Merit formulas, seat allocation, revisions, access config' },
+  homepage:      { title: 'Homepage', sub: 'Hero headline, subhead, and live stats shown on the landing page' },
+  editorial:     { title: 'Editorial', sub: 'Write, edit, and publish articles — same tool as editorial-admin.html' },
   'download-logs': { title: 'Download Logs', sub: 'PDF and report download audit trail' },
   'user-activity': { title: 'User Activity', sub: 'Aggregated activity per user across all log sources' },
   candidates:      { title: 'Candidates',           sub: 'Induction 21 candidate browser — search, filter, view preferences and revisions' },
@@ -4464,7 +4647,7 @@ async function saveRevisionsConfigEditor() {
 }
 
 function switchTab(tab) {
-  const tabs = ['overview', 'logs', 'screenshots', 'warnings', 'grievances', 'users', 'access-requests', 'contributions', 'mentorship', 'broadcast', 'config', 'profiles', 'download-logs', 'user-activity', 'jobs-sync', 'candidates'];
+  const tabs = ['overview', 'logs', 'screenshots', 'warnings', 'grievances', 'users', 'access-requests', 'contributions', 'mentorship', 'broadcast', 'config', 'homepage', 'editorial', 'profiles', 'download-logs', 'user-activity', 'jobs-sync', 'candidates'];
   for (const t of tabs) {
     const el = document.getElementById('tab-' + t);
     if (el) el.style.display = tab === t ? '' : 'none';
@@ -4495,6 +4678,52 @@ function switchTab(tab) {
   if (tab === 'grievances')    loadGrievances();
   if (tab === 'candidates')    loadCandidatesTab();
   if (tab === 'jobs-sync')     _refreshJobsMetaPill();
+  if (tab === 'homepage')      loadHomepageContent();
+  // 'editorial' needs no loader call here — editorial-admin.js initializes
+  // itself on DOMContentLoaded (see the __MN_ADMIN_EMBEDDED__ note near the
+  // bottom of this file) since its markup is always present in the DOM,
+  // just hidden via the same display:none toggle as every other tab.
+}
+
+// ── HOMEPAGE / HERO CONTENT ──────────────────────────────────────────────────
+async function loadHomepageContent() {
+  const status = document.getElementById('hpSaveStatus');
+  status.textContent = 'Loading…';
+  try {
+    const doc = await db.collection('notifications').doc('homepage_content').get();
+    const d = doc.exists ? doc.data() : {};
+    document.getElementById('hpSubhead').value = d.subhead || '';
+    document.getElementById('hpStat1Val').value = d.stat1Value || '';
+    document.getElementById('hpStat1Lab').value = d.stat1Label || '';
+    document.getElementById('hpStat2Val').value = d.stat2Value || '';
+    document.getElementById('hpStat2Lab').value = d.stat2Label || '';
+    document.getElementById('hpStat3Val').value = d.stat3Value || '';
+    document.getElementById('hpStat3Lab').value = d.stat3Label || '';
+    status.textContent = doc.exists ? '' : 'No overrides saved yet — index.html is using its built-in defaults.';
+  } catch (e) {
+    status.textContent = 'Error loading: ' + e.message;
+  }
+}
+
+async function saveHomepageContent() {
+  const status = document.getElementById('hpSaveStatus');
+  status.textContent = 'Saving…';
+  try {
+    await db.collection('notifications').doc('homepage_content').set({
+      subhead: document.getElementById('hpSubhead').value.trim(),
+      stat1Value: document.getElementById('hpStat1Val').value.trim(),
+      stat1Label: document.getElementById('hpStat1Lab').value.trim(),
+      stat2Value: document.getElementById('hpStat2Val').value.trim(),
+      stat2Label: document.getElementById('hpStat2Lab').value.trim(),
+      stat3Value: document.getElementById('hpStat3Val').value.trim(),
+      stat3Label: document.getElementById('hpStat3Lab').value.trim(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    status.textContent = '✓ Saved — index.html picks this up on next load.';
+    showAdminToast('Homepage content saved.', 'success');
+  } catch (e) {
+    status.textContent = 'Error saving: ' + e.message;
+  }
 }
 
 // ── BROADCAST NOTIFICATIONS ──────────────────────────────────────────────────
@@ -6261,5 +6490,13 @@ if (getAdminSession()) {
 <script>if (typeof initJobsSyncPanel==='function') initJobsSyncPanel();</script>
 <script src="js/admin-induction.js"></script>
 <script src="js/admin-toggles.js"></script>
+
+<!-- Editorial tab (merged from editorial-admin.html). This page already
+     verified the visitor via verifyAdmin()/getAdminSession() before the
+     dashboard ever renders, so editorial-admin.js's own (separate) admin
+     check is redundant here — the flag below tells it to skip that check
+     rather than require a second, different session. -->
+<script>window.__MN_ADMIN_EMBEDDED__ = true;</script>
+<script src="editorial-admin.js"></script>
 </body>
 </html>

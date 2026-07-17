@@ -77,8 +77,11 @@ async function edaInit() {
   edAdmin.db = firebase.firestore();
   edAdmin.storage = firebase.storage();
 
-  // Check admin access via Firestore (matches auth.js pattern)
-  if (!(await isAdminUser())) {
+  // When embedded as a tab inside admin.html, that page has already
+  // verified the visitor via its own admin session before this markup is
+  // even reachable — skip the redundant (and differently-sourced) check
+  // below. Standalone editorial-admin.html still gates normally.
+  if (!window.__MN_ADMIN_EMBEDDED__ && !(await isAdminUser())) {
     document.getElementById('edAdminMain').innerHTML =
       '<div class="ed-empty"><span class="ed-empty-icon">&#128274;</span>Admin access required.<br><a href="editorial.html" style="color:var(--neon-cyan);">Back to Editorial</a></div>';
     return;

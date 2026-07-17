@@ -339,15 +339,15 @@ body{
   <div class="hero-content">
     <img src="../animation/logo-anim.svg" alt="MeritNama" class="hero-logo canvas-only">
     <h1 class="canvas-only">Know where you <span class="grad">stand</span>.</h1>
-    <p class="canvas-only">Independent residency induction analytics for Punjab's medical trainees.</p>
+    <p class="canvas-only" id="heroSubhead">Independent residency induction analytics for Punjab's medical trainees.</p>
     <div class="hero-actions">
       <a href="app.html" class="btn btn-primary">Launch App</a>
       <button class="btn btn-ghost" id="exploreBtn">Explore &darr;</button>
     </div>
     <div class="hero-stats canvas-only">
-      <div class="hero-stat"><div class="hero-stat-inner"><div class="num">3,473+</div><div class="lab">Candidates</div></div></div>
-      <div class="hero-stat"><div class="hero-stat-inner"><div class="num">476</div><div class="lab">Sim Placed</div></div></div>
-      <div class="hero-stat"><div class="hero-stat-inner"><div class="num">369</div><div class="lab">Slots</div></div></div>
+      <div class="hero-stat"><div class="hero-stat-inner"><div class="num" id="heroStat1Val">3,473+</div><div class="lab" id="heroStat1Lab">Candidates</div></div></div>
+      <div class="hero-stat"><div class="hero-stat-inner"><div class="num" id="heroStat2Val">476</div><div class="lab" id="heroStat2Lab">Sim Placed</div></div></div>
+      <div class="hero-stat"><div class="hero-stat-inner"><div class="num" id="heroStat3Val">369</div><div class="lab" id="heroStat3Lab">Slots</div></div></div>
     </div>
   </div>
   <button class="sound-toggle video-only" id="soundToggle" aria-label="Toggle sound">🔇</button>
@@ -492,6 +492,36 @@ body{
       }
     }
   }catch(e){}
+})();
+</script>
+
+<!-- Admin-editable hero subhead/stats (set via admin.html's Homepage tab).
+     Uses Firestore's plain REST endpoint instead of the ~100KB+ SDK, since
+     this is the one page in the app where load weight actually matters —
+     a single lightweight fetch, silently ignored if it fails or times out,
+     so the hard-coded defaults above always render as a safe fallback. -->
+<script>
+(function(){
+  var FS_URL = 'https://firestore.googleapis.com/v1/projects/mortality-review/databases/(default)/documents/notifications/homepage_content';
+  function txt(field){ return field && field.stringValue ? field.stringValue : ''; }
+  fetch(FS_URL, { signal: AbortSignal.timeout ? AbortSignal.timeout(3000) : undefined })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(doc){
+      if(!doc || !doc.fields) return;
+      var f = doc.fields;
+      var map = {
+        heroSubhead: txt(f.subhead),
+        heroStat1Val: txt(f.stat1Value), heroStat1Lab: txt(f.stat1Label),
+        heroStat2Val: txt(f.stat2Value), heroStat2Lab: txt(f.stat2Label),
+        heroStat3Val: txt(f.stat3Value), heroStat3Lab: txt(f.stat3Label),
+      };
+      Object.keys(map).forEach(function(id){
+        if(!map[id]) return; // empty override = keep the built-in default
+        var el = document.getElementById(id);
+        if(el) el.textContent = map[id];
+      });
+    })
+    .catch(function(){ /* offline or blocked — defaults already rendered */ });
 })();
 </script>
 
