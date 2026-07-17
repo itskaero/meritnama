@@ -27,7 +27,7 @@
     /* ── Filter bar ──────────────────────────────────────── */
     .acc-filters { background: var(--bg-card, #1a2236); border: 1px solid var(--border, #2a3a52); border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: flex-end; }
     .acc-filters label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.78rem; color: var(--text-muted, #7a8fa8); flex: 1 1 160px; }
-    .acc-filters input, .acc-filters select { padding: 0.5rem 0.7rem; border-radius: 7px; border: 1px solid var(--border, #2a3a52); background: var(--bg-deep, #0d1626); color: var(--text, #e0e6ef); font-size: 0.82rem; }
+    .acc-filters input, .acc-filters select { width: 100%; box-sizing: border-box; min-width: 0; padding: 0.5rem 0.7rem; border-radius: 7px; border: 1px solid var(--border, #2a3a52); background: var(--bg-deep, #0d1626); color: var(--text, #e0e6ef); font-size: 0.82rem; }
     .acc-filters input:focus, .acc-filters select:focus { outline: none; border-color: var(--neon-cyan, #00d4ff); }
     #resetBtn { padding: 0.5rem 1rem; border-radius: 7px; border: none; background: var(--bg-deep, #0d1626); color: var(--text-muted, #7a8fa8); font-size: 0.82rem; cursor: pointer; }
     #resetBtn:hover { color: var(--text, #e0e6ef); }
@@ -125,6 +125,9 @@
     <label>Speciality
       <select id="fSpec"><option value="">All Specialities</option></select>
     </label>
+    <label>Accreditation Type
+      <select id="fAccType"><option value="">All Types</option></select>
+    </label>
     <button id="resetBtn">Reset</button>
   </div>
 
@@ -203,10 +206,12 @@
       document.getElementById('fHospital').addEventListener('input', applyFilters);
       document.getElementById('fCity').addEventListener('change', applyFilters);
       document.getElementById('fSpec').addEventListener('change', applyFilters);
+      document.getElementById('fAccType').addEventListener('change', applyFilters);
       document.getElementById('resetBtn').addEventListener('click', () => {
         document.getElementById('fHospital').value = '';
         document.getElementById('fCity').value     = '';
         document.getElementById('fSpec').value     = '';
+        document.getElementById('fAccType').value  = '';
         applyFilters();
       });
 
@@ -232,6 +237,14 @@
       opt.value = s; opt.textContent = s;
       sel2.appendChild(opt);
     });
+
+    const accTypes = [...new Set(ALL_ROWS.map(r => r.accType).filter(Boolean))].sort();
+    const sel3 = document.getElementById('fAccType');
+    accTypes.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t; opt.textContent = t;
+      sel3.appendChild(opt);
+    });
   }
 
   function updateStats() {
@@ -242,14 +255,16 @@
   }
 
   function applyFilters() {
-    const hosp = (document.getElementById('fHospital').value || '').toLowerCase();
-    const city = document.getElementById('fCity').value;
-    const spec = document.getElementById('fSpec').value;
+    const hosp    = (document.getElementById('fHospital').value || '').toLowerCase();
+    const city    = document.getElementById('fCity').value;
+    const spec    = document.getElementById('fSpec').value;
+    const accType = document.getElementById('fAccType').value;
 
     const filtered = ALL_ROWS.filter(r => {
       if (hosp && !r.hospital.toLowerCase().includes(hosp)) return false;
       if (city && r.city !== city) return false;
       if (spec && r.speciality !== spec) return false;
+      if (accType && r.accType !== accType) return false;
       return true;
     });
 

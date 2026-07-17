@@ -501,7 +501,12 @@
     container.innerHTML = `
       <!-- Hero -->
       <section class="hp-hero">
-        <h2>🏥 ${esc(name)}</h2>
+        <h2>🏥 ${esc(name)}
+          <button class="mn-shortlist-btn" style="vertical-align:middle;margin-left:8px;"
+            data-shortlist-id="hosp-${hospitalId}" data-shortlist-type="hospital"
+            data-shortlist-label="${esc(name)}" data-shortlist-meta="${totalSeats} seats &bull; ${esc(types.join(', '))}"
+            data-shortlist-href="hospital.html?id=${hospitalId}" title="Save to shortlist">&#9734;</button>
+        </h2>
         <p class="hp-subtitle">Training hospital profile from Induction Portal seat data</p>
       </section>
 
@@ -674,6 +679,10 @@
 
     // Submit review
     document.getElementById('revSubmit').addEventListener('click', submitReview);
+
+    // The shortlist star was injected after DOMContentLoaded (this render runs
+    // post-fetch), so ask shortlist.js to re-sync its saved/unsaved state.
+    if (window.MNShortlist) MNShortlist.sync();
   }
 
   // ── Specialty selection ──
@@ -857,6 +866,8 @@
   init();
 })();
 </script>
+<script src="js/design-system.js"></script>
+<script src="js/shortlist.js"></script>
 <script src="screenshot-guard.js"></script>
 </body>
 </html>

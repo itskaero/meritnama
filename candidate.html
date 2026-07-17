@@ -2754,12 +2754,20 @@ async function submitInvite() {
     return;
   }
 
-  // Check admin invite block
+  // Check admin invite block — peer invites pause whenever admin closes new
+  // access entirely (requestAccessEnabled), not just the invite-specific toggle,
+  // so "close access" actually closes every door into authorized_users.
   try {
     var cfgSnap = await db.collection('notifications').doc('access_config').get();
-    if (cfgSnap.exists && cfgSnap.data().blockInvites === true) {
+    var cfgData = cfgSnap.exists ? cfgSnap.data() : {};
+    if (cfgData.blockInvites === true) {
       setInviteControlsDisabled(false);
       setInviteStatus('New user invitations are currently disabled by admin.', 'error');
+      return;
+    }
+    if (cfgData.requestAccessEnabled === false) {
+      setInviteControlsDisabled(false);
+      setInviteStatus('New user access is currently closed by admin.', 'error');
       return;
     }
   } catch (_) {}

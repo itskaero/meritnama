@@ -45,6 +45,55 @@
     }
     .hosp-search:focus { border-color: var(--border-active); }
 
+    .hosp-filters {
+      max-width: 1200px;
+      margin: 0 auto 1.5rem;
+      padding: 0 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      align-items: flex-end;
+    }
+    .hosp-filters label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      flex: 1 1 160px;
+    }
+    .hosp-filters select {
+      width: 100%;
+      box-sizing: border-box;
+      min-width: 0;
+      padding: 0.5rem 0.7rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.82rem;
+    }
+    .hosp-filters select:focus { outline: none; border-color: var(--border-active); }
+    #hospResetBtn {
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+    #hospResetBtn:hover { color: var(--text); border-color: var(--border-hover); }
+    .hosp-result-info {
+      max-width: 1200px;
+      margin: 0 auto 0.8rem;
+      padding: 0 1rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
     .hosp-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -126,6 +175,9 @@
     </div>
     <div class="header-meta">
       <span class="badge badge-info">Hospitals</span>
+      <button class="mn-shortlist-trigger" data-shortlist-trigger title="My Shortlist">
+        &#11088; Shortlist <span class="mn-shortlist-count" style="display:none;">0</span>
+      </button>
       <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation">
         <span></span><span></span><span></span>
       </button>
@@ -152,10 +204,38 @@
   <p>Browse all training hospitals from Induction 21 seat matrix. Click a hospital to view its full profile.</p>
 </section>
 
-<!-- ======= SEARCH ======= -->
+<!-- ======= SEARCH + ADVANCED FILTERS ======= -->
 <div class="hosp-search-wrap">
   <input type="text" class="hosp-search" id="hospSearch" placeholder="Search hospitals by name…" />
 </div>
+<div class="hosp-filters" id="hospFilters">
+  <label>Specialty
+    <select id="fSpecialty"><option value="">All Specialties</option></select>
+  </label>
+  <label>Program Type
+    <select id="fType"><option value="">All Types</option></select>
+  </label>
+  <label>Minimum Seats
+    <select id="fMinSeats">
+      <option value="0">Any</option>
+      <option value="5">5+</option>
+      <option value="10">10+</option>
+      <option value="20">20+</option>
+      <option value="50">50+</option>
+    </select>
+  </label>
+  <label>Sort By
+    <select id="fSort">
+      <option value="name">Name (A–Z)</option>
+      <option value="seats">Most Seats</option>
+      <option value="specialties">Most Specialties</option>
+    </select>
+  </label>
+  <button id="hospResetBtn" type="button">Reset</button>
+</div>
+
+<!-- ======= RESULT COUNT ======= -->
+<div class="hosp-result-info" id="hospResultInfo" style="display:none;"></div>
 
 <!-- ======= GRID ======= -->
 <div class="hosp-grid" id="hospGrid">
@@ -193,13 +273,67 @@
     }
 
     allHospitals = Object.values(map).sort((a, b) => a.name.localeCompare(b.name));
-    render(allHospitals);
+    populateFilterOptions();
+    applyFilters();
+  }
+
+  function populateFilterOptions() {
+    const specSet = new Set();
+    const typeSet = new Set();
+    allHospitals.forEach(h => {
+      h.specialties.forEach(s => specSet.add(s));
+      h.types.forEach(t => typeSet.add(t));
+    });
+
+    const specSel = document.getElementById('fSpecialty');
+    Array.from(specSet).sort().forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      specSel.appendChild(opt);
+    });
+
+    const typeSel = document.getElementById('fType');
+    Array.from(typeSet).sort().forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t; opt.textContent = t;
+      typeSel.appendChild(opt);
+    });
+  }
+
+  function applyFilters() {
+    const q        = document.getElementById('hospSearch').value.trim().toLowerCase();
+    const spec     = document.getElementById('fSpecialty').value;
+    const type     = document.getElementById('fType').value;
+    const minSeats = parseInt(document.getElementById('fMinSeats').value, 10) || 0;
+    const sortBy   = document.getElementById('fSort').value;
+
+    let filtered = allHospitals.filter(h => {
+      if (q && !h.name.toLowerCase().includes(q)) return false;
+      if (spec && !h.specialties.has(spec)) return false;
+      if (type && !h.types.has(type)) return false;
+      if (h.totalSeats < minSeats) return false;
+      return true;
+    });
+
+    if (sortBy === 'seats') {
+      filtered = filtered.slice().sort((a, b) => b.totalSeats - a.totalSeats);
+    } else if (sortBy === 'specialties') {
+      filtered = filtered.slice().sort((a, b) => b.specialties.size - a.specialties.size);
+    } else {
+      filtered = filtered.slice().sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    const info = document.getElementById('hospResultInfo');
+    info.style.display = 'block';
+    info.textContent = `Showing ${filtered.length.toLocaleString()} of ${allHospitals.length.toLocaleString()} hospitals`;
+
+    render(filtered);
   }
 
   function render(hospitals) {
     const grid = document.getElementById('hospGrid');
     if (!hospitals.length) {
-      grid.innerHTML = '<div class="hosp-empty">No hospitals found.</div>';
+      grid.innerHTML = '<div class="hosp-empty">No hospitals match your filters.</div>';
       return;
     }
 
@@ -208,7 +342,12 @@
       const types = Array.from(h.types).sort().join(', ');
       return `
         <a href="hospital.html?id=${h.id}" class="hosp-card">
-          <div class="hosp-card-name">${esc(h.name)}</div>
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+            <div class="hosp-card-name">${esc(h.name)}</div>
+            <button class="mn-shortlist-btn" data-shortlist-id="hosp-${h.id}" data-shortlist-type="hospital"
+              data-shortlist-label="${esc(h.name)}" data-shortlist-meta="${h.totalSeats} seats &bull; ${esc(types)}"
+              data-shortlist-href="hospital.html?id=${h.id}" title="Save to shortlist">&#9734;</button>
+          </div>
           <div class="hosp-card-stats">
             <span class="hosp-stat hosp-stat-seats">🪑 ${h.totalSeats} seats</span>
             <span class="hosp-stat hosp-stat-spec">🩺 ${h.specialties.size} specialties</span>
@@ -217,6 +356,9 @@
           <div class="hosp-card-specialties">${esc(specs)}</div>
         </a>`;
     }).join('');
+
+    // Cards were injected after DOMContentLoaded — re-sync star states.
+    if (window.MNShortlist) MNShortlist.sync();
   }
 
   function esc(str) {
@@ -224,16 +366,26 @@
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  // Search
-  document.getElementById('hospSearch').addEventListener('input', function() {
-    const q = this.value.trim().toLowerCase();
-    if (!q) { render(allHospitals); return; }
-    render(allHospitals.filter(h => h.name.toLowerCase().includes(q)));
+  // Search + filters
+  document.getElementById('hospSearch').addEventListener('input', applyFilters);
+  document.getElementById('fSpecialty').addEventListener('change', applyFilters);
+  document.getElementById('fType').addEventListener('change', applyFilters);
+  document.getElementById('fMinSeats').addEventListener('change', applyFilters);
+  document.getElementById('fSort').addEventListener('change', applyFilters);
+  document.getElementById('hospResetBtn').addEventListener('click', function() {
+    document.getElementById('hospSearch').value = '';
+    document.getElementById('fSpecialty').value = '';
+    document.getElementById('fType').value = '';
+    document.getElementById('fMinSeats').value = '0';
+    document.getElementById('fSort').value = 'name';
+    applyFilters();
   });
 
   loadData();
 })();
 </script>
+<script src="js/design-system.js"></script>
+<script src="js/shortlist.js"></script>
 <script src="screenshot-guard.js"></script>
 <script>
   // Hamburger nav toggle
