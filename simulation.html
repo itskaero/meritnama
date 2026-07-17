@@ -23,6 +23,7 @@
   <script>firebase.initializeApp(firebaseConfig);</script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="charts.js"></script>
   <style>
     /* ---------------------------------------------------------------
        SIMULATION PAGE � harmonised with MeritNama design system
@@ -3708,6 +3709,26 @@
           <li>Run <strong>Seat Allocation</strong> only after the first three checks.</li>
         </ol>
       </div>
+    </div>
+
+    <!-- Live snapshot of the actual pool this cycle — was pure navigation
+         copy before, no real numbers. -->
+    <div class="portal-guide-goals" id="guideStatsRow" style="display:none;grid-template-columns:repeat(3,1fr);margin-bottom:1rem;">
+      <div class="portal-goal-card" style="text-align:center;">
+        <div style="font-size:1.6rem;font-weight:800;color:var(--neon-cyan);" id="guideStatCandidates">—</div>
+        <div style="font-size:0.78rem;color:var(--text-muted);">Candidates in Pool</div>
+      </div>
+      <div class="portal-goal-card" style="text-align:center;">
+        <div style="font-size:1.6rem;font-weight:800;color:var(--neon-green);" id="guideStatSeats">—</div>
+        <div style="font-size:0.78rem;color:var(--text-muted);">Total Training Seats</div>
+      </div>
+      <div class="portal-goal-card" style="text-align:center;">
+        <div style="font-size:1.6rem;font-weight:800;color:var(--neon-gold);" id="guideStatPrograms">—</div>
+        <div style="font-size:0.78rem;color:var(--text-muted);">Programs</div>
+      </div>
+    </div>
+    <div class="card" id="guideChartWrap" style="display:none;height:240px;margin-bottom:1.5rem;">
+      <canvas id="guideSeatsChart"></canvas>
     </div>
 
     <div class="portal-guide-goals">

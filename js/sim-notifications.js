@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupCandidateFilters();
   applyAndRenderCandidates();
   renderCandStats();
+  renderGuideStats();
   setupSlotBrowser();
   setupSimulationTab();
   setupMarksSelectors();

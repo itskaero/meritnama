@@ -1879,6 +1879,10 @@
         const simTab = document.getElementById('tab-simulation');
         if (simTab) simTab.classList.remove('active');
         guideTab.innerHTML = buildMeritListGuideHtml();
+        // innerHTML replacement above just recreated #guideStatsRow — the
+        // init-sequence call to this already ran before Firestore told us
+        // which mode we're in, so re-populate it now that the elements exist.
+        if (typeof renderGuideStats === 'function') renderGuideStats();
       }
       // Make guide the active tab initially
       if (guideBtn) guideBtn.classList.add('active');
@@ -1916,6 +1920,24 @@
           <li>Click <strong>&#9889; Simulate Next Round</strong> to run the cascade engine.</li>
         </ol>
       </div>
+    </div>
+
+    <div class="portal-guide-goals" id="guideStatsRow" style="display:none;grid-template-columns:repeat(3,1fr);margin-bottom:1rem;">
+      <div class="portal-goal-card" style="text-align:center;">
+        <div style="font-size:1.6rem;font-weight:800;color:var(--neon-cyan);" id="guideStatCandidates">—</div>
+        <div style="font-size:0.78rem;color:var(--text-muted);">Candidates in Pool</div>
+      </div>
+      <div class="portal-goal-card" style="text-align:center;">
+        <div style="font-size:1.6rem;font-weight:800;color:var(--neon-green);" id="guideStatSeats">—</div>
+        <div style="font-size:0.78rem;color:var(--text-muted);">Total Training Seats</div>
+      </div>
+      <div class="portal-goal-card" style="text-align:center;">
+        <div style="font-size:1.6rem;font-weight:800;color:var(--neon-gold);" id="guideStatPrograms">—</div>
+        <div style="font-size:0.78rem;color:var(--text-muted);">Programs</div>
+      </div>
+    </div>
+    <div class="card" id="guideChartWrap" style="display:none;height:240px;margin-bottom:1.5rem;">
+      <canvas id="guideSeatsChart"></canvas>
     </div>
 
     <div class="portal-guide-goals">

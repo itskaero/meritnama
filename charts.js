@@ -876,6 +876,44 @@ const Charts = {
     registerChart(canvasId, chart);
   },
 
+  // ─── Seats-by-programme bar chart (simulation.html Guide tab) ───
+  drawSeatsByProgramChart(canvasId, flatSeats) {
+    const ctx = getOrDestroyChart(canvasId);
+    if (!ctx || !flatSeats?.length) return;
+
+    const byProg = {};
+    flatSeats.forEach(row => {
+      const prog = row.typeName || 'Other';
+      byProg[prog] = (byProg[prog] || 0) + (Number(row.seats) || 0);
+    });
+    const labels = Object.keys(byProg).sort((a, b) => byProg[b] - byProg[a]);
+    const values = labels.map(l => byProg[l]);
+
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Seats',
+          data: values,
+          backgroundColor: labels.map((_, i) => colorAt(i, 0.75)),
+          borderColor: labels.map((_, i) => colorAt(i)),
+          borderWidth: 1,
+          borderRadius: 4,
+        }],
+      },
+      options: {
+        ...BASE_OPTIONS,
+        plugins: { ...BASE_OPTIONS.plugins, legend: { display: false } },
+        scales: {
+          ...BASE_OPTIONS.scales,
+          y: { ...BASE_OPTIONS.scales.y, title: { display: true, text: 'Total Seats', color: '#5a6e85' } },
+        },
+      },
+    });
+    registerChart(canvasId, chart);
+  },
+
 };
 
 function ordinalSuffix(n) {

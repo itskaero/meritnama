@@ -433,3 +433,28 @@ function showLoading(on) {
   const ov = document.getElementById('simLoadingOverlay');
   if (ov) ov.classList.toggle('hidden', !on);
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// GUIDE TAB — live pool snapshot (was static navigation copy only)
+// ═══════════════════════════════════════════════════════════════════
+function renderGuideStats() {
+  const row = document.getElementById('guideStatsRow');
+  const chartWrap = document.getElementById('guideChartWrap');
+  if (!row || !SIM.candidates?.length) return;
+
+  document.getElementById('guideStatCandidates').textContent = SIM.candidates.length.toLocaleString();
+
+  const seats = SIM.flatSeats || [];
+  const totalSeats = seats.reduce((s, r) => s + (Number(r.seats) || 0), 0);
+  document.getElementById('guideStatSeats').textContent = totalSeats.toLocaleString();
+
+  const programs = new Set(seats.map(r => r.typeName).filter(Boolean));
+  document.getElementById('guideStatPrograms').textContent = programs.size || '—';
+
+  row.style.display = 'grid';
+
+  if (chartWrap && seats.length && typeof Charts !== 'undefined') {
+    chartWrap.style.display = '';
+    Charts.drawSeatsByProgramChart('guideSeatsChart', seats);
+  }
+}
