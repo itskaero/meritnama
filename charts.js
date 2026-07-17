@@ -755,4 +755,74 @@ const Charts = {
     registerChart(canvasId, chart);
   },
 
+  // ─── Your percentile vs each preference's historical cutoff (candidate.html) ───
+  // items: [{ label, myPctile, cutoffPctile, status: 'safe'|'target'|'reach'|'unlikely' }]
+  drawPreferencePercentileChart(canvasId, items) {
+    const ctx = getOrDestroyChart(canvasId);
+    if (!ctx || !items.length) return;
+
+    const STATUS_COLOR = {
+      safe: 'rgba(39,201,139,0.75)', target: 'rgba(232,166,39,0.75)',
+      reach: 'rgba(220,84,112,0.55)', unlikely: 'rgba(220,60,60,0.75)',
+    };
+    const labels = items.map(it => it.label.length > 28 ? it.label.slice(0, 26) + '…' : it.label);
+    const myValues = items.map(it => it.myPctile);
+    const colors = items.map(it => STATUS_COLOR[it.status] || 'rgba(122,143,168,0.5)');
+    const cutoffPoints = items.map((it, i) => it.cutoffPctile == null ? null : { x: it.cutoffPctile, y: i });
+
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Your percentile',
+            data: myValues,
+            backgroundColor: colors,
+            borderRadius: 4,
+            barThickness: 16,
+          },
+          {
+            label: 'Historical cutoff',
+            type: 'scatter',
+            data: cutoffPoints,
+            backgroundColor: '#e05470',
+            borderColor: '#fff',
+            borderWidth: 1.5,
+            pointRadius: 6,
+            pointHoverRadius: 7,
+            pointStyle: 'circle',
+          },
+        ],
+      },
+      options: {
+        ...BASE_OPTIONS,
+        indexAxis: 'y',
+        plugins: {
+          ...BASE_OPTIONS.plugins,
+          legend: { display: true, position: 'bottom' },
+          tooltip: {
+            ...BASE_OPTIONS.plugins.tooltip,
+            callbacks: {
+              label: ctx => ctx.dataset.type === 'scatter'
+                ? `Historical cutoff: ${ordinalSuffix(Math.round(ctx.parsed.x))} percentile`
+                : `You: ${ordinalSuffix(ctx.parsed.x)} percentile`,
+            },
+          },
+        },
+        scales: {
+          x: { ...BASE_OPTIONS.scales.x, min: 0, max: 100, title: { display: true, text: 'Percentile', color: '#5a6e85' } },
+          y: { ...BASE_OPTIONS.scales.y, ticks: { ...BASE_OPTIONS.scales.y.ticks, font: { size: 10 } } },
+        },
+      },
+    });
+    registerChart(canvasId, chart);
+  },
+
 };
+
+function ordinalSuffix(n) {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}

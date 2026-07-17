@@ -1683,6 +1683,16 @@
     </div>
   </div>
 
+  <!-- ══ Dashboard empty state — shown instead of the dashboard/analysis
+       cards when no Applicant ID is linked, so the app's most insightful
+       feature isn't silently invisible to new/unlinked users. ══ -->
+  <div class="profile-card mn-empty-state" id="dashboardEmptyCta" style="display:none;">
+    <div class="mn-empty-icon">&#127919;</div>
+    <div class="mn-empty-title">Unlock your personal dashboard</div>
+    <div class="mn-empty-desc">Link your Induction Portal Applicant ID above to see your placement chances, percentile analysis, and trend volatility for every preference you submitted.</div>
+    <button class="btn btn-xs" id="dashboardEmptyCtaBtn" type="button" style="margin-top:0.6rem;">Link Applicant ID</button>
+  </div>
+
   <!-- ══ Personalized Dashboard ══ -->
   <div class="profile-card dash-section" id="dashboardCard" style="display:none">
     <h3>🎯 Your Dashboard</h3>
@@ -1722,6 +1732,9 @@
     <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem;">
       Your preferred slots where the merit cutoff fluctuates significantly year-over-year.
     </p>
+    <div class="pma-chart-wrap" id="volChartWrap" style="height:220px;margin-bottom:1rem;display:none;">
+      <canvas id="volatilityChart"></canvas>
+    </div>
     <div class="vol-list" id="volList"></div>
   </div>
 
@@ -2144,13 +2157,14 @@ async function loadPrefMetrics(cand) {
   }
 
   // ── Build preference rows ────────────────────────────
+  const chartItems = [];
   const rowsHtml = allPrefs.map(({ prog, pref }) => {
     const key  = [prog, pref.quotaName, pref.specialityName, pref.hospitalName]
       .map(s => (s || '').toLowerCase().trim()).join('|');
     const slot = lookup[key];
 
     const myPctile     = myPctiles[prog] ?? null;
-    const cutoffPctile = slot?.yearly_percentile?.[String(slot.latest_year)] ?? null;
+    const cutoffPctile = slot?.yearly_percentile?.[String(slot.latest_induction)] ?? null;
 
     let rightHtml = '';
     let metaHtml  = '';
@@ -2158,6 +2172,11 @@ async function loadPrefMetrics(cand) {
     if (slot && cutoffPctile != null && myPctile != null) {
       const gap = myPctile - cutoffPctile;
       const gapStr = (gap >= 0 ? '+' : '') + gap + ' pctile pts';
+      const chartStatus = gap >= 10 ? 'safe' : gap >= 0 ? 'target' : gap >= -15 ? 'reach' : 'unlikely';
+      chartItems.push({
+        label: `${pref.specialityName} — ${pref.hospitalName}`,
+        myPctile, cutoffPctile, status: chartStatus,
+      });
 
       let statusLabel, statusCls;
       if      (gap >= 10) { statusLabel = '✓ Safe';     statusCls = 'safe'; }
@@ -2184,7 +2203,7 @@ async function loadPrefMetrics(cand) {
       metaHtml = `
         <span>You <b>${ordinal(myPctile)}</b></span>
         <span>Cutoff <b>${ordinal(Math.round(cutoffPctile))}</b> pctile</span>
-        <span>Seats <b>${slot.yearly_seats?.[String(slot.latest_year)] ?? '?'}</b> (${slot.latest_year ?? '?'})</span>
+        <span>Seats <b>${slot.yearly_seats?.[String(slot.latest_induction)] ?? '?'}</b> (${slot.latest_induction ?? '?'})</span>
         <span>Volatility <b>${slot.volatility ?? '—'}</b></span>
         <span>${slot.data_points ?? '?'} yrs data</span>
         <div class="pma-pctile-row" style="width:100%;margin-top:0.55rem;">
@@ -2261,6 +2280,19 @@ async function loadPrefMetrics(cand) {
 
   const simBtn = `<button class="pma-sim-link" id="openSimBtn">&#127914; Run My Simulation</button>`;
 
+  // Candidates commonly submit dozens–hundreds of preferences (median ~29,
+  // some 100+) — charting all of them defeats the point of an at-a-glance
+  // overview, so cap to the first N by priority order and note the rest are
+  // still in the full list below.
+  const CHART_MAX_ITEMS = 20;
+  const chartItemsShown = chartItems.slice(0, CHART_MAX_ITEMS);
+  const chartHtml = chartItemsShown.length
+    ? `<div class="pma-chart-wrap" style="height:${Math.max(140, chartItemsShown.length * 34)}px;margin:0.9rem 0;">
+         <canvas id="prefPctileChart"></canvas>
+       </div>
+       ${chartItems.length > CHART_MAX_ITEMS ? `<p style="font-size:0.72rem;color:var(--text-muted);margin:-0.5rem 0 0.9rem;">Chart shows your top ${CHART_MAX_ITEMS} preferences by priority — all ${chartItems.length} are listed below.</p>` : ''}`
+    : '';
+
   card.innerHTML = `
     <div class="pma-header">
       <h3>&#128202; Preference Merit Analysis</h3>
@@ -2268,7 +2300,12 @@ async function loadPrefMetrics(cand) {
     </div>
     ${guideHtml}
     <div class="pma-score-chips">${scoreChips}</div>
+    ${chartHtml}
     <div class="pma-prefs">${rowsHtml}</div>`;
+
+  if (chartItemsShown.length && typeof Charts !== 'undefined') {
+    Charts.drawPreferencePercentileChart('prefPctileChart', chartItemsShown);
+  }
 
   document.getElementById('openSimBtn')?.addEventListener('click', () => {
     localStorage.setItem('mn_sim_my_id', String(cand.applicantId));
@@ -2286,10 +2323,44 @@ function esc(s) {
 
 // ── Applicant ID lookup ─────────────────────────────────
 let _candidateCache = null;
+let _specialtyNameMapCache = null;
+
+// induction21_candidates.json stores preferences as a flat `preferences` array
+// with only specialityId (no name); every consumer below (loadPrefMetrics,
+// loadDashboard, loadVolatilityIndex, the applied-programmes tag list, etc.)
+// expects a `preference` object grouped by programme with specialityName
+// resolved — that grouping/resolution was never actually happening, so this
+// entire "linked applicant" feature set has been silently rendering empty
+// for every user. Normalize once here so all downstream code Just Works.
+async function fetchSpecialtyNameMap() {
+  if (_specialtyNameMapCache) return _specialtyNameMapCache;
+  const res = await fetch('data/induction21_seats.json');
+  const seats = await res.json();
+  _specialtyNameMapCache = {};
+  seats.forEach(s => { _specialtyNameMapCache[s.specialityId] = s.specialityName; });
+  return _specialtyNameMapCache;
+}
+
 async function fetchCandidates() {
   if (_candidateCache) return _candidateCache;
-  const res = await fetch('data/induction21_candidates.json');
-  _candidateCache = await res.json();
+  const [res, specMap] = await Promise.all([
+    fetch('data/induction21_candidates.json'),
+    fetchSpecialtyNameMap(),
+  ]);
+  const raw = await res.json();
+  for (const id in raw) {
+    const c = raw[id];
+    if (c.preference || !Array.isArray(c.preferences)) continue;
+    c.preference = {};
+    for (const p of c.preferences) {
+      if (!p.typeName) continue;
+      (c.preference[p.typeName] ||= []).push({
+        ...p,
+        specialityName: specMap[p.specialityId] || p.specialityName || `Specialty ${p.specialityId}`,
+      });
+    }
+  }
+  _candidateCache = raw;
   return _candidateCache;
 }
 
@@ -2348,9 +2419,11 @@ function renderLinkedProgramPortalMeta(cand) {
 async function loadLinkedApplicant(id) {
   const card = document.getElementById('linkedApplicantCard');
   const metricsCard = document.getElementById('prefMetricsCard');
+  const emptyCta = document.getElementById('dashboardEmptyCta');
   if (!id) {
     card.style.display = 'none';
     if (metricsCard) metricsCard.style.display = 'none';
+    if (emptyCta) emptyCta.style.display = '';
     return;
   }
   try {
@@ -2359,8 +2432,10 @@ async function loadLinkedApplicant(id) {
     if (!cand) {
       card.style.display = 'none';
       if (metricsCard) metricsCard.style.display = 'none';
+      if (emptyCta) emptyCta.style.display = '';
       return;
     }
+    if (emptyCta) emptyCta.style.display = 'none';
     const progs = Object.keys(cand.preference || {});
     card.style.display = '';
     card.innerHTML = `
@@ -2376,9 +2451,15 @@ async function loadLinkedApplicant(id) {
   } catch (e) {
     card.style.display = 'none';
     if (metricsCard) metricsCard.style.display = 'none';
+    if (emptyCta) emptyCta.style.display = '';
     console.warn('Could not load applicant data:', e);
   }
 }
+
+document.getElementById('dashboardEmptyCtaBtn')?.addEventListener('click', () => {
+  const input = document.getElementById('pfApplicantId');
+  if (input) { input.scrollIntoView({ behavior: 'smooth', block: 'center' }); input.focus(); }
+});
 
 // ── Data lists ──────────────────────────────────────────
 async function loadDataLists() {
@@ -2479,6 +2560,8 @@ async function loadProfile() {
       if (p.applicantId) {
         document.getElementById('pfApplicantId').value = p.applicantId;
         loadLinkedApplicant(p.applicantId);
+      } else {
+        document.getElementById('dashboardEmptyCta').style.display = '';
       }
 
       // Avatar: prefer base64, fall back to old URL field
@@ -2534,6 +2617,10 @@ async function loadProfile() {
           ? 'Public — visible in community profiles'
           : 'Private — only you can see this profile';
       }
+    } else {
+      // Brand new user, no user_profiles doc saved yet — still show the CTA
+      // rather than leaving the dashboard section silently empty.
+      document.getElementById('dashboardEmptyCta').style.display = '';
     }
   } catch (e) { console.warn('Error loading profile:', e); }
 
@@ -3506,6 +3593,12 @@ function loadVolatilityIndex(cand, allPrefs, lookup) {
   const topVol = volData.slice(0, 6);
 
   card.style.display = '';
+
+  if (typeof Charts !== 'undefined') {
+    document.getElementById('volChartWrap').style.display = '';
+    Charts.drawVolatilityChart(topVol.map(v => ({ specialty: v.label, stddev: v.stddev })));
+  }
+
   const maxStd = Math.max(...topVol.map(v => v.stddev), 1);
 
   document.getElementById('volList').innerHTML = topVol.map(v => {
@@ -3994,6 +4087,8 @@ document.getElementById('grSendBtn')?.addEventListener('click', submitGrievanceM
 initResponderSources();
 subscribeGrievanceInbox();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="charts.js"></script>
 <script src="js/design-system.js"></script>
 <script src="access-request.js"></script>
 <script src="screenshot-guard.js"></script>
