@@ -121,6 +121,38 @@ service cloud.firestore {
       }
     }
 
+    // Community feed posts + comments + likes (community.html / js/community.js)
+    // Mirrors the /discussions pattern exactly: publicly readable/creatable,
+    // update allowed only for the two atomic counters (commentCount via
+    // FieldValue.increment on reply, likeCount via increment/decrement on
+    // like toggle) using the same reaction-only-update technique already
+    // established for sim21_chat (see _sim21ChatReactionOnlyUpdate below).
+    // Posts/comments themselves are delete:false at the rules layer — the UI
+    // only shows a delete button to the post's own author, same trust model
+    // as every other collection in this app (no Firebase Auth to enforce it
+    // server-side).
+    match /social_posts/{postId} {
+      allow read:   if true;
+      allow create: if true;
+      allow update: if _socialPostCountOnlyUpdate();
+      allow delete: if true;   // UI-gated to the post's own author
+
+      match /comments/{commentId} {
+        allow read:   if true;
+        allow create: if true;
+        allow delete: if true;   // UI-gated to the comment's own author
+        allow update: if false;
+      }
+
+      // Like toggle — doc ID = liker's email, so a user can only ever have
+      // one like doc per post (double-like is structurally impossible) and
+      // unliking is just deleting this doc.
+      match /likes/{likerEmail} {
+        allow read, create, delete: if true;
+        allow update: if false;
+      }
+    }
+
     // Contributions — publicly readable, writable by admin dashboard
     // Security note: since we use client-side PIN auth (no Firebase Auth),
     // writes are trust-gated by the admin dashboard UI, same as authorized_users.
@@ -271,6 +303,14 @@ service cloud.firestore {
         && request.resource.data.name == resource.data.name
         && request.resource.data.uid == resource.data.uid
         && request.resource.data.ts == resource.data.ts;
+    }
+
+    // Same technique as _sim21ChatReactionOnlyUpdate above, applied to
+    // social_posts' two atomic counters (commentCount on reply, likeCount
+    // on like/unlike) — an update is only valid if it touches nothing else.
+    function _socialPostCountOnlyUpdate() {
+      let diff = request.resource.data.diff(resource.data);
+      return diff.affectedKeys().hasOnly(['commentCount', 'likeCount']);
     }
   }
 }

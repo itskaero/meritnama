@@ -1755,6 +1755,10 @@
         <h5><span class="cc-icon">💬</span> Specialty Sub-Forums</h5>
         <p>Join focused discussions for competitive specialties — Surgery, Radiology, Cardiology & more.</p>
       </div>
+      <div class="community-card" id="communityFeedCard" onclick="openCommunityFeed()">
+        <h5><span class="cc-icon">🌍</span> Community Feed</h5>
+        <p>Questions, hospital reviews, resources, and result updates from fellow candidates — filtered to your specialty.</p>
+      </div>
       <div class="community-card" id="mentorshipCard" style="grid-column:1/-1;">
         <h5><span class="cc-icon">🎓</span> Direct Mentorship</h5>
         <div class="ms-tab-bar">
@@ -2319,6 +2323,16 @@ function esc(s) {
   return String(s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// Community Feed cross-link — pre-filters the feed to the user's own
+// specialty when known, otherwise opens unfiltered. Purely additive: does
+// not touch the existing Sub-Forums/Anonymous Q&A/Hospital Reviews cards.
+function openCommunityFeed() {
+  const specialty = document.getElementById('pfSpecialty')?.value?.trim() || '';
+  window.location.href = specialty
+    ? 'community.html?specialty=' + encodeURIComponent(specialty)
+    : 'community.html';
 }
 
 // ── Applicant ID lookup ─────────────────────────────────

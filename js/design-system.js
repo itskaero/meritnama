@@ -209,6 +209,7 @@
       { group: 'Directory', icon: '\u{1F3E5}', label: 'Hospitals', href: 'hospitals.html' },
       { group: 'Directory', icon: '✅', label: 'Accreditation', href: 'accreditation.html' },
       { group: 'Community', icon: '\u{1F4AC}', label: 'Discussion', href: 'reviews.html' },
+      { group: 'Community', icon: '\u{1F30D}', label: 'Community Feed', href: 'community.html' },
       { group: 'Community', icon: '\u{1F4D6}', label: 'Editorial', href: 'editorial.html' },
       { group: 'Account', icon: '\u{1F464}', label: 'My Profile', href: 'candidate.html' },
     ];
