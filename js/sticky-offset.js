@@ -2,8 +2,8 @@
 // Sets --sticky-offset to .app-shell's actual distance from the top of the
 // document, so .tab-nav's sticky top/height in styles.css always tracks
 // whatever really sits above it (header, author-bar, and on some pages an
-// async live-update/editorial/notification banner that can appear after
-// load) instead of a hardcoded 62px that only accounted for the header.
+// async live-update/editorial banner that can appear after load) instead
+// of a hardcoded 62px that only accounted for the header.
 (function () {
   var shell = null;
   var pending = false;
@@ -29,10 +29,9 @@
   }
   window.addEventListener('resize', scheduleApply);
 
-  // Banners above .app-shell (live-update, editorial, notification feed) can
-  // be toggled visible or have their content rebuilt by other scripts well
-  // after DOMContentLoaded, once async data resolves — watch for that
-  // instead of assuming a one-time measurement stays correct.
+  // Banners above .app-shell (live-update, editorial) can be toggled visible
+  // by other scripts well after DOMContentLoaded, once async data resolves —
+  // watch for that instead of assuming a one-time measurement stays correct.
   //
   // Deliberately scoped to only the specific banner elements that actually
   // sit above .app-shell, NOT the whole document.body: pages like
@@ -50,7 +49,7 @@
   }
 
   function startWatching() {
-    ['#liveUpdateBanner', '#editorialBanner', '#notifBar'].forEach(function (sel) {
+    ['#liveUpdateBanner', '#editorialBanner'].forEach(function (sel) {
       watch(document.querySelector(sel));
     });
   }

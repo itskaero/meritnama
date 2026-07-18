@@ -3319,11 +3319,6 @@
   &middot;
   <span class="author-bar-note">Induction Portal live simulation &mdash; <a href="app.html">historical merit data &rarr;</a></span>
 </div>
-
-<!-- ═══════════ NOTIFICATION BAR ═══════════ -->
-<!-- Also lives outside .app-shell (see author-bar comment above) — was
-     nested inside .app-main and visibly narrower than the header/author-bar. -->
-<div id="notifBar"></div>
 <script src="js/sticky-offset.js"></script>
 
 <div class="app-shell">
@@ -3363,6 +3358,14 @@
   </div>
 </nav>
 <div class="app-main">
+
+<!-- ═══════════ NOTIFICATION BAR ═══════════ -->
+<!-- Deliberately kept inside .app-main, unlike the site-wide author-bar/
+     editorial/live-update banners above: this content (cascade engine
+     status, candidate-data refresh notices, job listings) is specific to
+     the induction portal, not a site-wide announcement, so it should read
+     as part of this page's content area rather than a full-bleed banner. -->
+<div id="notifBar"></div>
 
 <!-- ═══════════ DATA UPDATE TICKER ═══════════ -->
 <div class="update-ticker">
