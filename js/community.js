@@ -331,6 +331,19 @@
   // ══════════════════════════════════════════════════════
   // POST DETAIL + COMMENTS + LIKES
   // ══════════════════════════════════════════════════════
+
+  // Loose keyword match against sim-chat.js's fixed room set
+  // (js/sim-chat.js:59-69) — falls back to 'general'. sim-chat.js now reads
+  // this via a real ?room= URL param (_applyChatRoomFromURL, js/sim-chat.js)
+  // validated against CHAT.ROOMS, so an unrecognized id here just falls
+  // through to whatever room the visitor already had selected.
+  function chatRoomForSpecialty(specialty) {
+    const s = (specialty || '').toLowerCase();
+    if (/surg|gynae|ortho/.test(s)) return 'surgery-allied';
+    if (/medic|cardio|neuro|derma|psych|pulmo|nephro|onco|paed/.test(s)) return 'medicine-allied';
+    return 'general';
+  }
+
   async function openPost(postId) {
     currentPostId = postId;
     currentPost   = allPosts.find(p => p._id === postId) || null;
@@ -386,6 +399,7 @@
     likedByMe = !!(likeDoc && likeDoc.exists);
 
     const isOwn = email && data.authorEmail && email === data.authorEmail;
+    const room = chatRoomForSpecialty(data.specialty);
 
     container.innerHTML = `
       <div class="thread-detail-cat-row">${type}${specTag}${hospTag}</div>
@@ -397,7 +411,7 @@
         <span>&middot;</span>
         <span>${dateStr}</span>
         <button class="cf-like-btn${likedByMe ? ' active' : ''}" id="postLikeBtn">&#10084; <span id="postLikeCount">${data.likeCount || 0}</span></button>
-        <a class="cf-chat-link" href="simulation.html?tab=community" target="_blank" rel="noopener">&#9889; Discuss live in Chat &rarr;</a>
+        <a class="cf-chat-link" href="simulation.html?tab=community&room=${esc(room)}" target="_blank" rel="noopener">&#9889; Discuss live in Chat &rarr;</a>
         ${isOwn ? `<button class="cf-delete-btn" id="postDeleteBtn">Delete</button>` : ''}
       </div>`;
 

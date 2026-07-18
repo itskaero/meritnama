@@ -250,6 +250,7 @@ function setupChat() {
   });
 
   _initChatRoomsUI();
+  _applyChatRoomFromURL();
   _startChatListener();
   _startTypingListener();
   _startChatPinListener();
@@ -1222,6 +1223,19 @@ function _updateBadge() {
 }
 
 // ── Room UI ──
+
+// Real deep-linking — e.g. simulation.html?tab=community&room=fcps — used
+// by community.html's "Discuss live in Chat" link. Validated against the
+// real room list so an unknown/typo'd room id is silently ignored rather
+// than switching to something broken.
+function _applyChatRoomFromURL() {
+  try {
+    const room = new URLSearchParams(window.location.search).get('room');
+    if (room && CHAT.ROOMS.some(r => r.id === room)) {
+      _switchChatRoom(room);
+    }
+  } catch (_) {}
+}
 
 function _initChatRoomsUI() {
   _chatActiveRoom();
