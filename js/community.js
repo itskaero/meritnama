@@ -177,19 +177,23 @@
     const type = typeBadge(data.type);
     const specTag = data.specialty ? `<span class="rv-tag rv-tag-spec">${esc(data.specialty)}</span>` : '';
     const hospTag  = data.hospital  ? `<span class="rv-tag rv-tag-hosp">&#127968; ${esc(data.hospital)}</span>` : '';
-    const snippet = (data.body || '').substring(0, 140);
+    const snippet = (data.body || '').substring(0, 180);
+    const initials = avatarInitials(data.authorName || 'Anonymous');
     return `
-      <div class="thread-card" data-pid="${esc(data._id)}">
-        <div class="thread-card-top">
-          ${type}
-          <span class="thread-card-title">${esc(data.title)}</span>
+      <div class="fb-post-card" data-pid="${esc(data._id)}">
+        <div class="fb-post-header">
+          <div class="fb-post-avatar">${esc(initials)}</div>
+          <div class="fb-post-header-text">
+            <div class="fb-post-author">${esc(data.authorName || 'Anonymous')}</div>
+            <div class="fb-post-meta">${type}<span>&middot;</span><span>${dateStr}</span></div>
+          </div>
         </div>
-        ${snippet ? `<div class="thread-card-snippet">${esc(snippet)}${data.body && data.body.length > 140 ? '…' : ''}</div>` : ''}
-        <div class="thread-card-meta">
-          <span class="thread-card-author">${esc(data.authorName || 'Anonymous')}</span>
-          <span class="thread-card-time">&middot; ${dateStr}</span>
-          ${specTag}${hospTag}
-          <span class="thread-card-stats">&#10084; ${likes} &nbsp;&#128172; ${comments}</span>
+        <div class="fb-post-title">${esc(data.title)}</div>
+        ${snippet ? `<div class="fb-post-snippet">${esc(snippet)}${data.body && data.body.length > 180 ? '…' : ''}</div>` : ''}
+        ${(specTag || hospTag) ? `<div class="fb-post-tags">${specTag}${hospTag}</div>` : ''}
+        <div class="fb-post-actionbar">
+          <button class="fb-action-btn" type="button">&#10084; ${likes} ${likes === 1 ? 'Like' : 'Likes'}</button>
+          <button class="fb-action-btn" type="button">&#128172; ${comments} ${comments === 1 ? 'Comment' : 'Comments'}</button>
         </div>
       </div>`;
   }
@@ -207,7 +211,7 @@
       list.innerHTML = `<div class="rv-empty"><span class="rv-empty-icon">&#127760;</span>No posts yet &mdash; start the conversation!</div>`;
     } else {
       list.innerHTML = filtered.map(buildPostCard).join('');
-      list.querySelectorAll('.thread-card').forEach(card => {
+      list.querySelectorAll('.fb-post-card').forEach(card => {
         card.addEventListener('click', () => openPost(card.dataset.pid));
       });
     }
@@ -401,15 +405,20 @@
     const isOwn = email && data.authorEmail && email === data.authorEmail;
     const room = chatRoomForSpecialty(data.specialty);
 
+    const initials = avatarInitials(data.authorName || 'Anonymous');
     container.innerHTML = `
-      <div class="thread-detail-cat-row">${type}${specTag}${hospTag}</div>
+      <div class="fb-post-header" style="margin-bottom:0.9rem;">
+        <div class="fb-post-avatar">${esc(initials)}</div>
+        <div class="fb-post-header-text">
+          <div class="fb-post-author">${esc(data.authorName || 'Anonymous')}</div>
+          <div class="fb-post-meta">${type}<span>&middot;</span><span>${dateStr}</span></div>
+        </div>
+      </div>
+      ${(specTag || hospTag) ? `<div class="thread-detail-cat-row">${specTag}${hospTag}</div>` : ''}
       <div class="thread-detail-title">${esc(data.title)}</div>
       ${extra ? `<div style="margin-bottom:0.7rem;">${extra}</div>` : ''}
       <div class="thread-detail-body">${esc(data.body)}</div>
       <div class="thread-detail-footer">
-        <span class="thread-detail-author">✍ ${esc(data.authorName || 'Anonymous')}</span>
-        <span>&middot;</span>
-        <span>${dateStr}</span>
         <button class="cf-like-btn${likedByMe ? ' active' : ''}" id="postLikeBtn">&#10084; <span id="postLikeCount">${data.likeCount || 0}</span></button>
         <a class="cf-chat-link" href="simulation.html?tab=community&room=${esc(room)}" target="_blank" rel="noopener">&#9889; Discuss live in Chat &rarr;</a>
         ${isOwn ? `<button class="cf-delete-btn" id="postDeleteBtn">Delete</button>` : ''}
