@@ -100,7 +100,8 @@
   }
 
   function initCharCounters() {
-    [['postTitle', 'postTitleCount', 120], ['postBody', 'postBodyCount', 3000], ['postCommentText', 'postCommentCharCount', 1500]]
+    [['postTitle', 'postTitleCount', 120], ['postBody', 'postBodyCount', 3000], ['postCommentText', 'postCommentCharCount', 1500],
+     ['threadTitle', 'threadTitleCount', 120], ['threadBody', 'threadBodyCount', 3000], ['discCommentText', 'discCommentCharCount', 1500]]
       .forEach(([inputId, countId, max]) => {
         const input = document.getElementById(inputId);
         const count = document.getElementById(countId);
@@ -568,6 +569,459 @@
     }
   }
 
+  // ══════════════════════════════════════════════════════
+  // HUB TAB SWITCHING (Feed / Discussion / Chat)
+  // ══════════════════════════════════════════════════════
+  let discInitialized = false;
+  let chatInitialized = false;
+
+  function cfSwitchTab(tab) {
+    const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+    if (!btn) return;
+    document.querySelectorAll('#mainNav .tab-btn[data-tab]').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`tab-${tab}`)?.classList.add('active');
+
+    if (tab === 'discussion' && !discInitialized) {
+      discInitialized = true;
+      initDiscussionTab();
+    }
+    if (tab === 'chat' && !chatInitialized) {
+      chatInitialized = true;
+      initChatTab();
+    }
+  }
+
+  function initHubTabs() {
+    document.querySelectorAll('#mainNav .tab-btn[data-tab]').forEach(btn => {
+      btn.addEventListener('click', () => cfSwitchTab(btn.dataset.tab));
+    });
+    const urlTab = new URLSearchParams(window.location.search).get('tab');
+    if (urlTab && document.getElementById(`tab-${urlTab}`)) cfSwitchTab(urlTab);
+  }
+
+  // ══════════════════════════════════════════════════════
+  // DISCUSSION TAB — ported from reviews.js, same `discussions`
+  // collection (reviews.html is untouched and unaffected).
+  // ══════════════════════════════════════════════════════
+  const THREADS_LIMIT = 25;
+  const DISC_COMMENTS_LIMIT = 50;
+  const CAT_META = {
+    General:    { icon: '💬', label: 'General' },
+    Question:   { icon: '❓', label: 'Q&A' },
+    Study:      { icon: '📚', label: 'Study' },
+    Hospital:   { icon: '🏥', label: 'Hospital' },
+    Merit:      { icon: '📋', label: 'Merit' },
+    Experience: { icon: '⭐', label: 'Story' },
+    Concern:    { icon: '⚠️', label: 'Concern' },
+  };
+  let allThreads = [];
+  let threadCursor = null;
+  let activeCatFilter = '';
+  let currentThreadId = null;
+  let currentThread = null;
+  let discCommentsUnsubscribe = null;
+
+  function catBadge(cat) {
+    const m = CAT_META[cat] || { icon: '💬', label: cat || 'General' };
+    return `<span class="forum-cat forum-cat-${esc(cat || 'General')}">${m.icon} ${esc(m.label)}</span>`;
+  }
+
+  function showDiscView(view) {
+    document.getElementById('discViewList').style.display   = view === 'list'   ? '' : 'none';
+    document.getElementById('discViewNew').style.display    = view === 'new'    ? '' : 'none';
+    document.getElementById('discViewDetail').style.display = view === 'detail' ? '' : 'none';
+    const title = document.getElementById('discPanelTitle');
+    const newBtn = document.getElementById('discNewBtn');
+    const countEl = document.getElementById('threadCount');
+    if (view === 'list') { title.textContent = 'Discussion'; newBtn.style.display = ''; countEl.style.display = ''; }
+    else if (view === 'new') { title.textContent = 'New Thread'; newBtn.style.display = 'none'; countEl.style.display = 'none'; }
+    else { title.textContent = 'Thread'; newBtn.style.display = 'none'; countEl.style.display = 'none'; }
+  }
+
+  function buildThreadCard(data) {
+    const dateStr = data.timestamp ? timeAgo(data.timestamp.toDate()) : '';
+    const replies = data.commentCount || 0;
+    const cat = catBadge(data.category);
+    const specTag = data.specialty ? `<span class="rv-tag rv-tag-spec">${esc(data.specialty)}</span>` : '';
+    const snippet = (data.body || '').substring(0, 140);
+    return `
+      <div class="thread-card" data-tid="${esc(data._id)}">
+        <div class="thread-card-top">
+          ${cat}
+          <span class="thread-card-title">${esc(data.title)}</span>
+        </div>
+        ${snippet ? `<div class="thread-card-snippet">${esc(snippet)}${data.body && data.body.length > 140 ? '…' : ''}</div>` : ''}
+        <div class="thread-card-meta">
+          <span class="thread-card-author">${esc(data.name || 'Anonymous')}</span>
+          <span class="thread-card-time">&middot; ${dateStr}</span>
+          ${specTag}
+          <span class="thread-card-stats">&#128172; ${replies} repl${replies === 1 ? 'y' : 'ies'}</span>
+        </div>
+      </div>`;
+  }
+
+  function renderThreadList() {
+    const list = document.getElementById('threadList');
+    const filtered = activeCatFilter ? allThreads.filter(t => t.category === activeCatFilter) : allThreads;
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="rv-empty"><span class="rv-empty-icon">&#128172;</span>No threads yet &mdash; start the discussion!</div>`;
+    } else {
+      list.innerHTML = filtered.map(buildThreadCard).join('');
+      list.querySelectorAll('.thread-card').forEach(card => {
+        card.addEventListener('click', () => openThread(card.dataset.tid));
+      });
+    }
+    const count = document.getElementById('threadCount');
+    if (count) count.textContent = allThreads.length + ' thread' + (allThreads.length !== 1 ? 's' : '');
+  }
+
+  async function loadThreads(reset) {
+    if (reset) { allThreads = []; threadCursor = null; }
+    try {
+      let query = db.collection('discussions').orderBy('timestamp', 'desc').limit(THREADS_LIMIT);
+      if (threadCursor) query = query.startAfter(threadCursor);
+      const snap = await query.get();
+      snap.forEach(doc => allThreads.push({ _id: doc.id, ...doc.data() }));
+      if (!snap.empty) threadCursor = snap.docs[snap.docs.length - 1];
+      const loadMore = document.getElementById('threadLoadMore');
+      if (loadMore) loadMore.style.display = snap.size === THREADS_LIMIT ? '' : 'none';
+      renderThreadList();
+    } catch (err) {
+      console.error('Load threads error:', err);
+      document.getElementById('threadList').innerHTML = '<div class="rv-empty">Failed to load threads.</div>';
+    }
+  }
+
+  function subscribeThreads() {
+    db.collection('discussions').orderBy('timestamp', 'desc').limit(5).onSnapshot(snap => {
+      snap.docChanges().forEach(change => {
+        if (change.type === 'added') {
+          const data = { _id: change.doc.id, ...change.doc.data() };
+          if (!allThreads.find(t => t._id === change.doc.id)) allThreads.unshift(data);
+        }
+        if (change.type === 'modified') {
+          const idx = allThreads.findIndex(t => t._id === change.doc.id);
+          if (idx !== -1) allThreads[idx] = { _id: change.doc.id, ...change.doc.data() };
+        }
+      });
+      renderThreadList();
+    }, err => console.warn('Thread snapshot error:', err));
+  }
+
+  async function submitThread() {
+    const name = (document.getElementById('threadName').value.trim() || 'Anonymous').substring(0, 60);
+    const cat = document.getElementById('threadCategory').value || 'General';
+    const specialty = document.getElementById('threadSpecialty').value.trim().substring(0, 80);
+    const title = document.getElementById('threadTitle').value.trim().substring(0, 120);
+    const body = document.getElementById('threadBody').value.trim().substring(0, 3000);
+
+    if (!title)           { setStatus('threadStatus', 'Please enter a thread title.', 'error'); return; }
+    if (title.length < 5) { setStatus('threadStatus', 'Title is too short.', 'error'); return; }
+    if (!body)            { setStatus('threadStatus', 'Please write a description.', 'error'); return; }
+    if (body.length < 10) { setStatus('threadStatus', 'Description is too short (min 10 characters).', 'error'); return; }
+
+    const btn = document.getElementById('threadSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Posting…';
+    setStatus('threadStatus', '', '');
+
+    try {
+      await db.collection('discussions').add({
+        name, category: cat, year: '', specialty, title, body,
+        email: getSessionEmail() || '',
+        commentCount: 0,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      setStatus('threadStatus', '✓ Thread posted!', 'success');
+      ['threadName', 'threadSpecialty', 'threadTitle', 'threadBody'].forEach(id => { document.getElementById(id).value = ''; });
+      document.getElementById('threadCategory').value = 'General';
+      document.getElementById('threadTitleCount').textContent = '0';
+      document.getElementById('threadBodyCount').textContent = '0';
+      setTimeout(() => { setStatus('threadStatus', '', ''); showDiscView('list'); }, 1200);
+    } catch (err) {
+      console.error('Thread submit error:', err);
+      setStatus('threadStatus', 'Failed to post. Please try again.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Post Thread';
+    }
+  }
+
+  function openThread(threadId) {
+    currentThreadId = threadId;
+    currentThread = allThreads.find(t => t._id === threadId) || null;
+    showDiscView('detail');
+
+    const card = document.getElementById('threadDetailCard');
+    if (currentThread) {
+      renderThreadDetailCard(currentThread, card);
+    } else {
+      db.collection('discussions').doc(threadId).get().then(doc => {
+        if (doc.exists) { currentThread = { _id: doc.id, ...doc.data() }; renderThreadDetailCard(currentThread, card); }
+      });
+    }
+
+    if (discCommentsUnsubscribe) { discCommentsUnsubscribe(); discCommentsUnsubscribe = null; }
+    document.getElementById('discCommentsList').innerHTML = '<div class="rv-loading">Loading replies…</div>';
+    discCommentsUnsubscribe = db.collection('discussions').doc(threadId)
+      .collection('comments').orderBy('timestamp', 'asc').limit(DISC_COMMENTS_LIMIT)
+      .onSnapshot(snap => {
+        const comments = [];
+        snap.forEach(doc => comments.push({ _id: doc.id, ...doc.data() }));
+        renderDiscComments(comments);
+      }, err => console.warn('Comments snapshot error:', err));
+
+    document.getElementById('discPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderThreadDetailCard(data, container) {
+    const cat = catBadge(data.category);
+    const dateStr = data.timestamp ? timeAgo(data.timestamp.toDate()) : '';
+    const specTag = data.specialty ? `<span class="rv-tag rv-tag-spec">&#127968; ${esc(data.specialty)}</span>` : '';
+    container.innerHTML = `
+      <div class="thread-detail-cat-row">${cat}${specTag}</div>
+      <div class="thread-detail-title">${esc(data.title)}</div>
+      <div class="thread-detail-body">${esc(data.body)}</div>
+      <div class="thread-detail-footer">
+        <span class="thread-detail-author">✍ ${esc(data.name || 'Anonymous')}</span>
+        <span>&middot;</span>
+        <span>${dateStr}</span>
+      </div>`;
+  }
+
+  function renderDiscComments(comments) {
+    const list = document.getElementById('discCommentsList');
+    const label = document.getElementById('discCommentCountLabel');
+    if (label) label.textContent = comments.length + ' repl' + (comments.length === 1 ? 'y' : 'ies');
+    if (comments.length === 0) {
+      list.innerHTML = `<div class="rv-empty" style="padding:1rem;"><span style="font-size:1.5rem;display:block;margin-bottom:0.3rem;opacity:0.4;">&#128172;</span>No replies yet &mdash; be the first!</div>`;
+      return;
+    }
+    list.innerHTML = comments.map(c => {
+      const dateStr = c.timestamp ? timeAgo(c.timestamp.toDate()) : '';
+      const initials = avatarInitials(c.name || 'An');
+      return `
+        <div class="comment-card">
+          <div class="comment-avatar">${esc(initials)}</div>
+          <div class="comment-bubble">
+            <div class="comment-bubble-top">
+              <span class="comment-author">${esc(c.name || 'Anonymous')}</span>
+              <span class="comment-time">${dateStr}</span>
+            </div>
+            <div class="comment-text">${esc(c.text)}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function submitDiscComment() {
+    if (!currentThreadId) return;
+    const name = (document.getElementById('discCommentName').value.trim() || 'Anonymous').substring(0, 60);
+    const text = document.getElementById('discCommentText').value.trim().substring(0, 1500);
+    if (!text)           { setStatus('discCommentStatus', 'Please write a reply.', 'error'); return; }
+    if (text.length < 3) { setStatus('discCommentStatus', 'Reply is too short.', 'error'); return; }
+
+    const btn = document.getElementById('discCommentSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Posting…';
+    setStatus('discCommentStatus', '', '');
+
+    try {
+      const threadRef = db.collection('discussions').doc(currentThreadId);
+      await threadRef.collection('comments').add({
+        name, text,
+        email: getSessionEmail() || '',
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      await threadRef.update({ commentCount: firebase.firestore.FieldValue.increment(1) });
+      setStatus('discCommentStatus', '✓ Reply posted!', 'success');
+      document.getElementById('discCommentText').value = '';
+      document.getElementById('discCommentCharCount').textContent = '0';
+      setTimeout(() => setStatus('discCommentStatus', '', ''), 3000);
+    } catch (err) {
+      console.error('Comment submit error:', err);
+      setStatus('discCommentStatus', 'Failed to post. Please try again.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Post Reply';
+    }
+  }
+
+  function initCategoryChips() {
+    const container = document.getElementById('discCategoryFilter');
+    if (!container) return;
+    container.addEventListener('click', e => {
+      const chip = e.target.closest('.forum-chip');
+      if (!chip) return;
+      activeCatFilter = chip.dataset.cat || '';
+      container.querySelectorAll('.forum-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      renderThreadList();
+    });
+  }
+
+  function initDiscussionTab() {
+    initCategoryChips();
+    loadThreads(true);
+    subscribeThreads();
+
+    document.getElementById('discNewBtn')?.addEventListener('click', () => showDiscView('new'));
+    document.getElementById('discBackFromNew')?.addEventListener('click', () => showDiscView('list'));
+    document.getElementById('discBackFromDetail')?.addEventListener('click', () => {
+      if (discCommentsUnsubscribe) { discCommentsUnsubscribe(); discCommentsUnsubscribe = null; }
+      currentThreadId = null; currentThread = null;
+      showDiscView('list');
+      loadThreads(true);
+    });
+    document.getElementById('threadLoadMore')?.addEventListener('click', () => loadThreads(false));
+    document.getElementById('threadSubmitBtn')?.addEventListener('click', submitThread);
+    document.getElementById('discCommentSubmitBtn')?.addEventListener('click', submitDiscComment);
+
+    const sessionEmail = getSessionEmail();
+    if (sessionEmail) {
+      getUserProfile(sessionEmail).then(profile => {
+        if (profile && profile.name) {
+          const n1 = document.getElementById('threadName');
+          if (n1 && !n1.value) n1.value = profile.name;
+          const n2 = document.getElementById('discCommentName');
+          if (n2 && !n2.value) n2.value = profile.name;
+        }
+      });
+    }
+  }
+
+  // ══════════════════════════════════════════════════════
+  // CHAT TAB — toned-down single-room embed of the SAME sim21_chat
+  // collection simulation.html's full Chat uses (general room only).
+  // Reuses the same localStorage identity keys sim-chat.js uses
+  // (_chat_uid/_chat_name) so "who you are" is consistent between both.
+  // ══════════════════════════════════════════════════════
+  const CHAT_COLLECTION = 'sim21_chat';
+  const CHAT_ROOM_ID = 'general';
+  const CHAT_MESSAGES_LIMIT = 60;
+  let chatUnsubscribe = null;
+
+  function chatUID() {
+    let uid = localStorage.getItem('_chat_uid');
+    if (!uid) {
+      uid = 'u_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+      localStorage.setItem('_chat_uid', uid);
+    }
+    return uid;
+  }
+
+  function chatName() {
+    return localStorage.getItem('_chat_name') || null;
+  }
+
+  function promptChatName() {
+    const entered = window.prompt('Enter your display name for community chat:', chatName() || '');
+    if (!entered || !entered.trim()) return null;
+    const cleaned = entered.trim().slice(0, 40);
+    localStorage.setItem('_chat_name', cleaned);
+    return cleaned;
+  }
+
+  function renderChatMessages(messages) {
+    const container = document.getElementById('chatMessages');
+    if (!container) return;
+    const myUid = chatUID();
+    if (!messages.length) {
+      container.innerHTML = `<div class="rv-empty" style="padding:1rem;">No messages yet &mdash; say hello!</div>`;
+      return;
+    }
+    const wasAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 40;
+    container.innerHTML = messages.map(m => {
+      const isOwn = m.uid === myUid;
+      const dateStr = m.ts ? timeAgo(m.ts.toDate()) : '';
+      const initials = avatarInitials(m.name || 'An');
+      return `
+        <div class="chat-msg${isOwn ? ' chat-msg-own' : ''}">
+          <div class="chat-msg-avatar">${esc(initials)}</div>
+          <div class="chat-msg-bubble">
+            ${!isOwn ? `<div class="chat-msg-name">${esc(m.name || 'Anonymous')}</div>` : ''}
+            <div class="chat-msg-text">${esc(m.text || '')}</div>
+            <div class="chat-msg-time">${dateStr}</div>
+          </div>
+        </div>`;
+    }).join('');
+    if (wasAtBottom) container.scrollTop = container.scrollHeight;
+  }
+
+  function loadChatMessages() {
+    if (chatUnsubscribe) return;
+    // Mirrors sim-chat.js's query shape (orderBy('ts') + limitToLast, no
+    // `where` clause) so this doesn't need a new composite index — a
+    // roomId-equality + ts-orderBy query would require one that doesn't
+    // exist yet. Filter to the general room client-side instead, same as
+    // sim-chat.js does per-room.
+    chatUnsubscribe = db.collection(CHAT_COLLECTION)
+      .orderBy('ts', 'asc').limitToLast(CHAT_MESSAGES_LIMIT)
+      .onSnapshot(snap => {
+        const messages = [];
+        snap.forEach(doc => {
+          const data = doc.data();
+          if ((data.roomId || 'general') === CHAT_ROOM_ID) messages.push(data);
+        });
+        renderChatMessages(messages);
+      }, err => {
+        console.warn('Chat snapshot error:', err);
+        const container = document.getElementById('chatMessages');
+        if (container) container.innerHTML = '<div class="rv-empty">Could not load messages.</div>';
+      });
+  }
+
+  async function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim().substring(0, 1000);
+    if (!text) return;
+
+    if (!chatName() && !promptChatName()) return;
+
+    const btn = document.getElementById('chatSendBtn');
+    btn.disabled = true;
+    try {
+      await db.collection(CHAT_COLLECTION).add({
+        text,
+        name: chatName(),
+        uid: chatUID(),
+        email: getSessionEmail() || '',
+        roomId: CHAT_ROOM_ID,
+        roomLabel: 'General',
+        type: 'text',
+        ts: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      input.value = '';
+    } catch (err) {
+      console.error('Send chat message error:', err);
+      (window.MN ? MN.toast.danger : alert)('Could not send message. Please try again.');
+    } finally {
+      btn.disabled = false;
+      input.focus();
+    }
+  }
+
+  function initChatTab() {
+    loadChatMessages();
+    document.getElementById('chatSendBtn')?.addEventListener('click', sendChatMessage);
+    document.getElementById('chatInput')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); }
+    });
+
+    if (!chatName()) {
+      const sessionEmail = getSessionEmail();
+      if (sessionEmail) {
+        getUserProfile(sessionEmail).then(profile => {
+          if (profile && profile.name && !chatName()) {
+            localStorage.setItem('_chat_name', profile.name.trim().slice(0, 40));
+          }
+        });
+      }
+    }
+  }
+
   // ── Bootstrap ────────────────────────────────────────
   function init() {
     if (!window.firebase || !firebase.firestore) { setTimeout(init, 100); return; }
@@ -607,6 +1061,8 @@
     document.getElementById('postLoadMore')?.addEventListener('click', () => loadPosts(false));
     document.getElementById('postSubmitBtn')?.addEventListener('click', submitPost);
     document.getElementById('postCommentSubmitBtn')?.addEventListener('click', submitComment);
+
+    initHubTabs();
   }
 
   if (document.readyState === 'loading') {

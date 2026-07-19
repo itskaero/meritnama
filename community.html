@@ -257,6 +257,24 @@
 
     .add-comment-form { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
     .add-comment-form-title { font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.8rem; }
+
+    /* ── Toned-down Chat tab ── */
+    .chat-msg { display: flex; gap: 8px; max-width: 80%; }
+    .chat-msg-own { align-self: flex-end; flex-direction: row-reverse; }
+    .chat-msg-avatar {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; margin-top: 2px;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700; color: #fff;
+    }
+    .chat-msg-bubble {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 0.5rem 0.75rem;
+    }
+    .chat-msg-own .chat-msg-bubble { background: rgba(77,184,217,0.08); border-color: rgba(77,184,217,0.22); }
+    .chat-msg-name { font-size: 0.74rem; font-weight: 700; color: var(--neon-cyan); margin-bottom: 2px; }
+    .chat-msg-text { font-size: 0.85rem; color: var(--text); line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+    .chat-msg-time { font-size: 0.66rem; color: var(--text-muted); margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -290,17 +308,17 @@
 <div class="app-shell">
 <!-- ======= NAV ======= -->
 <nav class="tab-nav" id="mainNav">
+  <div class="nav-group-label">Community Hub</div>
+  <button class="tab-btn active" data-tab="feed">&#127760; Feed</button>
+  <button class="tab-btn" data-tab="discussion">&#128172; Discussion</button>
+  <button class="tab-btn" data-tab="chat">&#9889; Chat</button>
   <div class="nav-group-label">Analyze</div>
   <a href="app.html" class="tab-btn">&#128202; Merit Table</a>
   <a href="app.html#predictor" class="tab-btn">&#127919; My Prediction</a>
-  <a href="app.html#calculator" class="tab-btn">&#129518; Calculator</a>
-  <div class="nav-group-label">Community</div>
-  <a href="reviews.html" class="tab-btn">&#128172; Discussion</a>
-  <a href="community.html" class="tab-btn active">&#127760; Community Feed</a>
-  <a href="simulation.html?tab=community" class="tab-btn">&#9889; Live Chat</a>
-  <a href="editorial.html" class="tab-btn">&#128214; Editorial</a>
   <div class="nav-group-label">Explore</div>
-  <a href="simulation.html" class="tab-btn">&#127973; Induction 21</a>
+  <a href="simulation.html" class="tab-btn">&#127973; Induction Portal</a>
+  <a href="editorial.html" class="tab-btn">&#128214; Editorial</a>
+  <a href="hospitals.html" class="tab-btn">&#127968; Hospitals</a>
   <a href="accreditation.html" class="tab-btn">&#9989; Accreditation</a>
   <a href="donate.html" class="tab-btn donate-btn">&#9829; Support</a>
 </nav>
@@ -310,10 +328,11 @@
 <main class="main-content" style="padding-top:1.5rem;">
 
   <div class="cf-hero">
-    <h2>&#127760; Community Feed</h2>
-    <p>Questions, hospital experiences, resources, and results — shared by fellow candidates. For live conversation during induction rounds, use <a href="simulation.html?tab=community" style="color:var(--neon-cyan);">Live Chat</a>; for long-form threads, see <a href="reviews.html" style="color:var(--neon-cyan);">Discussion</a>.</p>
+    <h2>&#127760; Community Hub</h2>
+    <p>Everything social in one place — structured posts, long-form Discussion threads, and Chat. This embedded Chat is a toned-down single room; for the full induction Chat with topic rooms, open <a href="simulation.html?tab=community" style="color:var(--neon-cyan);" target="_blank" rel="noopener">Live Chat &rarr;</a></p>
   </div>
 
+  <section class="tab-content active" id="tab-feed">
   <div style="max-width:800px;margin:0 auto;padding:0 1rem 4rem;display:flex;flex-direction:column;gap:1.5rem;">
 
     <div class="rv-panel" id="feedPanel">
@@ -479,6 +498,143 @@
     <datalist id="hospitalList"></datalist>
 
   </div>
+  </section><!-- /tab-feed -->
+
+  <!-- ═══════════════════════════════
+       TAB: Discussion — ported from reviews.js's thread list/detail/
+       comments UI, same `discussions` Firestore collection as
+       reviews.html (not a fork — posting here shows up there too).
+  ═══════════════════════════════ -->
+  <section class="tab-content" id="tab-discussion">
+  <div style="max-width:800px;margin:0 auto;padding:0 1rem 4rem;display:flex;flex-direction:column;gap:1.5rem;">
+
+    <div class="rv-panel" id="discPanel">
+      <div class="rv-panel-header">
+        <span class="rv-panel-icon">&#128172;</span>
+        <h3 id="discPanelTitle">Discussion</h3>
+        <span class="rv-panel-count" id="threadCount">0 threads</span>
+        <button class="forum-new-btn" id="discNewBtn">+ New Thread</button>
+      </div>
+
+      <div class="rv-panel-body">
+        <div id="discViewList">
+          <div class="forum-category-chips" id="discCategoryFilter">
+            <button class="forum-chip active" data-cat="">All</button>
+            <button class="forum-chip" data-cat="General">&#128172; General</button>
+            <button class="forum-chip" data-cat="Question">&#10067; Q&amp;A</button>
+            <button class="forum-chip" data-cat="Study">&#128218; Study</button>
+            <button class="forum-chip" data-cat="Hospital">&#127968; Hospital</button>
+            <button class="forum-chip" data-cat="Merit">&#128203; Merit</button>
+            <button class="forum-chip" data-cat="Experience">&#11088; Story</button>
+            <button class="forum-chip" data-cat="Concern">&#9888; Concern</button>
+          </div>
+          <div id="threadList" class="thread-list">
+            <div class="rv-loading">Loading threads&hellip;</div>
+          </div>
+          <button class="rv-load-more" id="threadLoadMore" style="display:none;">Load more threads</button>
+        </div>
+
+        <div id="discViewNew" style="display:none;">
+          <button class="forum-back-btn" id="discBackFromNew">&#8592; Back to threads</button>
+          <div class="rv-form-grid" style="grid-template-columns:1fr;">
+            <div class="rv-field">
+              <label for="threadName">Your Name / Alias</label>
+              <input type="text" id="threadName" placeholder="Dr. Anonymous" maxlength="60" />
+            </div>
+            <div class="rv-field">
+              <label for="threadCategory">Category</label>
+              <select id="threadCategory">
+                <option value="General">&#128172; General Discussion</option>
+                <option value="Question">&#10067; Question &amp; Advice</option>
+                <option value="Study">&#128218; Study Tips &amp; FCPS</option>
+                <option value="Hospital">&#127968; Hospital Insights</option>
+                <option value="Merit">&#128203; Merit &amp; Induction</option>
+                <option value="Experience">&#11088; Experience Share</option>
+                <option value="Concern">&#9888; Concern</option>
+              </select>
+            </div>
+            <div class="rv-field">
+              <label for="threadSpecialty">Specialty <span style="font-weight:400;text-transform:none;">(optional)</span></label>
+              <input type="text" id="threadSpecialty" list="specialtyList" placeholder="e.g. Cardiology, Surgery…" maxlength="80" autocomplete="off" />
+            </div>
+            <div class="rv-field">
+              <label for="threadTitle">Thread Title</label>
+              <input type="text" id="threadTitle" placeholder="A clear title for your post…" maxlength="120" />
+              <div style="text-align:right;font-size:0.73rem;color:var(--text-muted);margin-top:3px;"><span id="threadTitleCount">0</span>/120</div>
+            </div>
+            <div class="rv-field">
+              <label for="threadBody">Description</label>
+              <textarea id="threadBody" placeholder="Describe your question, experience, or topic in detail…" maxlength="3000" style="min-height:130px;"></textarea>
+              <div style="text-align:right;font-size:0.73rem;color:var(--text-muted);margin-top:3px;"><span id="threadBodyCount">0</span>/3000</div>
+            </div>
+          </div>
+          <button class="rv-submit" id="threadSubmitBtn">Post Thread</button>
+          <div class="rv-status" id="threadStatus"></div>
+        </div>
+
+        <div id="discViewDetail" style="display:none;">
+          <button class="forum-back-btn" id="discBackFromDetail">&#8592; Back to threads</button>
+          <div class="thread-detail-card" id="threadDetailCard"></div>
+          <div class="thread-comments-section">
+            <div class="thread-comments-header" id="discCommentCountLabel">0 replies</div>
+            <div id="discCommentsList" class="comments-list">
+              <div class="rv-loading">Loading replies&hellip;</div>
+            </div>
+            <div class="add-comment-form">
+              <div class="add-comment-form-title">&#128172; Add a Reply</div>
+              <div class="rv-field" style="margin-bottom:0.6rem;">
+                <label for="discCommentName">Your Name / Alias</label>
+                <input type="text" id="discCommentName" placeholder="Dr. Anonymous" maxlength="60" />
+              </div>
+              <div class="rv-field">
+                <label for="discCommentText">Your reply</label>
+                <textarea id="discCommentText" placeholder="Share your thoughts, answer the question, or add useful context…" maxlength="1500" style="min-height:80px;"></textarea>
+                <div style="text-align:right;font-size:0.73rem;color:var(--text-muted);margin-top:3px;"><span id="discCommentCharCount">0</span>/1500</div>
+              </div>
+              <button class="rv-submit" id="discCommentSubmitBtn" style="margin-top:0.75rem;">Post Reply</button>
+              <div class="rv-status" id="discCommentStatus"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </section><!-- /tab-discussion -->
+
+  <!-- ═══════════════════════════════
+       TAB: Chat — toned-down single-room embed. Same sim21_chat
+       collection as simulation.html's full Chat tab (general room only),
+       so messages are shared live both ways, but no room switcher, file/
+       image attachments, reactions, pins, or typing indicators here —
+       just text messages. js/sim-chat.js is NOT reused/imported (it's
+       tightly coupled to simulation.html's full-featured DOM), this is a
+       small standalone read/post/listen implementation in js/community.js.
+  ═══════════════════════════════ -->
+  <section class="tab-content" id="tab-chat">
+  <div style="max-width:800px;margin:0 auto;padding:0 1rem 4rem;">
+    <div class="rv-panel">
+      <div class="rv-panel-header">
+        <span class="rv-panel-icon">&#9889;</span>
+        <h3>Community Chat</h3>
+        <span class="rv-panel-count">General room</span>
+      </div>
+      <div class="rv-panel-body" style="display:flex;flex-direction:column;height:60vh;padding:0;">
+        <div id="chatMessages" style="flex:1;overflow-y:auto;padding:1rem 1.2rem;display:flex;flex-direction:column;gap:0.6rem;">
+          <div class="rv-loading">Loading messages&hellip;</div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding:0.8rem 1.2rem;display:flex;gap:8px;">
+          <input type="text" id="chatInput" placeholder="Type a message…" maxlength="1000"
+            style="flex:1;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);padding:0.6rem 0.85rem;color:var(--text);font-family:var(--font);font-size:0.88rem;outline:none;" />
+          <button class="rv-submit" id="chatSendBtn" style="width:auto;margin-top:0;padding:0.6rem 1.2rem;">Send</button>
+        </div>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:0.78rem;color:var(--text-muted);margin-top:0.8rem;">
+      This is the general room, shared live with the full <a href="simulation.html?tab=community&room=general" style="color:var(--neon-cyan);" target="_blank" rel="noopener">Induction Portal Chat</a>. For topic rooms, file sharing, and reactions, open the full Chat.
+    </p>
+  </div>
+  </section><!-- /tab-chat -->
+
 </main>
 </div><!-- /app-main -->
 </div><!-- /app-shell -->
