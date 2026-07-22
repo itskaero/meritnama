@@ -198,6 +198,19 @@ service cloud.firestore {
       allow read, update, delete: if false;
     }
 
+    // Room directory — hospital- and specialty-scoped chat rooms.
+    // Previously rooms were a hardcoded client array (CHAT.ROOMS in
+    // js/sim-chat.js); this collection makes the room list real data so
+    // per-hospital and per-specialty rooms can be added without a code
+    // deploy. Messages for these rooms still live in sim21_chat, keyed by
+    // this doc's id as roomId — no new message collection needed.
+    // Fields: id, label, type ('hospital' | 'specialty' | 'general'),
+    //         hospitalName?, specialtyName?, description, icon, createdAt
+    match /chat_rooms/{roomId} {
+      allow read: if true;
+      allow create, update, delete: if true;   // admin console manages these
+    }
+
     // Community chat messages (Induction 21 simulation page)
     // Publicly readable and creatable; delete allowed (ownership enforced in UI).
     // Fields: text, name, uid, email, roomId, roomLabel, ts, type, imageData,
@@ -225,6 +238,13 @@ service cloud.firestore {
     // write allowed so the Scrape & sync button can merge new/changed docs.
     // Doc IDs: {numericJobId}  Special doc: _meta (count, lastSyncAt, source)
     // Per-doc fields see js/app-jobs.js header comment.
+    // Second write path (redesign): hospital-submitted postings, doc ID
+    // `hosp-{slug}-{slug}-{ts}`, fields source:'hospital', status:
+    // 'pending'|'published'|'rejected', specialty, description, posterName,
+    // posterEmail, hospitalDomainHint, emailLooksHospitalOwned, reviewedBy,
+    // reviewedAt. Same trust model as the rest of this file — status is
+    // UI-gated (only the admin console's queue flips pending → published),
+    // not rules-gated, since there's no real auth to check a role against.
     match /jobs/{jobId} {
       allow read:          if true;
       allow create, update: if true;   // sync button; trust-gated by client UI
@@ -289,6 +309,51 @@ service cloud.firestore {
       allow read: if true;
       allow create, delete: if true;
       allow update: if false;
+    }
+
+    // Admin roles — RBAC for the new admin console. Deliberately a
+    // separate collection from authorized_users/isAdmin (the old site's
+    // PIN-auth flag) so the redesign's admin work can never break that
+    // live auth path. Doc ID = email. Fields: role, name, grantedAt, grantedBy.
+    // Security note: same trust model as authorized_users today — no
+    // Firebase Auth is wired yet, so this is UI-gated, not rules-gated.
+    // That's a real gap, not an oversight: real enforcement needs real
+    // sign-in, which doesn't exist for candidates or admins yet either.
+    match /admin_roles/{email} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
+    // Verified members — admin-granted badge shown next to a name in
+    // Community (e.g. "PRP Alumnus", "Mentor"). Doc ID = chat uid.
+    // Fields: name, label, verifiedAt, verifiedBy.
+    match /verified_members/{uid} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
+    // Admin audit log — append-only record of admin actions (distinct
+    // from access_logs, which only records login attempts). Every admin
+    // mutation in the new console writes one entry here.
+    // Fields: actorEmail, actorRole, action, targetCollection, targetId,
+    //         summary, ts
+    match /admin_audit_log/{entryId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
+    // Reports — the report mechanism that didn't exist before. A report
+    // references the collection+doc it's about; the moderation queue
+    // reads this collection rather than each source collection directly.
+    // Fields: sourceCollection, sourceId, reason, reporterUid, reporterName,
+    //         contentPreview, status ('pending' | 'resolved'), createdAt,
+    //         resolvedAction ('removed' | 'dismissed'), resolvedBy, resolvedAt
+    match /reports/{reportId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if false;
     }
 
     // Deny everything else

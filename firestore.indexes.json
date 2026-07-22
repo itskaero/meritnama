@@ -1,6 +1,22 @@
 {
   "indexes": [
     {
+      "collectionGroup": "sim21_chat",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "roomId", "order": "ASCENDING" },
+        { "fieldPath": "ts",     "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "sim21_chat",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "roomId", "order": "ASCENDING" },
+        { "fieldPath": "ts",     "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "contributions",
       "queryScope": "COLLECTION",
       "fields": [
