@@ -32,24 +32,15 @@
       const snap = await firebase.firestore()
         .collection('editorial_articles')
         .where('status', '==', 'published')
+        .orderBy('publishedAt', 'desc')
         .limit(1)
         .get();
 
       if (snap.empty) return;
 
       const doc = snap.docs[0];
-      let latest = doc;
-      let latestData = doc.data();
-      if (snap.size > 1) {
-        let best = latestData;
-        snap.forEach(d => {
-          const dd = d.data();
-          const tb = dd.publishedAt ? (dd.publishedAt.toMillis ? dd.publishedAt.toMillis() : new Date(dd.publishedAt).getTime()) : 0;
-          const ta = best.publishedAt ? (best.publishedAt.toMillis ? best.publishedAt.toMillis() : new Date(best.publishedAt).getTime()) : 0;
-          if (tb > ta) { best = dd; latest = d; latestData = dd; }
-        });
-      }
-      const slug = latestData.slug || latest.id;
+      const latestData = doc.data();
+      const slug = latestData.slug || doc.id;
       const title = latestData.title || 'New article';
       const link = 'editorial.html#' + slug;
 
