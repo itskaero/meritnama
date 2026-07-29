@@ -1,0 +1,46 @@
+[
+  {
+    "id": "cascade-sim-260708",
+    "icon": "⚡",
+    "linkText": "Open Merit List",
+    "type": "success",
+    "title": "Cascade Simulation Engine — Now Live",
+    "dismissable": false,
+    "link": "simulation.html?mode=merit-list",
+    "active": true,
+    "body": "The Simulate Next Round feature has been redesigned over two days to match the published merit list. The cascade engine now achieves 93.9% agreement with official Round 2 placements — 1131 out of 1204 candidates land in the exact same seat. Five algorithmic bugs were fixed: real preference numbers, beat-check only on full seats, multi-track quota restriction, specialty-specific sorting, and per-quota seat holding. Toggle consent pills, run the cascade in-browser with a live progress bar, and chain multiple simulated rounds with carry-forward rejected candidates."
+  },
+  {
+    "id": "data-update-26062026",
+    "icon": "📊",
+    "linkText": "View changes",
+    "type": "info",
+    "title": "Data Updated — 1 July 2026, 23:01",
+    "dismissable": false,
+    "link": "candidatesChanges.html",
+    "active": true,
+    "body": "Candidate records, preferences, certificates, and profile statuses refreshed with the latest portal data. Merit calculations and seat allocation now reflect the current snapshot. It will available shortly! Refresh in 20 minutes. Be sure to refresh / clear cache or user icognito"
+  },
+  {
+    "id": "jobs-2606",
+    "icon": "🔧",
+    "linkText": null,
+    "type": "success",
+    "title": "Jobs",
+    "dismissable": true,
+    "link": null,
+    "active": true,
+    "body": "Job listing refreshed 1/7/2026. Its available on main page."
+  },
+  {
+    "id": "ui-refresh-2606",
+    "icon": "✨",
+    "linkText": null,
+    "type": "info",
+    "title": "UI Refresh",
+    "dismissable": true,
+    "link": null,
+    "active": true,
+    "body": "Animated quote strip with clickable dots, smoother notification banners with gradient backgrounds, and polished toast messages with status-colored indicators."
+  }
+]
