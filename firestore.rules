@@ -292,6 +292,16 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Joining-status "welcome email" bookkeeping — tracks which applicants have
+    // already been sent the happy_residency email, so re-running the xlsx->JSON
+    // import (data/induction21_joining_status.json) never causes a resend.
+    // Doc ID = applicantId. Fields: { emailedAt, emailedBy, template }
+    match /joining_notifications/{applicantId} {
+      allow read: if true;
+      allow create, update: if true;   // admin dashboard writes; gated by PIN-based auth in client
+      allow delete: if false;
+    }
+
     // Editorial articles — public read for published, full CRUD for admin
     match /editorial_articles/{articleId} {
       allow read: if true;

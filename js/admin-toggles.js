@@ -130,6 +130,35 @@
         </div>`,
     }));
 
+    frag.appendChild(buildSection({
+      id: 'joining-status-config',
+      icon: '\u{1F4CD}',
+      title: 'Joining Status Tracking',
+      desc: 'Controls the dedicated "&#127973; Joining Status" tab on the Simulation page (its own tab, separate from Merit List/Seat Allocation) &mdash; who has joined their selected seat, seats at risk of going unfilled, and the bulk welcome-email action. Stored in <code>notifications/joining_status_config</code>. Data itself comes from <code>data/induction21_joining_status.json</code> (regenerated from the selected/joined/pending exports via <code>scripts/convert_joining_status.py</code>) &mdash; this toggle only controls whether the tab is visible.',
+      html: `
+        <label class="toggle-row" style="margin-bottom:0.75rem;">
+          <input type="checkbox" id="joiningStatusEnabled" />
+          <span style="font-weight:600;">Show the Joining Status tab</span>
+          <span style="font-size:0.78rem;color:var(--text-muted);margin-left:0.5rem;">(off by default — turn on once the final list has been shown, "Final List Shown On" below is set, and candidates can start reporting to seats)</span>
+        </label>
+        <div style="display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:0.75rem;align-items:center;">
+          <div class="modal-field" style="margin:0;max-width:220px;">
+            <label>Final List Shown On</label>
+            <input type="datetime-local" id="joiningListPublishedAtInput" style="width:100%;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;font-family:var(--mono);" />
+          </div>
+          <div class="modal-field" style="margin:0;max-width:120px;">
+            <label>Joining Deadline (days)</label>
+            <input type="number" id="joiningDeadlineDaysInput" min="1" max="30" step="1" value="3" style="width:100%;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.88rem;" />
+          </div>
+          <div style="font-size:0.78rem;color:var(--text-muted);max-width:260px;">Candidates who haven't joined by this many days after the list was shown are flagged as likely to leave the seat vacant.</div>
+        </div>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+          <button id="joiningStatusSaveBtn" class="btn-primary" style="padding:8px 20px;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Save</button>
+          <button id="joiningStatusReloadBtn" style="padding:8px 16px;background:rgba(77,184,217,0.12);color:var(--neon-cyan);border:1px solid rgba(77,184,217,0.3);border-radius:8px;cursor:pointer;">Reload Config</button>
+          <span id="joiningStatusStatus" style="font-size:0.8rem;color:var(--text-muted);align-self:center;"></span>
+        </div>`,
+    }));
+
     // Insert before the last child (usually the script area)
     container.appendChild(frag);
 
@@ -152,6 +181,12 @@
 
       const consentReloadBtn = document.getElementById('consentRoundReloadBtn');
       if (consentReloadBtn) consentReloadBtn.addEventListener('click', loadConsentRoundConfig);
+
+      const joiningStatusSaveBtn = document.getElementById('joiningStatusSaveBtn');
+      if (joiningStatusSaveBtn) joiningStatusSaveBtn.addEventListener('click', saveJoiningStatusConfig);
+
+      const joiningStatusReloadBtn = document.getElementById('joiningStatusReloadBtn');
+      if (joiningStatusReloadBtn) joiningStatusReloadBtn.addEventListener('click', loadJoiningStatusConfig);
     }, 100);
   }
 
@@ -347,11 +382,71 @@
     }
   }
 
+  // ── Joining Status Config ──
+
+  function setJoiningStatusStatus(msg, color) {
+    const el = document.getElementById('joiningStatusStatus');
+    if (el) { el.textContent = msg; if (color) el.style.color = color; }
+  }
+
+  async function loadJoiningStatusConfig() {
+    try {
+      const snap = await db.collection('notifications').doc('joining_status_config').get();
+      const data = snap.exists ? snap.data() : {};
+      const enabled = data.enabled === true; // fails closed, unlike the other toggles here
+      const deadlineDays = data.deadlineDays || 3;
+
+      const cb = document.getElementById('joiningStatusEnabled');
+      if (cb) cb.checked = enabled;
+
+      const deadlineInput = document.getElementById('joiningDeadlineDaysInput');
+      if (deadlineInput) deadlineInput.value = deadlineDays;
+
+      const publishedInput = document.getElementById('joiningListPublishedAtInput');
+      if (publishedInput && data.listPublishedAt) {
+        // Firestore ISO string -> value usable by <input type="datetime-local">
+        publishedInput.value = String(data.listPublishedAt).slice(0, 16);
+      }
+      setJoiningStatusStatus('Loaded joining status config.', 'var(--neon-green)');
+    } catch (e) {
+      console.error('[AdminToggles] Error loading joining status config:', e);
+      setJoiningStatusStatus('Error loading: ' + e.message, 'var(--neon-pink)');
+    }
+  }
+
+  async function saveJoiningStatusConfig() {
+    const cb = document.getElementById('joiningStatusEnabled');
+    const deadlineInput = document.getElementById('joiningDeadlineDaysInput');
+    const publishedInput = document.getElementById('joiningListPublishedAtInput');
+    if (!cb) return;
+
+    const deadlineDays = Math.max(1, parseInt(deadlineInput && deadlineInput.value, 10) || 3);
+    let listPublishedAt = null;
+    if (publishedInput && publishedInput.value) {
+      listPublishedAt = new Date(publishedInput.value).toISOString();
+    }
+
+    setJoiningStatusStatus('Saving...');
+    try {
+      const payload = {
+        enabled: cb.checked,
+        deadlineDays: deadlineDays,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      };
+      if (listPublishedAt) payload.listPublishedAt = listPublishedAt;
+      await db.collection('notifications').doc('joining_status_config').set(payload, { merge: true });
+      setJoiningStatusStatus('Joining status config saved. Simulation page tab updates live.', 'var(--neon-green)');
+    } catch (e) {
+      setJoiningStatusStatus('Error saving: ' + e.message, 'var(--neon-pink)');
+    }
+  }
+
   function loadConfigs() {
     loadWatermarkConfig();
     loadSimModeConfig();
     loadCandVerifConfig();
     loadConsentRoundConfig();
+    loadJoiningStatusConfig();
   }
 
   // ── Start ──

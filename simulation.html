@@ -3334,6 +3334,7 @@
     <button class="tab-btn" data-tab="slotbrowser">&#127919; Where Merit Falls</button>
     <button class="tab-btn" data-tab="simulation">&#9889; Seat Allocation</button>
     <button class="tab-btn" data-tab="consent">&#8644; Consent What-If</button>
+    <button class="tab-btn" data-tab="joining" id="joiningTabBtn" style="display:none;">&#127973; Joining Status</button>
     <button class="tab-btn" data-tab="config">&#9881; Config</button>
   </div>
   <div class="sim-nav-section sim-nav-secondary" aria-label="Planning and community">
@@ -4107,6 +4108,13 @@
   </section>
 
   <!-- ══════════════════════════════════════════
+       TAB: JOINING STATUS
+  ══════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-joining">
+    <div id="joiningStatusRoot" style="text-align:center;padding:3rem;color:var(--text-muted);">Loading…</div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
        TAB: CONFIG
   ══════════════════════════════════════════ -->
   <section class="tab-content" id="tab-config">
@@ -4742,6 +4750,7 @@
 <script src="js/sim-merit-list.js?t=20260708i"></script>
 <script src="js/sim-cascade.js?t=20260708a"></script>
 <script src="js/sim-consent.js"></script>
+<script src="js/sim-joining-status.js"></script>
 <script src="js/sim-config.js"></script>
 <script src="access-request.js"></script>
 <script src="screenshot-guard.js"></script>

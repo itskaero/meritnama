@@ -18,6 +18,7 @@ function setupTabs() {
       if (t === 'hospitals')   renderHospitalsTab();
       if (t === 'profiles')    renderProfilesTab();
       if (t === 'config')      renderConfigTab();
+      if (t === 'joining' && typeof renderJoiningStatusTab === 'function') renderJoiningStatusTab();
       if (t === 'community') {
         CHAT.tabActive = true;
         _resetUnread();

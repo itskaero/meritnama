@@ -193,6 +193,96 @@ MeritNama - Your Portal Access
 
 ---
 
+## 5b. Joining Status — "Happy Residency" Email
+
+Same `mail` collection / `email_templates` mechanism as the welcome email above, added for the Merit List "Joining Status" feature (`js/sim-merit-list.js` + `js/admin-toggles.js`). Sent in bulk from the Merit List page to candidates whose `induction21_joining_status.json` row has `status: "Joined"`, via `db.collection('mail').add({ to, template: { name: 'happy_residency', data } })`.
+
+### Regenerating the underlying data
+
+The joining-status data itself is **not** entered by hand — it's converted from three admin-exported spreadsheets:
+
+```bash
+python scripts/convert_joining_status.py
+```
+
+reads `joined/selected.xlsx` (authoritative seat placement + `status`/`joiningDate`), cross-references `joined/joined.xlsx` and `joined/pending.xlsx` (a separate profile-status export), and writes `meritnama/data/induction21_joining_status.json`. Re-run this whenever a fresh export lands in `joined/`. Rows where the two sources disagree are written with `profileMismatch: true` rather than silently resolved — the Merit List UI surfaces these with a "Profile mismatch" tag.
+
+### Create the happy_residency template
+
+Create this Firestore document:
+
+- Collection: `email_templates`
+- Document ID: `happy_residency`
+
+Fields:
+
+- `subject`:
+
+```text
+Welcome to Your Residency — MeritNama
+```
+
+- `html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Welcome to Your Residency</title></head>
+<body style="margin:0;padding:0;background-color:#f4f7fb;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f7fb;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+      <tr>
+        <td align="center" style="background:linear-gradient(135deg,#0e2a22,#0a0e16);padding:40px 30px;">
+          <img src="{{logoUrl}}" alt="MeritNama" style="max-width:150px;height:auto;margin-bottom:18px;" />
+          <div style="display:inline-block;background:rgba(62,207,142,0.14);border:1px solid rgba(62,207,142,0.4);color:#3ecf8e;font-size:12px;font-weight:700;padding:5px 14px;border-radius:100px;margin-bottom:16px;">&#127881; Placement Confirmed</div>
+          <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:0.3px;">Welcome to your residency,<br>{{name}}</h1>
+          <p style="color:#9fb0c3;margin-top:10px;font-size:15px;line-height:24px;">MeritNama wishes you a joyful, fulfilling journey ahead.</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:36px 35px;color:#334155;">
+          <p style="font-size:15px;line-height:26px;margin-top:0;color:#475569;">You've officially joined your seat. Here's where you're headed:</p>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 30px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
+            <tr><td style="padding:22px 24px;">
+              <p style="margin:0 0 10px;font-size:15px;color:#0f172a;"><strong>Program:</strong> {{program}}</p>
+              <p style="margin:0 0 10px;font-size:15px;color:#0f172a;"><strong>Specialty:</strong> {{specialty}}</p>
+              <p style="margin:0 0 10px;font-size:15px;color:#0f172a;"><strong>Hospital:</strong> {{hospital}}</p>
+              <p style="margin:0 0 10px;font-size:15px;color:#0f172a;"><strong>Preference:</strong> Choice #{{preferenceNo}}</p>
+              <p style="margin:0;font-size:15px;color:#0f172a;"><strong>Joined on:</strong> {{joiningDate}}</p>
+            </td></tr>
+          </table>
+          <div style="text-align:center;margin:30px 0;">
+            <a href="{{portalUrl}}" style="background:#3ecf8e;color:#04140c;text-decoration:none;padding:15px 34px;border-radius:10px;display:inline-block;font-size:15px;font-weight:700;letter-spacing:0.3px;">Visit Your MeritNama Dashboard &rarr;</a>
+          </div>
+          <p style="font-size:14px;line-height:24px;color:#64748b;margin-bottom:0;">MeritNama helped guide your placement from merit list to match. If it helped you, the biggest thank-you is passing it on — tell a colleague still waiting on their round.</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="background:#f8fafc;padding:26px 35px;border-top:1px solid #e2e8f0;text-align:center;">
+          <p style="margin:0;font-size:13px;color:#64748b;line-height:22px;">&copy; 2026 MeritNama. All rights reserved.</p>
+          <p style="margin:10px 0 0;font-size:12px;color:#94a3b8;line-height:20px;">This is an automated notification regarding your residency placement.</p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>
+```
+
+Note: unlike the in-app "joined" celebration shown on the Merit List page (which can use CSS animation freely), this template deliberately has **no animation** — Gmail and Outlook strip `<style>` keyframes from inbound HTML mail, so an animated version would render broken or static-but-oddly-cropped in most inboxes. Apple/iOS Mail are the exception if a lightly-animated variant is ever wanted, but it shouldn't be the only version shipped.
+
+### Firestore rules
+
+`firestore.rules` now also has a `joining_notifications/{applicantId}` collection (tracks who's already been emailed, so re-running the xlsx import never causes a resend). Redeploy rules after pulling this change:
+
+```bash
+firebase deploy --only firestore:rules
+```
+
+---
+
 ## 6. Admin Dashboard
 
 - Access at: `your-site.com/admin.html`
