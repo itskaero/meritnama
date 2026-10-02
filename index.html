@@ -7,7 +7,7 @@
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
 *{ margin:0; padding:0; box-sizing:border-box; }
 :root{
@@ -324,6 +324,108 @@ body{
   .lp-steps{ grid-template-columns:1fr; }
   .lp-section{ padding:64px 24px; }
 }
+/* ═══════════════════════════════════════════════════════════════
+   Sibling product band — medNAMA
+   Same skeleton as the rest of this page, medNAMA's accent (peach +
+   rose) instead of mint, so it reads as family rather than as an ad.
+   ═══════════════════════════════════════════════════════════════ */
+.lp-sibling{
+  --peach:#ebd5be; --rose:#d39794;
+  position:relative; overflow:hidden;
+  border-top:1px solid rgba(255,255,255,.05);
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.lp-sibling-glow{
+  position:absolute; left:50%; top:-55%;
+  width:min(920px,130vw); aspect-ratio:1; transform:translateX(-50%);
+  border-radius:50%; pointer-events:none;
+  background:radial-gradient(closest-side, rgba(211,151,148,.20), transparent 72%);
+}
+.lp-sibling-inner{
+  position:relative; max-width:1080px; margin:0 auto;
+  padding:96px 24px;
+  display:grid; grid-template-columns:1.05fr .95fr;
+  gap:clamp(32px,5vw,60px); align-items:center;
+}
+.lp-sibling-kicker{
+  display:inline-flex; align-items:center; gap:9px;
+  font-family:'IBM Plex Mono', monospace; font-size:11px;
+  letter-spacing:2px; text-transform:uppercase; color:rgba(232,240,240,.45);
+}
+.lp-sibling-kicker::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--peach); }
+
+.lp-sibling-mark{ display:inline-flex; align-items:center; gap:11px; margin:18px 0 0; }
+.lp-sibling-mark b{
+  display:grid; place-items:center; width:34px; height:34px; border-radius:10px;
+  background:var(--peach); color:#15100d;
+  font-family:'Instrument Serif', Georgia, serif; font-size:19px; font-weight:400;
+}
+.lp-sibling-mark span{ font-family:'Instrument Serif', Georgia, serif; font-size:1.7rem; letter-spacing:-.01em; }
+.lp-sibling-mark span i{ color:var(--cyan); font-style:normal; }
+
+.lp-sibling h2{
+  font-family:'Instrument Serif', Georgia, serif; font-weight:400;
+  font-size:clamp(1.9rem,4.2vw,3rem); line-height:1.06;
+  letter-spacing:-.03em; margin:16px 0 0;
+}
+.lp-sibling h2 i{ color:var(--peach); font-style:italic; }
+.lp-sibling p.lp-sibling-lede{
+  color:rgba(232,240,240,.7); font-size:1rem; line-height:1.68;
+  max-width:46ch; margin:18px 0 0;
+}
+.lp-sibling-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:24px; }
+.lp-sibling-chips span{
+  padding:7px 14px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04);
+  font-family:'IBM Plex Mono', monospace; font-size:11.5px;
+  color:rgba(232,240,240,.68);
+}
+.lp-sibling-actions{ display:flex; flex-wrap:wrap; gap:12px; margin-top:30px; }
+.btn-peach{
+  background:var(--peach); color:#15100d;
+  box-shadow:0 10px 34px -12px rgba(211,151,148,.55);
+}
+.btn-peach:hover{ transform:translateY(-3px); box-shadow:0 16px 44px -12px rgba(211,151,148,.7); }
+
+/* one glance at what the product actually does */
+.lp-sibling-mock{
+  border:1px solid rgba(255,255,255,.1); border-radius:18px;
+  background:#0b1016; box-shadow:0 30px 80px -30px rgba(0,0,0,.8);
+  overflow:hidden; transition:transform .5s cubic-bezier(.2,.8,.2,1);
+}
+.lp-sibling-mock:hover{ transform:translateY(-5px); }
+.lp-mock-bar{ display:flex; align-items:center; gap:7px; padding:11px 14px; border-bottom:1px solid rgba(255,255,255,.07); }
+.lp-mock-bar i{ width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,.14); }
+.lp-mock-bar i:first-child{ background:#e0716a; }
+.lp-mock-bar i:nth-child(2){ background:#e0b25a; }
+.lp-mock-bar i:nth-child(3){ background:#63c07d; }
+.lp-mock-bar em{ margin-left:8px; font-style:normal; font-family:'IBM Plex Mono', monospace; font-size:11px; color:rgba(232,240,240,.32); }
+.lp-mock-body{ padding:22px; display:grid; gap:14px; }
+.lp-mock-q{ font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:1.2px; text-transform:uppercase; color:rgba(232,240,240,.4); }
+.lp-mock-a{ font-size:.93rem; line-height:1.72; color:rgba(232,240,240,.86); }
+.lp-mock-a u{ text-decoration:none; border-bottom:1px dashed rgba(235,213,190,.5); }
+.lp-mock-cite{
+  display:inline-flex; align-items:center; gap:8px; align-self:start;
+  padding:7px 12px; border-radius:8px;
+  border:1px solid rgba(235,213,190,.3); background:rgba(235,213,190,.08);
+  font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--peach);
+}
+.lp-mock-rule{ height:1px; background:rgba(255,255,255,.07); }
+.lp-mock-foot{
+  display:flex; justify-content:space-between; gap:12px;
+  font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+  letter-spacing:.8px; color:rgba(232,240,240,.34);
+}
+
+@media(max-width:860px){
+  .lp-sibling-inner{ grid-template-columns:1fr; padding:64px 24px; }
+  .lp-sibling-mock{ order:2; }
+}
+@media(prefers-reduced-motion:reduce){
+  .lp-sibling-mock{ transition:none; }
+  .lp-sibling-mock:hover{ transform:none; }
+}
+
 </style>
 </head>
 <body>
@@ -434,6 +536,46 @@ body{
   </div>
 </section>
 
+<!-- ======= SIBLING PRODUCT: medNAMA ======= -->
+<section class="lp-sibling" id="mednama">
+  <div class="lp-sibling-glow" aria-hidden="true"></div>
+  <div class="lp-sibling-inner">
+    <div>
+      <span class="lp-sibling-kicker">Also from the nama family</span>
+      <div class="lp-sibling-mark">
+        <b aria-hidden="true">m</b>
+        <span>med<i>NAMA</i></span>
+      </div>
+      <h2>Learn from the source.<br><i>Practice with purpose.</i></h2>
+      <p class="lp-sibling-lede">MeritNama tells you where you stand. medNAMA is for the exam that
+        got you there &mdash; clinical answers pulled straight from your reference textbooks with the
+        page number attached, and drills built on recalled FCPS Part&nbsp;1 past papers.</p>
+      <div class="lp-sibling-chips">
+        <span>12,717 question bank</span>
+        <span>Inline page citations</span>
+        <span>Tutor &amp; exam modes</span>
+        <span>Smart re-tests</span>
+      </div>
+      <div class="lp-sibling-actions">
+        <a class="btn btn-peach" href="https://itskaero.github.io/medNAMA/" target="_blank" rel="noopener">Open medNAMA &nearr;</a>
+        <a class="btn btn-ghost" href="https://itskaero.github.io/" target="_blank" rel="noopener">The whole family &nearr;</a>
+      </div>
+    </div>
+
+    <div class="lp-sibling-mock" aria-hidden="true">
+      <div class="lp-mock-bar"><i></i><i></i><i></i><em>mednama &mdash; answer</em></div>
+      <div class="lp-mock-body">
+        <p class="lp-mock-q">Ask anything</p>
+        <p class="lp-mock-a">Every claim comes back <u>grounded in the book you chose</u>, with the
+          exact page cited inline and the original passage one click away.</p>
+        <span class="lp-mock-cite">&#9678; Snell&rsquo;s Clinical Anatomy &middot; p.&nbsp;120</span>
+        <div class="lp-mock-rule"></div>
+        <div class="lp-mock-foot"><span>Verified passage</span><span>Figures attached</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ======= FINAL CTA ======= -->
 <section class="lp-cta">
   <h2>Ready to see where you stand?</h2>
@@ -461,6 +603,10 @@ body{
     <a href="reviews.html" class="drawer-item">
       <span class="icon">💬</span>
       <div><h4>Discussion</h4><p>Community reviews &amp; feedback</p></div>
+    </a>
+    <a href="https://itskaero.github.io/medNAMA/" class="drawer-item" target="_blank" rel="noopener">
+      <span class="icon">📘</span>
+      <div><h4>medNAMA &nearr;</h4><p>Textbook-grounded answers &amp; FCPS&nbsp;1 practice</p></div>
     </a>
     <a href="donate.html" class="drawer-item">
       <span class="icon">❤️</span>
