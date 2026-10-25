@@ -22,13 +22,16 @@ publish.
 The legacy app still lives in this repository and predates these rules. Before more
 features are built, the maintainer must:
 
-1. ✅ *Done 25 Oct 2026:* national ID and phone fields removed from every dataset at
-   HEAD; `tools/strip_pii.py` strips new uploads, the deploy strips the published
+1. ✅ *Done 25 Oct 2026:* national ID and phone data removed from every dataset at
+   HEAD — including phones stored under `number`, CNICs typed into name fields, CNIC
+   edits in change logs, and links into the official portal's admin panel; `tools/strip_pii.py` strips new uploads, the deploy strips the published
    copy, and the **PII guard** workflow fails any commit that adds them back.
    Still to do: move the remaining candidate-level records (emails, PMDC numbers)
    out of this repository with the private app.
-2. Purge them from git history and force-push (e.g. `git filter-repo`), then ask
-   GitHub Support to clear cached views. Treat previously published copies as exposed.
+2. Purge them from git history: tested script and runbook in
+   [HISTORY_PURGE.md](HISTORY_PURGE.md) (maintainer runs it). Then ask GitHub Support
+   to clear cached views and pull-request refs. Treat previously published copies as
+   exposed.
 3. Lock down Firestore rules so that no collection is world-writable and privileged
    collections are not world-readable; route privileged writes through server-side
    code (see `functions/README.md`).

@@ -20,11 +20,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Salman Karim S/O Altaf Hussain"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3210236037519"
         }
       ],
       "preferences": []
@@ -886,11 +881,6 @@
           "new": "Sharjeel Ahmed Lodhi S/O Zafar Ahmed Lodhi"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "4210151867345"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -919,11 +909,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Amna Yaqoob D/O Muhammad Yaqoob"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3410151358212"
         },
         {
           "field": "programMarks",
@@ -1081,11 +1066,6 @@
         {
           "field": "nameFull",
           "old": "Zain Ul Abidin S/O Sagheer Ahmad Qureshi",
-          "new": ""
-        },
-        {
-          "field": "cnic",
-          "old": "3630288307631",
           "new": ""
         },
         {
@@ -1537,11 +1517,6 @@
           "new": "Farah Rafiq D/O Muhammad Rafiq"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3510241356452"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -1986,11 +1961,6 @@
           "new": "Muhammad Touseef Raza S/O Dilshad Ahmed Shad Minhas"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3130331582603"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -2147,11 +2117,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Ahmad Shah S/O Khadim Hussain shah"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3660257123903"
         }
       ],
       "preferences": []
@@ -2965,11 +2930,6 @@
           "new": "Rabail tariq  D/O Muhammad Tariq "
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3540195300810"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -3010,11 +2970,6 @@
           "new": "Waqas Gohar S/O Gohar Rehman"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "1350143499777"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -3043,11 +2998,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Mohammad Hamza Javaid S/O Mohammad Javaid Iqbal"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3630284940193"
         },
         {
           "field": "programMarks",
@@ -3090,11 +3040,6 @@
           "new": "Hina Younis D/O Sheikh Muhammad younis"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3220175781952"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -3123,11 +3068,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Rabia Shabir S/O Shabir ahmad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3410498539686"
         }
       ],
       "preferences": []
@@ -4325,11 +4265,6 @@
           "new": "ASAD ASLAM S/O MUHAMMAD ASLAM"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3840378698431"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -4428,11 +4363,6 @@
           "new": ""
         },
         {
-          "field": "cnic",
-          "old": "3110265108259",
-          "new": ""
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -4471,11 +4401,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Saira Zafar D/O zafar ahmad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3320388768310"
         },
         {
           "field": "degree",
@@ -4767,11 +4692,6 @@
           "new": "Iqra Iftikhar D/O Iftikhar Ahmed"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3820175311932"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -4888,11 +4808,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Owais Liaqat S/O Liaqat hussain"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3740501973165"
         }
       ],
       "preferences": []
@@ -4906,11 +4821,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Shafi Ullah S/O Sher Khan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "1110178394399"
         },
         {
           "field": "programMarks",
@@ -4941,11 +4851,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Tanzeel Tahir S/O Nazir Ahmad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3810207049943"
         },
         {
           "field": "programMarks",
@@ -6275,11 +6180,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Maliha Irfan Jaskani D/O Irfan Karim Jaskani"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3210214506054"
         }
       ],
       "preferences": []
@@ -6293,11 +6193,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Sheharyar Khalid Rahim S/O Khalid Khan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "1710112329407"
         },
         {
           "field": "programMarks",
@@ -6600,11 +6495,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Sidra Malik D/O Malik riasat ali anjum"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3420178420896"
         },
         {
           "field": "programMarks",
@@ -7288,11 +7178,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Yomna Khan D/O Maula Baksh fareedi"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3630267409334"
         },
         {
           "field": "programMarks",
@@ -8428,11 +8313,6 @@
           "new": "Saad Maqsood S/O Maqsood Ahmad"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520282648653"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -8999,11 +8879,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Hamza S/O Muhammad Ata Ur Rehman"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3630235436173"
         },
         {
           "field": "programMarks",
@@ -10247,11 +10122,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Ramshaw Tahoor S/O Zahid Hussain"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3320261496110"
         }
       ],
       "preferences": []
@@ -10265,11 +10135,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Ahmed Majid S/O ABDUL MAJID"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520209910209"
         },
         {
           "field": "programMarks",
@@ -10593,11 +10458,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Abdul Wahab S/O shaukat khan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "1730169187901"
         },
         {
           "field": "programMarks",
@@ -13473,11 +13333,6 @@
           "new": "Fakiha Anum D/O Khursheed Ahmad Gill"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310047970802"
-        },
-        {
           "field": "mdcat",
           "old": 0.0,
           "new": 1.774545
@@ -13499,11 +13354,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Madeeha D/O Manzoor Ahmad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3220212716480"
         },
         {
           "field": "programMarks",
@@ -14250,11 +14100,6 @@
           "new": "Moiz Rafi Khan S/O Tahir Rafi Khan"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3420211581557"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -14518,11 +14363,6 @@
           "new": ""
         },
         {
-          "field": "cnic",
-          "old": "3740528266303",
-          "new": ""
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 3.0,
@@ -14551,11 +14391,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Uraiza Subhani D/O Ateeq Subhani"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3630284280646"
         },
         {
           "field": "programMarks",
@@ -16911,11 +16746,6 @@
           "new": "Hafsa Atiq D/O Atiq Ahmed"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520162285126"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -17072,11 +16902,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Shahzad Ahmed Bhatti S/O Muhammad Bilal Bhatti"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3640256396475"
         }
       ],
       "preferences": []
@@ -18163,11 +17988,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Sameet Ahmad D/O Izhar Ahmad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520239507146"
         },
         {
           "field": "programMarks",
@@ -19288,11 +19108,6 @@
           "new": "Tahir Aziz S/O ABDUL AZIZ"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3630135457217"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -19436,11 +19251,6 @@
           "new": "Ghulam Shahid S/O MUHAMMAD HUSSAIN"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "7110136816971"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -19567,11 +19377,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Rohab Naseem S/O Muhammad Naseem"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520274592801"
         },
         {
           "field": "programMarks",
@@ -21230,11 +21035,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Namra Shabbir D/O Ghulam Shabbir Ahmed"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3130461774196"
         },
         {
           "field": "programMarks",
@@ -23233,11 +23033,6 @@
           "new": "Bisma Ijaz D/O Muhammad Ijaz"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3230429858774"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -23501,11 +23296,6 @@
           "new": "Zeeshan Safdar S/O Ghulam Muhammad Saqib"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "7110398847849"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -23632,11 +23422,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Tehreem Zulfiqar Bhatti D/O Zulfiqar Ali"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520274265124"
         },
         {
           "field": "programMarks",
@@ -24995,11 +24780,6 @@
           "new": "Ayesha D/O Muhammad Zaheer"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520286087100"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -25278,11 +25058,6 @@
           "new": "Rameen Irfan D/O Muhammad Irfan"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310056570232"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -25514,11 +25289,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Test01 S/O test"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "P00012332"
         }
       ],
       "preferences": []
@@ -25532,11 +25302,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Huma Irshad D/O Irshad Ullah"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3430115207688"
         },
         {
           "field": "programMarks",
@@ -25949,11 +25714,6 @@
         {
           "field": "nameFull",
           "old": "Aimen Javed D/O Muhammad Javed",
-          "new": ""
-        },
-        {
-          "field": "cnic",
-          "old": "3520280340394",
           "new": ""
         },
         {
@@ -27615,11 +27375,6 @@
           "new": "Ayesha Bint Amin D/O MUHAMMAD AMIN MAHER"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3210284336984"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -28031,11 +27786,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Sana Rasheed D/O Abdul Rasheed Khan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520171659430"
         },
         {
           "field": "degree",
@@ -28461,11 +28211,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Laiba Sagheer D/O Ghulam Sagheer"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520155125930"
         },
         {
           "field": "programMarks",
@@ -28939,11 +28684,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Syed Muhammad Huzaifa Tahir S/O Syed Tahir Iqbal"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3130319697921"
         },
         {
           "field": "programMarks",
@@ -30844,11 +30584,6 @@
           "new": "Muhammad Basem Rana S/O Zulfiqar Ahmed Rana"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520108839241"
-        },
-        {
           "field": "applied_in",
           "old": {
             "FCPS": false,
@@ -31080,11 +30815,6 @@
           "new": "Nida Tahir D/O Tahir Latif"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3740520789026"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -31115,11 +30845,6 @@
           "new": "Kashmala Iqbal D/O Mian Iqbal Nawaz"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3130193774258"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -31148,11 +30873,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Sobia Saeed D/O Saeed Ahmed"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3130381024732"
         },
         {
           "field": "programMarks",
@@ -31837,11 +31557,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Warda Yasin D/O ghulam yasin khan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3230480746270"
         },
         {
           "field": "programMarks",
@@ -34153,11 +33868,6 @@
           "new": "Muneeba Ashraf D/O MuhammadAshraf"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3110321589122"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -34404,11 +34114,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Humna Usman D/O usman afzal khokhar"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3460317162184"
         },
         {
           "field": "programMarks",
@@ -35050,11 +34755,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Abdulrehman Khan S/O Sardar Hameed Ajmal khan Leghari"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3130474954837"
         },
         {
           "field": "programMarks",
@@ -37118,11 +36818,6 @@
           "new": "Aleena Sarwar D/O Ghulam Sarwar"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3330315441380"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -37814,11 +37509,6 @@
           "new": "Rida Safdar D/O SAFDAR IQBAL"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3410190999954"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -38217,11 +37907,6 @@
           "new": ""
         },
         {
-          "field": "cnic",
-          "old": "3520290242248",
-          "new": ""
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 4.0,
@@ -38438,11 +38123,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Farwa Asghar D/O Asghar Ali"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3220292365482"
         },
         {
           "field": "programMarks",
@@ -41693,11 +41373,6 @@
           "new": "Muhammad Mohsin Sharif S/O Muhammad Sharif"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3510170021347"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -44384,11 +44059,6 @@
           "new": ""
         },
         {
-          "field": "cnic",
-          "old": "3540239056068",
-          "new": ""
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 4.0,
@@ -44625,11 +44295,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Noor Ihsan D/O Ihsan Ullah Khan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3310445662450"
         },
         {
           "field": "programMarks",
@@ -45589,11 +45254,6 @@
           "field": "nameFull",
           "old": "",
           "new": "URWAH AAMIR D/O SH AAMIR RASHEED"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3740524174710"
         },
         {
           "field": "programMarks",
@@ -48056,11 +47716,6 @@
           "new": "Qurrat Ul Ain Akmal D/O Muhammad Akmal Khan"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3210280283806"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -48471,11 +48126,6 @@
         {
           "field": "nameFull",
           "old": "Muhammad Usman Riaz S/O MUHAMMAD RIAZ",
-          "new": ""
-        },
-        {
-          "field": "cnic",
-          "old": "3620112169359",
           "new": ""
         },
         {
@@ -50330,11 +49980,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Ghulam Mustafa Tahir S/O Muhammad Saeed"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3840408080087"
         }
       ],
       "preferences": []
@@ -50347,11 +49992,6 @@
         {
           "field": "nameFull",
           "old": "Muzammil Sheraz Sial S/O Allah Ditta",
-          "new": ""
-        },
-        {
-          "field": "cnic",
-          "old": "3320383251947",
           "new": ""
         },
         {
@@ -50728,11 +50368,6 @@
           "new": "Hafiz Naveed Ahmed Khan S/O Muhammad Ahmed Khan"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520262465973"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -50771,11 +50406,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Zahra Jamana D/O Muhammad Ayub"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3660290512014"
         }
       ],
       "preferences": []
@@ -50789,11 +50419,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Arslan Sajid S/O Sajid Hussain"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3840396206925"
         },
         {
           "field": "programMarks",
@@ -53173,11 +52798,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Ayesha Razzaq D/O Muhammad Razzaq"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3330203960048"
         }
       ],
       "preferences": []
@@ -53191,11 +52811,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Javairia Ahmad D/O Muhammad Tufail Jarral"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520257332538"
         },
         {
           "field": "programMarks",
@@ -54856,11 +54471,6 @@
           "new": "Muhammad Ali Haider S/O Kamran ashraf"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3420169397103"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -54889,11 +54499,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Hafiz Syed Anas Mehmood S/O Syed Nasir Mehmood"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3130247516685"
         },
         {
           "field": "programMarks",
@@ -57739,11 +57344,6 @@
           "new": "Ali Hassan Gormani S/O Mureed Kazim Gormani"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3210273410175"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -58682,11 +58282,6 @@
           "new": "Aimon Furrakh D/O Humair Furrakh"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3650255033320"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -58725,11 +58320,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Menail Fatima D/O Ijaz Ahmed Malik"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3820178327752"
         },
         {
           "field": "programMarks",
@@ -59476,11 +59066,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Nayab Fatima D/O Mian Abdul Shakoor"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3210232129290"
         },
         {
           "field": "programMarks",
@@ -60732,11 +60317,6 @@
           "new": "Zilmaarij D/O WASEEM IQBAL BUTT"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3410171963656"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -60949,11 +60529,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Hadiqa Saeed D/O Sheikh Muhammad Saeed"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520243258510"
         },
         {
           "field": "programMarks",
@@ -61607,11 +61182,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Rida Saleem D/O Muhammad Saleem"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3650112074354"
         },
         {
           "field": "programMarks",
@@ -62922,11 +62492,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Darakhshan D/O Khalid Hussain"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3610373380962"
         },
         {
           "field": "programMarks",
@@ -64783,11 +64348,6 @@
           "new": "Faryal Khurshid D/O Khurshid Abbas"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3630221769592"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -65726,11 +65286,6 @@
           "new": "Hasnat Jahangir Jarral S/O Jahangir Akbar Jarral"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "8130260460145"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -65857,11 +65412,6 @@
           "field": "nameFull",
           "old": "",
           "new": "SIDRA TASAWER D/O TASAWER HUSSAIN"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3460193343706"
         },
         {
           "field": "programMarks",
@@ -67522,11 +67072,6 @@
           "new": "Hira Amir D/O Malik Amir Nawaz"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3710424477078"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -67565,11 +67110,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Syeda Rida Abbas D/O Farhat abbas"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "6110150939068"
         }
       ],
       "preferences": []
@@ -67583,11 +67123,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Zainab Shabbir D/O Ghulam Shabbir Ahmad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3130462725146"
         },
         {
           "field": "programMarks",
@@ -69173,11 +68708,6 @@
           "new": "Ahmad Raza S/O Mahar Allah divaya"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3220305917065"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -69216,11 +68746,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Ayesha Ashraf D/O MUHAMMAD ASHRAF SAROYA"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3540184968326"
         },
         {
           "field": "programMarks",
@@ -69522,11 +69047,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Naila Jamal Khattak D/O Shahid Jamal Khattak"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "4220187175664"
         },
         {
           "field": "programMarks",
@@ -70191,11 +69711,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Fatima Ajaz D/O AJAZ AHMED FAROOQI"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3630243710898"
         },
         {
           "field": "programMarks",
@@ -75621,11 +75136,6 @@
           "new": ""
         },
         {
-          "field": "cnic",
-          "old": "3410454512193",
-          "new": ""
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 5.0,
@@ -77011,11 +76521,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Aniqa Shakeel D/O Muhammad Shakeel Akhtar"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3130338078224"
         },
         {
           "field": "programMarks",
@@ -78807,11 +78312,6 @@
           "new": "Sana Fatima D/O Tanvir Ahmad"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310002761516"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -79955,11 +79455,6 @@
           "new": "Waleed Ahmed S/O hafeez ahmed"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3440114764201"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -80161,11 +79656,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Kshuf Nauman D/O Muhammad Nauman"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3650274499088"
         },
         {
           "field": "programMarks",
@@ -81449,11 +80939,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Sehrish Ghaffar D/O Hafiz Abdul Ghaffar"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3230367056906"
         },
         {
           "field": "programMarks",
@@ -83178,11 +82663,6 @@
           "new": "Usama Majeed S/O MUHAMMAD ABDUL MAJEED"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3660110865283"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -84211,11 +83691,6 @@
           "new": "Aqsa Israr D/O Israr Ahmed"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310227752362"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -84975,11 +84450,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Maaz Qureshi S/O Mutti Ullah Qureshi"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3630261062275"
         },
         {
           "field": "programMarks",
@@ -86085,11 +85555,6 @@
           "new": "Muhammad Maaz Qamar S/O Muhammad Khursheed Qamar"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3220292961387"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -86728,11 +86193,6 @@
           "new": "Muhammad Zia Ur Rehman S/O Hafeez Ur Rehman"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3710509057363"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -87084,11 +86544,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Umar Farooq S/O Muhammad Akbar Ali"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3630256876603"
         },
         {
           "field": "applied_in",
@@ -87475,11 +86930,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Usama Munir S/O Munir Hussain"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3420103318957"
         },
         {
           "field": "programMarks",
@@ -89275,11 +88725,6 @@
           "new": "Maseera Naeem D/O Muhammad Naeem Ur Rashid"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3840358780148"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -90080,11 +89525,6 @@
         {
           "field": "nameFull",
           "old": "Tabish Atiq S/O Atiq ur Rehman",
-          "new": ""
-        },
-        {
-          "field": "cnic",
-          "old": "3410112641483",
           "new": ""
         },
         {
@@ -91304,11 +90744,6 @@
           "new": "Momna Maroof D/O Maroof Ahmed"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "8110203039864"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -91390,11 +90825,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Sadaf D/O Zulfiqar Ali"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3410222734054"
         },
         {
           "field": "programMarks",
@@ -91597,11 +91027,6 @@
         {
           "field": "nameFull",
           "old": "Ammar Noor S/O Mamoon Rashid",
-          "new": ""
-        },
-        {
-          "field": "cnic",
-          "old": "3520046676667",
           "new": ""
         },
         {
@@ -93263,11 +92688,6 @@
           "new": "Qasim Ali Khan S/O Safdar khan"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "4210159248211"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -93643,11 +93063,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Moiza Alam D/O Masood Alam"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3740636749824"
         },
         {
           "field": "programMarks",
@@ -95443,11 +94858,6 @@
           "new": "Muhammad Aurangzeb S/O Jamshed Jabbar"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3610467688715"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -96915,11 +96325,6 @@
           "new": "Muhammad Sajjad S/O Atta Muhammad"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3320264556473"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -97276,11 +96681,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Zarkish Javaid D/O Muhammad Javaid Awan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520263064474"
         },
         {
           "field": "programMarks",
@@ -97876,11 +97276,6 @@
           "new": "Kazalbash Tahir S/O MUHAMMAD NAZIR TAHIR"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "8230205396945"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -97919,11 +97314,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Isha Anwar D/O ANWAR MEHMOOD"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3840244359934"
         },
         {
           "field": "programMarks",
@@ -100037,11 +99427,6 @@
           "field": "nameFull",
           "old": "",
           "new": "MUQARRAB BIN MUDASSAR S/O MUDASSAR IQBAL BHATTI"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3410243526455"
         },
         {
           "field": "programMarks",
@@ -105794,11 +105179,6 @@
           "new": "Rukhama Rauf D/O Abdul Rauf Bhutta"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3630253896942"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -106302,11 +105682,6 @@
           "new": "Muhammad Taha S/O Ali Hassan"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "7110503502893"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -106478,11 +105853,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Rabia Masood D/O MASOOD TARIQ"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "5440033110016"
         },
         {
           "field": "applied_in",
@@ -106694,11 +106064,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Shahzaib Siddique S/O Nadeem Siddique"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3130458936649"
         },
         {
           "field": "programMarks",
@@ -110159,11 +109524,6 @@
           "new": "Muhammad Hassan Laique S/O Muhammad Wasiq"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3120278593265"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -112985,11 +112345,6 @@
           "new": "Moazama Sohail D/O Sohail Amjad Mirza"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520201588010"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -113266,11 +112621,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Rimsha Kiran D/O Riaz Hussain Sabir"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3630489315992"
         },
         {
           "field": "programMarks",
@@ -114931,11 +114281,6 @@
           "new": "Hamid Zafar S/O ZAFAR ULLAH"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "8220176179457"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -115107,11 +114452,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Daniyal Ahmad Khan S/O sohail anwar khan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3810129505721"
         },
         {
           "field": "programMarks",
@@ -115415,11 +114755,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Ahmed Faheem S/O Ahmed Shamim Qureshi"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3420123926083"
         },
         {
           "field": "programMarks",
@@ -115835,11 +115170,6 @@
           "new": "Asma Imam D/O Imam Bakhsh"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "6110134545292"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -116011,11 +115341,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Usman S/O Shafqat ali"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3310015242223"
         },
         {
           "field": "applied_in",
@@ -118455,11 +117780,6 @@
           "new": "Maryam Sardar D/O Muhammad Sardar Hamdi"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3630228301358"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -118978,11 +118298,6 @@
           "new": "Kanwal Shabbir D/O SHABBIR KHAN"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3740553622222"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -119139,11 +118454,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Saba Shahbaz D/O Muhamad Shahbaz"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3130164232660"
         },
         {
           "field": "programMarks",
@@ -119467,11 +118777,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muater Fatima D/O Syed Ghulam Raza"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3210286794022"
         },
         {
           "field": "programMarks",
@@ -121488,11 +120793,6 @@
           "new": "Sarah Mansoor D/O Mansoor Ahmad Khan"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520258636936"
-        },
-        {
           "field": "degree",
           "old": 0.0,
           "new": 10.667143
@@ -121780,11 +121080,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Hafiza Khadija Hameed Khan D/O Shahid Mehmood Khan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520280314974"
         },
         {
           "field": "programMarks",
@@ -122963,11 +122258,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Usama Anwaar S/O Anwaar Khan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3330131358741"
         },
         {
           "field": "programMarks",
@@ -125956,11 +125246,6 @@
           "new": "Muhammad Soban Jaffar S/O Zulfiqar Ali"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3650253623321"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -125999,11 +125284,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Aqsa Tariq D/O Tariq Hameed Tahir"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3420105426034"
         },
         {
           "field": "programMarks",
@@ -127934,11 +127214,6 @@
           "new": "Adila Khaliq D/O Muhammad khaliq Minhas"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3430192952214"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -129594,11 +128869,6 @@
         {
           "field": "nameFull",
           "old": "Fareeha Sattar D/O Muhammad Abdul Sattar",
-          "new": ""
-        },
-        {
-          "field": "cnic",
-          "old": "3310059351794",
           "new": ""
         },
         {
@@ -131273,11 +130543,6 @@
           "new": "Muhammad Shoaz Anish S/O Muhammad Yasin"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310170704803"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -131749,11 +131014,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Ayesha Siddiqa D/O Haq Nawaz"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3230466369184"
         },
         {
           "field": "programMarks",
@@ -135004,11 +134264,6 @@
           "new": "Anoosha Rasool D/O Ghulam Rasool"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3110175700766"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -135185,11 +134440,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Zunaira Tahir D/O Muhammed tahir butt"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3410437437104"
         },
         {
           "field": "programMarks",
@@ -135603,11 +134853,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Usama S/O MUHAMMAD ARSHAD"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3440290702185"
         },
         {
           "field": "programMarks",
@@ -136768,11 +136013,6 @@
           "new": "Sumia Mahmood D/O Mahmood ul Hassan"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310276476012"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -137745,11 +136985,6 @@
           "new": "Khazra Noor D/O Muhammad Tariq"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3330352820448"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -137788,11 +137023,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Qazi Muhammad Hasaan S/O Qazi Ghulam Qadir"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3240230467109"
         },
         {
           "field": "programMarks",
@@ -139451,11 +138681,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Asrar Wali S/O Wali Muhammad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3310216119319"
         },
         {
           "field": "applied_in",
@@ -143227,11 +142452,6 @@
           "new": "Sumaira Younas D/O Muhammad Younas"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520213247578"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -146909,11 +146129,6 @@
           "new": "Mehroze Ishtiaq D/O Ishtiaq Ahmed Bajwa"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3450178896084"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -148570,11 +147785,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Hamza Naeem S/O Muhammad Naeem Akhtar"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3420105245895"
         },
         {
           "field": "programMarks",
@@ -150821,11 +150031,6 @@
           "new": "Adnan Anjum S/O Mukhtiar Ahmad"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3230424625253"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -152484,11 +151689,6 @@
           "new": "Muhammad Ahmed Abbasi S/O Mulazim Hussain Abbasi"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3130228163493"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -152902,11 +152102,6 @@
           "new": "Hania D/O Shafique"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310096391638"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -153155,11 +152350,6 @@
           "new": "Aqsa Hussain D/O Ghulam Hussain"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520255462784"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -153316,11 +152506,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Faisal Waseem S/O Muhammad Waseem"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3530279428233"
         },
         {
           "field": "programMarks",
@@ -153598,11 +152783,6 @@
         {
           "field": "nameFull",
           "old": "Urwa Eiman D/O Mumtaz ali",
-          "new": ""
-        },
-        {
-          "field": "cnic",
-          "old": "3610110627080",
           "new": ""
         },
         {
@@ -154049,11 +153229,6 @@
           "new": "Umer Bin Tariq S/O Tariq Mehmood"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "6110107048573"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -154180,11 +153355,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Hareem Ilyas D/O M. Ilyas Farooqi"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3510276375940"
         },
         {
           "field": "programMarks",
@@ -154388,11 +153558,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muntaha Javed D/O Muhammad Javed Iqbal Bajwa"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3840317765860"
         },
         {
           "field": "programMarks",
@@ -156053,11 +155218,6 @@
           "new": "Mohammadullah S/O Mohammad Wali"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "P03302825"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -156134,11 +155294,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Nimra Jamil D/O Jamil Ahmad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3310055335592"
         },
         {
           "field": "programMarks",
@@ -156702,11 +155857,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Fiza Mazhar Warrich D/O MAZHAR HUSSAIN"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3660329725578"
         },
         {
           "field": "programMarks",
@@ -158367,11 +157517,6 @@
           "new": "Zeeshan Munir S/O Munir Hussain"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3420234589065"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -158790,11 +157935,6 @@
           "new": "Laraib Arfan D/O Muhammad Arfan Gul"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3420199484146"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -158833,11 +157973,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Tayyaba Sajjad D/O SAJJAD AHMED QURESHI"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520211155618"
         },
         {
           "field": "programMarks",
@@ -160513,11 +159648,6 @@
           "new": "Sana Nazeer D/O NAZEER AHMAD QURESHI"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3220275838176"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -161288,11 +160418,6 @@
           "new": "Tehrim Sabir D/O Ghulam Sabir"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3660146914018"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -161479,11 +160604,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Rameesha Noor D/O Muhammad Noor-uz-Zaman"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3730178401764"
         },
         {
           "field": "programMarks",
@@ -161832,11 +160952,6 @@
           "new": "Ziaullah S/O Sher Afzal"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "P05000617"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -162003,11 +161118,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Mahnoor Shazeb Rathore D/O Shazeb Javaid Rathore"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3410187296138"
         },
         {
           "field": "programMarks",
@@ -164296,11 +163406,6 @@
           "new": "Usman Habib S/O Mudassar Habib"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3540470458861"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -165119,11 +164224,6 @@
           "new": "Ahsan Shoukat S/O Shoukat Ali"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520295178981"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -165525,11 +164625,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Zara Iqbal D/O Muhammad Iqbal Malik"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3210283797298"
         },
         {
           "field": "programMarks",
@@ -166739,11 +165834,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Amna Riaz D/O Riaz Ahmed"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3740557834108"
         },
         {
           "field": "programMarks",
@@ -168367,11 +167457,6 @@
           "new": "Bakhtawar Kousar D/O ABDUL SATTAR"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "8110296977484"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -168453,11 +167538,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Hasnain Qasmi S/O Ghulam Qasim"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3220399262983"
         },
         {
           "field": "programMarks",
@@ -170123,11 +169203,6 @@
           "new": "Fatima Zia D/O MUHAMMAD ZIA ULLAH"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3420190378864"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -170571,11 +169646,6 @@
           "new": "Usama Ayub S/O Muhammad ayub"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310044895287"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -170947,11 +170017,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Bilal S/O Ghulam Abass"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3820184596873"
         },
         {
           "field": "programMarks",
@@ -171644,11 +170709,6 @@
           "new": "Lasani Omar D/O OMAR HAYAT MALIK"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3630331944582"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -172050,11 +171110,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Aiza Ali D/O SAJID HUSSAIN"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3620110520454"
         },
         {
           "field": "programMarks",
@@ -172524,11 +171579,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Kashaf Qudoos D/O Muhammad Abdul Qudoos"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3410165501808"
         },
         {
           "field": "programMarks",
@@ -173202,11 +172252,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Sadeem Fatima D/O MUHAMMAD QADEER"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3310021961000"
         },
         {
           "field": "programMarks",
@@ -174738,11 +173783,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Hassan Ali Abbasi S/O Shaukat Ali"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "1310101976355"
         }
       ],
       "preferences": []
@@ -174756,11 +173796,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Farjad Saif S/O Saif Ur Rehman"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3630266000579"
         },
         {
           "field": "programMarks",
@@ -174949,11 +173984,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Gulshan Shahzadi D/O Maqsood Ahmed"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3330403335948"
         },
         {
           "field": "programMarks",
@@ -175367,11 +174397,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Ayesha Mehboob D/O Mehboob Ahmed Khan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520152057236"
         },
         {
           "field": "programMarks",
@@ -176130,11 +175155,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Tayyaba Hashmi D/O Muhammad Abdul Aziz Shah"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3320345072310"
         },
         {
           "field": "programMarks",
@@ -177928,11 +176948,6 @@
           "field": "nameFull",
           "old": "",
           "new": "UMAR FAROOQ  S/O SAFDAR ALI"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3540438617485"
         },
         {
           "field": "programMarks",
@@ -181611,11 +180626,6 @@
           "new": "Zainab Zubair D/O zubair iqbal"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3130381209872"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -184504,11 +183514,6 @@
           "new": "Syed Mustafa Azhar Bokhari S/O Syed Azhar Rasul Bokhari"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520205572037"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -186167,11 +185172,6 @@
           "new": "Sammar Jahan S/O Tahir Javed"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3130348985407"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -186861,11 +185861,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Abdullah Khan S/O Abdul Rehman khan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3230388478649"
         },
         {
           "field": "programMarks",
@@ -188774,11 +187769,6 @@
           "new": "Waqar Ahmad S/O Mohammad Bashir"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3840160801865"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -189711,11 +188701,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Rabia Shafqat D/O Shafqat Rasool"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3450278827082"
         },
         {
           "field": "programMarks",
@@ -191132,11 +190117,6 @@
           "new": "Tooba Arooj D/O Muhammad Ramzan"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3540313038686"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -192343,11 +191323,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Hadia Munir D/O MUNIR HUSSAIN"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3620117448642"
         },
         {
           "field": "programMarks",
@@ -195688,11 +194663,6 @@
           "new": "Uzma Sattar D/O Abdul Sattar"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310047508684"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -196449,11 +195419,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Iqra Akram D/O Muhammad Akram"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "6110125514008"
         },
         {
           "field": "programMarks",
@@ -197762,11 +196727,6 @@
           "new": "Iqra Rehman D/O Abdul Rehman"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3840236244822"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -198945,11 +197905,6 @@
           "new": "Ayesha Shafi D/O Liaqat Ali"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3240313479432"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -199361,11 +198316,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Hafiz Muhammad Umar Shahid S/O Shahid Siddique"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3420226027841"
         },
         {
           "field": "programMarks",
@@ -200037,11 +198987,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Maryam Bibi D/O Muhammad Aslam"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3460248865102"
         },
         {
           "field": "programMarks",
@@ -200800,11 +199745,6 @@
         {
           "field": "nameFull",
           "old": "Muhammad Nauman Zahid S/O ZAHID KARIM",
-          "new": ""
-        },
-        {
-          "field": "cnic",
-          "old": "3520232330755",
           "new": ""
         },
         {
@@ -202616,11 +201556,6 @@
           "new": "Shiza Arshad D/O Arshad Ali"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310075165188"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -202852,11 +201787,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Malik Muddsir Ghaffar S/O MALIK ABDUL GHAFFAR"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3240240425441"
         },
         {
           "field": "programMarks",
@@ -204712,11 +203642,6 @@
           "new": "Areej Nazir D/O Nazir Ahmed"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3530219322976"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -205505,11 +204430,6 @@
           "new": "Breera Aftab D/O CH Aftab Hussain"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3740516655868"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -205736,11 +204656,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Khadeeja Ejaz D/O Malik Ejaz Hussain"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3630257437706"
         },
         {
           "field": "programMarks",
@@ -206276,11 +205191,6 @@
           "new": "Fatima Sarwar D/O IJAZ AHMAD"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3540441088418"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -206574,11 +205484,6 @@
           "new": "Hamna Khalid D/O khalid nazir ch"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3650227075168"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -206830,11 +205735,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Tayyaba Bano D/O Ch Abdur razzaq"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3310514868972"
         }
       ],
       "preferences": []
@@ -206848,11 +205748,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Saira Afzal D/O MUHAMMAD AFZAL"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3530225759840"
         },
         {
           "field": "programMarks",
@@ -207527,11 +206422,6 @@
           "field": "nameFull",
           "old": "",
           "new": "HAMMAD RASHEED  S/O ABDUL RASHEED"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3810441989945"
         },
         {
           "field": "programMarks",
@@ -208325,11 +207215,6 @@
         {
           "field": "nameFull",
           "old": "Amina Ahmed D/O Rana Ahmed Sher",
-          "new": ""
-        },
-        {
-          "field": "cnic",
-          "old": "3840203147612",
           "new": ""
         },
         {
@@ -209134,11 +208019,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Salman Tariq S/O Muhammad Tariq"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3110376767273"
         },
         {
           "field": "programMarks",
@@ -209997,11 +208877,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Nudrat Batool D/O Muhammad Tariq"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3810251934926"
         },
         {
           "field": "programMarks",
@@ -211557,11 +210432,6 @@
           "new": "Fouzia Ameer D/O Ameer Muhammad"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3210293997124"
-        },
-        {
           "field": "degree",
           "old": 0.0,
           "new": 10.564286
@@ -211848,11 +210718,6 @@
         {
           "field": "nameFull",
           "old": "Hira Shan D/O Shan Ali",
-          "new": ""
-        },
-        {
-          "field": "cnic",
-          "old": "4230133765266",
           "new": ""
         },
         {
@@ -212614,11 +211479,6 @@
           "new": "Shawanah Imam D/O Imam Bakhsh"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "6110152248250"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -213047,11 +211907,6 @@
           "new": "Tabeer Zahra D/O Syed Abul Hasan"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3230399935440"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -213147,11 +212002,6 @@
         {
           "field": "nameFull",
           "old": "Kinza Maham D/O Basharat Ali",
-          "new": ""
-        },
-        {
-          "field": "cnic",
-          "old": "3110470274868",
           "new": ""
         },
         {
@@ -213911,11 +212761,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Mateen Arshad S/O Arshad Mehmood"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3840154538277"
         },
         {
           "field": "programMarks",
@@ -215358,11 +214203,6 @@
           "new": "Usman Ibrahim S/O Saleem Sarwar Chaudhary"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520242812661"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -216699,11 +215539,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Mamoona Kainat D/O Muhammad Siddiq"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3830351853278"
         },
         {
           "field": "programMarks",
@@ -218830,11 +217665,6 @@
           "new": "Zainab Idrees Ahmad D/O Idrees Ahmad"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "6110114522318"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -220798,11 +219628,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Haseeb Ur Rehman S/O Abdul khaliq"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3310411294891"
         },
         {
           "field": "programMarks",
@@ -227337,11 +226162,6 @@
           "new": "Kashuf Asim D/O Asim Khalid Bhalli"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3460342418154"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -228154,11 +226974,6 @@
           "new": "Hina Sajjad Butt D/O Muhammad sajjad butt"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520237599872"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -228197,11 +227012,6 @@
           "field": "nameFull",
           "old": "",
           "new": "AIMAN KABIR D/O KABIR AHMAD"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3450234855014"
         },
         {
           "field": "programMarks",
@@ -230248,11 +229058,6 @@
           "new": ""
         },
         {
-          "field": "cnic",
-          "old": "3510302299398",
-          "new": ""
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -230664,11 +229469,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muqaddas Shan Rao D/O Ali Shan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3510113377514"
         },
         {
           "field": "programMarks",
@@ -231186,11 +229986,6 @@
         {
           "field": "nameFull",
           "old": "Ahmad Haider Khan S/O Ghulam Haider Khan",
-          "new": ""
-        },
-        {
-          "field": "cnic",
-          "old": "3230325949185",
           "new": ""
         },
         {
@@ -233298,11 +232093,6 @@
           "new": ""
         },
         {
-          "field": "cnic",
-          "old": "3650169156623",
-          "new": ""
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 5.0,
@@ -233909,11 +232699,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Ayesha Abid D/O Muhammad Abid"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3740524941184"
         },
         {
           "field": "programMarks",
@@ -235990,11 +234775,6 @@
           "new": "Tahreem Fatima D/O AMEER HUSSAIN"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3210304342502"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -236826,11 +235606,6 @@
           "field": "nameFull",
           "old": "",
           "new": "M Usman Qayyum S/O ABDUL QAYYUM NAJEEB"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3220197085913"
         },
         {
           "field": "programMarks",
@@ -238491,11 +237266,6 @@
           "new": "Mubashra Noor D/O Tasadduq Hussain"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3630264858304"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -238892,11 +237662,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Rabeeah Arshad Malik D/O Muhammad Arshad Malik"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3230194292008"
         },
         {
           "field": "programMarks",
@@ -239660,11 +238425,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Tehreem Nisar D/O Nisar Ahmed Wahla"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3310006742642"
         },
         {
           "field": "programMarks",
@@ -241522,11 +240282,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Basit Waheed S/O Waheed Akhtar"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "1420141216893"
         }
       ],
       "preferences": []
@@ -242947,11 +241702,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Awais Rafique S/O Muhammad Rafique"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3320255009873"
         },
         {
           "field": "programMarks",
@@ -245048,11 +243798,6 @@
           "new": "Yahya Rehman S/O Saud ur Rehman Khan"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3230178267527"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -246735,11 +245480,6 @@
           "new": "Rahmanullah Danish S/O Atlas Khan"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "P00100926"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -247499,11 +246239,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Aashar Khalid S/O Muhammad Khalid"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3610151915181"
         },
         {
           "field": "programMarks",
@@ -249161,11 +247896,6 @@
         {
           "field": "nameFull",
           "old": "Hadia Akram D/O Rana Muhammad Akram Khan",
-          "new": ""
-        },
-        {
-          "field": "cnic",
-          "old": "3630251779032",
           "new": ""
         },
         {
@@ -251918,11 +250648,6 @@
           "new": "Yusra Iftikhar D/O Syed Iftikhar Hussain Shah"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3120279183132"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -252739,11 +251464,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Eman Ijaz D/O Ijaz Ahmed"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3460166480152"
         },
         {
           "field": "programMarks",
@@ -255575,11 +254295,6 @@
           "new": "Naima Sarwar D/O Muhammad Sarwar Khalid"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "6110165932904"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -255706,11 +254421,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Kashuf Riaz D/O Riaz Ul Nabi Chatha"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520272953228"
         },
         {
           "field": "programMarks",
@@ -257943,11 +256653,6 @@
           "new": "Rabia Faiz D/O Faiz Ahmed"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3460114951578"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -258359,11 +257064,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Hafiz Muhammad Ahmad Raza S/O Kashif Raza"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3240391400111"
         },
         {
           "field": "programMarks",
@@ -259916,11 +258616,6 @@
           "new": "Dhanak Marym D/O Arshad Hafeez Makhdoom"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3230461600616"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -260332,11 +259027,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Khushbakhat Ishaque D/O Muhammad Ishaque"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3410182591980"
         }
       ],
       "preferences": []
@@ -260350,11 +259040,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Mujeeb Ur Rehman S/O Abdul zahir"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "5440002047527"
         },
         {
           "field": "programMarks",
@@ -260468,11 +259153,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Anzar Usman S/O Akbar Ali"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3130367922897"
         },
         {
           "field": "programMarks",
@@ -263474,11 +262154,6 @@
           "new": "Fatima Aslam D/O Muhammad Aslam"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310224876710"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -264457,11 +263132,6 @@
           "new": "Qura Tul Ain Fatima D/O Muhammad Siddique Tahir"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "8120269864018"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -264558,11 +263228,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Syed Ahmad Nawaz Shah S/O Syed Muhammad Akbar Shah"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3620118993073"
         },
         {
           "field": "programMarks",
@@ -266575,11 +265240,6 @@
           "new": "Jamal Farooq S/O Attaullah nadeem"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520138937489"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -266978,11 +265638,6 @@
           "new": "Sameer Butt S/O Javed Aslam Butt"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520261084811"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -267139,11 +265794,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Umar S/O Muhammad Asghar"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3310002644637"
         },
         {
           "field": "programMarks",
@@ -267542,11 +266192,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Salman Sani S/O Muhammad Saeed"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3540122814725"
         },
         {
           "field": "programMarks",
@@ -268784,11 +267429,6 @@
           "new": "Rimsha Khalid D/O Sheikh Khalid Mehmood"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3610357808002"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -269457,11 +268097,6 @@
           "new": "Aqsa Rashid D/O Abd ul Rashid"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3330184431954"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -269603,11 +268238,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Ihtisham S/O Muhammad Suleman"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3410178291279"
         },
         {
           "field": "programMarks",
@@ -270848,11 +269478,6 @@
           "new": "Someya Harim Bhatti D/O Razzaque Hamza Bhatti"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "6110168969780"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -270964,11 +269589,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Imtiaz S/O Ghulam muhammad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "7110373117325"
         }
       ],
       "preferences": []
@@ -271035,11 +269655,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Aiman D/O Muhammad Sohail"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520125679976"
         },
         {
           "field": "programMarks",
@@ -271228,11 +269843,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Inzmam Ul Haq S/O ASHFAQ AHMAD"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3310404524527"
         },
         {
           "field": "programMarks",
@@ -273058,11 +271668,6 @@
           "new": "Haneen Bint Amir D/O Amir Rafi"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3740680955958"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -273281,11 +271886,6 @@
           "new": "FATIMA WAQAR D/O WAQAR HUSSAIN"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3740533308568"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -273487,11 +272087,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Hamza Khan S/O MUHAMMAD HAYAT KHAN"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3830280650995"
         },
         {
           "field": "programMarks",
@@ -274627,11 +273222,6 @@
           "new": "Haider Mumtaz Jafri S/O Zafar Ul Husnain Jafri"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3410443453843"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -274781,18 +273371,13 @@
     },
     {
       "applicantId": 38154,
-      "nameFull": "1610177411896 D/O Iftikhar Ali",
+      "nameFull": "D/O Iftikhar Ali",
       "status": "changed",
       "fields": [
         {
           "field": "nameFull",
           "old": "",
-          "new": "1610177411896 D/O Iftikhar Ali"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "1610177411896"
+          "new": "D/O Iftikhar Ali"
         }
       ],
       "preferences": []
@@ -274806,11 +273391,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muneeb Ahmad S/O Fazal Qadir"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "1560292468433"
         }
       ],
       "preferences": []
@@ -274824,11 +273404,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Sumavia Younis D/O Muhammad Younas"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520245449040"
         },
         {
           "field": "programMarks",
@@ -275319,11 +273894,6 @@
           "new": "Laraib Hashmi D/O Muhammad Iqbal Asif"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "6110139316346"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -275450,11 +274020,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Hassan Rasheed S/O Abdul Rasheed"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520243832079"
         },
         {
           "field": "programMarks",
@@ -276575,11 +275140,6 @@
           "new": "Afifa Khaleeq Lodhi D/O Khaleeq Akbar Lodhi"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310270894768"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -276978,11 +275538,6 @@
           "new": "Harram Qayyum D/O ABDUL QAYYUM"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3110393679300"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -277304,11 +275859,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Ubaidullah S/O khalid mehmood"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3330159439113"
         },
         {
           "field": "programMarks",
@@ -280649,11 +279199,6 @@
           "new": "Roshan Hameed D/O muhammad hameed"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3460312380820"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -280945,11 +279490,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Test123 S/O 123"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "4321987654321"
         }
       ],
       "preferences": []
@@ -280963,11 +279503,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Nabeel Hassan S/O Abdul Rasheed"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3210222227413"
         },
         {
           "field": "programMarks",
@@ -281876,11 +280411,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Umar Farooq S/O Muhammad Qasim"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3230374261931"
         },
         {
           "field": "programMarks",
@@ -283783,11 +282313,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Wardah Iqbal D/O Muhammad Iqbal"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520207051294"
         }
       ],
       "preferences": []
@@ -283801,11 +282326,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Ramesh S/O Harji"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "4430267704341"
         }
       ],
       "preferences": []
@@ -283819,11 +282339,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Shahzaib Hussain S/O Ashiq Hussain"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3230387746949"
         }
       ],
       "preferences": []
@@ -283837,11 +282352,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Um E Hani Arshad D/O Chaudhary Muhammad Arshad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3630263149810"
         },
         {
           "field": "programMarks",
@@ -284257,11 +282767,6 @@
           "new": "NIDA ALTAF D/O ALTAF HUSSAIN"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310516889014"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -284628,11 +283133,6 @@
           "field": "nameFull",
           "old": "",
           "new": "MOHSIN ALI S/O KHAN SHAMEER"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3630277389141"
         },
         {
           "field": "programMarks",
@@ -285226,11 +283726,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Ali Raza Azam S/O Muhammad Azam"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3740665955767"
         }
       ],
       "preferences": []
@@ -285244,11 +283739,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Umer Ameer Paracha S/O MUHAMMAD AMEER JAVAID"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3830195935393"
         },
         {
           "field": "applied_in",
@@ -286397,11 +284887,6 @@
           "new": "Jaweria Tanvir D/O Tanvir Ahmad"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3540149844092"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -286611,7 +285096,7 @@
     },
     {
       "applicantId": 38297,
-      "nameFull": "36104-7610304-9 S/O Amanullah Khan Ghazi",
+      "nameFull": "S/O Amanullah Khan Ghazi",
       "status": "changed",
       "fields": [],
       "preferences": [
@@ -286745,11 +285230,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Amara Zaheer D/O Muhammad Zaheer Ahmad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3660327933334"
         },
         {
           "field": "programMarks",
@@ -288413,11 +286893,6 @@
           "new": "Ayesha Tariq D/O Tariq Tanveer"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3410195468336"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -290021,11 +288496,6 @@
           "new": "Muhammad Yasir Rafiq S/O RAFIQ AHMAD"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3230376370949"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -291609,11 +290079,6 @@
           "new": "Hassan Nawaz S/O Muhammad Nawaz"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3230383897585"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -291860,11 +290325,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Nabeela Rauf D/O Abdul Rauf"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3530171608142"
         },
         {
           "field": "programMarks",
@@ -292428,11 +290888,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Sumera Quyyum D/O Abdul Quyyum"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3130389250458"
         },
         {
           "field": "programMarks",
@@ -293247,11 +291702,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Ahmad Sarwar S/O Muhammad Sarwar"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3450233474815"
         },
         {
           "field": "applied_in",
@@ -294430,11 +292880,6 @@
           "new": "Aqsa Ali D/O Muhammad Ali"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3230461122946"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -295292,11 +293737,6 @@
           "new": "Nimra Ali D/O Akhter ali"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3610457711698"
-        },
-        {
           "field": "applied_in",
           "old": {
             "FCPS": false,
@@ -295543,11 +293983,6 @@
           "new": "Danish S/O bheru"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "4430319902625"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -295659,11 +294094,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Ibtaha Rizwan D/O Shaukat Rizwan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3820190182448"
         },
         {
           "field": "programMarks",
@@ -296417,11 +294847,6 @@
           "new": "Samia Mehmood D/O Talat Mehmood"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3660102863892"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -296668,11 +295093,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Syed Ahmad Raza S/O Syed Muhammad Saqlain Naqvi"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3630249105961"
         },
         {
           "field": "programMarks",
@@ -297718,11 +296138,6 @@
           "new": "Ayesha Sardar D/O Muhammad Sardar"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310067005132"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -298211,11 +296626,6 @@
           "new": "Maria Zainab D/O Muhammad Ramzan khan"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3210248141348"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -298627,11 +297037,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Daniyal Siddique S/O Mushtaq Hussain"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3740519053571"
         },
         {
           "field": "programMarks",
@@ -300470,11 +298875,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Nida Sagheer D/O Muhammad Sagheer"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3740197235330"
         },
         {
           "field": "programMarks",
@@ -303368,11 +301768,6 @@
           "new": "Nouman Raza S/O Muhammad Ayoub"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3460179687521"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -304852,11 +303247,6 @@
           "new": "Maryam Attique D/O Attiq Ur Rehman"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3130329435118"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -305072,11 +303462,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Mnahil Asim D/O Asim Farooq"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3610474362126"
         },
         {
           "field": "programMarks",
@@ -306228,11 +304613,6 @@
           "new": "Rimsha Shahid D/O Shahid Zaman"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3220207484314"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -306791,11 +305171,6 @@
           "new": "Ayesha Arshad D/O ARSHAD ASHFAQ HUSSAIN"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3610369555142"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -307117,11 +305492,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Abrar S/O Salahuddin Sindhu"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3650114085013"
         },
         {
           "field": "programMarks",
@@ -308120,11 +306490,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Humaira Yousaf D/O Muhammad Yousaf"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520257020592"
         }
       ],
       "preferences": []
@@ -308351,11 +306716,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Humna Farooq D/O Muhammad Farooq Arshad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3130113492752"
         },
         {
           "field": "programMarks",
@@ -308890,11 +307250,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Maira Akram D/O M Akram"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3660120231554"
         },
         {
           "field": "programMarks",
@@ -310673,11 +309028,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Ahmad Rafiq S/O Muhammad Rafiq"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3330148386631"
         },
         {
           "field": "programMarks",
@@ -313538,11 +311888,6 @@
           "new": "Abdul Rehman S/O Muhammad Yousaf Duggal"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3220262974697"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -315411,11 +313756,6 @@
           "new": "Aleeza Aslam D/O Muhammad Aslam"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3840248364092"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -316108,11 +314448,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Muaaz Bin Naeem S/O Naeem Akhtar"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3540375491363"
         },
         {
           "field": "programMarks",
@@ -318173,11 +316508,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Danish Ali S/O PERVAIZ AKHTAR"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3420188617287"
         }
       ],
       "preferences": []
@@ -318191,11 +316521,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Sidra Ismail D/O Muhammad Ismail"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3230443783144"
         },
         {
           "field": "programMarks",
@@ -318609,11 +316934,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Amina Fatima D/O Azhar Hussain"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520192265832"
         },
         {
           "field": "programMarks",
@@ -319410,11 +317730,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Faiz Kareem Khan S/O Niaz Ahmad Khan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3230407495507"
         },
         {
           "field": "programMarks",
@@ -320288,11 +318603,6 @@
           "new": "Fiza Shahbaz D/O Muhammad Shahbaz"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520284313190"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -320704,11 +319014,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Aina D/O Shoukat Ali"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3510319165220"
         },
         {
           "field": "programMarks",
@@ -321376,11 +319681,6 @@
           "new": "Hafiza Farah Zujaja D/O Muhammad Naveed Aslam"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310240822658"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -321597,11 +319897,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Shumaila Sarfraz D/O Muhammad Sarfraz"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3820184133826"
         },
         {
           "field": "programMarks",
@@ -322015,11 +320310,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Rabbia Shahzad D/O Shahzad Allah Wasaya"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3540146775936"
         },
         {
           "field": "programMarks",
@@ -322598,11 +320888,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Amber Batool D/O Tasawar Hussain Khan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3320282489880"
         },
         {
           "field": "programMarks",
@@ -324973,11 +323258,6 @@
           "new": "Sadia Shafiq D/O Muhammad Shafiq"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3610287571564"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -325736,11 +324016,6 @@
           "new": "Noor E Fatima D/O Ali Kashif"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3740562391188"
-        },
-        {
           "field": "applied_in",
           "old": {
             "FCPS": false,
@@ -325910,11 +324185,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Layba Jannat D/O Chaudhary Atta Muhaamad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3420153643918"
         },
         {
           "field": "programMarks",
@@ -326238,11 +324508,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Shahid Rasheed S/O Rasheed Ahmed"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "4240196824653"
         }
       ],
       "preferences": []
@@ -326256,11 +324521,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Sikandar Rafique S/O Muhammad Rafique"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3330291733593"
         },
         {
           "field": "programMarks",
@@ -328694,11 +326954,6 @@
           "new": "Minahal Sabir D/O Sabir Hussain Malik"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3720270310240"
-        },
-        {
           "field": "applied_in",
           "old": {
             "FCPS": false,
@@ -328915,11 +327170,6 @@
           "new": "Numera Malik D/O MALIK SHAHZAD MEHMOOD"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3460406311790"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -329106,11 +327356,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Noman Khan S/O Muhammad Amjad Khan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3450255303243"
         },
         {
           "field": "programMarks",
@@ -331107,11 +329352,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Syed Danish Ali Shah S/O Syed Sakhawat Hussain Shah"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3210254362311"
         },
         {
           "field": "programMarks",
@@ -335876,11 +334116,6 @@
           "new": "Maryam Zaheer D/O Mohammad Faisal Zaheer"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520111957312"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -336060,11 +334295,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Fatima Naeem D/O Muhammad Naeem"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3310099829982"
         },
         {
           "field": "programMarks",
@@ -337230,11 +335460,6 @@
           "new": "Shanza Munawar D/O Munawar hussain"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3430186643908"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -337586,11 +335811,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Mohammad Abdullah Amjad S/O AMJAD ALI KHAN"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "1730136122807"
         }
       ],
       "preferences": []
@@ -340167,11 +338387,6 @@
           "new": "Misbah Siddique D/O Muhammad Siddique"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310218604814"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -342545,11 +340760,6 @@
           "new": "Misbah Muneer D/O Muhammad Muneer"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3660247809176"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -343443,11 +341653,6 @@
           "new": "Maryam Afzal D/O Muhammad Afzal"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3310010752964"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -343942,11 +342147,6 @@
           "new": "Saad Nisar S/O Nisar Ahmed"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3420206172957"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -344138,11 +342338,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Abrar Ahmad Chattha S/O Afzaal Ahmad Chattha"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3410447264391"
         },
         {
           "field": "programMarks",
@@ -344738,11 +342933,6 @@
           "new": "Muhammad Hassan Bajwa S/O Amjad Ali Bajwa"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3520232868179"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -344951,11 +343141,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Nabila Awan D/O Ghulam Abbas Awan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3460328476486"
         },
         {
           "field": "programMarks",
@@ -345759,11 +343944,6 @@
           "new": ""
         },
         {
-          "field": "cnic",
-          "old": "3630242369370",
-          "new": ""
-        },
-        {
           "field": "degree",
           "old": 13.161429,
           "new": 0.0
@@ -346098,11 +344278,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Samia Munir Madni D/O Muhammad Munir Qureshi Madni"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3630256775256"
         },
         {
           "field": "programMarks",
@@ -346516,11 +344691,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Gulshan Munir D/O Munir Ahmad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3620370575060"
         },
         {
           "field": "programMarks",
@@ -348314,11 +346484,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Asifa Ismail D/O Muhammad Ismail"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "8220391565048"
         }
       ],
       "preferences": []
@@ -348984,11 +347149,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Fasiha Ishfaq D/O Muhammad Ishfaque"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3610337711082"
         },
         {
           "field": "applied_in",
@@ -349867,11 +348027,6 @@
           "new": ""
         },
         {
-          "field": "cnic",
-          "old": "3320189766971",
-          "new": ""
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 4.0,
@@ -350645,11 +348800,6 @@
           "new": "Noor Fatima Choudhry D/O Muhammad Sajjad Sabir"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3740583880782"
-        },
-        {
           "field": "degree",
           "old": 0.0,
           "new": 10.942105
@@ -350712,11 +348862,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Kamran S/O Iqrar E Noor"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3310409102439"
         },
         {
           "field": "programMarks",
@@ -350830,11 +348975,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Sunaina Tariq D/O muhammad tariq irshad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3310103535138"
         }
       ],
       "preferences": []
@@ -350904,11 +349044,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Ayesha Rafiq D/O Muhammad Rafique"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3740553576830"
         }
       ],
       "preferences": []
@@ -350922,11 +349057,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Ahmar Farooq S/O M. FAROOQ MALIK"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3630218810271"
         },
         {
           "field": "programMarks",
@@ -351568,11 +349698,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Yadullah S/O Muhammad Hussain"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "7130182458153"
         }
       ],
       "preferences": []
@@ -351586,11 +349711,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Umair Nawaz Khan S/O Sajid Nawaz Khan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "8120391792617"
         }
       ],
       "preferences": []
@@ -351604,11 +349724,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Salman Haider Jaffary S/O javed akhtar jaffary"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3420176195929"
         }
       ],
       "preferences": []
@@ -351622,11 +349737,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Uswa Ehsan D/O Ehsan Elahi Khokhar"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3520295898228"
         },
         {
           "field": "programMarks",
@@ -351860,11 +349970,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Hamza Tanveer S/O Tanveer Ahmed Majeed"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3420118508491"
         },
         {
           "field": "programMarks",
@@ -352295,11 +350400,6 @@
           "new": ""
         },
         {
-          "field": "cnic",
-          "old": "9040301357986",
-          "new": ""
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 5.0,
@@ -352327,11 +350427,6 @@
         {
           "field": "nameFull",
           "old": "Sohail Abbas S/O IMAM BAKHSH",
-          "new": ""
-        },
-        {
-          "field": "cnic",
-          "old": "3810143176123",
           "new": ""
         },
         {
@@ -353693,11 +351788,6 @@
           "new": "Wasim Ullah S/O Ayub Rahmen"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "2150593378491"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -353869,11 +351959,6 @@
           "field": "nameFull",
           "old": "",
           "new": "MAIRAH  D/O AHSAN"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3420293569664"
         },
         {
           "field": "programMarks",
@@ -354289,11 +352374,6 @@
           "new": "Abdulraziq Ziar S/O Mohammad Akbar"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "P09752259"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -354395,11 +352475,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Shah Zaib Khan S/O Javaid iqbal khan"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3450214337295"
         },
         {
           "field": "programMarks",
@@ -355068,11 +353143,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Sahar Mirza D/O Manzoor Ahmad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "6110118572228"
         }
       ],
       "preferences": []
@@ -355086,11 +353156,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Nadeem Aslam S/O MUHAMMAD ASLAM"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3530239520897"
         },
         {
           "field": "programMarks",
@@ -355741,11 +353806,6 @@
           "new": "Ayesha Malik D/O Rafiq Ahmad"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3630476284338"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -356106,11 +354166,6 @@
           "new": "Hamza Khan S/O Jamshed Khan"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "6110179592029"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -356239,11 +354294,6 @@
           "new": "Shafiq Ur Rehman S/O Ghulam Qadir Khan"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "1220187730507"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -356325,11 +354375,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Arif Ali S/O Bahadur Baig"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "7140303483939"
         }
       ],
       "preferences": []
@@ -356460,11 +354505,6 @@
         {
           "field": "nameFull",
           "old": "Nawal Noor D/O Muhammad Asghar",
-          "new": ""
-        },
-        {
-          "field": "cnic",
-          "old": "3520235942574",
           "new": ""
         },
         {
@@ -356881,11 +354921,6 @@
           "new": ""
         },
         {
-          "field": "cnic",
-          "old": "3130115009676",
-          "new": ""
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -357297,11 +355332,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Uswa Niaz D/O Jam Niaz Ahmad"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3320325123822"
         },
         {
           "field": "degree",
@@ -358508,11 +356538,6 @@
           "new": "Iqra Jabeen D/O Ahmad Khan"
         },
         {
-          "field": "cnic",
-          "old": "",
-          "new": "3320242778980"
-        },
-        {
           "field": "programMarks",
           "old": {
             "FCPS": 0.0,
@@ -359040,11 +357065,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Hiba Usman D/O Shahid Usman"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3610355280374"
         },
         {
           "field": "applied_in",
@@ -360141,11 +358161,6 @@
           "field": "nameFull",
           "old": "",
           "new": "Muhammad Nawfal Sahi S/O Jahanzeb Sahi"
-        },
-        {
-          "field": "cnic",
-          "old": "",
-          "new": "3410417871377"
         },
         {
           "field": "degree",
