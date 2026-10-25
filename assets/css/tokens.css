@@ -1,0 +1,80 @@
+/*
+ * MeritNama design tokens — v1
+ *
+ * Canonical copy lives here (public site). The private application keeps a
+ * byte-identical copy at src/styles/tokens.css. If you change one, change the
+ * other; see docs/DESIGN_SYSTEM.md. No build step, no cross-repo package.
+ */
+:root {
+  /* Surfaces */
+  --mn-navy-950: #07111f;   /* page background */
+  --mn-navy-900: #0e1b2c;   /* main surface */
+  --mn-navy-800: #14253a;   /* elevated surface */
+  --mn-navy-700: #1b3049;   /* hover / pressed surface */
+  --mn-border: #26394e;
+  --mn-border-strong: #35506b;
+
+  /* Text */
+  --mn-text: #f2f6fc;
+  --mn-text-muted: #a8b8ca;
+  --mn-text-subtle: #7d90a6;   /* AA on navy-950 for >=14px; avoid for body copy */
+
+  /* Signal */
+  --mn-cyan: #42d6d0;          /* primary action, selection, active nav */
+  --mn-cyan-strong: #6be3de;   /* hover */
+  --mn-cyan-ink: #04201f;      /* text on cyan */
+  --mn-cyan-soft: rgba(66, 214, 208, 0.12);
+  --mn-amber: #e8b878;         /* warnings, sparing distinctions */
+  --mn-amber-soft: rgba(232, 184, 120, 0.12);
+  --mn-danger: #f0767a;
+  --mn-success: #5fd39a;
+
+  /* Glass (used over imagery only) */
+  --mn-glass: rgba(14, 27, 44, 0.62);
+  --mn-glass-border: rgba(168, 184, 202, 0.18);
+
+  /* Typography */
+  --mn-font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mn-font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --mn-text-xs: 0.75rem;
+  --mn-text-sm: 0.875rem;
+  --mn-text-md: 1rem;
+  --mn-text-lg: 1.125rem;
+  --mn-text-xl: 1.375rem;
+  --mn-text-2xl: 1.75rem;
+  --mn-text-3xl: clamp(1.9rem, 3.4vw, 2.6rem);
+  --mn-text-display: clamp(2.6rem, 6.4vw, 5rem);
+
+  /* Spacing (4px scale) */
+  --mn-space-1: 4px;
+  --mn-space-2: 8px;
+  --mn-space-3: 12px;
+  --mn-space-4: 16px;
+  --mn-space-5: 24px;
+  --mn-space-6: 32px;
+  --mn-space-7: 48px;
+  --mn-space-8: 64px;
+  --mn-space-9: 96px;
+
+  /* Radii */
+  --mn-radius-sm: 6px;
+  --mn-radius-md: 10px;
+  --mn-radius-lg: 14px;
+  --mn-radius-xl: 20px;   /* panels and metric cards */
+  --mn-radius-pill: 999px;
+
+  /* Elevation */
+  --mn-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --mn-shadow-2: 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+
+  /* Focus */
+  --mn-focus-ring: 0 0 0 2px var(--mn-navy-950), 0 0 0 4px var(--mn-cyan);
+
+  /* Motion */
+  --mn-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --mn-duration: 160ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --mn-duration: 0ms; }
+}

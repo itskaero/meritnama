@@ -3,805 +3,389 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MeritNama — Residency Induction Analytics</title>
+<title>MeritNama — Postgraduate Induction Insights for Medical Trainees</title>
+<meta name="description" content="Independent analysis of Punjab postgraduate medical induction: historical merit and cutoffs, seat competition, preference planning and induction simulation. Not an official admissions authority.">
+<meta name="theme-color" content="#07111f">
+<link rel="canonical" href="https://itskaero.github.io/meritnama/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="MeritNama — Understand your merit. Make your next move.">
+<meta property="og:description" content="Independent merit trends, seat competition and induction planning tools for Pakistani medical trainees.">
+<meta property="og:url" content="https://itskaero.github.io/meritnama/">
+<meta property="og:image" content="https://itskaero.github.io/meritnama/assets/images/meritnama-hero.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="preload" as="image" href="assets/images/meritnama-hero.webp" type="image/webp" media="(min-width: 761px)">
+<link rel="preload" as="image" href="assets/images/meritnama-hero-960.webp" type="image/webp" media="(max-width: 760px)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-<style>
-*{ margin:0; padding:0; box-sizing:border-box; }
-:root{
-  --ink:#050914;
-  --mint:#3ecf8e;
-  --paper:#e5e8ee;
-  --muted:#8992a6;
-  --cyan:#4db8d9;
-}
-html, body{ height:100%; }
-body{
-  background:#04060c;
-  font-family:'IBM Plex Sans', sans-serif;
-  color:var(--paper);
-  overflow-x:hidden;
-}
-::selection{ background:var(--mint); color:var(--ink); }
-
-.hero{
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  padding:40px 24px;
-  position:relative;
-  overflow:hidden;
-}
-.hero-bg{ position:absolute; inset:0; z-index:0; overflow:hidden; }
-.hero-bg video, .hero-bg canvas{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
-.hero-bg video{ object-fit:cover; }
-.hero-bg canvas{ display:none; }
-.hero.canvas-mode .hero-bg canvas{ display:block; }
-.hero.canvas-mode .hero-bg video{ display:none; }
-.hero.video-mode .hero-bg video{ display:block; }
-.hero.video-mode .hero-bg canvas{ display:none; }
-.hero-overlay{
-  position:absolute; inset:0; z-index:1;
-  background:linear-gradient(180deg, rgba(4,6,12,.75) 0%, rgba(4,6,12,.35) 45%, rgba(4,6,12,.35) 55%, rgba(4,6,12,.85) 100%);
-}
-.hero-bg video, .hero-bg canvas{ z-index:0; }
-.hero-content{ position:relative; z-index:1; }
-
-.hero-logo{
-  width:480px;
-  max-width:85vw;
-  margin-bottom:40px;
-  filter:drop-shadow(0 0 40px rgba(62,207,142,.1));
-}
-.hero h1{
-  font-family:'Space Grotesk', sans-serif;
-  font-size:clamp(1.8rem,4.5vw,3.6rem);
-  font-weight:700;
-  line-height:1.1;
-  margin-bottom:16px;
-}
-.hero h1 .grad{
-  background:linear-gradient(135deg, var(--mint), var(--cyan));
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  background-clip:text;
-}
-.hero p{
-  font-size:clamp(1rem,1.8vw,1.2rem);
-  color:var(--muted);
-  max-width:520px;
-  margin:0 auto 40px;
-  line-height:1.7;
-}
-.hero-actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:14px;
-  justify-content:center;
-}
-.btn{
-  display:inline-flex; align-items:center; gap:10px;
-  padding:16px 36px; border-radius:12px;
-  font-family:'IBM Plex Mono', monospace;
-  font-size:13px; font-weight:600; letter-spacing:.5px;
-  text-decoration:none; transition:all .25s;
-}
-.btn-primary{
-  background:linear-gradient(135deg, var(--mint), #1ecb84);
-  color:var(--ink);
-  box-shadow:0 0 18px rgba(62,207,142,.18), 0 4px 16px rgba(0,0,0,.28);
-}
-.btn-primary:hover{
-  transform:translateY(-2px);
-  box-shadow:0 0 26px rgba(62,207,142,.25), 0 6px 20px rgba(0,0,0,.32);
-}
-.btn-ghost{
-  background:rgba(255,255,255,.06);
-  color:var(--paper);
-  border:1px solid rgba(255,255,255,.15);
-  backdrop-filter:blur(6px);
-}
-.btn-ghost:hover{
-  background:rgba(255,255,255,.1);
-  border-color:rgba(255,255,255,.25);
-  transform:translateY(-3px);
-}
-
-.hero-stats{
-  display:flex;
-  gap:24px;
-  margin-top:36px;
-  justify-content:center;
-}
-.hero-stat{ text-align:center; flex:1; min-width:0; }
-.hero-stat-inner{
-  display:flex; flex-direction:column; align-items:center; gap:2px;
-  padding:12px 14px; border-radius:12px;
-  background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.04);
-  backdrop-filter:blur(8px);
-}
-.hero-stat .num{
-  font-family:'Space Grotesk', sans-serif;
-  font-size:2.2rem; font-weight:700;
-  color:var(--mint); line-height:1;
-}
-.hero-stat .lab{
-  font-family:'IBM Plex Mono', monospace;
-  font-size:11px; letter-spacing:1.5px;
-  color:var(--muted); text-transform:uppercase;
-  margin-top:6px;
-}
-
-/* Mode toggles */
-.canvas-only { display: revert; }
-.video-only { display: none !important; }
-.hero.video-mode .canvas-only { display: none !important; }
-.hero.video-mode .video-only { display: flex !important; }
-.hero.canvas-mode .video-only { display: none !important; }
-
-.sound-toggle{
-  position:absolute; bottom:36px; right:36px; z-index:2;
-  width:44px; height:44px; border-radius:50%;
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1);
-  color:var(--paper); font-size:1.15rem;
-  align-items:center; justify-content:center;
-  cursor:pointer; backdrop-filter:blur(6px);
-  transition:all .2s;
-}
-.sound-toggle:hover{ background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.18); }
-
-.logout-btn{
-  position:fixed; top:20px; right:20px; z-index:100;
-  padding:8px 18px; border:1px solid rgba(224,84,112,.3);
-  border-radius:8px; background:rgba(224,84,112,.06);
-  color:#e05470; font-size:13px; font-weight:600;
-  font-family:'IBM Plex Mono',monospace;
-  cursor:pointer; backdrop-filter:blur(6px);
-  transition:all .2s; display:none;
-}
-.logout-btn:hover{
-  background:rgba(224,84,112,.14);
-  border-color:#e05470;
-  box-shadow:0 0 14px rgba(224,84,112,.22);
-  transform:translateY(-1px);
-}
-
-.hero.video-mode .hero-actions { margin-top: 40vh; }
-
-.scroll-hint{
-  position:absolute; bottom:36px; left:50%;
-  transform:translateX(-50%); z-index:1;
-  display:flex; flex-direction:column; align-items:center; gap:6px;
-  color:var(--muted); font-family:'IBM Plex Mono', monospace;
-  font-size:10px; letter-spacing:2px; text-transform:uppercase;
-  opacity:.35; animation:bounce 2.4s ease-in-out infinite;
-}
-.scroll-hint::after{
-  content:''; width:1px; height:24px;
-  background:linear-gradient(var(--muted), transparent);
-}
-@keyframes bounce{
-  0%,100%{ transform:translateX(-50%) translateY(0); }
-  50%{ transform:translateX(-50%) translateY(8px); }
-}
-
-.drawer-trigger{
-  position:absolute; bottom:90px; left:50%;
-  transform:translateX(-50%); z-index:1;
-  background:none; border:none;
-  color:var(--muted); font-family:'IBM Plex Mono', monospace;
-  font-size:11px; letter-spacing:1.5px;
-  cursor:pointer; padding:8px 20px; border-radius:8px;
-  transition:color .2s;
-}
-.drawer-trigger:hover{ color:var(--mint); }
-
-.drawer{
-  position:fixed; bottom:0; left:0; right:0; z-index:10;
-  background:rgba(4,6,12,.92); backdrop-filter:blur(20px);
-  border-top:1px solid rgba(255,255,255,.05);
-  padding:40px 24px 32px;
-  transform:translateY(100%);
-  transition:transform .4s cubic-bezier(.22,1,.36,1);
-}
-.drawer.open{ transform:translateY(0); }
-.drawer-inner{
-  max-width:960px; margin:0 auto;
-  display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-  gap:16px;
-}
-.drawer-item{
-  display:flex; align-items:center; gap:14px;
-  padding:18px 20px;
-  background:rgba(255,255,255,.02);
-  border:1px solid rgba(255,255,255,.04);
-  border-radius:12px; text-decoration:none;
-  color:var(--paper); transition:all .2s;
-}
-.drawer-item:hover{
-  background:rgba(255,255,255,.05);
-  border-color:rgba(62,207,142,.15);
-  transform:translateY(-2px);
-}
-.drawer-item .icon{ font-size:1.4rem; flex-shrink:0; }
-.drawer-item h4{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:.9rem; }
-.drawer-item p{ color:var(--muted); font-size:.78rem; margin-top:2px; }
-.drawer-close{
-  position:absolute; top:12px; right:16px;
-  background:none; border:none;
-  color:var(--muted); font-size:1.4rem;
-  cursor:pointer; padding:4px 8px; border-radius:6px;
-  transition:color .2s;
-}
-.drawer-close:hover{ color:var(--paper); }
-
-/* Footer moved out of the hero and into normal document flow —
-   see .site-footer below (was previously position:absolute, which
-   only worked when the hero was the entire page). */
-
-@media(max-width:640px){
-  .hero-stats{ gap:10px; margin-top:28px; }
-  .hero-stat-inner{ padding:10px 10px; }
-  .hero-stat .num{ font-size:1.45rem; }
-  .hero-logo{ width:320px; }
-  .drawer-inner{ grid-template-columns:1fr; }
-  .scroll-hint, .sound-toggle{ display:none; }
-  .drawer-trigger{ bottom:72px; }
-}
-@media(max-width:380px){
-  .hero-stats{ gap:6px; margin-top:22px; }
-  .hero-stat-inner{ padding:8px 6px; }
-  .hero-stat .num{ font-size:1.15rem; }
-  .hero-stat .lab{ font-size:9px; letter-spacing:1px; }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   Below-the-fold sections — how it works / what's inside / trust / CTA
-   ═══════════════════════════════════════════════════════════════ */
-.lp-section{ max-width:1080px; margin:0 auto; padding:96px 24px; }
-.lp-section-head{ text-align:center; max-width:640px; margin:0 auto 48px; }
-.lp-kicker{
-  display:inline-block; font-family:'IBM Plex Mono', monospace;
-  font-size:11px; letter-spacing:2px; text-transform:uppercase;
-  color:var(--mint); margin-bottom:14px;
-}
-.lp-section-head h2{
-  font-family:'Space Grotesk', sans-serif; font-weight:700;
-  font-size:clamp(1.5rem,3vw,2.1rem); line-height:1.25;
-}
-
-.lp-steps{ display:grid; grid-template-columns:repeat(3,1fr); gap:28px; }
-.lp-step{
-  padding:28px 24px; border-radius:16px;
-  background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.06);
-}
-.lp-step-num{
-  font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:1.6rem;
-  background:linear-gradient(135deg, var(--mint), var(--cyan));
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-  margin-bottom:12px;
-}
-.lp-step h3{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:1.05rem; margin-bottom:8px; }
-.lp-step p{ color:var(--muted); font-size:.9rem; line-height:1.6; }
-
-.lp-feature-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
-.lp-feature-card{
-  display:block; padding:26px 22px; border-radius:16px; text-decoration:none; color:var(--paper);
-  background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.06);
-  transition:all .2s;
-}
-.lp-feature-card:hover{
-  background:rgba(255,255,255,.04); border-color:rgba(62,207,142,.2); transform:translateY(-3px);
-}
-.lp-feature-icon{ font-size:1.7rem; display:block; margin-bottom:14px; }
-.lp-feature-card h3{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:1rem; margin-bottom:6px; }
-.lp-feature-card p{ color:var(--muted); font-size:.85rem; line-height:1.55; }
-
-.lp-trust{ background:rgba(255,255,255,.015); border-top:1px solid rgba(255,255,255,.05); border-bottom:1px solid rgba(255,255,255,.05); }
-.lp-trust-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:28px; margin-top:8px; }
-.lp-trust-item h4{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:.95rem; margin-bottom:8px; color:var(--mint); }
-.lp-trust-item p{ color:var(--muted); font-size:.86rem; line-height:1.6; }
-
-.lp-cta{ text-align:center; padding:100px 24px 120px; }
-.lp-cta h2{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:clamp(1.6rem,3.4vw,2.3rem); margin-bottom:12px; }
-.lp-cta p{ color:var(--muted); margin-bottom:32px; }
-
-.site-footer{
-  border-top:1px solid rgba(255,255,255,.05);
-  text-align:center; padding:28px 24px;
-  color:rgba(124,144,172,.5); font-size:12px; line-height:2;
-}
-.site-footer a{ color:rgba(124,144,172,.7); text-decoration:none; }
-.site-footer a:hover{ color:var(--mint); }
-.site-footer .foot-sep{ margin:0 8px; opacity:.4; }
-
-@media(max-width:800px){
-  .lp-steps{ grid-template-columns:1fr; }
-  .lp-section{ padding:64px 24px; }
-}
-/* ═══════════════════════════════════════════════════════════════
-   Sibling product band — medNAMA
-   Same skeleton as the rest of this page, medNAMA's accent (peach +
-   rose) instead of mint, so it reads as family rather than as an ad.
-   ═══════════════════════════════════════════════════════════════ */
-.lp-sibling{
-  --peach:#ebd5be; --rose:#d39794;
-  position:relative; overflow:hidden;
-  border-top:1px solid rgba(255,255,255,.05);
-  border-bottom:1px solid rgba(255,255,255,.05);
-}
-.lp-sibling-glow{
-  position:absolute; left:50%; top:-55%;
-  width:min(920px,130vw); aspect-ratio:1; transform:translateX(-50%);
-  border-radius:50%; pointer-events:none;
-  background:radial-gradient(closest-side, rgba(211,151,148,.20), transparent 72%);
-}
-.lp-sibling-inner{
-  position:relative; max-width:1080px; margin:0 auto;
-  padding:96px 24px;
-  display:grid; grid-template-columns:1.05fr .95fr;
-  gap:clamp(32px,5vw,60px); align-items:center;
-}
-.lp-sibling-kicker{
-  display:inline-flex; align-items:center; gap:9px;
-  font-family:'IBM Plex Mono', monospace; font-size:11px;
-  letter-spacing:2px; text-transform:uppercase; color:rgba(232,240,240,.45);
-}
-.lp-sibling-kicker::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--peach); }
-
-.lp-sibling-mark{ display:inline-flex; align-items:center; gap:11px; margin:18px 0 0; }
-.lp-sibling-mark b{
-  display:grid; place-items:center; width:34px; height:34px; border-radius:10px;
-  background:var(--peach); color:#15100d;
-  font-family:'Instrument Serif', Georgia, serif; font-size:19px; font-weight:400;
-}
-.lp-sibling-mark span{ font-family:'Instrument Serif', Georgia, serif; font-size:1.7rem; letter-spacing:-.01em; }
-.lp-sibling-mark span i{ color:var(--cyan); font-style:normal; }
-
-.lp-sibling h2{
-  font-family:'Instrument Serif', Georgia, serif; font-weight:400;
-  font-size:clamp(1.9rem,4.2vw,3rem); line-height:1.06;
-  letter-spacing:-.03em; margin:16px 0 0;
-}
-.lp-sibling h2 i{ color:var(--peach); font-style:italic; }
-.lp-sibling p.lp-sibling-lede{
-  color:rgba(232,240,240,.7); font-size:1rem; line-height:1.68;
-  max-width:46ch; margin:18px 0 0;
-}
-.lp-sibling-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:24px; }
-.lp-sibling-chips span{
-  padding:7px 14px; border-radius:999px;
-  border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04);
-  font-family:'IBM Plex Mono', monospace; font-size:11.5px;
-  color:rgba(232,240,240,.68);
-}
-.lp-sibling-actions{ display:flex; flex-wrap:wrap; gap:12px; margin-top:30px; }
-.btn-peach{
-  background:var(--peach); color:#15100d;
-  box-shadow:0 10px 34px -12px rgba(211,151,148,.55);
-}
-.btn-peach:hover{ transform:translateY(-3px); box-shadow:0 16px 44px -12px rgba(211,151,148,.7); }
-
-/* one glance at what the product actually does */
-.lp-sibling-mock{
-  border:1px solid rgba(255,255,255,.1); border-radius:18px;
-  background:#0b1016; box-shadow:0 30px 80px -30px rgba(0,0,0,.8);
-  overflow:hidden; transition:transform .5s cubic-bezier(.2,.8,.2,1);
-}
-.lp-sibling-mock:hover{ transform:translateY(-5px); }
-.lp-mock-bar{ display:flex; align-items:center; gap:7px; padding:11px 14px; border-bottom:1px solid rgba(255,255,255,.07); }
-.lp-mock-bar i{ width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,.14); }
-.lp-mock-bar i:first-child{ background:#e0716a; }
-.lp-mock-bar i:nth-child(2){ background:#e0b25a; }
-.lp-mock-bar i:nth-child(3){ background:#63c07d; }
-.lp-mock-bar em{ margin-left:8px; font-style:normal; font-family:'IBM Plex Mono', monospace; font-size:11px; color:rgba(232,240,240,.32); }
-.lp-mock-body{ padding:22px; display:grid; gap:14px; }
-.lp-mock-q{ font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:1.2px; text-transform:uppercase; color:rgba(232,240,240,.4); }
-.lp-mock-a{ font-size:.93rem; line-height:1.72; color:rgba(232,240,240,.86); }
-.lp-mock-a u{ text-decoration:none; border-bottom:1px dashed rgba(235,213,190,.5); }
-.lp-mock-cite{
-  display:inline-flex; align-items:center; gap:8px; align-self:start;
-  padding:7px 12px; border-radius:8px;
-  border:1px solid rgba(235,213,190,.3); background:rgba(235,213,190,.08);
-  font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--peach);
-}
-.lp-mock-rule{ height:1px; background:rgba(255,255,255,.07); }
-.lp-mock-foot{
-  display:flex; justify-content:space-between; gap:12px;
-  font-family:'IBM Plex Mono', monospace; font-size:10.5px;
-  letter-spacing:.8px; color:rgba(232,240,240,.34);
-}
-
-@media(max-width:860px){
-  .lp-sibling-inner{ grid-template-columns:1fr; padding:64px 24px; }
-  .lp-sibling-mock{ order:2; }
-}
-@media(prefers-reduced-motion:reduce){
-  .lp-sibling-mock{ transition:none; }
-  .lp-sibling-mock:hover{ transform:none; }
-}
-
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/site.css">
+<script src="site.config.js"></script>
+<script>
+/* Legacy behaviour: a signed-in user of the in-repo app goes straight to it.
+   Add ?home to the URL to stay on this page. Controlled by site.config.js. */
+(function () {
+  var cfg = window.MERITNAMA_CONFIG || {};
+  if (!cfg.legacySessionRedirect || /[?&]home\b/.test(location.search)) return;
+  try {
+    var s = JSON.parse(localStorage.getItem('meritnama_auth_session'));
+    if (s && s.email && typeof s.ts === 'number' && (Date.now() - s.ts) < 86400000) {
+      location.replace(cfg.appUrl || 'app.html');
+    }
+  } catch (e) {}
+})();
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"MeritNama","url":"https://itskaero.github.io/meritnama/","description":"Independent postgraduate medical induction analysis and planning for Pakistani medical trainees."}
+</script>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
 
-<div class="hero" id="hero">
-  <div class="hero-bg">
-    <canvas id="heroCanvas"></canvas>
-    <video autoplay muted loop playsinline preload="auto" id="heroVideo">
-      <source src="data/promo.mp4" type="video/mp4">
-    </video>
-    <div class="hero-overlay"></div>
-  </div>
-  <div class="hero-content">
-    <img src="../animation/logo-anim.svg" alt="MeritNama" class="hero-logo canvas-only">
-    <h1 class="canvas-only">Know where you <span class="grad">stand</span>.</h1>
-    <p class="canvas-only" id="heroSubhead">Independent residency induction analytics for Punjab's medical trainees.</p>
-    <div class="hero-actions">
-      <a href="app.html" class="btn btn-primary">Launch App</a>
-      <button class="btn btn-ghost" id="exploreBtn">Explore &darr;</button>
-    </div>
-    <div class="hero-stats canvas-only">
-      <div class="hero-stat"><div class="hero-stat-inner"><div class="num" id="heroStat1Val">3,473+</div><div class="lab" id="heroStat1Lab">Candidates</div></div></div>
-      <div class="hero-stat"><div class="hero-stat-inner"><div class="num" id="heroStat2Val">476</div><div class="lab" id="heroStat2Lab">Sim Placed</div></div></div>
-      <div class="hero-stat"><div class="hero-stat-inner"><div class="num" id="heroStat3Val">369</div><div class="lab" id="heroStat3Lab">Slots</div></div></div>
-    </div>
-  </div>
-  <button class="sound-toggle video-only" id="soundToggle" aria-label="Toggle sound">🔇</button>
-  <div class="scroll-hint canvas-only">Scroll</div>
-</div>
+<!-- SVG icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
+  <symbol id="i-hospital" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M10 9h4M12 7v4M9 21v-5h6v5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 8.3 8 9 4.6-.7 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/></symbol>
+  <symbol id="i-seat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-1a6 6 0 0 1 12 0v1"/><path d="M16 4a3 3 0 0 1 0 6M21 21v-1a5 5 0 0 0-4-5"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="i-sim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></symbol>
+  <symbol id="i-calc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M14 11h2M8 15h2M14 15h2M8 18h2M14 18h2"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-mark" viewBox="0 0 32 32" fill="currentColor"><rect x="3" y="18" width="5" height="10" rx="1.5" opacity=".55"/><rect x="10" y="12" width="5" height="16" rx="1.5" opacity=".75"/><rect x="17" y="7" width="5" height="21" rx="1.5"/><path d="M24 4h5v5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="m29 4-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+</svg>
 
-<!-- ======= HOW IT WORKS ======= -->
-<section class="lp-section" id="how">
-  <div class="lp-section-head">
-    <span class="lp-kicker">How it works</span>
-    <h2>From your marks to your merit, in three steps.</h2>
-  </div>
-  <div class="lp-steps">
-    <div class="lp-step">
-      <div class="lp-step-num">01</div>
-      <h3>Calculate your merit</h3>
-      <p>Enter your marks, experience, and publications — the calculator applies the current PHF policy automatically, no manual percentage math.</p>
-    </div>
-    <div class="lp-step">
-      <div class="lp-step-num">02</div>
-      <h3>See where you stand</h3>
-      <p>Compare your score against years of historical cutoffs to get Safe, Target, and Reach options with year-on-year trend confidence.</p>
-    </div>
-    <div class="lp-step">
-      <div class="lp-step-num">03</div>
-      <h3>Simulate your induction</h3>
-      <p>Run the live seat-allocation simulator to see how your real preference list plays out, round by round.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ======= WHAT'S INSIDE ======= -->
-<section class="lp-section" id="explore-section">
-  <div class="lp-section-head">
-    <span class="lp-kicker">What's inside</span>
-    <h2>Everything for Punjab's residency induction, in one place.</h2>
-  </div>
-  <div class="lp-feature-grid">
-    <a href="app.html" class="lp-feature-card">
-      <span class="lp-feature-icon">📊</span>
-      <h3>Analyze</h3>
-      <p>Merit tables, score prediction, the calculator, and specialty comparisons across 13 induction cycles.</p>
+<header class="site-header">
+  <nav class="nav" aria-label="Primary">
+    <a class="brand" href="./" aria-label="MeritNama home">
+      <svg class="brand-mark" aria-hidden="true"><use href="#i-mark"/></svg>
+      <span class="brand-name">Merit<span>Nama</span></span>
     </a>
-    <a href="simulation.html" class="lp-feature-card">
-      <span class="lp-feature-icon">🎓</span>
-      <h3>Induction Portal</h3>
-      <p>Live seat allocation simulation, candidate pool browser, and consent what-if analysis.</p>
-    </a>
-    <a href="hospitals.html" class="lp-feature-card">
-      <span class="lp-feature-icon">🏥</span>
-      <h3>Directory</h3>
-      <p>Every training hospital and CPSP-accredited programme, searchable by specialty and city.</p>
-    </a>
-    <a href="reviews.html" class="lp-feature-card">
-      <span class="lp-feature-icon">💬</span>
-      <h3>Community</h3>
-      <p>Discussion forum, live chat during induction rounds, and independent editorial analysis.</p>
-    </a>
-  </div>
-</section>
-
-<!-- ======= WHY TRUST ======= -->
-<section class="lp-section lp-trust">
-  <div class="lp-section-head" style="margin-bottom:8px;">
-    <span class="lp-kicker">Why trust MeritNama</span>
-  </div>
-  <div class="lp-trust-grid">
-    <div class="lp-trust-item">
-      <h4>Independent</h4>
-      <p>Built and maintained independently — not affiliated with PHF or CPSP, with no institutional agenda.</p>
-    </div>
-    <div class="lp-trust-item">
-      <h4>Sourced from official data</h4>
-      <p>Every merit list comes from the official PHF gazette, not scraped estimates or forum rumors.</p>
-    </div>
-    <div class="lp-trust-item">
-      <h4>Community-verified</h4>
-      <p>Corrections, discussion, and mentorship come from real trainees who've been through induction themselves.</p>
-    </div>
-    <div class="lp-trust-item">
-      <h4>Always verify officially</h4>
-      <p>Predictions reflect historical patterns, not guarantees — always confirm with PHF/PGME before deciding.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ======= SIBLING PRODUCT: medNAMA ======= -->
-<section class="lp-sibling" id="mednama">
-  <div class="lp-sibling-glow" aria-hidden="true"></div>
-  <div class="lp-sibling-inner">
-    <div>
-      <span class="lp-sibling-kicker">Also from the nama family</span>
-      <div class="lp-sibling-mark">
-        <b aria-hidden="true">m</b>
-        <span>med<i>NAMA</i></span>
-      </div>
-      <h2>Learn from the source.<br><i>Practice with purpose.</i></h2>
-      <p class="lp-sibling-lede">MeritNama tells you where you stand. medNAMA is for the exam that
-        got you there &mdash; clinical answers pulled straight from your reference textbooks with the
-        page number attached, and drills built on recalled FCPS Part&nbsp;1 past papers.</p>
-      <div class="lp-sibling-chips">
-        <span>12,717 question bank</span>
-        <span>Inline page citations</span>
-        <span>Tutor &amp; exam modes</span>
-        <span>Smart re-tests</span>
-      </div>
-      <div class="lp-sibling-actions">
-        <a class="btn btn-peach" href="https://itskaero.github.io/medNAMA/" target="_blank" rel="noopener">Open medNAMA &nearr;</a>
-        <a class="btn btn-ghost" href="https://itskaero.github.io/" target="_blank" rel="noopener">The whole family &nearr;</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="navMenu" aria-label="Open menu">
+      <svg class="icon-open" aria-hidden="true"><use href="#i-menu"/></svg>
+      <svg class="icon-close" aria-hidden="true"><use href="#i-close"/></svg>
+    </button>
+    <div class="nav-menu" id="navMenu">
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#data">Methodology</a></li>
+        <li><a href="hospitals.html">Hospitals</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="btn btn-ghost btn-sm" type="button" id="signOutBtn" hidden>Sign out</button>
+        <a class="btn btn-primary btn-sm" href="app.html" data-app-link>Sign in</a>
       </div>
     </div>
+  </nav>
+</header>
 
-    <div class="lp-sibling-mock" aria-hidden="true">
-      <div class="lp-mock-bar"><i></i><i></i><i></i><em>mednama &mdash; answer</em></div>
-      <div class="lp-mock-body">
-        <p class="lp-mock-q">Ask anything</p>
-        <p class="lp-mock-a">Every claim comes back <u>grounded in the book you chose</u>, with the
-          exact page cited inline and the original passage one click away.</p>
-        <span class="lp-mock-cite">&#9678; Snell&rsquo;s Clinical Anatomy &middot; p.&nbsp;120</span>
-        <div class="lp-mock-rule"></div>
-        <div class="lp-mock-foot"><span>Verified passage</span><span>Figures attached</span></div>
+<main id="main">
+  <!-- ═══ HERO ═══ -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-body">
+      <span class="chip"><span class="chip-dot" aria-hidden="true"></span>Independent medical induction intelligence</span>
+      <h1 id="hero-title">Understand your merit. <span class="accent">Make your next move.</span></h1>
+      <p class="hero-lede" id="heroSubhead">Explore merit trends, compare training opportunities, understand seat competition, and plan your postgraduate induction with data-informed tools.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="#features">Explore MeritNama <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn-link btn-lg" href="#how">How it works</a>
+      </div>
+      <p class="hero-disclaimer">Not affiliated with PHF, CPSP or any admissions authority.</p>
+      <div class="app-status" id="appStatus" role="status">
+        <svg aria-hidden="true"><use href="#i-alert"/></svg>
+        <span>The MeritNama app is temporarily unavailable. This site, the methodology and public resources still work — please try signing in again later.</span>
       </div>
     </div>
-  </div>
-</section>
+    <a class="scroll-cue" href="#snapshot">Scroll <span aria-hidden="true">↓</span></a>
+  </section>
 
-<!-- ======= FINAL CTA ======= -->
-<section class="lp-cta">
-  <h2>Ready to see where you stand?</h2>
-  <p>Free, independent, and updated every induction cycle.</p>
-  <a href="app.html" class="btn btn-primary">Launch App &rarr;</a>
-</section>
+  <!-- ═══ SNAPSHOT ═══ -->
+  <section class="snapshot-band" id="snapshot" aria-labelledby="snapshot-title">
+    <div class="container snapshot-inner">
+      <div>
+        <span class="kicker">Induction 21 snapshot</span>
+        <h2 id="snapshot-title" class="snapshot-heading">The current cycle, in aggregate.</h2>
+        <p class="snapshot-note">Figures maintained by MeritNama from the published induction dataset. <span class="badge badge-simulated">Sim</span> figures come from MeritNama’s simulation, not an official allocation.</p>
+      </div>
+      <ul class="snapshot-list">
+        <li><span class="snapshot-lab" id="heroStat1Lab">Candidates</span><span class="snapshot-val" id="heroStat1Val">3,473+</span></li>
+        <li><span class="snapshot-lab" id="heroStat2Lab">Sim Placed</span><span class="snapshot-val" id="heroStat2Val">476</span></li>
+        <li><span class="snapshot-lab" id="heroStat3Lab">Slots</span><span class="snapshot-val" id="heroStat3Val">369</span></li>
+      </ul>
+    </div>
+  </section>
 
-<button class="logout-btn" id="logoutBtn">&#x23FB; Logout</button>
+  <!-- ═══ 1. WHAT MERITNAMA DOES ═══ -->
+  <section class="section" id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">What MeritNama does</span>
+        <h2 id="features-title">One place to make sense of postgraduate induction.</h2>
+        <p>Official merit lists and gazettes are long, scattered and hard to compare across rounds. MeritNama organises them so you can reason about your options.</p>
+      </div>
+      <div class="grid grid-3">
+        <article class="card">
+          <div class="card-icon"><svg aria-hidden="true"><use href="#i-calc"/></svg></div>
+          <h3>Merit analysis</h3>
+          <p>Apply the published scoring policy for your induction to see how your merit is composed, component by component.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon"><svg aria-hidden="true"><use href="#i-trend"/></svg></div>
+          <h3>Historical cutoffs</h3>
+          <p>Closing merit by specialty, hospital, programme and quota across past inductions and rounds — normalised so different scoring scales can be compared.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon"><svg aria-hidden="true"><use href="#i-seat"/></svg></div>
+          <h3>Seat competition</h3>
+          <p>Seat counts from official gazettes alongside how many candidates competed for them, so you can see where competition is concentrated.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon"><svg aria-hidden="true"><use href="#i-list"/></svg></div>
+          <h3>Preference planning</h3>
+          <p>Build and compare draft preference lists with historical context, quota filters and duplicate warnings before you submit officially.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon"><svg aria-hidden="true"><use href="#i-sim"/></svg></div>
+          <h3>Induction simulation</h3>
+          <p>Run a merit-order seat-allocation simulation over the candidate pool to explore how preferences could play out, round by round.</p>
+        </article>
+        <a class="card" href="hospitals.html">
+          <div class="card-icon"><svg aria-hidden="true"><use href="#i-hospital"/></svg></div>
+          <h3>Specialties &amp; hospitals</h3>
+          <p>A searchable directory of training hospitals and CPSP-accredited programmes by specialty and city.</p>
+          <span class="card-link">Open the directory <svg aria-hidden="true"><use href="#i-arrow"/></svg></span>
+        </a>
+      </div>
+    </div>
+  </section>
 
-<div class="drawer" id="drawer">
-  <button class="drawer-close" id="drawerClose">&times;</button>
-  <div class="drawer-inner">
-    <a href="simulation.html" class="drawer-item">
-      <span class="icon">🎮</span>
-      <div><h4>Simulation Portal</h4><p>Seat allocation, slot browser, live chat</p></div>
-    </a>
-    <a href="app.html" class="drawer-item">
-      <span class="icon">📊</span>
-      <div><h4>Merit Data</h4><p>Merit Table, Predictor, Calculator</p></div>
-    </a>
-    <a href="accreditation.html" class="drawer-item">
-      <span class="icon">✅</span>
-      <div><h4>Accreditation</h4><p>CPSP hospital programmes</p></div>
-    </a>
-    <a href="reviews.html" class="drawer-item">
-      <span class="icon">💬</span>
-      <div><h4>Discussion</h4><p>Community reviews &amp; feedback</p></div>
-    </a>
-    <a href="https://itskaero.github.io/medNAMA/" class="drawer-item" target="_blank" rel="noopener">
-      <span class="icon">📘</span>
-      <div><h4>medNAMA &nearr;</h4><p>Textbook-grounded answers &amp; FCPS&nbsp;1 practice</p></div>
-    </a>
-    <a href="donate.html" class="drawer-item">
-      <span class="icon">❤️</span>
-      <div><h4>Support</h4><p>Keep it free</p></div>
-    </a>
-  </div>
-</div>
+  <!-- ═══ 2. HOW MERIT ANALYSIS WORKS ═══ -->
+  <section class="section section-alt" id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">How it works</span>
+        <h2 id="how-title">From your marks to your options, in four steps.</h2>
+      </div>
+      <ol class="grid grid-2 steps">
+        <li class="card">
+          <h3>Calculate your merit</h3>
+          <p>Enter your marks and the calculator applies the scoring policy published for your induction — each component shown with its maximum, so nothing is hidden.</p>
+        </li>
+        <li class="card">
+          <h3>Compare with historical cutoffs</h3>
+          <p>See where your score sits against closing merit for the specialties, hospitals and quotas you care about, with the trend across years.</p>
+        </li>
+        <li class="card">
+          <h3>Plan your preferences</h3>
+          <p>Order specialties and hospitals into draft lists, check eligibility warnings and compare alternatives side by side.</p>
+        </li>
+        <li class="card">
+          <h3>Simulate the induction</h3>
+          <p>Run the allocation simulation on the available data to see a predicted placement — and the preference that produced it. Every result is labelled as a simulation.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
 
+  <!-- ═══ 3–6. FEATURE DETAIL ═══ -->
+  <section class="section" aria-labelledby="explore-title">
+    <div class="container split">
+      <div>
+        <span class="kicker">Historical merit &amp; cutoffs</span>
+        <h2 id="explore-title">Read the history before you choose.</h2>
+        <ul class="checklist">
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Every induction we hold data for</strong> — closing merit per specialty, hospital, programme (FCPS, MS, MD, MDS) and quota.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Round-by-round movement</strong> — how cutoffs shifted between merit lists within an induction.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Comparable scales</strong> — scoring totals changed between policies, so scores are also shown as a percentage of each year’s maximum.</span></li>
+        </ul>
+      </div>
+      <div>
+        <span class="kicker">Seat competition &amp; simulation</span>
+        <h2>See competition, not just cutoffs.</h2>
+        <ul class="checklist">
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Seats from the gazette</strong> — the number of positions per specialty, hospital and quota.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Merit-order allocation</strong> — the simulator walks candidates in merit order and fills seats against stated preferences and quotas.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Unplaced outcomes shown honestly</strong> — when a list would not place, the simulation says so.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 7. DATA TRANSPARENCY ═══ -->
+  <section class="section section-alt" id="data" aria-labelledby="data-title">
+    <div class="container split">
+      <div>
+        <span class="kicker">Data &amp; methodology</span>
+        <h2 id="data-title">Where the numbers come from.</h2>
+        <div class="section-head" style="margin-bottom:0">
+          <p>MeritNama uses published induction material — merit lists, gazette seat notifications and scoring-policy notifications — processed into a consistent format. Each induction cycle the data is updated as new lists are published.</p>
+        </div>
+        <ul class="checklist">
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Sources:</strong> official merit lists and gazette notifications for each induction and round; the scoring policy notification for each induction.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Processing:</strong> hospital and specialty names are normalised to canonical identifiers so they can be compared across years.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Corrections:</strong> if you spot a mismatch with an official document, tell us and we will check it against the source.</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="sr-only">How figures are labelled</h3>
+        <div class="legend">
+          <div class="legend-row"><span><span class="badge badge-historical">Historical</span></span><p>Taken from a published merit list or gazette for a completed round.</p></div>
+          <div class="legend-row"><span><span class="badge badge-current">Current</span></span><p>From the induction in progress. May change as further rounds and corrections are published.</p></div>
+          <div class="legend-row"><span><span class="badge badge-simulated">Simulated</span></span><p>Produced by MeritNama’s model from available data and stated assumptions. Never an official selection decision.</p></div>
+        </div>
+        <div class="callout" style="margin-top:var(--mn-space-5)">
+          <svg aria-hidden="true"><use href="#i-alert"/></svg>
+          <div>
+            <h3>Always verify officially</h3>
+            <p>Historical cutoffs do not guarantee future outcomes, and simulations depend on incomplete information. Confirm everything with the official induction authority before you decide.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 8. ACCOUNT FEATURES ═══ -->
+  <section class="section" id="account" aria-labelledby="account-title">
+    <div class="container split">
+      <div>
+        <span class="kicker">With a MeritNama account</span>
+        <h2 id="account-title">A private workspace for your induction.</h2>
+        <div class="section-head" style="margin-bottom:0">
+          <p>The public site is useful on its own. Signing in adds tools that work with your own record and plans.</p>
+        </div>
+      </div>
+      <ul class="checklist" style="margin-top:0">
+        <li><svg aria-hidden="true"><use href="#i-user"/></svg><span><strong>Your merit profile</strong> — your published marks and breakdown under the applicable policy.</span></li>
+        <li><svg aria-hidden="true"><use href="#i-list"/></svg><span><strong>Draft preference lists</strong> — kept separate from anything you submit officially.</span></li>
+        <li><svg aria-hidden="true"><use href="#i-sim"/></svg><span><strong>Simulation runs</strong> — save, compare and revisit scenarios.</span></li>
+        <li><svg aria-hidden="true"><use href="#i-shield"/></svg><span><strong>Private by default</strong> — your saved plans are visible only to your account.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══ SIBLING PRODUCT ═══ -->
+  <section class="section section-alt" id="mednama" aria-labelledby="mednama-title">
+    <div class="container sibling">
+      <div>
+        <span class="kicker">Also from the nama family</span>
+        <h2 id="mednama-title">medNAMA — learn from the source, practise with purpose.</h2>
+        <div class="section-head" style="margin-bottom:0">
+          <p>MeritNama tells you where you stand. medNAMA is for the exam that got you there — clinical answers grounded in your reference textbooks with page citations, and practice built on recalled FCPS Part&nbsp;1 papers.</p>
+        </div>
+        <div class="chips"><span>Inline page citations</span><span>Tutor &amp; exam modes</span><span>Smart re-tests</span></div>
+      </div>
+      <div class="hero-actions" style="margin-top:0">
+        <a class="btn btn-secondary btn-lg" href="https://itskaero.github.io/medNAMA/" target="_blank" rel="noopener">Open medNAMA <span aria-hidden="true">↗</span><span class="sr-only">(opens in a new tab)</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 9. FAQ ═══ -->
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head center">
+        <span class="kicker">FAQ</span>
+        <h2 id="faq-title">Questions trainees ask us.</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Is MeritNama an official induction or admissions portal?</summary>
+          <div><p>No. MeritNama is independent and is not affiliated with PHF, CPSP, the Health Department or any admissions authority. Applications, consent and official results happen only through the official channels.</p></div>
+        </details>
+        <details>
+          <summary>Does a simulated placement mean I will get that seat?</summary>
+          <div><p>No. Simulations use the data available to MeritNama and stated assumptions. Real outcomes depend on official lists, consent, joining, withdrawals and corrections that a simulation cannot know in advance.</p></div>
+        </details>
+        <details>
+          <summary>Where does the data come from?</summary>
+          <div><p>From published merit lists, gazette seat notifications and scoring-policy notifications for each induction. See <a href="#data">Data &amp; methodology</a>.</p></div>
+        </details>
+        <details>
+          <summary>Can I change my marks in MeritNama?</summary>
+          <div><p>Your published record cannot be edited by you. You can enter your own figures in the calculator to explore “what if” scenarios — those are clearly marked as your own input, separate from published data.</p></div>
+        </details>
+        <details>
+          <summary>Who can see my saved preference lists and scenarios?</summary>
+          <div><p>Only your account. MeritNama does not publish individual candidates’ plans. Read the <a href="privacy.html">privacy policy</a> for details.</p></div>
+        </details>
+        <details>
+          <summary>I found an error. How do I report it?</summary>
+          <div><p>Email <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a> with the induction, round and a link or reference to the official document. We check every report against the source.</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 10. FINAL CTA ═══ -->
+  <section class="section section-alt cta-band" aria-labelledby="cta-title">
+    <div class="container">
+      <span class="kicker">Get started</span>
+      <h2 id="cta-title">Plan your induction with clearer information.</h2>
+      <p>Browse the public resources now, or sign in to work with your own record.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="app.html" data-app-link>Sign in to MeritNama <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn-secondary btn-lg" href="request-access.html">Request access</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ═══ 11. FOOTER ═══ -->
 <footer class="site-footer">
-  <div>MeritNama &middot; Independent residency induction analytics for Punjab</div>
-  <div>
-    Built by <a href="https://github.com/itskaero" target="_blank" rel="noopener">@itskaero</a>
-    <span class="foot-sep">&middot;</span>
-    <a href="donate.html">Support this project</a>
-    <span class="foot-sep">&middot;</span>
-    <a href="request-access.html">Request access</a>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="./">
+          <svg class="brand-mark" aria-hidden="true"><use href="#i-mark"/></svg>
+          <span class="brand-name">Merit<span>Nama</span></span>
+        </a>
+        <p class="footer-about">Independent postgraduate induction analysis for Pakistani medical trainees. Not an official admissions authority.</p>
+      </div>
+      <div>
+        <h2>Product</h2>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#data">Data &amp; methodology</a></li>
+          <li><a href="app.html" data-app-link>Sign in</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Resources</h2>
+        <ul>
+          <li><a href="hospitals.html">Hospital directory</a></li>
+          <li><a href="accreditation.html">CPSP accreditation</a></li>
+          <li><a href="reviews.html">Community</a></li>
+          <li><a href="donate.html">Support the project</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>About</h2>
+        <ul>
+          <li><a href="privacy.html">Privacy policy</a></li>
+          <li><a href="terms.html">Terms of use</a></li>
+          <li><a href="mailto:itskaero@gmail.com">Contact</a></li>
+          <li><a href="https://github.com/itskaero/meritnama" rel="noopener">Source (public site)</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-base">
+      <span>© <span id="year">2026</span> MeritNama. Built by <a href="https://github.com/itskaero" rel="noopener">@itskaero</a>.</span>
+      <span>Historical and simulated figures are not official decisions.</span>
+    </div>
   </div>
 </footer>
 
-<script>
-(function(){
-  try{
-    var raw = localStorage.getItem('meritnama_auth_session');
-    if(raw){
-      var s = JSON.parse(raw);
-      if(s && s.email && typeof s.ts === 'number' && (Date.now() - s.ts) < 86400000){
-        window.location.replace('app.html');
-        return;
-      }
-    }
-  }catch(e){}
-})();
-</script>
-
-<!-- Admin-editable hero subhead/stats (set via admin.html's Homepage tab).
-     Uses Firestore's plain REST endpoint instead of the ~100KB+ SDK, since
-     this is the one page in the app where load weight actually matters —
-     a single lightweight fetch, silently ignored if it fails or times out,
-     so the hard-coded defaults above always render as a safe fallback. -->
-<script>
-(function(){
-  var FS_URL = 'https://firestore.googleapis.com/v1/projects/mortality-review/databases/(default)/documents/notifications/homepage_content';
-  function txt(field){ return field && field.stringValue ? field.stringValue : ''; }
-  fetch(FS_URL, { signal: AbortSignal.timeout ? AbortSignal.timeout(3000) : undefined })
-    .then(function(r){ return r.ok ? r.json() : null; })
-    .then(function(doc){
-      if(!doc || !doc.fields) return;
-      var f = doc.fields;
-      var map = {
-        heroSubhead: txt(f.subhead),
-        heroStat1Val: txt(f.stat1Value), heroStat1Lab: txt(f.stat1Label),
-        heroStat2Val: txt(f.stat2Value), heroStat2Lab: txt(f.stat2Label),
-        heroStat3Val: txt(f.stat3Value), heroStat3Lab: txt(f.stat3Label),
-      };
-      Object.keys(map).forEach(function(id){
-        if(!map[id]) return; // empty override = keep the built-in default
-        var el = document.getElementById(id);
-        if(el) el.textContent = map[id];
-      });
-    })
-    .catch(function(){ /* offline or blocked — defaults already rendered */ });
-})();
-</script>
-
-<script>
-(function(){
-  var hero=document.getElementById('hero'),video=document.getElementById('heroVideo'),canvas=document.getElementById('heroCanvas'),soundBtn=document.getElementById('soundToggle');
-  if(!hero)return;
-  var animId;
-
-  // ── Canvas animation ──
-  function startCanvas(){
-    if(!canvas)return;
-    var ctx=canvas.getContext('2d'); var W,H;
-    var blobs=[
-      {cx:.3,cy:.25,r:.45,r2:.35,c:'62,207,142',sp:.11,ph:0},
-      {cx:.7,cy:.6, r:.38,r2:.3, c:'77,184,217',sp:.08,ph:1.8},
-      {cx:.5,cy:.8, r:.32,r2:.28,c:'124,101,196',sp:.06,ph:3.2},
-      {cx:.2,cy:.7, r:.28,r2:.22,c:'62,207,142',sp:.09,ph:4.5},
-      {cx:.8,cy:.3, r:.35,r2:.25,c:'77,184,217',sp:.07,ph:2.3},
-    ];
-    // Candidate network — nodes drift slowly and link when close, evoking
-    // seat-allocation matching / a connected candidate network. A handful
-    // are "hubs" (hospitals) rendered larger and brighter.
-    var n=26,nodes=[],LINK_DIST=140,bc=14,bh=[];
-    function rz(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
-    rz(); window.addEventListener('resize',rz);
-    for(var i=0;i<n;i++) nodes.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.15,vy:(Math.random()-.5)*.15,r:1.4+Math.random()*1.6,hub:Math.random()<.18});
-    for(var i=0;i<bc;i++) bh.push(.2+Math.random()*.6);
-    function draw(t){
-      var g=ctx.createLinearGradient(0,0,0,H);
-      g.addColorStop(0,'#04060c');g.addColorStop(.25,'#080f1a');g.addColorStop(.55,'#0c1a2e');g.addColorStop(.8,'#0a1424');g.addColorStop(1,'#04060c');
-      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-      var o=(t*.12)%80; ctx.strokeStyle='rgba(77,184,217,.025)';ctx.lineWidth=1;
-      for(var x=o-80;x<W+80;x+=80){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-      for(var y=o-80;y<H+80;y+=80){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-      for(var b of blobs){var dx=Math.sin(t*b.sp+b.ph)*.08,dy=Math.cos(t*b.sp*.7+b.ph+1)*.06,cx=(b.cx+dx)*W,cy=(b.cy+dy)*H,rx=b.r*Math.min(W,H),ry=b.r2*Math.min(W,H),g2=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(rx,ry));g2.addColorStop(0,'rgba('+b.c+',.12)');g2.addColorStop(.5,'rgba('+b.c+',.05)');g2.addColorStop(1,'rgba('+b.c+',0)');ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.fillStyle=g2;ctx.fill();}
-
-      // Flowing merit-trend line — reads as an ascending analytics curve
-      ctx.beginPath();
-      for(var px=0;px<=W;px+=Math.max(16,W/48)){
-        var py=H*.22-(px/W)*H*.10+Math.sin(px*.008+t*.5)*H*.02+Math.sin(px*.021-t*.3)*H*.0125;
-        if(px===0)ctx.moveTo(px,py); else ctx.lineTo(px,py);
-      }
-      var tg=ctx.createLinearGradient(0,0,W,0);
-      tg.addColorStop(0,'rgba(62,207,142,0)');tg.addColorStop(.5,'rgba(62,207,142,.3)');tg.addColorStop(1,'rgba(77,184,217,.3)');
-      ctx.strokeStyle=tg;ctx.lineWidth=1.6;ctx.stroke();
-
-      // Candidate network: drift, link within range, draw nodes (hubs brighter)
-      for(var i=0;i<nodes.length;i++){
-        var a=nodes[i];
-        a.x+=a.vx;a.y+=a.vy;
-        if(a.x<-20)a.x=W+20; if(a.x>W+20)a.x=-20;
-        if(a.y<-20)a.y=H+20; if(a.y>H+20)a.y=-20;
-        for(var j=i+1;j<nodes.length;j++){
-          var nb=nodes[j],ddx=a.x-nb.x,ddy=a.y-nb.y,dist=Math.sqrt(ddx*ddx+ddy*ddy);
-          if(dist<LINK_DIST){
-            ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(nb.x,nb.y);
-            ctx.strokeStyle='rgba(77,184,217,'+((1-dist/LINK_DIST)*.14)+')';ctx.lineWidth=1;ctx.stroke();
-          }
-        }
-      }
-      for(var i=0;i<nodes.length;i++){
-        var a=nodes[i];
-        ctx.beginPath();ctx.arc(a.x,a.y,a.hub?a.r*1.8:a.r,0,Math.PI*2);
-        ctx.fillStyle=a.hub?'rgba(62,207,142,.5)':'rgba(150,190,220,.35)';
-        ctx.fill();
-      }
-
-      // Seat-capacity bars along the bottom
-      var bw=8,ga=16,tw=bc*(bw+ga)-ga,sx=(W-tw)/2,by=H*.85,mh=H*.18;
-      for(var i=0;i<bc;i++){var h=bh[i]*mh*(.7+.3*Math.sin(t*.04+i*.9)),x=sx+i*(bw+ga),y=by-h;ctx.beginPath();ctx.roundRect(x,y,bw,h,3);ctx.fillStyle='rgba(62,207,142,'+(.08+.06*Math.sin(t*.03+i*.7))+')';ctx.fill();}
-    }
-    function loop(n){draw(n/1000);animId=requestAnimationFrame(loop);}
-    loop(0);
-  }
-
-  // ── Mode switching ──
-  function useCanvas(){
-    hero.classList.remove('video-mode');
-    hero.classList.add('canvas-mode');
-    if(video){video.pause();}
-    startCanvas();
-  }
-  function useVideo(){
-    hero.classList.remove('canvas-mode');
-    hero.classList.add('video-mode');
-    if(animId){cancelAnimationFrame(animId);animId=null;}
-    if(video) video.play().catch(function(){useCanvas();});
-  }
-
-  // ── Network-aware boot ──
-  var conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
-  var isSlow=conn&&(conn.effectiveType==='slow-2g'||conn.effectiveType==='2g'||conn.effectiveType==='3g');
-
-  if(isSlow||!video){
-    useCanvas();
-  }else{
-    useCanvas(); // start with canvas, upgrade to video if it loads fast
-    var upgradeTimer=null;
-    var onReady=function(){
-      if(upgradeTimer){clearTimeout(upgradeTimer);upgradeTimer=null;}
-      useVideo();
-    };
-    video.addEventListener('canplay',onReady,{once:true});
-    video.addEventListener('error',function(){if(upgradeTimer){clearTimeout(upgradeTimer);upgradeTimer=null;}},{once:true});
-    upgradeTimer=setTimeout(function(){upgradeTimer=null;},4000);
-  }
-
-  // ── Sound toggle ──
-  if(soundBtn&&video){
-    soundBtn.addEventListener('click',function(){
-      video.muted=!video.muted;
-      soundBtn.textContent=video.muted?'🔇':'🔊';
-    });
-  }
-
-  // ── Logout button ──
-  var logoutBtn=document.getElementById('logoutBtn');
-  if(logoutBtn){
-    try{var _s=JSON.parse(localStorage.getItem('meritnama_auth_session'));if(_s&&_s.email)logoutBtn.style.display='block';}catch(_e){}
-    logoutBtn.addEventListener('click',function(){
-      localStorage.removeItem('meritnama_auth_session');
-      window.location.reload();
-    });
-  }
-
-  // ── Drawer toggle ──
-  var btn=document.getElementById('exploreBtn'),drawer=document.getElementById('drawer'),close=document.getElementById('drawerClose');
-  if(btn&&drawer&&close){
-    btn.addEventListener('click',function(){drawer.classList.add('open');});
-    close.addEventListener('click',function(){drawer.classList.remove('open');});
-    drawer.addEventListener('click',function(e){if(e.target===drawer)drawer.classList.remove('open');});
-  }
-})();
-</script>
+<script src="assets/js/site.js" defer></script>
 </body>
 </html>

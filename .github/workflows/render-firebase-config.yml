@@ -85,6 +85,8 @@ jobs:
             --exclude='officialMeritList/' \
             --exclude='officialGazette/' \
             --exclude='scripts/' \
+            --exclude='docs/' \
+            --exclude='assets/images/source/' \
             --exclude='*.md' \
             --exclude='firebase-config.template.js' \
             --exclude='firebase-messaging-sw.template.js' \
