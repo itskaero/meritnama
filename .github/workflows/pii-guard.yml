@@ -1,0 +1,19 @@
+name: PII guard
+
+# Fails when a commit adds national ID (CNIC) or phone fields to the datasets.
+# Fix locally with: python3 tools/strip_pii.py   (then commit the result)
+on:
+  push:
+    paths: ["data/**", "inductions/**", "tools/strip_pii.py"]
+  pull_request:
+    paths: ["data/**", "inductions/**", "tools/strip_pii.py"]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/strip_pii.py --check

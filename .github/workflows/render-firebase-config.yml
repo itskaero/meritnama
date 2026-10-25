@@ -93,6 +93,12 @@ jobs:
             --exclude='firestore.rules' \
             . _site/
 
+      - name: Strip national ID and phone fields from the published copy
+        # Belt and braces: even if a raw upload slips into the repo, the site never serves them.
+        run: |
+          python3 tools/strip_pii.py _site/data _site/inductions
+          python3 tools/strip_pii.py --check _site/data _site/inductions
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

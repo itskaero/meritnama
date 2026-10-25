@@ -22,9 +22,11 @@ publish.
 The legacy app still lives in this repository and predates these rules. Before more
 features are built, the maintainer must:
 
-1. Move candidate-level datasets (`data/` and `inductions/` files containing
-   per-candidate records) and their build scripts out of this repository and into the
-   private app's storage.
+1. ✅ *Done 25 Oct 2026:* national ID and phone fields removed from every dataset at
+   HEAD; `tools/strip_pii.py` strips new uploads, the deploy strips the published
+   copy, and the **PII guard** workflow fails any commit that adds them back.
+   Still to do: move the remaining candidate-level records (emails, PMDC numbers)
+   out of this repository with the private app.
 2. Purge them from git history and force-push (e.g. `git filter-repo`), then ask
    GitHub Support to clear cached views. Treat previously published copies as exposed.
 3. Lock down Firestore rules so that no collection is world-writable and privileged
