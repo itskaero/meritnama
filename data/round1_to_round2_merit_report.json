@@ -1002,7 +1002,7 @@
       "firstMeritOccupants": [
         {
           "applicantId": 38951,
-          "nameFull": "36302-8086996-6",
+          "nameFull": "",
           "marksTotal": 23.843636,
           "rowNo": 90
         },
@@ -1034,7 +1034,7 @@
       "simulatedOccupants": [
         {
           "applicantId": 38951,
-          "nameFull": "36302-8086996-6",
+          "nameFull": "",
           "marksTotal": 23.843636,
           "rowNo": 90,
           "simulated": false
@@ -1099,7 +1099,7 @@
       "publishedOccupants": [
         {
           "applicantId": 38951,
-          "nameFull": "36302-8086996-6",
+          "nameFull": "",
           "marksTotal": 23.843636,
           "rowNo": 59
         },
@@ -25341,7 +25341,7 @@
           "firstMeritOccupants": [
             {
               "applicantId": 38951,
-              "nameFull": "36302-8086996-6",
+              "nameFull": "",
               "marksTotal": 23.843636,
               "rowNo": 90
             },
@@ -25373,7 +25373,7 @@
           "simulatedOccupants": [
             {
               "applicantId": 38951,
-              "nameFull": "36302-8086996-6",
+              "nameFull": "",
               "marksTotal": 23.843636,
               "rowNo": 90,
               "simulated": false
@@ -25431,7 +25431,7 @@
           "publishedOccupants": [
             {
               "applicantId": 38951,
-              "nameFull": "36302-8086996-6",
+              "nameFull": "",
               "marksTotal": 23.843636,
               "rowNo": 59
             },
@@ -43297,7 +43297,7 @@
           "firstMeritOccupants": [
             {
               "applicantId": 38951,
-              "nameFull": "36302-8086996-6",
+              "nameFull": "",
               "marksTotal": 23.843636,
               "rowNo": 90
             },
@@ -43394,7 +43394,7 @@
           "publishedOccupants": [
             {
               "applicantId": 38951,
-              "nameFull": "36302-8086996-6",
+              "nameFull": "",
               "marksTotal": 23.843636,
               "rowNo": 59
             },
@@ -43457,7 +43457,7 @@
           "missingPublishedDiagnostics": [
             {
               "applicantId": "38951",
-              "publishedName": "36302-8086996-6",
+              "publishedName": "",
               "diagnostic": {
                 "aid": "38951",
                 "status": "filtered",
@@ -43614,7 +43614,7 @@
             },
             {
               "applicantId": 38951,
-              "nameFull": "36302-8086996-6 D/O Syed Abdul Rehman",
+              "nameFull": "D/O Syed Abdul Rehman",
               "marksTotal": 22.843636,
               "rowNo": 280,
               "simulated": false
@@ -68993,7 +68993,7 @@
           "firstMeritOccupants": [
             {
               "applicantId": 38951,
-              "nameFull": "36302-8086996-6",
+              "nameFull": "",
               "marksTotal": 23.843636,
               "rowNo": 90
             },
@@ -69025,7 +69025,7 @@
           "simulatedOccupants": [
             {
               "applicantId": 38951,
-              "nameFull": "36302-8086996-6",
+              "nameFull": "",
               "marksTotal": 23.843636,
               "rowNo": 90,
               "simulated": false
@@ -69090,7 +69090,7 @@
           "publishedOccupants": [
             {
               "applicantId": 38951,
-              "nameFull": "36302-8086996-6",
+              "nameFull": "",
               "marksTotal": 23.843636,
               "rowNo": 59
             },
