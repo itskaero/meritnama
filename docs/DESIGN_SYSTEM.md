@@ -24,19 +24,20 @@ the app's `tests/tokens.test.ts` checks contrast on every change.
 
 | Token | Value | Use |
 |---|---|---|
-| `--mn-navy-950` | `#07111F` | Page background |
-| `--mn-navy-900` | `#0E1B2C` | Main surface (cards, panels) |
-| `--mn-navy-800` | `#14253A` | Elevated surface, table headers |
-| `--mn-navy-700` | `#1B3049` | Hover / pressed |
-| `--mn-border` | `#26394E` | Dividers, card borders |
-| `--mn-text` | `#F2F6FC` | Primary text |
-| `--mn-text-muted` | `#A8B8CA` | Secondary text |
-| `--mn-text-subtle` | `#7D90A6` | Meta text ≥ 12px only |
-| `--mn-cyan` | `#42D6D0` | Primary actions, selection, active nav, key highlights |
+| `--mn-navy-950` | `#0B0B0C` | Page background (neutral charcoal since v1.1; the `navy` names are kept) |
+| `--mn-navy-900` | `#121314` | Main surface (cards, panels) |
+| `--mn-navy-800` | `#1A1B1D` | Elevated surface, table headers |
+| `--mn-navy-700` | `#232427` | Hover / pressed |
+| `--mn-border` | `#2A2B2E` | Dividers, card borders |
+| `--mn-text` | `#F4F4F5` | Primary text |
+| `--mn-text-muted` | `#A1A1AA` | Secondary text |
+| `--mn-text-subtle` | `#8A8A93` | Meta text ≥ 12px only |
+| `--mn-cyan` | `#2DD4BF` | Primary actions, selection, active nav, key highlights |
 | `--mn-amber` | `#E8B878` | Warnings, "simulated" labels, sparing distinctions |
+| `--mn-ember` | `#FF6A3D` | Brand beam only: the logo, the landing story, "where you are in an induction". Never buttons or links |
 
 Contrast (WCAG 2.x, verified by test): text, muted text, cyan and amber are all
-≥ 4.5:1 on every navy surface; `--mn-cyan-ink` on cyan is ≥ 4.5:1.
+≥ 4.5:1 on every surface; `--mn-cyan-ink` on cyan is ≥ 4.5:1.
 
 Typography: **Plus Jakarta Sans** (UI and headings, weights 400–800) and
 **IBM Plex Mono** (eyebrows, badges, figures that need alignment). The app

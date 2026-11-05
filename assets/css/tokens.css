@@ -1,41 +1,51 @@
 /*
- * MeritNama design tokens — v1
+ * meritNAMA design tokens — v1.1
  *
- * Canonical copy lives here (public site). The private application keeps a
- * byte-identical copy at src/styles/tokens.css. If you change one, change the
- * other; see docs/DESIGN_SYSTEM.md. No build step, no cross-repo package.
+ * Two byte-identical copies: assets/css/tokens.css in the public site
+ * (itskaero/meritnama) and src/styles/tokens.css in the app (itskaero/meritnama-app).
+ * Change both together; the app's tests/tokens.test.ts checks contrast.
+ * v1.1 (Nov 2026): surfaces moved from navy to neutral charcoal ("navy" token names
+ * kept for compatibility), teal refreshed, ember added for the brand beam.
  */
 :root {
   /* Surfaces */
-  --mn-navy-950: #07111f;   /* page background */
-  --mn-navy-900: #0e1b2c;   /* main surface */
-  --mn-navy-800: #14253a;   /* elevated surface */
-  --mn-navy-700: #1b3049;   /* hover / pressed surface */
-  --mn-border: #26394e;
-  --mn-border-strong: #35506b;
+  --mn-navy-950: #0b0b0c;   /* page background (neutral charcoal; "navy" names kept for compatibility) */
+  --mn-navy-900: #121314;   /* main surface */
+  --mn-navy-800: #1a1b1d;   /* elevated surface */
+  --mn-navy-700: #232427;   /* hover / pressed surface */
+  --mn-border: #2a2b2e;
+  --mn-border-strong: #3a3c40;
 
   /* Text */
-  --mn-text: #f2f6fc;
-  --mn-text-muted: #a8b8ca;
-  --mn-text-subtle: #7d90a6;   /* AA on navy-950 for >=14px; avoid for body copy */
+  --mn-text: #f4f4f5;
+  --mn-text-muted: #a1a1aa;
+  --mn-text-subtle: #8a8a93;   /* AA on navy-950 for >=14px; avoid for body copy */
 
   /* Signal */
-  --mn-cyan: #42d6d0;          /* primary action, selection, active nav */
-  --mn-cyan-strong: #6be3de;   /* hover */
-  --mn-cyan-ink: #04201f;      /* text on cyan */
-  --mn-cyan-soft: rgba(66, 214, 208, 0.12);
+  --mn-cyan: #2dd4bf;          /* primary action, selection, active nav */
+  --mn-cyan-strong: #5eead4;   /* hover */
+  --mn-cyan-ink: #042f2a;      /* text on cyan */
+  --mn-cyan-soft: rgba(45, 212, 191, 0.12);
+  --mn-teal-deep: #0f3d38;     /* glass panels and the active-cycle gradient */
   --mn-amber: #e8b878;         /* warnings, sparing distinctions */
   --mn-amber-soft: rgba(232, 184, 120, 0.12);
   --mn-danger: #f0767a;
-  --mn-success: #5fd39a;
+  --mn-success: #4ade80;
+
+  /* Ember (brand beam): the logo, the landing story and "where you are in an
+     induction" (round switcher, progress). Never for buttons or links. */
+  --mn-ember: #ff6a3d;
+  --mn-ember-hot: #ffb08a;
+  --mn-ember-deep: #b8321a;
 
   /* Glass (used over imagery only) */
-  --mn-glass: rgba(14, 27, 44, 0.62);
-  --mn-glass-border: rgba(168, 184, 202, 0.18);
+  --mn-glass: rgba(18, 19, 20, 0.62);
+  --mn-glass-border: rgba(161, 161, 170, 0.18);
 
   /* Typography */
   --mn-font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mn-font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --mn-font-display: "Archivo", "Arial Black", "Helvetica Neue", sans-serif;   /* wordmark and large headings only */
   --mn-text-xs: 0.75rem;
   --mn-text-sm: 0.875rem;
   --mn-text-md: 1rem;
