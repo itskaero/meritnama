@@ -16,11 +16,11 @@
  *               Read-only Firestore REST document with admin-edited hero subhead and
  *               snapshot figures (edited in admin.html → Homepage). Empty disables.
  *
- * newSiteUrl    Where index.html sends visitors after its intro (the immersive "dive").
- * shiftAfterSeconds
- *               Length of the intro before the dive. 0 turns the automatic
- *               shift off (the link under the logo still works). Add ?stay to
- *               the URL to stay on the page.
+ * buildProgress 0–100. How much of the rebuild is done; drives the beam,
+ *               the status card and the ring on index.html.
+ * newSiteUrl    The new site's address, used by the "meritnama.online" links.
+ * buildLog      Optional list of {what, why, status: "done"|"doing"|"next"}
+ *               to replace the build items shown on index.html.
  *
  * Never put secrets, API keys or internal hostnames in this file — it is public.
  */
@@ -31,6 +31,6 @@ window.MERITNAMA_CONFIG = {
   homepageContentUrl:
     "https://firestore.googleapis.com/v1/projects/mortality-review/databases/(default)/documents/notifications/homepage_content",
   contactEmail: "itskaero@gmail.com",
-  newSiteUrl: "https://meritnama.online/",
-  shiftAfterSeconds: 8
+  buildProgress: 65,
+  newSiteUrl: "https://meritnama.online/"
 };
