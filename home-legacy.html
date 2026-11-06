@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MeritNama — Postgraduate Induction Insights for Medical Trainees</title>
+<meta name="description" content="Independent analysis of Punjab postgraduate medical induction: historical merit and cutoffs, seat competition, preference planning and induction simulation. Not an official admissions authority.">
+<meta name="theme-color" content="#0b0b0c">
+<link rel="canonical" href="https://itskaero.github.io/meritnama/home-legacy.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="MeritNama — Understand your merit. Make your next move.">
+<meta property="og:description" content="Independent merit trends, seat competition and induction planning tools for Pakistani medical trainees.">
+<meta property="og:url" content="https://itskaero.github.io/meritnama/">
+<meta property="og:image" content="https://itskaero.github.io/meritnama/assets/images/meritnama-hero.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="preload" as="image" href="assets/images/meritnama-hero.webp" type="image/webp" media="(min-width: 761px)">
+<link rel="preload" as="image" href="assets/images/meritnama-hero-960.webp" type="image/webp" media="(max-width: 760px)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/site.css">
+<script src="site.config.js"></script>
+<script>
+/* Legacy behaviour: a signed-in user of the in-repo app goes straight to it.
+   Add ?home to the URL to stay on this page. Controlled by site.config.js. */
+(function () {
+  var cfg = window.MERITNAMA_CONFIG || {};
+  if (!cfg.legacySessionRedirect || /[?&]home\b/.test(location.search)) return;
+  try {
+    var s = JSON.parse(localStorage.getItem('meritnama_auth_session'));
+    if (s && s.email && typeof s.ts === 'number' && (Date.now() - s.ts) < 86400000) {
+      location.replace(cfg.appUrl || 'app.html');
+    }
+  } catch (e) {}
+})();
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"MeritNama","url":"https://itskaero.github.io/meritnama/","description":"Independent postgraduate medical induction analysis and planning for Pakistani medical trainees."}
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- SVG icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
+  <symbol id="i-hospital" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M10 9h4M12 7v4M9 21v-5h6v5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 8.3 8 9 4.6-.7 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/></symbol>
+  <symbol id="i-seat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-1a6 6 0 0 1 12 0v1"/><path d="M16 4a3 3 0 0 1 0 6M21 21v-1a5 5 0 0 0-4-5"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="i-sim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></symbol>
+  <symbol id="i-calc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M14 11h2M8 15h2M14 15h2M8 18h2M14 18h2"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-mark" viewBox="0 0 32 32" fill="currentColor"><rect x="3" y="18" width="5" height="10" rx="1.5" opacity=".55"/><rect x="10" y="12" width="5" height="16" rx="1.5" opacity=".75"/><rect x="17" y="7" width="5" height="21" rx="1.5"/><path d="M24 4h5v5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="m29 4-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+</svg>
+
+<header class="site-header">
+  <nav class="nav" aria-label="Primary">
+    <a class="brand" href="./" aria-label="MeritNama home">
+      <svg class="brand-mark" aria-hidden="true"><use href="#i-mark"/></svg>
+      <span class="brand-name">Merit<span>Nama</span></span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="navMenu" aria-label="Open menu">
+      <svg class="icon-open" aria-hidden="true"><use href="#i-menu"/></svg>
+      <svg class="icon-close" aria-hidden="true"><use href="#i-close"/></svg>
+    </button>
+    <div class="nav-menu" id="navMenu">
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#data">Methodology</a></li>
+        <li><a href="hospitals.html">Hospitals</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="btn btn-ghost btn-sm" type="button" id="signOutBtn" hidden>Sign out</button>
+        <a class="btn btn-primary btn-sm" href="app.html" data-app-link>Sign in</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main id="main">
+  <!-- ═══ HERO ═══ -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-body">
+      <span class="chip"><span class="chip-dot" aria-hidden="true"></span>Independent medical induction intelligence</span>
+      <h1 id="hero-title">Understand your merit. <span class="accent">Make your next move.</span></h1>
+      <p class="hero-lede" id="heroSubhead">Explore merit trends, compare training opportunities, understand seat competition, and plan your postgraduate induction with data-informed tools.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="#features">Explore MeritNama <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn-link btn-lg" href="#how">How it works</a>
+      </div>
+      <p class="hero-disclaimer">Not affiliated with PHF, CPSP or any admissions authority.</p>
+      <div class="app-status" id="appStatus" role="status">
+        <svg aria-hidden="true"><use href="#i-alert"/></svg>
+        <span>The MeritNama app is temporarily unavailable. This site, the methodology and public resources still work — please try signing in again later.</span>
+      </div>
+    </div>
+    <a class="scroll-cue" href="#snapshot">Scroll <span aria-hidden="true">↓</span></a>
+  </section>
+
+  <!-- ═══ SNAPSHOT ═══ -->
+  <section class="snapshot-band" id="snapshot" aria-labelledby="snapshot-title">
+    <div class="container snapshot-inner">
+      <div>
+        <span class="kicker">Induction 21 snapshot</span>
+        <h2 id="snapshot-title" class="snapshot-heading">The current cycle, in aggregate.</h2>
+        <p class="snapshot-note">Figures maintained by MeritNama from the published induction dataset. <span class="badge badge-simulated">Sim</span> figures come from MeritNama’s simulation, not an official allocation.</p>
+      </div>
+      <ul class="snapshot-list">
+        <li><span class="snapshot-lab" id="heroStat1Lab">Candidates</span><span class="snapshot-val" id="heroStat1Val">3,473+</span></li>
+        <li><span class="snapshot-lab" id="heroStat2Lab">Sim Placed</span><span class="snapshot-val" id="heroStat2Val">476</span></li>
+        <li><span class="snapshot-lab" id="heroStat3Lab">Slots</span><span class="snapshot-val" id="heroStat3Val">369</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══ 1. WHAT MERITNAMA DOES ═══ -->
+  <section class="section" id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">What MeritNama does</span>
+        <h2 id="features-title">One place to make sense of postgraduate induction.</h2>
+        <p>Official merit lists and gazettes are long, scattered and hard to compare across rounds. MeritNama organises them so you can reason about your options.</p>
+      </div>
+      <div class="grid grid-3">
+        <article class="card">
+          <div class="card-icon"><svg aria-hidden="true"><use href="#i-calc"/></svg></div>
+          <h3>Merit analysis</h3>
+          <p>Apply the published scoring policy for your induction to see how your merit is composed, component by component.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon"><svg aria-hidden="true"><use href="#i-trend"/></svg></div>
+          <h3>Historical cutoffs</h3>
+          <p>Closing merit by specialty, hospital, programme and quota across past inductions and rounds — normalised so different scoring scales can be compared.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon"><svg aria-hidden="true"><use href="#i-seat"/></svg></div>
+          <h3>Seat competition</h3>
+          <p>Seat counts from official gazettes alongside how many candidates competed for them, so you can see where competition is concentrated.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon"><svg aria-hidden="true"><use href="#i-list"/></svg></div>
+          <h3>Preference planning</h3>
+          <p>Build and compare draft preference lists with historical context, quota filters and duplicate warnings before you submit officially.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon"><svg aria-hidden="true"><use href="#i-sim"/></svg></div>
+          <h3>Induction simulation</h3>
+          <p>Run a merit-order seat-allocation simulation over the candidate pool to explore how preferences could play out, round by round.</p>
+        </article>
+        <a class="card" href="hospitals.html">
+          <div class="card-icon"><svg aria-hidden="true"><use href="#i-hospital"/></svg></div>
+          <h3>Specialties &amp; hospitals</h3>
+          <p>A searchable directory of training hospitals and CPSP-accredited programmes by specialty and city.</p>
+          <span class="card-link">Open the directory <svg aria-hidden="true"><use href="#i-arrow"/></svg></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 2. HOW MERIT ANALYSIS WORKS ═══ -->
+  <section class="section section-alt" id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">How it works</span>
+        <h2 id="how-title">From your marks to your options, in four steps.</h2>
+      </div>
+      <ol class="grid grid-2 steps">
+        <li class="card">
+          <h3>Calculate your merit</h3>
+          <p>Enter your marks and the calculator applies the scoring policy published for your induction — each component shown with its maximum, so nothing is hidden.</p>
+        </li>
+        <li class="card">
+          <h3>Compare with historical cutoffs</h3>
+          <p>See where your score sits against closing merit for the specialties, hospitals and quotas you care about, with the trend across years.</p>
+        </li>
+        <li class="card">
+          <h3>Plan your preferences</h3>
+          <p>Order specialties and hospitals into draft lists, check eligibility warnings and compare alternatives side by side.</p>
+        </li>
+        <li class="card">
+          <h3>Simulate the induction</h3>
+          <p>Run the allocation simulation on the available data to see a predicted placement — and the preference that produced it. Every result is labelled as a simulation.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ═══ 3–6. FEATURE DETAIL ═══ -->
+  <section class="section" aria-labelledby="explore-title">
+    <div class="container split">
+      <div>
+        <span class="kicker">Historical merit &amp; cutoffs</span>
+        <h2 id="explore-title">Read the history before you choose.</h2>
+        <ul class="checklist">
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Every induction we hold data for</strong> — closing merit per specialty, hospital, programme (FCPS, MS, MD, MDS) and quota.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Round-by-round movement</strong> — how cutoffs shifted between merit lists within an induction.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Comparable scales</strong> — scoring totals changed between policies, so scores are also shown as a percentage of each year’s maximum.</span></li>
+        </ul>
+      </div>
+      <div>
+        <span class="kicker">Seat competition &amp; simulation</span>
+        <h2>See competition, not just cutoffs.</h2>
+        <ul class="checklist">
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Seats from the gazette</strong> — the number of positions per specialty, hospital and quota.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Merit-order allocation</strong> — the simulator walks candidates in merit order and fills seats against stated preferences and quotas.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Unplaced outcomes shown honestly</strong> — when a list would not place, the simulation says so.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 7. DATA TRANSPARENCY ═══ -->
+  <section class="section section-alt" id="data" aria-labelledby="data-title">
+    <div class="container split">
+      <div>
+        <span class="kicker">Data &amp; methodology</span>
+        <h2 id="data-title">Where the numbers come from.</h2>
+        <div class="section-head" style="margin-bottom:0">
+          <p>MeritNama uses published induction material — merit lists, gazette seat notifications and scoring-policy notifications — processed into a consistent format. Each induction cycle the data is updated as new lists are published.</p>
+        </div>
+        <ul class="checklist">
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Sources:</strong> official merit lists and gazette notifications for each induction and round; the scoring policy notification for each induction.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Processing:</strong> hospital and specialty names are normalised to canonical identifiers so they can be compared across years.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Corrections:</strong> if you spot a mismatch with an official document, tell us and we will check it against the source.</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="sr-only">How figures are labelled</h3>
+        <div class="legend">
+          <div class="legend-row"><span><span class="badge badge-historical">Historical</span></span><p>Taken from a published merit list or gazette for a completed round.</p></div>
+          <div class="legend-row"><span><span class="badge badge-current">Current</span></span><p>From the induction in progress. May change as further rounds and corrections are published.</p></div>
+          <div class="legend-row"><span><span class="badge badge-simulated">Simulated</span></span><p>Produced by MeritNama’s model from available data and stated assumptions. Never an official selection decision.</p></div>
+        </div>
+        <div class="callout" style="margin-top:var(--mn-space-5)">
+          <svg aria-hidden="true"><use href="#i-alert"/></svg>
+          <div>
+            <h3>Always verify officially</h3>
+            <p>Historical cutoffs do not guarantee future outcomes, and simulations depend on incomplete information. Confirm everything with the official induction authority before you decide.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 8. ACCOUNT FEATURES ═══ -->
+  <section class="section" id="account" aria-labelledby="account-title">
+    <div class="container split">
+      <div>
+        <span class="kicker">With a MeritNama account</span>
+        <h2 id="account-title">A private workspace for your induction.</h2>
+        <div class="section-head" style="margin-bottom:0">
+          <p>The public site is useful on its own. Signing in adds tools that work with your own record and plans.</p>
+        </div>
+      </div>
+      <ul class="checklist" style="margin-top:0">
+        <li><svg aria-hidden="true"><use href="#i-user"/></svg><span><strong>Your merit profile</strong> — your published marks and breakdown under the applicable policy.</span></li>
+        <li><svg aria-hidden="true"><use href="#i-list"/></svg><span><strong>Draft preference lists</strong> — kept separate from anything you submit officially.</span></li>
+        <li><svg aria-hidden="true"><use href="#i-sim"/></svg><span><strong>Simulation runs</strong> — save, compare and revisit scenarios.</span></li>
+        <li><svg aria-hidden="true"><use href="#i-shield"/></svg><span><strong>Private by default</strong> — your saved plans are visible only to your account.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══ SIBLING PRODUCT ═══ -->
+  <section class="section section-alt" id="mednama" aria-labelledby="mednama-title">
+    <div class="container sibling">
+      <div>
+        <span class="kicker">Also from the nama family</span>
+        <h2 id="mednama-title">medNAMA — learn from the source, practise with purpose.</h2>
+        <div class="section-head" style="margin-bottom:0">
+          <p>MeritNama tells you where you stand. medNAMA is for the exam that got you there — clinical answers grounded in your reference textbooks with page citations, and practice built on recalled FCPS Part&nbsp;1 papers.</p>
+        </div>
+        <div class="chips"><span>Inline page citations</span><span>Tutor &amp; exam modes</span><span>Smart re-tests</span></div>
+      </div>
+      <div class="hero-actions" style="margin-top:0">
+        <a class="btn btn-secondary btn-lg" href="https://itskaero.github.io/medNAMA/" target="_blank" rel="noopener">Open medNAMA <span aria-hidden="true">↗</span><span class="sr-only">(opens in a new tab)</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 9. FAQ ═══ -->
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head center">
+        <span class="kicker">FAQ</span>
+        <h2 id="faq-title">Questions trainees ask us.</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Is MeritNama an official induction or admissions portal?</summary>
+          <div><p>No. MeritNama is independent and is not affiliated with PHF, CPSP, the Health Department or any admissions authority. Applications, consent and official results happen only through the official channels.</p></div>
+        </details>
+        <details>
+          <summary>Does a simulated placement mean I will get that seat?</summary>
+          <div><p>No. Simulations use the data available to MeritNama and stated assumptions. Real outcomes depend on official lists, consent, joining, withdrawals and corrections that a simulation cannot know in advance.</p></div>
+        </details>
+        <details>
+          <summary>Where does the data come from?</summary>
+          <div><p>From published merit lists, gazette seat notifications and scoring-policy notifications for each induction. See <a href="#data">Data &amp; methodology</a>.</p></div>
+        </details>
+        <details>
+          <summary>Can I change my marks in MeritNama?</summary>
+          <div><p>Your published record cannot be edited by you. You can enter your own figures in the calculator to explore “what if” scenarios — those are clearly marked as your own input, separate from published data.</p></div>
+        </details>
+        <details>
+          <summary>Who can see my saved preference lists and scenarios?</summary>
+          <div><p>Only your account. MeritNama does not publish individual candidates’ plans. Read the <a href="privacy.html">privacy policy</a> for details.</p></div>
+        </details>
+        <details>
+          <summary>I found an error. How do I report it?</summary>
+          <div><p>Email <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a> with the induction, round and a link or reference to the official document. We check every report against the source.</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 10. FINAL CTA ═══ -->
+  <section class="section section-alt cta-band" aria-labelledby="cta-title">
+    <div class="container">
+      <span class="kicker">Get started</span>
+      <h2 id="cta-title">Plan your induction with clearer information.</h2>
+      <p>Browse the public resources now, or sign in to work with your own record.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="app.html" data-app-link>Sign in to MeritNama <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn-secondary btn-lg" href="request-access.html">Request access</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ═══ 11. FOOTER ═══ -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="./">
+          <svg class="brand-mark" aria-hidden="true"><use href="#i-mark"/></svg>
+          <span class="brand-name">Merit<span>Nama</span></span>
+        </a>
+        <p class="footer-about">Independent postgraduate induction analysis for Pakistani medical trainees. Not an official admissions authority.</p>
+      </div>
+      <div>
+        <h2>Product</h2>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#data">Data &amp; methodology</a></li>
+          <li><a href="app.html" data-app-link>Sign in</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Resources</h2>
+        <ul>
+          <li><a href="hospitals.html">Hospital directory</a></li>
+          <li><a href="accreditation.html">CPSP accreditation</a></li>
+          <li><a href="reviews.html">Community</a></li>
+          <li><a href="donate.html">Support the project</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>About</h2>
+        <ul>
+          <li><a href="privacy.html">Privacy policy</a></li>
+          <li><a href="terms.html">Terms of use</a></li>
+          <li><a href="mailto:itskaero@gmail.com">Contact</a></li>
+          <li><a href="https://github.com/itskaero/meritnama" rel="noopener">Source (public site)</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-base">
+      <span>© <span id="year">2026</span> MeritNama. Built by <a href="https://github.com/itskaero" rel="noopener">@itskaero</a>.</span>
+      <span>Historical and simulated figures are not official decisions.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/site.js" defer></script>
+</body>
+</html>

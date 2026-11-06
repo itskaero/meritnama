@@ -2,28 +2,25 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MeritNama — Postgraduate Induction Insights for Medical Trainees</title>
-<meta name="description" content="Independent analysis of Punjab postgraduate medical induction: historical merit and cutoffs, seat competition, preference planning and induction simulation. Not an official admissions authority.">
-<meta name="theme-color" content="#0b0b0c">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MeritNama Relaunch</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="MeritNama is being rebuilt: a faster, redesigned home for Punjab postgraduate induction merit trends, seat competition and induction planning. The current version stays available until launch.">
+<meta name="theme-color" content="#070b14">
 <link rel="canonical" href="https://itskaero.github.io/meritnama/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="MeritNama — Understand your merit. Make your next move.">
-<meta property="og:description" content="Independent merit trends, seat competition and induction planning tools for Pakistani medical trainees.">
+<meta property="og:title" content="MeritNama is being rebuilt">
+<meta property="og:description" content="A redesigned MeritNama is on the way. The current version stays open until launch day.">
 <meta property="og:url" content="https://itskaero.github.io/meritnama/">
 <meta property="og:image" content="https://itskaero.github.io/meritnama/assets/images/meritnama-hero.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="preload" as="image" href="assets/images/meritnama-hero.webp" type="image/webp" media="(min-width: 761px)">
-<link rel="preload" as="image" href="assets/images/meritnama-hero-960.webp" type="image/webp" media="(max-width: 760px)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/tokens.css">
-<link rel="stylesheet" href="assets/css/site.css">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="site.config.js"></script>
 <script>
-/* Legacy behaviour: a signed-in user of the in-repo app goes straight to it.
+/* Signed-in users of the current app still go straight to it.
    Add ?home to the URL to stay on this page. Controlled by site.config.js. */
 (function () {
   var cfg = window.MERITNAMA_CONFIG || {};
@@ -36,356 +33,600 @@
   } catch (e) {}
 })();
 </script>
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebSite","name":"MeritNama","url":"https://itskaero.github.io/meritnama/","description":"Independent postgraduate medical induction analysis and planning for Pakistani medical trainees."}
-</script>
+<style>
+/* Layout: a fixed night sky (aurora + stars) over a study-desk silhouette;
+   content sits in a two-column split — the announcement left, the build log right. */
+:root {
+  --night:      #070b14;
+  --night-2:    #0d1424;
+  --ink:        #e7ecf5;
+  --ink-soft:   #a3aec4;
+  --ink-faint:  #66718a;
+  --aurora-1:   #3ecf8e;   /* green — existing --accent */
+  --aurora-2:   #4db8d9;   /* cyan  — existing --primary */
+  --aurora-3:   #7c65c4;   /* violet — existing --neon-purple */
+  --lamp:       #f2b45a;   /* warm desk-lamp glow */
+  --glass:      rgba(13, 20, 36, 0.58);
+  --glass-edge: rgba(255, 255, 255, 0.09);
+  --silhouette: #03060c;
+
+  --font-display: "Bricolage Grotesque", "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-body:    "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --step--1: clamp(0.78rem, 0.76rem + 0.1vw, 0.84rem);
+  --step-0:  clamp(0.95rem, 0.92rem + 0.15vw, 1.05rem);
+  --step-1:  clamp(1.15rem, 1.08rem + 0.35vw, 1.35rem);
+  --step-4:  clamp(2.5rem, 1.6rem + 4.2vw, 5.1rem);
+
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  background: var(--night);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--aurora-2); outline-offset: 3px; border-radius: 6px; }
+
+/* ── Sky layers ───────────────────────────────────────── */
+.sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  background: radial-gradient(120% 80% at 50% 110%, var(--night-2) 0%, var(--night) 60%); }
+.sky canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#aurora { filter: saturate(1.15); mix-blend-mode: screen; opacity: .95; }
+
+.glyphs { position: absolute; inset: 0; }
+.glyph {
+  position: absolute; bottom: -40px;
+  font-family: var(--font-mono); font-size: 13px; letter-spacing: .04em;
+  color: var(--ink-faint); opacity: 0; white-space: nowrap;
+  animation: drift linear infinite;
+}
+@keyframes drift {
+  0%   { transform: translateY(0) rotate(var(--r, 0deg)); opacity: 0; }
+  12%  { opacity: var(--o, .5); }
+  85%  { opacity: var(--o, .5); }
+  100% { transform: translateY(-105vh) rotate(calc(var(--r, 0deg) * -1)); opacity: 0; }
+}
+
+/* Study desk silhouette */
+.desk { position: absolute; left: 0; right: 0; bottom: 0; height: min(34vh, 300px); }
+.desk svg { position: absolute; right: max(2vw, 8px); bottom: 0; height: 100%; width: auto; max-width: 100%; }
+.desk::before { /* desk surface */
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 18px;
+  background: var(--silhouette); box-shadow: 0 -1px 0 rgba(242,180,90,.12);
+}
+.lamp-glow {
+  position: absolute; right: calc(max(2vw, 8px) + min(34vh, 300px) * 0.62); bottom: 0;
+  width: min(70vh, 620px); height: min(48vh, 420px); transform: translateX(50%);
+  background: radial-gradient(50% 60% at 50% 100%, rgba(242,180,90,.22), rgba(242,180,90,0) 70%);
+  animation: lamp 6s ease-in-out infinite;
+}
+@keyframes lamp { 0%,100% { opacity: .85 } 50% { opacity: 1 } }
+.steam path { fill: none; stroke: rgba(231,236,245,.28); stroke-width: 2.2; stroke-linecap: round;
+  stroke-dasharray: 60 120; animation: steam 4.5s linear infinite; }
+.steam path:nth-child(2) { animation-delay: -1.5s; }
+.steam path:nth-child(3) { animation-delay: -3s; }
+@keyframes steam { from { stroke-dashoffset: 180; opacity: .0 } 30% { opacity: 1 } to { stroke-dashoffset: 0; opacity: 0 } }
+
+/* ── Page ─────────────────────────────────────────────── */
+.page {
+  position: relative; z-index: 1;
+  max-width: 1180px; margin: 0 auto;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+  padding-block: 22px 120px;
+  display: flex; flex-direction: column; gap: clamp(36px, 7vh, 72px);
+}
+
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none;
+  font-family: var(--font-display); font-weight: 800; font-size: 1.25rem; letter-spacing: -.01em; }
+.brand svg { width: 28px; height: 28px; color: var(--aurora-2); }
+.brand span span { color: var(--aurora-2); }
+
+.sound {
+  display: inline-flex; align-items: center; gap: 10px;
+  font: 500 var(--step--1)/1 var(--font-mono); letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink); background: var(--glass); border: 1px solid var(--glass-edge);
+  border-radius: 999px; padding: 10px 16px 10px 12px; cursor: pointer;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  transition: border-color .2s, background .2s;
+}
+.sound:hover { border-color: rgba(77,184,217,.45); }
+.bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; width: 18px; }
+.bars i { display: block; width: 3px; height: 3px; background: var(--aurora-1); border-radius: 1px; transition: height .3s; }
+.sound[aria-pressed="true"] .bars i { animation: eq 1.1s ease-in-out infinite; }
+.sound[aria-pressed="true"] .bars i:nth-child(2) { animation-delay: -.3s; }
+.sound[aria-pressed="true"] .bars i:nth-child(3) { animation-delay: -.6s; }
+.sound[aria-pressed="true"] .bars i:nth-child(4) { animation-delay: -.85s; }
+@keyframes eq { 0%,100% { height: 3px } 50% { height: 14px } }
+
+.hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); align-items: start; }
+.hero > * { min-width: 0; }
+
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  font: 500 var(--step--1)/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--aurora-1);
+}
+.pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--aurora-1); box-shadow: 0 0 0 0 rgba(62,207,142,.6); animation: pulse 2s infinite; }
+@keyframes pulse { 70% { box-shadow: 0 0 0 10px rgba(62,207,142,0) } 100% { box-shadow: 0 0 0 0 rgba(62,207,142,0) } }
+
+h1 {
+  font-family: var(--font-display); font-weight: 800; font-size: var(--step-4);
+  line-height: .98; letter-spacing: -.035em; margin: 18px 0 0; text-wrap: balance;
+  font-variation-settings: "opsz" 96;
+}
+h1 .glow {
+  background: linear-gradient(100deg, var(--aurora-1), var(--aurora-2) 45%, var(--aurora-3) 90%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: shimmer 9s ease-in-out infinite alternate;
+}
+@keyframes shimmer { from { background-position: 0% 50% } to { background-position: 100% 50% } }
+
+.ecg { display: block; width: min(100%, 460px); height: 44px; margin: 22px 0 6px; overflow: visible; }
+.ecg path { fill: none; stroke: var(--aurora-1); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round;
+  stroke-dasharray: 640; stroke-dashoffset: 640; animation: trace 3.2s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(62,207,142,.7)); }
+.ecg .base { stroke: rgba(62,207,142,.14); stroke-dasharray: none; stroke-dashoffset: 0; animation: none; filter: none; }
+@keyframes trace { to { stroke-dashoffset: 0 } }
+
+.lede { font-size: var(--step-1); color: var(--ink-soft); max-width: 36ch; margin: 10px 0 0; line-height: 1.55; text-wrap: pretty; }
+
+.countdown { margin-top: 34px; }
+.label { font: 500 var(--step--1)/1.2 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); }
+.clock { display: flex; gap: clamp(8px, 2vw, 14px); margin-top: 12px; flex-wrap: wrap; }
+.unit {
+  min-width: 78px; padding: 14px 14px 10px; border-radius: 14px;
+  background: var(--glass); border: 1px solid var(--glass-edge);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+.unit b { display: block; font: 600 clamp(1.7rem, 1.3rem + 1.6vw, 2.4rem)/1 var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.unit span { display: block; margin-top: 6px; font: 500 .7rem/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); }
+.launch-date { margin-top: 12px; color: var(--ink-faint); font-size: var(--step--1); }
+
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 10px; text-decoration: none;
+  font-weight: 600; padding: 13px 20px; border-radius: 12px; transition: transform .2s, box-shadow .2s, border-color .2s;
+}
+.btn svg { width: 18px; height: 18px; transition: transform .2s; }
+.btn:hover svg { transform: translateX(3px); }
+.btn-primary { color: var(--night); background: linear-gradient(100deg, var(--aurora-1), var(--aurora-2)); box-shadow: 0 8px 30px -8px rgba(77,184,217,.55); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 34px -8px rgba(62,207,142,.6); }
+.btn-ghost { color: var(--ink); border: 1px solid var(--glass-edge); background: var(--glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.btn-ghost:hover { border-color: rgba(255,255,255,.22); }
+
+/* Build log */
+.log {
+  border-radius: 20px; padding: clamp(20px, 3vw, 28px);
+  background: var(--glass); border: 1px solid var(--glass-edge);
+  backdrop-filter: blur(16px) saturate(1.2); -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  box-shadow: 0 30px 80px -30px rgba(0,0,0,.7);
+}
+.log h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; letter-spacing: -.015em; margin: 0; }
+.meter { margin-top: 18px; }
+.meter-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.meter-head strong { font: 600 1.6rem/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.track { position: relative; height: 10px; margin-top: 10px; border-radius: 999px; background: rgba(255,255,255,.06); overflow: hidden; }
+.fill { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: inherit;
+  background: linear-gradient(90deg, var(--aurora-1), var(--aurora-2), var(--aurora-3));
+  transition: width 1.6s cubic-bezier(.2,.8,.2,1); }
+.fill::after { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
+  transform: translateX(-100%); animation: sheen 2.8s ease-in-out infinite; }
+@keyframes sheen { to { transform: translateX(100%) } }
+
+.items { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 2px; }
+.items li { display: grid; grid-template-columns: 1fr auto; gap: 4px 14px; align-items: center;
+  padding: 12px 0; border-top: 1px solid rgba(255,255,255,.06); }
+.items li:first-child { border-top: 0; }
+.items .what { font-weight: 600; font-size: .96rem; }
+.items .why { grid-column: 1 / -1; color: var(--ink-faint); font-size: var(--step--1); line-height: 1.45; }
+.chip { font: 500 .68rem/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase;
+  padding: 6px 9px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+.chip.done  { color: var(--aurora-1); border-color: rgba(62,207,142,.35); background: rgba(62,207,142,.08); }
+.chip.doing { color: var(--lamp); border-color: rgba(242,180,90,.38); background: rgba(242,180,90,.08); }
+.chip.doing::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 6px; vertical-align: 1px; animation: blink 1.4s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: .25 } }
+.chip.next  { color: var(--ink-soft); border-color: rgba(255,255,255,.14); }
+
+.foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 24px;
+  color: var(--ink-faint); font-size: var(--step--1); }
+.foot a { color: var(--ink-soft); text-decoration-color: rgba(163,174,196,.35); text-underline-offset: 3px; }
+.foot nav { display: flex; gap: 18px; flex-wrap: wrap; }
+.copy-mail { font: inherit; color: var(--ink-soft); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-decoration-color: rgba(163,174,196,.35); text-underline-offset: 3px; }
+
+.hint { position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 2;
+  font: 500 .72rem/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft);
+  background: var(--glass); border: 1px solid var(--glass-edge); padding: 9px 14px; border-radius: 999px;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: opacity .6s; white-space: nowrap; }
+.hint.gone { opacity: 0; pointer-events: none; }
+
+/* Load sequence: runs once on its own, never waits on scroll */
+.rise { animation: rise .9s cubic-bezier(.2,.8,.2,1) both; }
+.rise:nth-child(2) { animation-delay: .08s } .rise:nth-child(3) { animation-delay: .16s }
+.rise:nth-child(4) { animation-delay: .24s } .rise:nth-child(5) { animation-delay: .32s }
+.rise:nth-child(6) { animation-delay: .4s }
+@keyframes rise { from { opacity: 0; transform: translateY(14px) } }
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .desk { height: 150px; opacity: .8; }
+}
+@media (max-width: 420px) {
+  .unit { min-width: 0; flex: 1 1 0; padding: 12px 10px 9px; }
+  .sound .sound-text { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+  .glyphs { display: none; }
+  .ecg path { stroke-dashoffset: 0; }
+}
+</style>
 </head>
 <body>
-<a class="skip-link" href="#main">Skip to content</a>
 
-<!-- SVG icon sprite -->
+<div class="sky" aria-hidden="true">
+  <canvas id="stars"></canvas>
+  <canvas id="aurora"></canvas>
+  <div class="glyphs" id="glyphs"></div>
+  <div class="desk">
+    <div class="lamp-glow"></div>
+    <svg viewBox="0 0 420 300" preserveAspectRatio="xMaxYMax meet">
+      <!-- lamp -->
+      <g fill="var(--silhouette)">
+        <rect x="236" y="276" width="70" height="10" rx="4"/>
+        <path d="M268 278 L250 170 L256 168 L274 276 Z"/>
+        <path d="M252 172 L300 108 L306 113 L258 176 Z"/>
+        <path d="M282 86 L340 126 L326 142 L268 102 Z"/>
+      </g>
+      <path d="M326 142 L268 102" stroke="var(--lamp)" stroke-width="3" stroke-linecap="round" opacity=".9"/>
+      <!-- book stack -->
+      <g fill="var(--silhouette)">
+        <rect x="40"  y="256" width="150" height="26" rx="3"/>
+        <rect x="52"  y="232" width="132" height="24" rx="3"/>
+        <rect x="34"  y="210" width="140" height="22" rx="3"/>
+        <rect x="58"  y="190" width="118" height="20" rx="3"/>
+      </g>
+      <g fill="none" stroke="rgba(242,180,90,.22)" stroke-width="1.5">
+        <path d="M52 269h120M64 244h104M46 221h112M70 200h90"/>
+      </g>
+      <!-- mug with steam -->
+      <g fill="var(--silhouette)">
+        <rect x="350" y="240" width="42" height="44" rx="6"/>
+        <path d="M392 250 q18 2 16 16 q-2 12 -16 12" fill="none" stroke="var(--silhouette)" stroke-width="7"/>
+      </g>
+      <g class="steam">
+        <path d="M362 232 q-8 -14 0 -26 q8 -12 0 -26"/>
+        <path d="M372 232 q8 -14 0 -26 q-8 -12 0 -26"/>
+        <path d="M382 232 q-8 -14 0 -26 q8 -12 0 -26"/>
+      </g>
+    </svg>
+  </div>
+</div>
+
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
-  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
-  <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
-  <symbol id="i-hospital" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M10 9h4M12 7v4M9 21v-5h6v5"/></symbol>
-  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 8.3 8 9 4.6-.7 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></symbol>
-  <symbol id="i-trend" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/></symbol>
-  <symbol id="i-seat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-1a6 6 0 0 1 12 0v1"/><path d="M16 4a3 3 0 0 1 0 6M21 21v-1a5 5 0 0 0-4-5"/></symbol>
-  <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01"/></symbol>
-  <symbol id="i-sim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></symbol>
-  <symbol id="i-calc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M14 11h2M8 15h2M14 15h2M8 18h2M14 18h2"/></symbol>
-  <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
-  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></symbol>
-  <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></symbol>
-  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
-  <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
   <symbol id="i-mark" viewBox="0 0 32 32" fill="currentColor"><rect x="3" y="18" width="5" height="10" rx="1.5" opacity=".55"/><rect x="10" y="12" width="5" height="16" rx="1.5" opacity=".75"/><rect x="17" y="7" width="5" height="21" rx="1.5"/><path d="M24 4h5v5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="m29 4-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
 </svg>
 
-<header class="site-header">
-  <nav class="nav" aria-label="Primary">
-    <a class="brand" href="./" aria-label="MeritNama home">
-      <svg class="brand-mark" aria-hidden="true"><use href="#i-mark"/></svg>
-      <span class="brand-name">Merit<span>Nama</span></span>
+<div class="page">
+  <header class="topbar rise">
+    <a class="brand" href="./?home" aria-label="MeritNama home">
+      <svg aria-hidden="true"><use href="#i-mark"/></svg>
+      <span>Merit<span>Nama</span></span>
     </a>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="navMenu" aria-label="Open menu">
-      <svg class="icon-open" aria-hidden="true"><use href="#i-menu"/></svg>
-      <svg class="icon-close" aria-hidden="true"><use href="#i-close"/></svg>
+    <button class="sound" id="sound" type="button" aria-pressed="false" aria-label="Play background music">
+      <span class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="sound-text" id="soundText">Music off</span>
     </button>
-    <div class="nav-menu" id="navMenu">
-      <ul class="nav-links">
-        <li><a href="#features">Features</a></li>
-        <li><a href="#how">How it works</a></li>
-        <li><a href="#data">Methodology</a></li>
-        <li><a href="hospitals.html">Hospitals</a></li>
-        <li><a href="#faq">FAQ</a></li>
-      </ul>
-      <div class="nav-actions">
-        <button class="btn btn-ghost btn-sm" type="button" id="signOutBtn" hidden>Sign out</button>
-        <a class="btn btn-primary btn-sm" href="app.html" data-app-link>Sign in</a>
-      </div>
-    </div>
-  </nav>
-</header>
+  </header>
 
-<main id="main">
-  <!-- ═══ HERO ═══ -->
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="hero-body">
-      <span class="chip"><span class="chip-dot" aria-hidden="true"></span>Independent medical induction intelligence</span>
-      <h1 id="hero-title">Understand your merit. <span class="accent">Make your next move.</span></h1>
-      <p class="hero-lede" id="heroSubhead">Explore merit trends, compare training opportunities, understand seat competition, and plan your postgraduate induction with data-informed tools.</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary btn-lg" href="#features">Explore MeritNama <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
-        <a class="btn btn-link btn-lg" href="#how">How it works</a>
-      </div>
-      <p class="hero-disclaimer">Not affiliated with PHF, CPSP or any admissions authority.</p>
-      <div class="app-status" id="appStatus" role="status">
-        <svg aria-hidden="true"><use href="#i-alert"/></svg>
-        <span>The MeritNama app is temporarily unavailable. This site, the methodology and public resources still work — please try signing in again later.</span>
-      </div>
-    </div>
-    <a class="scroll-cue" href="#snapshot">Scroll <span aria-hidden="true">↓</span></a>
-  </section>
+  <main class="hero" id="main">
+    <section>
+      <div class="eyebrow rise"><span class="pulse" aria-hidden="true"></span>Rebuild in progress</div>
+      <h1 class="rise">Your merit, <span class="glow">seen more clearly.</span></h1>
+      <svg class="ecg rise" viewBox="0 0 460 44" aria-hidden="true">
+        <path class="base" d="M0 26 H460"/>
+        <path d="M0 26 H70 L80 22 L88 26 H104 L112 6 L122 40 L130 26 H168 L182 18 L196 26 H262 L272 22 L280 26 H296 L304 6 L314 40 L322 26 H360 L374 18 L388 26 H460"/>
+      </svg>
+      <p class="lede rise">We're rebuilding MeritNama from the ground up: a new design, faster merit lookups and smarter induction planning. The current version stays open until launch day.</p>
 
-  <!-- ═══ SNAPSHOT ═══ -->
-  <section class="snapshot-band" id="snapshot" aria-labelledby="snapshot-title">
-    <div class="container snapshot-inner">
-      <div>
-        <span class="kicker">Induction 21 snapshot</span>
-        <h2 id="snapshot-title" class="snapshot-heading">The current cycle, in aggregate.</h2>
-        <p class="snapshot-note">Figures maintained by MeritNama from the published induction dataset. <span class="badge badge-simulated">Sim</span> figures come from MeritNama’s simulation, not an official allocation.</p>
-      </div>
-      <ul class="snapshot-list">
-        <li><span class="snapshot-lab" id="heroStat1Lab">Candidates</span><span class="snapshot-val" id="heroStat1Val">3,473+</span></li>
-        <li><span class="snapshot-lab" id="heroStat2Lab">Sim Placed</span><span class="snapshot-val" id="heroStat2Val">476</span></li>
-        <li><span class="snapshot-lab" id="heroStat3Lab">Slots</span><span class="snapshot-val" id="heroStat3Val">369</span></li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- ═══ 1. WHAT MERITNAMA DOES ═══ -->
-  <section class="section" id="features" aria-labelledby="features-title">
-    <div class="container">
-      <div class="section-head">
-        <span class="kicker">What MeritNama does</span>
-        <h2 id="features-title">One place to make sense of postgraduate induction.</h2>
-        <p>Official merit lists and gazettes are long, scattered and hard to compare across rounds. MeritNama organises them so you can reason about your options.</p>
-      </div>
-      <div class="grid grid-3">
-        <article class="card">
-          <div class="card-icon"><svg aria-hidden="true"><use href="#i-calc"/></svg></div>
-          <h3>Merit analysis</h3>
-          <p>Apply the published scoring policy for your induction to see how your merit is composed, component by component.</p>
-        </article>
-        <article class="card">
-          <div class="card-icon"><svg aria-hidden="true"><use href="#i-trend"/></svg></div>
-          <h3>Historical cutoffs</h3>
-          <p>Closing merit by specialty, hospital, programme and quota across past inductions and rounds — normalised so different scoring scales can be compared.</p>
-        </article>
-        <article class="card">
-          <div class="card-icon"><svg aria-hidden="true"><use href="#i-seat"/></svg></div>
-          <h3>Seat competition</h3>
-          <p>Seat counts from official gazettes alongside how many candidates competed for them, so you can see where competition is concentrated.</p>
-        </article>
-        <article class="card">
-          <div class="card-icon"><svg aria-hidden="true"><use href="#i-list"/></svg></div>
-          <h3>Preference planning</h3>
-          <p>Build and compare draft preference lists with historical context, quota filters and duplicate warnings before you submit officially.</p>
-        </article>
-        <article class="card">
-          <div class="card-icon"><svg aria-hidden="true"><use href="#i-sim"/></svg></div>
-          <h3>Induction simulation</h3>
-          <p>Run a merit-order seat-allocation simulation over the candidate pool to explore how preferences could play out, round by round.</p>
-        </article>
-        <a class="card" href="hospitals.html">
-          <div class="card-icon"><svg aria-hidden="true"><use href="#i-hospital"/></svg></div>
-          <h3>Specialties &amp; hospitals</h3>
-          <p>A searchable directory of training hospitals and CPSP-accredited programmes by specialty and city.</p>
-          <span class="card-link">Open the directory <svg aria-hidden="true"><use href="#i-arrow"/></svg></span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══ 2. HOW MERIT ANALYSIS WORKS ═══ -->
-  <section class="section section-alt" id="how" aria-labelledby="how-title">
-    <div class="container">
-      <div class="section-head">
-        <span class="kicker">How it works</span>
-        <h2 id="how-title">From your marks to your options, in four steps.</h2>
-      </div>
-      <ol class="grid grid-2 steps">
-        <li class="card">
-          <h3>Calculate your merit</h3>
-          <p>Enter your marks and the calculator applies the scoring policy published for your induction — each component shown with its maximum, so nothing is hidden.</p>
-        </li>
-        <li class="card">
-          <h3>Compare with historical cutoffs</h3>
-          <p>See where your score sits against closing merit for the specialties, hospitals and quotas you care about, with the trend across years.</p>
-        </li>
-        <li class="card">
-          <h3>Plan your preferences</h3>
-          <p>Order specialties and hospitals into draft lists, check eligibility warnings and compare alternatives side by side.</p>
-        </li>
-        <li class="card">
-          <h3>Simulate the induction</h3>
-          <p>Run the allocation simulation on the available data to see a predicted placement — and the preference that produced it. Every result is labelled as a simulation.</p>
-        </li>
-      </ol>
-    </div>
-  </section>
-
-  <!-- ═══ 3–6. FEATURE DETAIL ═══ -->
-  <section class="section" aria-labelledby="explore-title">
-    <div class="container split">
-      <div>
-        <span class="kicker">Historical merit &amp; cutoffs</span>
-        <h2 id="explore-title">Read the history before you choose.</h2>
-        <ul class="checklist">
-          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Every induction we hold data for</strong> — closing merit per specialty, hospital, programme (FCPS, MS, MD, MDS) and quota.</span></li>
-          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Round-by-round movement</strong> — how cutoffs shifted between merit lists within an induction.</span></li>
-          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Comparable scales</strong> — scoring totals changed between policies, so scores are also shown as a percentage of each year’s maximum.</span></li>
-        </ul>
-      </div>
-      <div>
-        <span class="kicker">Seat competition &amp; simulation</span>
-        <h2>See competition, not just cutoffs.</h2>
-        <ul class="checklist">
-          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Seats from the gazette</strong> — the number of positions per specialty, hospital and quota.</span></li>
-          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Merit-order allocation</strong> — the simulator walks candidates in merit order and fills seats against stated preferences and quotas.</span></li>
-          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Unplaced outcomes shown honestly</strong> — when a list would not place, the simulation says so.</span></li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══ 7. DATA TRANSPARENCY ═══ -->
-  <section class="section section-alt" id="data" aria-labelledby="data-title">
-    <div class="container split">
-      <div>
-        <span class="kicker">Data &amp; methodology</span>
-        <h2 id="data-title">Where the numbers come from.</h2>
-        <div class="section-head" style="margin-bottom:0">
-          <p>MeritNama uses published induction material — merit lists, gazette seat notifications and scoring-policy notifications — processed into a consistent format. Each induction cycle the data is updated as new lists are published.</p>
+      <div class="countdown rise" aria-live="polite">
+        <div class="label" id="countLabel">Launching in</div>
+        <div class="clock" id="clock">
+          <div class="unit"><b id="cd-d">--</b><span>Days</span></div>
+          <div class="unit"><b id="cd-h">--</b><span>Hours</span></div>
+          <div class="unit"><b id="cd-m">--</b><span>Min</span></div>
+          <div class="unit"><b id="cd-s">--</b><span>Sec</span></div>
         </div>
-        <ul class="checklist">
-          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Sources:</strong> official merit lists and gazette notifications for each induction and round; the scoring policy notification for each induction.</span></li>
-          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Processing:</strong> hospital and specialty names are normalised to canonical identifiers so they can be compared across years.</span></li>
-          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><strong>Corrections:</strong> if you spot a mismatch with an official document, tell us and we will check it against the source.</span></li>
-        </ul>
+        <div class="launch-date" id="launchDate"></div>
       </div>
-      <div>
-        <h3 class="sr-only">How figures are labelled</h3>
-        <div class="legend">
-          <div class="legend-row"><span><span class="badge badge-historical">Historical</span></span><p>Taken from a published merit list or gazette for a completed round.</p></div>
-          <div class="legend-row"><span><span class="badge badge-current">Current</span></span><p>From the induction in progress. May change as further rounds and corrections are published.</p></div>
-          <div class="legend-row"><span><span class="badge badge-simulated">Simulated</span></span><p>Produced by MeritNama’s model from available data and stated assumptions. Never an official selection decision.</p></div>
-        </div>
-        <div class="callout" style="margin-top:var(--mn-space-5)">
-          <svg aria-hidden="true"><use href="#i-alert"/></svg>
-          <div>
-            <h3>Always verify officially</h3>
-            <p>Historical cutoffs do not guarantee future outcomes, and simulations depend on incomplete information. Confirm everything with the official induction authority before you decide.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- ═══ 8. ACCOUNT FEATURES ═══ -->
-  <section class="section" id="account" aria-labelledby="account-title">
-    <div class="container split">
-      <div>
-        <span class="kicker">With a MeritNama account</span>
-        <h2 id="account-title">A private workspace for your induction.</h2>
-        <div class="section-head" style="margin-bottom:0">
-          <p>The public site is useful on its own. Signing in adds tools that work with your own record and plans.</p>
-        </div>
+      <div class="actions rise">
+        <a class="btn btn-primary" href="app.html" data-app-link>Use the current version <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn-ghost" href="home-legacy.html">About MeritNama</a>
       </div>
-      <ul class="checklist" style="margin-top:0">
-        <li><svg aria-hidden="true"><use href="#i-user"/></svg><span><strong>Your merit profile</strong> — your published marks and breakdown under the applicable policy.</span></li>
-        <li><svg aria-hidden="true"><use href="#i-list"/></svg><span><strong>Draft preference lists</strong> — kept separate from anything you submit officially.</span></li>
-        <li><svg aria-hidden="true"><use href="#i-sim"/></svg><span><strong>Simulation runs</strong> — save, compare and revisit scenarios.</span></li>
-        <li><svg aria-hidden="true"><use href="#i-shield"/></svg><span><strong>Private by default</strong> — your saved plans are visible only to your account.</span></li>
-      </ul>
-    </div>
-  </section>
+    </section>
 
-  <!-- ═══ SIBLING PRODUCT ═══ -->
-  <section class="section section-alt" id="mednama" aria-labelledby="mednama-title">
-    <div class="container sibling">
-      <div>
-        <span class="kicker">Also from the nama family</span>
-        <h2 id="mednama-title">medNAMA — learn from the source, practise with purpose.</h2>
-        <div class="section-head" style="margin-bottom:0">
-          <p>MeritNama tells you where you stand. medNAMA is for the exam that got you there — clinical answers grounded in your reference textbooks with page citations, and practice built on recalled FCPS Part&nbsp;1 papers.</p>
-        </div>
-        <div class="chips"><span>Inline page citations</span><span>Tutor &amp; exam modes</span><span>Smart re-tests</span></div>
+    <aside class="log rise" aria-labelledby="logTitle">
+      <h2 id="logTitle">Build log</h2>
+      <div class="meter">
+        <div class="meter-head"><span class="label">Overall progress</span><strong id="pct">0%</strong></div>
+        <div class="track" role="progressbar" aria-label="Rebuild progress" aria-valuemin="0" aria-valuemax="100" id="track"><div class="fill" id="fill"></div></div>
       </div>
-      <div class="hero-actions" style="margin-top:0">
-        <a class="btn btn-secondary btn-lg" href="https://itskaero.github.io/medNAMA/" target="_blank" rel="noopener">Open medNAMA <span aria-hidden="true">↗</span><span class="sr-only">(opens in a new tab)</span></a>
-      </div>
-    </div>
-  </section>
+      <ul class="items" id="items"></ul>
+    </aside>
+  </main>
 
-  <!-- ═══ 9. FAQ ═══ -->
-  <section class="section" id="faq" aria-labelledby="faq-title">
-    <div class="container">
-      <div class="section-head center">
-        <span class="kicker">FAQ</span>
-        <h2 id="faq-title">Questions trainees ask us.</h2>
-      </div>
-      <div class="faq">
-        <details>
-          <summary>Is MeritNama an official induction or admissions portal?</summary>
-          <div><p>No. MeritNama is independent and is not affiliated with PHF, CPSP, the Health Department or any admissions authority. Applications, consent and official results happen only through the official channels.</p></div>
-        </details>
-        <details>
-          <summary>Does a simulated placement mean I will get that seat?</summary>
-          <div><p>No. Simulations use the data available to MeritNama and stated assumptions. Real outcomes depend on official lists, consent, joining, withdrawals and corrections that a simulation cannot know in advance.</p></div>
-        </details>
-        <details>
-          <summary>Where does the data come from?</summary>
-          <div><p>From published merit lists, gazette seat notifications and scoring-policy notifications for each induction. See <a href="#data">Data &amp; methodology</a>.</p></div>
-        </details>
-        <details>
-          <summary>Can I change my marks in MeritNama?</summary>
-          <div><p>Your published record cannot be edited by you. You can enter your own figures in the calculator to explore “what if” scenarios — those are clearly marked as your own input, separate from published data.</p></div>
-        </details>
-        <details>
-          <summary>Who can see my saved preference lists and scenarios?</summary>
-          <div><p>Only your account. MeritNama does not publish individual candidates’ plans. Read the <a href="privacy.html">privacy policy</a> for details.</p></div>
-        </details>
-        <details>
-          <summary>I found an error. How do I report it?</summary>
-          <div><p>Email <a href="mailto:itskaero@gmail.com">itskaero@gmail.com</a> with the induction, round and a link or reference to the official document. We check every report against the source.</p></div>
-        </details>
-      </div>
-    </div>
-  </section>
+  <footer class="foot rise">
+    <span>Independent analysis of Punjab postgraduate induction. Not an official admissions authority.</span>
+    <nav aria-label="Footer">
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <button class="copy-mail" id="mail" type="button">itskaero@gmail.com</button>
+    </nav>
+  </footer>
+</div>
 
-  <!-- ═══ 10. FINAL CTA ═══ -->
-  <section class="section section-alt cta-band" aria-labelledby="cta-title">
-    <div class="container">
-      <span class="kicker">Get started</span>
-      <h2 id="cta-title">Plan your induction with clearer information.</h2>
-      <p>Browse the public resources now, or sign in to work with your own record.</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary btn-lg" href="app.html" data-app-link>Sign in to MeritNama <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
-        <a class="btn btn-secondary btn-lg" href="request-access.html">Request access</a>
-      </div>
-    </div>
-  </section>
-</main>
+<div class="hint" id="hint">Tap anywhere to turn on the music</div>
 
-<!-- ═══ 11. FOOTER ═══ -->
-<footer class="site-footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div>
-        <a class="brand" href="./">
-          <svg class="brand-mark" aria-hidden="true"><use href="#i-mark"/></svg>
-          <span class="brand-name">Merit<span>Nama</span></span>
-        </a>
-        <p class="footer-about">Independent postgraduate induction analysis for Pakistani medical trainees. Not an official admissions authority.</p>
-      </div>
-      <div>
-        <h2>Product</h2>
-        <ul>
-          <li><a href="#features">Features</a></li>
-          <li><a href="#how">How it works</a></li>
-          <li><a href="#data">Data &amp; methodology</a></li>
-          <li><a href="app.html" data-app-link>Sign in</a></li>
-        </ul>
-      </div>
-      <div>
-        <h2>Resources</h2>
-        <ul>
-          <li><a href="hospitals.html">Hospital directory</a></li>
-          <li><a href="accreditation.html">CPSP accreditation</a></li>
-          <li><a href="reviews.html">Community</a></li>
-          <li><a href="donate.html">Support the project</a></li>
-        </ul>
-      </div>
-      <div>
-        <h2>About</h2>
-        <ul>
-          <li><a href="privacy.html">Privacy policy</a></li>
-          <li><a href="terms.html">Terms of use</a></li>
-          <li><a href="mailto:itskaero@gmail.com">Contact</a></li>
-          <li><a href="https://github.com/itskaero/meritnama" rel="noopener">Source (public site)</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-base">
-      <span>© <span id="year">2026</span> MeritNama. Built by <a href="https://github.com/itskaero" rel="noopener">@itskaero</a>.</span>
-      <span>Historical and simulated figures are not official decisions.</span>
-    </div>
-  </div>
-</footer>
+<script>
+(function () {
+  "use strict";
+  var cfg = window.MERITNAMA_CONFIG || {};
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-<script src="assets/js/site.js" defer></script>
+  /* ── App links follow site.config.js ───────────────────── */
+  if (cfg.appUrl) document.querySelectorAll("[data-app-link]").forEach(function (a) { a.href = cfg.appUrl; });
+  var mailBtn = document.getElementById("mail");
+  if (cfg.contactEmail) mailBtn.textContent = cfg.contactEmail;
+  mailBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    var addr = mailBtn.textContent, done = function () { mailBtn.textContent = "Copied " + addr; setTimeout(function () { mailBtn.textContent = addr; }, 1800); };
+    try { navigator.clipboard.writeText(addr).then(done, function () { selectText(mailBtn); }); } catch (err) { selectText(mailBtn); }
+  });
+  function selectText(el) { var r = document.createRange(); r.selectNodeContents(el); var s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+
+  /* ── Countdown ─────────────────────────────────────────── */
+  var launch = new Date(cfg.launchDate || "2026-12-15T09:00:00+05:00");
+  document.getElementById("launchDate").textContent = "Launch: " + launch.toLocaleString("en-GB", { timeZone: "Asia/Karachi", weekday: "short", day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true }) + " PKT";
+  var el = { d: document.getElementById("cd-d"), h: document.getElementById("cd-h"), m: document.getElementById("cd-m"), s: document.getElementById("cd-s") };
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function tick() {
+    var ms = launch - Date.now();
+    if (ms <= 0) {
+      document.getElementById("countLabel").textContent = "Launch day is here";
+      el.d.textContent = el.h.textContent = el.m.textContent = el.s.textContent = "00";
+      return;
+    }
+    var s = Math.floor(ms / 1000);
+    el.d.textContent = pad(Math.floor(s / 86400));
+    el.h.textContent = pad(Math.floor(s % 86400 / 3600));
+    el.m.textContent = pad(Math.floor(s % 3600 / 60));
+    el.s.textContent = pad(s % 60);
+  }
+  tick(); setInterval(tick, 1000);
+
+  /* ── Build log ─────────────────────────────────────────── */
+  var items = cfg.buildLog || [
+    { what: "Merit trends and closing cutoffs", why: "Every induction since the archive began, cleaned and comparable.", status: "done" },
+    { what: "Induction simulator", why: "Rank your preferences against past rounds.", status: "done" },
+    { what: "New design system", why: "One look across every page, readable on any phone.", status: "doing" },
+    { what: "Faster app with secure sign-in", why: "A private app that loads in under a second.", status: "doing" },
+    { what: "Merit and gazette alerts", why: "A notification when a new list or gazette drops.", status: "next" },
+    { what: "Document checklist and Ask Seniors", why: "Eligibility tracking and advice from current trainees.", status: "next" }
+  ];
+  var chipText = { done: "Shipped", doing: "Building", next: "Up next" };
+  var list = document.getElementById("items");
+  items.forEach(function (it) {
+    var li = document.createElement("li");
+    li.innerHTML = '<span class="what"></span><span class="chip ' + it.status + '">' + chipText[it.status] + '</span><span class="why"></span>';
+    li.querySelector(".what").textContent = it.what;
+    li.querySelector(".why").textContent = it.why;
+    list.appendChild(li);
+  });
+  var score = { done: 1, doing: 0.5, next: 0 };
+  var pct = typeof cfg.buildProgress === "number" ? cfg.buildProgress
+    : Math.round(items.reduce(function (a, it) { return a + score[it.status]; }, 0) / items.length * 100);
+  document.getElementById("track").setAttribute("aria-valuenow", pct);
+  requestAnimationFrame(function () { setTimeout(function () { document.getElementById("fill").style.width = pct + "%"; }, 300); });
+  var pctEl = document.getElementById("pct"), t0 = null;
+  (function count(ts) { if (!t0) t0 = ts; var k = Math.min(1, (ts - t0) / 1600); pctEl.textContent = Math.round(pct * (1 - Math.pow(1 - k, 3))) + "%"; if (k < 1) requestAnimationFrame(count); })(performance.now());
+
+  /* ── Drifting study glyphs ─────────────────────────────── */
+  var words = ["∫ f(x) dx", "Na⁺ 140", "pH 7.40", "FCPS", "MS · MD", "σ = 2.1", "Δ merit +0.84", "78.215", "Round 2 → 3", "QRS 0.08s", "HbA1c", "♥ 72 bpm", "K⁺ 4.2", "Σ score", "GCS 15/15", "SpO₂ 98%", "x̄ ± SD", "MCQ 180"];
+  if (!reduce) {
+    var box = document.getElementById("glyphs");
+    var n = window.innerWidth < 600 ? 9 : 16;
+    for (var i = 0; i < n; i++) {
+      var g = document.createElement("span");
+      g.className = "glyph";
+      g.textContent = words[i % words.length];
+      g.style.left = (Math.random() * 94) + "%";
+      g.style.fontSize = (11 + Math.random() * 6) + "px";
+      g.style.setProperty("--o", (0.18 + Math.random() * 0.25).toFixed(2));
+      g.style.setProperty("--r", (Math.random() * 10 - 5).toFixed(1) + "deg");
+      g.style.animationDuration = (26 + Math.random() * 30) + "s";
+      g.style.animationDelay = (-Math.random() * 50) + "s";
+      box.appendChild(g);
+    }
+  }
+
+  /* ── Stars ─────────────────────────────────────────────── */
+  var sc = document.getElementById("stars"), sx = sc.getContext("2d"), stars = [];
+  var ac = document.getElementById("aurora"), ax = ac.getContext("2d");
+  var W, H, dpr = Math.min(window.devicePixelRatio || 1, 2), AS = 0.33;
+  function resize() {
+    W = window.innerWidth; H = window.innerHeight;
+    sc.width = W * dpr; sc.height = H * dpr; sx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ac.width = Math.ceil(W * AS); ac.height = Math.ceil(H * AS);
+    stars = [];
+    var count = Math.round(W * H / 5200);
+    for (var i = 0; i < count; i++) stars.push({ x: Math.random() * W, y: Math.random() * H * 0.82, r: Math.random() * 1.2 + 0.2, p: Math.random() * 6.28, s: 0.5 + Math.random() * 1.5 });
+  }
+  resize(); window.addEventListener("resize", resize);
+
+  /* ── Aurora: layered curtains of vertical light rays ───── */
+  var ribbons = [
+    { col: [62, 207, 142], base: 0.30, amp: 0.07, len: 0.26, sp: 0.00011, f: 2.1, ph: 0 },
+    { col: [77, 184, 217], base: 0.22, amp: 0.06, len: 0.20, sp: 0.00008, f: 3.3, ph: 2 },
+    { col: [124, 101, 196], base: 0.16, amp: 0.05, len: 0.18, sp: 0.00006, f: 1.6, ph: 4 }
+  ];
+  function drawAurora(t) {
+    var w = ac.width, h = ac.height;
+    ax.globalCompositeOperation = "source-over";
+    ax.clearRect(0, 0, w, h);
+    ax.globalCompositeOperation = "lighter";
+    ribbons.forEach(function (rb) {
+      for (var x = 0; x <= w; x += 2) {
+        var u = x / w;
+        var wave = Math.sin(u * rb.f * 6.28 + t * rb.sp * 6.28 + rb.ph) * 0.6
+                 + Math.sin(u * rb.f * 2.7 * 6.28 - t * rb.sp * 9 + rb.ph * 1.7) * 0.4;
+        var y = (rb.base + wave * rb.amp) * h;
+        var flick = 0.55 + 0.45 * Math.sin(u * 40 + t * 0.0012 + rb.ph) * Math.sin(u * 17 - t * 0.0007);
+        var a = Math.max(0, flick) * (0.35 + 0.65 * Math.sin(Math.PI * Math.min(1, Math.max(0, u * 1.1 - 0.05))));
+        var len = rb.len * h * (0.7 + 0.5 * flick);
+        var gr = ax.createLinearGradient(0, y - len, 0, y + len * 0.25);
+        var c = rb.col.join(",");
+        gr.addColorStop(0, "rgba(" + c + ",0)");
+        gr.addColorStop(0.75, "rgba(" + c + "," + (0.16 * a).toFixed(3) + ")");
+        gr.addColorStop(0.92, "rgba(" + c + "," + (0.42 * a).toFixed(3) + ")");
+        gr.addColorStop(1, "rgba(" + c + ",0)");
+        ax.fillStyle = gr;
+        ax.fillRect(x, y - len, 2.2, len * 1.25);
+      }
+    });
+  }
+  function drawStars(t) {
+    sx.clearRect(0, 0, W, H);
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i], tw = reduce ? 0.8 : 0.55 + 0.45 * Math.sin(t * 0.001 * s.s + s.p);
+      sx.globalAlpha = tw * 0.85;
+      sx.fillStyle = "#dfe8ff";
+      sx.beginPath(); sx.arc(s.x, s.y, s.r, 0, 6.283); sx.fill();
+    }
+    sx.globalAlpha = 1;
+  }
+  var running = true;
+  document.addEventListener("visibilitychange", function () { running = !document.hidden; if (running && !reduce) requestAnimationFrame(frame); });
+  function frame(t) {
+    if (!running) return;
+    drawAurora(t); drawStars(t);
+    if (!reduce) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  /* ── Ambient music, synthesized live (no audio files) ──── */
+  var Ctx = window.AudioContext || window.webkitAudioContext;
+  var btn = document.getElementById("sound"), txt = document.getElementById("soundText"), hint = document.getElementById("hint");
+  var ctx, master, bus, playing = false, nextChord = 0, chordIx = 0, timer;
+  var CHORDS = [[48, 55, 59, 64], [45, 52, 55, 60], [41, 48, 52, 57], [43, 50, 55, 62]]; // Cmaj7 · Am7 · Fmaj7 · G(add9)
+  var MELODY = [72, 74, 76, 79, 81, 84];
+  var BAR = 8;
+  function hz(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+  function impulse(sec, decay) {
+    var len = ctx.sampleRate * sec, b = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (var c = 0; c < 2; c++) { var d = b.getChannelData(c); for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay); }
+    return b;
+  }
+  function setup() {
+    ctx = new Ctx();
+    master = ctx.createGain(); master.gain.value = 0;
+    var comp = ctx.createDynamicsCompressor();
+    master.connect(comp); comp.connect(ctx.destination);
+    var lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 1300; lp.Q.value = 0.4;
+    var lfo = ctx.createOscillator(), lfoG = ctx.createGain(); lfo.frequency.value = 0.05; lfoG.gain.value = 500;
+    lfo.connect(lfoG); lfoG.connect(lp.frequency); lfo.start();
+    var rev = ctx.createConvolver(); rev.buffer = impulse(5, 2.4);
+    var wet = ctx.createGain(); wet.gain.value = 0.7;
+    var dry = ctx.createGain(); dry.gain.value = 0.5;
+    bus = ctx.createGain(); bus.gain.value = 0.9;
+    bus.connect(lp); lp.connect(dry); lp.connect(rev); rev.connect(wet); dry.connect(master); wet.connect(master);
+    // soft rain / vinyl bed
+    var nb = ctx.createBuffer(1, ctx.sampleRate * 4, ctx.sampleRate), nd = nb.getChannelData(0), last = 0;
+    for (var i = 0; i < nd.length; i++) { var w = Math.random() * 2 - 1; last = (last + 0.02 * w) / 1.02; nd[i] = last * 3.2 + (Math.random() < 0.0004 ? (Math.random() - 0.5) * 0.6 : 0); }
+    var ns = ctx.createBufferSource(); ns.buffer = nb; ns.loop = true;
+    var nf = ctx.createBiquadFilter(); nf.type = "bandpass"; nf.frequency.value = 1100; nf.Q.value = 0.6;
+    var ng = ctx.createGain(); ng.gain.value = 0.06;
+    ns.connect(nf); nf.connect(ng); ng.connect(master); ns.start();
+  }
+  function voice(freq, start, dur, type, peak, detune) {
+    var o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.value = freq; o.detune.value = detune || 0;
+    g.gain.setValueAtTime(0, start);
+    g.gain.linearRampToValueAtTime(peak, start + 2.4);
+    g.gain.setValueAtTime(peak, start + dur - 2.6);
+    g.gain.linearRampToValueAtTime(0, start + dur + 1.8);
+    o.connect(g); g.connect(bus); o.start(start); o.stop(start + dur + 2);
+  }
+  function pluck(freq, start) {
+    var o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = "sine"; o.frequency.value = freq;
+    g.gain.setValueAtTime(0, start); g.gain.linearRampToValueAtTime(0.05, start + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, start + 2.2);
+    o.connect(g); g.connect(bus); o.start(start); o.stop(start + 2.3);
+  }
+  function schedule() {
+    while (nextChord < ctx.currentTime + 1.5) {
+      var ch = CHORDS[chordIx % CHORDS.length];
+      ch.forEach(function (m) { voice(hz(m), nextChord, BAR, "triangle", 0.035, -7); voice(hz(m), nextChord, BAR, "sine", 0.03, 6); });
+      voice(hz(ch[0] - 12), nextChord, BAR, "sine", 0.06, 0);
+      for (var b = 0; b < 8; b++) if (Math.random() < 0.38) pluck(hz(MELODY[Math.floor(Math.random() * MELODY.length)]), nextChord + b + Math.random() * 0.2);
+      nextChord += BAR; chordIx++;
+    }
+  }
+  function setUI() {
+    btn.setAttribute("aria-pressed", String(playing));
+    btn.setAttribute("aria-label", playing ? "Pause background music" : "Play background music");
+    txt.textContent = playing ? "Music on" : "Music off";
+  }
+  function play() {
+    if (!Ctx) return;
+    if (!ctx) setup();
+    ctx.resume();
+    if (nextChord < ctx.currentTime) nextChord = ctx.currentTime + 0.1;
+    schedule(); clearInterval(timer); timer = setInterval(schedule, 400);
+    master.gain.cancelScheduledValues(ctx.currentTime);
+    master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
+    master.gain.linearRampToValueAtTime(0.55, ctx.currentTime + 2.5);
+    playing = true; setUI(); store("on");
+  }
+  function pause() {
+    if (!ctx) return;
+    master.gain.cancelScheduledValues(ctx.currentTime);
+    master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
+    master.gain.linearRampToValueAtTime(0, ctx.currentTime + 1);
+    clearInterval(timer);
+    setTimeout(function () { if (!playing) ctx.suspend(); }, 1200);
+    playing = false; setUI(); store("off");
+  }
+  function store(v) { try { localStorage.setItem("meritnama_music", v); } catch (e) {} }
+  var pref = null; try { pref = localStorage.getItem("meritnama_music"); } catch (e) {}
+  if (!Ctx) { btn.hidden = true; hint.hidden = true; }
+
+  btn.addEventListener("click", function (e) { e.stopPropagation(); hideHint(); playing ? pause() : play(); });
+  function hideHint() { hint.classList.add("gone"); }
+  if (pref === "off") hideHint();
+  function firstTouch(e) {
+    if (e.target.closest && e.target.closest("a, button")) return;
+    window.removeEventListener("pointerdown", firstTouch);
+    hideHint();
+    if (pref !== "off" && !playing) play();
+  }
+  window.addEventListener("pointerdown", firstTouch);
+  setTimeout(hideHint, 9000);
+})();
+</script>
 </body>
 </html>

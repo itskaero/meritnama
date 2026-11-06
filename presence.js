@@ -13,6 +13,7 @@
     '/':                'Main Dashboard',
     '/app.html':        'Main Dashboard',
     '/index.html':      'Landing',
+    '/home-legacy.html': 'Landing (legacy)',
     '/reviews.html':    'Reviews & Forum',
     '/simulation.html': 'Merit Simulation',
     '/request-access.html': 'Request Access',
