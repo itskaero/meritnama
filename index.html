@@ -112,8 +112,8 @@ body.lit .floor { box-shadow: 0 0 80px 10px rgba(255,106,61,.12); }
   transition: background .5s var(--ease), color .5s, transform .4s var(--ease), box-shadow .5s; animation: fadeIn 1.2s var(--ease) 1s both; }
 .switch:hover { transform: scale(1.08); background: rgba(244,244,245,.14); }
 .switch[aria-pressed="true"] { background: rgba(244,244,245,.18); box-shadow: inset 0 0 0 1px rgba(244,244,245,.28); }
-.switch.off { left: calc(50% - min(30vmin, 260px)); top: calc(42% - min(18vmin, 150px)); }
-.switch.on  { left: calc(50% + min(22vmin, 190px)); top: calc(42% + min(9vmin, 80px)); }
+.switch.off { left: calc(50% - min(44vmin, 400px)); top: calc(42% - min(16vmin, 140px)); }
+.switch.on  { left: calc(50% + min(37vmin, 340px)); top: calc(42% + min(10vmin, 90px)); }
 .switch.on[aria-pressed="false"]::after { content: ""; position: absolute; inset: 0; border-radius: 50%;
   box-shadow: 0 0 0 0 rgba(255,176,138,.5); animation: ring 2.4s ease-out 2.2s infinite; }
 .switch.on[aria-pressed="true"] { color: #1a0d07; background: rgba(255,176,138,.92); box-shadow: 0 0 30px rgba(255,106,61,.55); }
@@ -141,8 +141,8 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
 
 @media (max-width: 560px) {
   .switch { width: 50px; height: 50px; font-size: .82rem; }
-  .switch.off { left: 9%; top: 18%; }
-  .switch.on  { left: auto; right: 9%; top: 58%; }
+  .switch.off { left: max(16px, env(safe-area-inset-left, 0px)); top: 16%; }
+  .switch.on  { left: auto; right: max(16px, env(safe-area-inset-right, 0px)); top: 62%; }
   .line span { white-space: normal; }
   .line { height: 2.6em; }
 }
@@ -208,11 +208,11 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
   /* ── Progress ──────────────────────────────────────── */
   var fill = document.getElementById("fill"), pctEl = document.getElementById("pct");
   document.getElementById("track").setAttribute("aria-valuenow", PCT);
-  var t0 = null;
+  var t0 = null, progressNow = 0;
   (function grow(ts) {
     if (t0 === null) t0 = ts;
     var k = reduce ? 1 : Math.min(1, Math.max(0, (ts - t0 - 900) / 2800)), v = PCT * (1 - Math.pow(1 - k, 4));
-    fill.style.width = v + "%"; pctEl.textContent = Math.round(v) + "% built";
+    progressNow = v / 100; fill.style.width = v + "%"; pctEl.textContent = Math.round(v) + "% built";
     if (k < 1) requestAnimationFrame(grow);
   })(performance.now());
 
@@ -321,88 +321,101 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
     return;
   }
   var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
   var scene = new THREE.Scene();
   var camera = new THREE.PerspectiveCamera(32, 1, .1, 100);
   camera.position.set(0, 0, 7);
 
-  var NOISE = [
-    "vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}",
-    "vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}",
-    "vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}",
-    "vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}",
-    "float snoise(vec3 v){const vec2 C=vec2(1.0/6.0,1.0/3.0);const vec4 D=vec4(0.0,0.5,1.0,2.0);",
-    "vec3 i=floor(v+dot(v,C.yyy));vec3 x0=v-i+dot(i,C.xxx);vec3 g=step(x0.yzx,x0.xyz);vec3 l=1.0-g;",
-    "vec3 i1=min(g.xyz,l.zxy);vec3 i2=max(g.xyz,l.zxy);vec3 x1=x0-i1+C.xxx;vec3 x2=x0-i2+C.yyy;vec3 x3=x0-D.yyy;",
-    "i=mod289(i);vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));",
-    "float n_=0.142857142857;vec3 ns=n_*D.wyz-D.xzx;vec4 j=p-49.0*floor(p*ns.z*ns.z);vec4 x_=floor(j*ns.z);vec4 y_=floor(j-7.0*x_);",
-    "vec4 x=x_*ns.x+ns.yyyy;vec4 y=y_*ns.x+ns.yyyy;vec4 h=1.0-abs(x)-abs(y);vec4 b0=vec4(x.xy,y.xy);vec4 b1=vec4(x.zw,y.zw);",
-    "vec4 s0=floor(b0)*2.0+1.0;vec4 s1=floor(b1)*2.0+1.0;vec4 sh=-step(h,vec4(0.0));vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;",
-    "vec3 p0=vec3(a0.xy,h.x);vec3 p1=vec3(a0.zw,h.y);vec3 p2=vec3(a1.xy,h.z);vec3 p3=vec3(a1.zw,h.w);",
-    "vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;",
-    "vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);m=m*m;",
-    "return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));}"
-  ].join("\n");
-
+  /* The form is ray-marched from a signed distance field: a soft morphing blob
+     blended into a 3D "Beam M" (the meritNAMA mark, drawn as glossy tubes).
+     The blend amount is the build progress, so at 64% built the blob is 64%
+     of the way to becoming the logo. */
   var uniforms = {
-    uTime: { value: 0 }, uAmp: { value: .16 }, uFreq: { value: .62 },
+    uTime: { value: 0 }, uAmp: { value: .16 }, uMorph: { value: 0 },
     uLight: { value: 0 }, uEnergy: { value: 0 },
+    uRes: { value: new THREE.Vector2(1, 1) }, uScale: { value: 1 }, uLift: { value: .08 },
+    uRot: { value: new THREE.Matrix3() }, uCam: { value: new THREE.Vector2() },
     uCool: { value: new THREE.Color("#2dd4bf") }, uWarm: { value: new THREE.Color("#ff6a3d") },
     uHot: { value: new THREE.Color("#ffb08a") }, uDeep: { value: new THREE.Color("#b8321a") }
   };
   var material = new THREE.ShaderMaterial({
-    uniforms: uniforms,
-    vertexShader: [
-      "uniform float uTime; uniform float uAmp; uniform float uFreq;",
-      "varying vec3 vN; varying vec3 vView; varying float vDisp;",
-      NOISE,
-      "float disp(vec3 p){ float t=uTime;",
-      "  return snoise(p*uFreq+vec3(t*.16,t*.12,t*.09))*uAmp + snoise(p*uFreq*1.7-vec3(t*.1))*uAmp*.12; }",
-      "vec3 place(vec3 p){ vec3 n=normalize(p); return n*(1.0+disp(n)); }",
-      "void main(){",
-      "  vec3 n=normalize(position);",
-      "  vec3 t=normalize(cross(n, abs(n.y)<.99?vec3(0.,1.,0.):vec3(1.,0.,0.)));",
-      "  vec3 b=normalize(cross(n,t));",
-      "  vec3 p0=place(n); vec3 p1=place(n+t*.012); vec3 p2=place(n+b*.012);",
-      "  vec3 nn=normalize(cross(p1-p0,p2-p0)); if(dot(nn,n)<0.) nn=-nn;",
-      "  vDisp=disp(n);",
-      "  vec4 mv=modelViewMatrix*vec4(p0,1.);",
-      "  vN=normalize(normalMatrix*nn); vView=-mv.xyz;",
-      "  gl_Position=projectionMatrix*mv; }"
-    ].join("\n"),
+    uniforms: uniforms, depthTest: false, depthWrite: false, transparent: true,
+    vertexShader: "void main(){ gl_Position=vec4(position.xy,0.,1.); }",
     fragmentShader: [
-      "uniform float uLight; uniform float uEnergy; uniform vec3 uCool; uniform vec3 uWarm; uniform vec3 uHot; uniform vec3 uDeep;",
-      "varying vec3 vN; varying vec3 vView; varying float vDisp;",
+      "precision highp float;",
+      "uniform vec2 uRes; uniform float uTime; uniform float uAmp; uniform float uMorph; uniform float uLight; uniform float uEnergy;",
+      "uniform float uScale; uniform float uLift; uniform mat3 uRot; uniform vec2 uCam;",
+      "uniform vec3 uCool; uniform vec3 uWarm; uniform vec3 uHot; uniform vec3 uDeep;",
+      "float sdCap(vec3 p, vec3 a, vec3 b, float r){ vec3 pa=p-a, ba=b-a; float h=clamp(dot(pa,ba)/dot(ba,ba),0.,1.); return length(pa-ba*h)-r; }",
+      "float smin(float a,float b,float k){ float h=clamp(.5+.5*(b-a)/k,0.,1.); return mix(b,a,h)-k*h*(1.-h); }",
+      /* logo coordinates are the 64x64 SVG viewBox, centred and scaled */
+      "vec3 L(float x,float y){ return vec3((x-32.)/25.,(31.5-y)/25.,0.); }",
+      "float gBeam; float gLogo;",
+      "float logo(vec3 p){",
+      "  vec3 q=vec3(abs(p.x),p.y,p.z); float r=3.5/25.;",
+      "  float s=sdCap(q,L(56.,56.),L(56.,14.),r);",
+      "  s=smin(s,sdCap(q,L(56.,14.),L(54.8,11.2),r),.03);",
+      "  s=smin(s,sdCap(q,L(54.8,11.2),L(52.,10.),r),.03);",
+      "  s=smin(s,sdCap(q,L(52.,10.),L(48.7,11.7),r),.03);",
+      "  s=smin(s,sdCap(q,L(48.7,11.7),L(37.,28.6),r),.03);",
+      "  float b=sdCap(p,L(32.,18.5),L(32.,52.5),r);",
+      "  b=min(b,sdCap(q,L(32.,7.),L(39.5,17.),2.5/25.));",
+      "  gBeam=smoothstep(.05,-.02,b-s);",
+      "  return min(s,b); }",
+      "float blob(vec3 p, float rad){ float t=uTime*.35;",
+      "  float n=sin(p.x*1.7+t)*sin(p.y*1.9-t*.8)*sin(p.z*1.5+t*1.2)",
+      "        +.5*sin(p.x*2.9-t*1.1+1.3)*sin(p.y*2.3+t*.7)*sin(p.z*3.1-t*.9+2.);",
+      "  return length(p)-rad-n*uAmp*rad; }",
+      "float map(vec3 pw){ vec3 p=uRot*pw;",
+      /* the blob melts away while the logo's tubes grow out of it and thicken */
+      "  float m=uMorph;",
+      "  float db=blob(p, 1.05*pow(1.-m,.85)+.02);",
+      "  float dl=logo(p)+(1.-smoothstep(0.,.75,m))*.16;",
+      "  gLogo=smoothstep(.08,-.04,dl-db);",
+      "  return smin(db,dl,mix(.55,.05,m)); }",
       "void main(){",
-      "  vec3 N=normalize(vN); vec3 V=normalize(vView);",
-      "  float ndv=max(dot(N,V),0.);",
+      "  vec2 uv=(gl_FragCoord.xy-.5*uRes)/uRes.y; uv.y-=uLift; uv/=uScale;",
+      "  vec3 ro=vec3(uCam,8.); vec3 ta=vec3(0.); vec3 ww=normalize(ta-ro); vec3 uu=normalize(cross(ww,vec3(0.,1.,0.))); vec3 vv=cross(uu,ww);",
+      "  vec3 rd=normalize(uv.x*uu+uv.y*vv+2.3*ww);",
+      "  float bb=dot(ro,rd), cc=dot(ro,ro)-2.4, hh=bb*bb-cc;",
+      "  if(hh<0.){ gl_FragColor=vec4(0.); return; }",
+      "  float t=max(0.,-bb-sqrt(hh)), tmax=-bb+sqrt(hh), d=1.; bool hit=false;",
+      "  for(int i=0;i<96;i++){ d=map(ro+rd*t); if(d<.0006*t){ hit=true; break; } t+=d*.7; if(t>tmax) break; }",
+      "  if(!hit){ gl_FragColor=vec4(0.); return; }",
+      "  vec3 pw=ro+rd*t; vec2 e=vec2(.0018,-.0018);",
+      "  vec3 N=normalize(e.xyy*map(pw+e.xyy)+e.yyx*map(pw+e.yyx)+e.yxy*map(pw+e.yxy)+e.xxx*map(pw+e.xxx));",
+      "  map(pw); float lg=gLogo; vec3 po=uRot*pw; logo(po); float beam=gBeam*lg*smoothstep(.25,.7,uMorph);",
+      "  vec3 V=-rd; float ndv=max(dot(N,V),0.);",
       "  vec3 L1=normalize(vec3(-.55,.85,.55)); vec3 L2=normalize(vec3(.75,-.25,.45));",
       "  float wrap=dot(N,L1)*.5+.5;",
-      "  vec3 ceramic=vec3(.80,.81,.82);",
-      "  vec3 col=ceramic*(.10+.80*wrap*wrap) + ceramic*.08*(N.y*.5+.5);",
+      "  vec3 emberCol=mix(uDeep,uWarm,smoothstep(-.9,.4,po.y)); emberCol=mix(emberCol,uHot,smoothstep(.45,.95,po.y));",
+      "  vec3 base=mix(vec3(.80,.81,.82),emberCol,beam);",
+      "  vec3 col=base*(.10+.80*wrap*wrap)+base*.08*(N.y*.5+.5);",
       "  vec3 R=reflect(-V,N);",
-      "  vec3 sky=mix(vec3(.88,.9,.92), mix(uCool*.9+.15, uHot, uLight), .35);",
-      "  vec3 env=mix(vec3(.03), sky, smoothstep(-.15,.85,R.y));",
+      "  vec3 sky=mix(vec3(.88,.9,.92),mix(uCool*.9+.15,uHot,uLight),.35);",
+      "  vec3 env=mix(vec3(.03),sky,smoothstep(-.15,.85,R.y));",
       "  float fres=pow(1.-ndv,3.);",
-      "  col=mix(col, env, .18+.55*fres);",
+      "  col=mix(col,env,.18+.55*fres);",
       "  vec3 H1=normalize(L1+V); float s1=max(dot(N,H1),0.);",
       "  vec3 H2=normalize(L2+V); float s2=max(dot(N,H2),0.);",
       "  col+=vec3(1.)*(pow(s1,140.)*1.4+pow(s1,18.)*.10);",
       "  col+=mix(uCool,uHot,uLight)*pow(s2,60.)*.35;",
-      /* lit from inside: warm core that shows through thin, facing areas */
+      "  col+=emberCol*beam*.18;",
+      /* lit from inside */
       "  float core=pow(ndv,1.3);",
-      "  vec3 glow=uDeep*.32 + uWarm*core*.62 + uHot*pow(ndv,6.)*.42;",
-      "  glow*=1.+vDisp*1.5+uEnergy*.7;",
-      "  vec3 shell=col*.12 + vec3(1.,.9,.85)*pow(s1,140.)*1.1;",
-      "  col=mix(col, shell+glow, uLight);",
+      "  vec3 glow=uDeep*.32+uWarm*core*.62+uHot*pow(ndv,6.)*.42;",
+      "  glow*=1.+uEnergy*.7+beam*.5;",
+      "  vec3 shell=col*.12+vec3(1.,.9,.85)*pow(s1,140.)*1.1;",
+      "  col=mix(col,shell+glow,uLight);",
       "  col+=uWarm*fres*.4*uLight;",
       "  col=col/(1.+col*.35); col=pow(col,vec3(.92));",
       "  gl_FragColor=vec4(col,1.);",
       "}"
     ].join("\n")
   });
-  var blob = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 96), material);
-  scene.add(blob);
+  var form = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+  form.frustumCulled = false; form.renderOrder = -1;
+  scene.add(form);
 
   /* Dust motes drifting through the light */
   var COUNT = innerWidth < 600 ? 260 : 520, pos = new Float32Array(COUNT * 3), seeds = new Float32Array(COUNT);
@@ -439,10 +452,12 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
     var w = innerWidth, h = innerHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    camera.setViewOffset(w, h, 0, h * .08, w, h); // lift the form above the caption
+    camera.setViewOffset(w, h, 0, h * .08, w, h); // lift the scene above the caption
     camera.updateProjectionMatrix();
-    var s = Math.min(1, Math.max(.62, Math.min(w, h * 1.1) / 900));
-    blob.scale.setScalar(s * (w < 560 ? .92 : 1));
+    var pr = renderer.getPixelRatio();
+    uniforms.uRes.value.set(w * pr, h * pr);
+    // keep the form a similar size on wide and tall screens
+    uniforms.uScale.value = Math.max(.52, Math.min(1, (w / h) * 1.1));
   }
   resize(); window.addEventListener("resize", resize);
 
@@ -470,11 +485,18 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
     wob *= Math.exp(-dt * 2.5);
     uniforms.uAmp.value = .16 + wob * .08 + energy * .12;
     var ek = 1 - Math.exp(-dt * 2.4); sx += (px - sx) * ek; sy += (py - sy) * ek;
-    blob.rotation.y = time * .12 + sx * .9;
-    blob.rotation.x = Math.sin(time * .1) * .2 + sy * .6;
-    blob.position.y = Math.sin(time * .6) * .06;
+    // morph follows the progress bar, with a slow breath
+    var m = Math.max(0, Math.min(1, progressNow + Math.sin(time * .5) * .025 * progressNow));
+    uniforms.uMorph.value = m;
+    // turns freely as a blob, settles to face you as it becomes the logo
+    var free = 1 - m * .75;
+    var yaw = (Math.sin(time * .18) * .9 + sx * 1.1) * free, pitch = (Math.sin(time * .13) * .25 + sy * .7) * free;
+    var cy = Math.cos(yaw), syw = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+    uniforms.uRot.value.set(cy, 0, -syw,  syw * sp, cp, cy * sp,  syw * cp, -sp, cy * cp);
+    uniforms.uLift.value = .08 + Math.sin(time * .6) * .012;
     dust.rotation.y = time * .015 - sx * .25;
     camera.position.x = sx * .5; camera.position.y = -sy * .35; camera.lookAt(0, 0, 0);
+    uniforms.uCam.value.set(sx * .25, -sy * .18);
 
     renderer.render(scene, camera);
     requestAnimationFrame(frame);
