@@ -16,9 +16,7 @@
  *               Read-only Firestore REST document with admin-edited hero subhead and
  *               snapshot figures (edited in admin.html → Homepage). Empty disables.
  *
- * launchDate    ISO date/time the countdown on index.html counts down to.
- * buildProgress Optional 0–100 override for the build-log meter. Leave out to
- *               derive it from the build-log item statuses in index.html.
+ * buildProgress 0–100. The rebuild progress bar on index.html fills to this.
  *
  * Never put secrets, API keys or internal hostnames in this file — it is public.
  */
@@ -29,5 +27,5 @@ window.MERITNAMA_CONFIG = {
   homepageContentUrl:
     "https://firestore.googleapis.com/v1/projects/mortality-review/databases/(default)/documents/notifications/homepage_content",
   contactEmail: "itskaero@gmail.com",
-  launchDate: "2026-12-15T09:00:00+05:00"
+  buildProgress: 64
 };
