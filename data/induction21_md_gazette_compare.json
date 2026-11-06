@@ -1,0 +1,736 @@
+{
+  "sourceUrl": "https://prp.phf.gop.pk/en/gazette-list?tp=md&qs=1fcb4ee4-249c-41d7-9500-984d39e085bd",
+  "remoteFile": null,
+  "remoteFetchError": "URLError(ConnectionResetError(104, 'Connection reset by peer'))",
+  "comparison": null,
+  "fallbackOfficialGazetteComparison": {
+    "localRowCount": 1345,
+    "remoteRowCount": 4100,
+    "localApplicantCount": 1318,
+    "remoteApplicantCount": 4100,
+    "missingFromRemoteByApplicantId": [
+      "754",
+      "5709",
+      "15281",
+      "15875",
+      "16277",
+      "17349",
+      "17521",
+      "18438",
+      "20542",
+      "21946",
+      "23078",
+      "23297",
+      "24558",
+      "25159",
+      "25173",
+      "25620",
+      "25648",
+      "25767",
+      "26592",
+      "26746",
+      "26951",
+      "27232",
+      "27334",
+      "27481",
+      "27616",
+      "27798",
+      "27804",
+      "27874",
+      "27999",
+      "28001",
+      "28078",
+      "28149",
+      "28185",
+      "28500",
+      "28556",
+      "28601",
+      "28691",
+      "28710",
+      "28809",
+      "28895",
+      "28966",
+      "29002",
+      "29329",
+      "29606",
+      "29659",
+      "30023",
+      "30279",
+      "30409",
+      "30478",
+      "31078",
+      "31095",
+      "31115",
+      "31517",
+      "31540",
+      "31586",
+      "31646",
+      "31679",
+      "31714",
+      "31786",
+      "31820",
+      "32068",
+      "32083",
+      "32187",
+      "32195",
+      "32201",
+      "32204",
+      "32263",
+      "32316",
+      "32594",
+      "32644",
+      "32650",
+      "32784",
+      "32915",
+      "32923",
+      "32933",
+      "33047",
+      "34059",
+      "34101",
+      "35670",
+      "36616",
+      "36743",
+      "37188",
+      "37206",
+      "37302",
+      "37358",
+      "37393",
+      "37586",
+      "37620",
+      "37676",
+      "37763",
+      "37768",
+      "37807",
+      "37809",
+      "37813",
+      "37819",
+      "37821",
+      "37822",
+      "37826",
+      "37827",
+      "37835",
+      "37836",
+      "37838",
+      "37846",
+      "37857",
+      "37858",
+      "37868",
+      "37871",
+      "37872",
+      "37878",
+      "37879",
+      "37888",
+      "37893",
+      "37894",
+      "37905",
+      "37911",
+      "37927",
+      "37928",
+      "37931",
+      "37934",
+      "37936",
+      "37938",
+      "37945",
+      "37946",
+      "37948",
+      "37949",
+      "37950",
+      "37952",
+      "37954",
+      "37955",
+      "37956",
+      "37958",
+      "37964",
+      "37970",
+      "37972",
+      "37974",
+      "37976",
+      "37986",
+      "37991",
+      "37995",
+      "37996",
+      "38000",
+      "38003",
+      "38009",
+      "38015",
+      "38025",
+      "38028",
+      "38034",
+      "38040",
+      "38054",
+      "38064",
+      "38068",
+      "38069",
+      "38073",
+      "38075",
+      "38077",
+      "38084",
+      "38085",
+      "38087",
+      "38094",
+      "38096",
+      "38101",
+      "38103",
+      "38139",
+      "38146",
+      "38148",
+      "38149",
+      "38152",
+      "38156",
+      "38159",
+      "38160",
+      "38168",
+      "38169",
+      "38171",
+      "38172",
+      "38177",
+      "38180",
+      "38187",
+      "38193",
+      "38203",
+      "38205",
+      "38214",
+      "38215",
+      "38233",
+      "38263",
+      "38269",
+      "38276",
+      "38291",
+      "38299",
+      "38322",
+      "38331",
+      "38334",
+      "38339",
+      "38351",
+      "38409",
+      "38410",
+      "38411",
+      "38412",
+      "38423",
+      "38425",
+      "38426"
+    ],
+    "missingFromLocalByApplicantId": [
+      "207",
+      "1356",
+      "1613",
+      "1735",
+      "1751",
+      "1940",
+      "2149",
+      "3464",
+      "3601",
+      "3881",
+      "3931",
+      "3951",
+      "4078",
+      "4649",
+      "4698",
+      "4870",
+      "5307",
+      "5400",
+      "5954",
+      "6138",
+      "6332",
+      "7435",
+      "7436",
+      "7686",
+      "8003",
+      "10180",
+      "10264",
+      "11981",
+      "13480",
+      "15084",
+      "15185",
+      "15219",
+      "15239",
+      "15425",
+      "15455",
+      "15530",
+      "15564",
+      "15687",
+      "15689",
+      "15820",
+      "15963",
+      "16104",
+      "16185",
+      "16564",
+      "16683",
+      "16858",
+      "16868",
+      "16896",
+      "17015",
+      "17040",
+      "17118",
+      "17205",
+      "17267",
+      "17351",
+      "17533",
+      "17604",
+      "17641",
+      "17683",
+      "17847",
+      "17878",
+      "18140",
+      "18189",
+      "18256",
+      "18501",
+      "18573",
+      "18600",
+      "18610",
+      "18692",
+      "18927",
+      "18972",
+      "19035",
+      "20158",
+      "20239",
+      "20260",
+      "20272",
+      "20308",
+      "20452",
+      "20481",
+      "20491",
+      "20541",
+      "20580",
+      "20668",
+      "20690",
+      "20758",
+      "20826",
+      "20920",
+      "21009",
+      "21063",
+      "21082",
+      "21123",
+      "21143",
+      "21177",
+      "21201",
+      "21273",
+      "21424",
+      "21484",
+      "21522",
+      "21599",
+      "21686",
+      "21697",
+      "21712",
+      "21731",
+      "21832",
+      "21865",
+      "22119",
+      "22149",
+      "22191",
+      "22193",
+      "22237",
+      "22247",
+      "22254",
+      "22348",
+      "22394",
+      "22398",
+      "22432",
+      "22576",
+      "22583",
+      "22590",
+      "22618",
+      "22627",
+      "22659",
+      "22697",
+      "22703",
+      "22734",
+      "22735",
+      "22742",
+      "22804",
+      "22808",
+      "22817",
+      "22835",
+      "22841",
+      "22856",
+      "22857",
+      "22949",
+      "22970",
+      "23076",
+      "23106",
+      "23108",
+      "23140",
+      "23144",
+      "23147",
+      "23161",
+      "23163",
+      "23177",
+      "23187",
+      "23201",
+      "23217",
+      "23316",
+      "23333",
+      "23358",
+      "23381",
+      "23406",
+      "23413",
+      "23424",
+      "24444",
+      "24461",
+      "24491",
+      "24493",
+      "24495",
+      "24559",
+      "24577",
+      "24586",
+      "24622",
+      "24670",
+      "24701",
+      "24721",
+      "24726",
+      "24757",
+      "24762",
+      "24793",
+      "24812",
+      "24841",
+      "24842",
+      "24847",
+      "24889",
+      "24890",
+      "24893",
+      "24907",
+      "24916",
+      "24993",
+      "25024",
+      "25086",
+      "25093",
+      "25120",
+      "25147",
+      "25156",
+      "25182",
+      "25211",
+      "25235",
+      "25250",
+      "25293",
+      "25294",
+      "25322",
+      "25353",
+      "25368",
+      "25387",
+      "25412",
+      "25413",
+      "25459",
+      "25463"
+    ],
+    "missingFromRemoteByApplicantSpecialty": [],
+    "missingFromLocalByApplicantSpecialty": []
+  },
+  "officialCsvMdFilteredComparison": {
+    "officialRowsTotal": 3474,
+    "generatedMdRows": 1345,
+    "generatedMdApplicants": 1318,
+    "officialRowsAfterMdFilter": 1318,
+    "missingGeneratedMdApplicantsInOfficial": 0,
+    "fieldMismatchApplicants": 0,
+    "generatedApplicantsWithMultipleMdRows": 26,
+    "sampleMissing": [],
+    "sampleMismatches": [],
+    "sampleMultiRows": [
+      {
+        "applicantId": "5709",
+        "rows": [
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 4.0,
+            "marksTotal": 18.692857
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 4.0,
+            "marksTotal": 18.692857
+          },
+          {
+            "specialityName": "",
+            "marksProgram": 3.0,
+            "marksTotal": 17.692857
+          }
+        ]
+      },
+      {
+        "applicantId": "18438",
+        "rows": [
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 5.0,
+            "marksTotal": 21.118924
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 21.118924
+          }
+        ]
+      },
+      {
+        "applicantId": "24431",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 21.927273
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 5.0,
+            "marksTotal": 21.927273
+          }
+        ]
+      },
+      {
+        "applicantId": "28078",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 23.431989
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 5.0,
+            "marksTotal": 23.431989
+          }
+        ]
+      },
+      {
+        "applicantId": "28185",
+        "rows": [
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 5.0,
+            "marksTotal": 22.009886
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 22.009886
+          }
+        ]
+      },
+      {
+        "applicantId": "28601",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 22.526932
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 5.0,
+            "marksTotal": 22.526932
+          }
+        ]
+      },
+      {
+        "applicantId": "28710",
+        "rows": [
+          {
+            "specialityName": "",
+            "marksProgram": 3.0,
+            "marksTotal": 20.484545
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 3.0,
+            "marksTotal": 20.484545
+          }
+        ]
+      },
+      {
+        "applicantId": "31095",
+        "rows": [
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 5.0,
+            "marksTotal": 23.229375
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 23.229375
+          }
+        ]
+      },
+      {
+        "applicantId": "31115",
+        "rows": [
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 5.0,
+            "marksTotal": 22.891136
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 22.891136
+          }
+        ]
+      },
+      {
+        "applicantId": "31521",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 18.784318
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 5.0,
+            "marksTotal": 18.784318
+          }
+        ]
+      },
+      {
+        "applicantId": "31634",
+        "rows": [
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 4.0,
+            "marksTotal": 22.007102
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 4.0,
+            "marksTotal": 22.007102
+          }
+        ]
+      },
+      {
+        "applicantId": "31819",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 23.034318
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 5.0,
+            "marksTotal": 23.034318
+          }
+        ]
+      },
+      {
+        "applicantId": "32510",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 4.0,
+            "marksTotal": 20.830341
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 4.0,
+            "marksTotal": 20.830341
+          }
+        ]
+      },
+      {
+        "applicantId": "34170",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 16.89375
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 5.0,
+            "marksTotal": 16.89375
+          }
+        ]
+      },
+      {
+        "applicantId": "34857",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 23.080511
+          },
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 4.0,
+            "marksTotal": 22.080511
+          }
+        ]
+      },
+      {
+        "applicantId": "34929",
+        "rows": [
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 5.0,
+            "marksTotal": 23.139602
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 23.139602
+          }
+        ]
+      },
+      {
+        "applicantId": "35193",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 22.791364
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 5.0,
+            "marksTotal": 22.791364
+          }
+        ]
+      },
+      {
+        "applicantId": "35197",
+        "rows": [
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 5.0,
+            "marksTotal": 23.035625
+          },
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 23.035625
+          }
+        ]
+      },
+      {
+        "applicantId": "36150",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 23.242653
+          },
+          {
+            "specialityName": "Diagnostic Radiology",
+            "marksProgram": 4.0,
+            "marksTotal": 22.242653
+          }
+        ]
+      },
+      {
+        "applicantId": "36296",
+        "rows": [
+          {
+            "specialityName": "Medicine And Allied",
+            "marksProgram": 5.0,
+            "marksTotal": 22.620966
+          },
+          {
+            "specialityName": "Psychiatry",
+            "marksProgram": 5.0,
+            "marksTotal": 22.620966
+          }
+        ]
+      }
+    ]
+  }
+}
