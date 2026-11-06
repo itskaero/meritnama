@@ -35,9 +35,8 @@
 </script>
 <style>
 /* Layout: one full-bleed dim room. A glossy morphing form floats at the centre;
-   "off" / "on" switches sit beside it like light switches; a thin line of text
-   and a hairline progress bar rest below. "On" lights the form from inside
-   with the brand ember, warms the room and starts the music.
+   the room is lit in ember. As the hairline bar fills, the form becomes the
+   Beam M; then the camera dives through the beam into meritnama.online.
    Colours and faces follow meritNAMA tokens v1.1. */
 :root {
   --room:       #0b0b0c;   /* --mn-navy-950 (charcoal) */
@@ -105,21 +104,17 @@ body.lit .floor { box-shadow: 0 0 80px 10px rgba(255,106,61,.12); }
 .brand svg { width: 22px; height: 22px; color: var(--ink); }
 .brand .nama { font-family: var(--font-display); font-weight: 800; font-stretch: 125%; font-variation-settings: "wdth" 125; letter-spacing: .02em; }
 
-.switch { position: absolute; width: 58px; height: 58px; border-radius: 50%; border: 0; cursor: pointer;
-  font: 300 .9rem/1 var(--font-sans); color: var(--ink); letter-spacing: .02em;
-  background: rgba(244,244,245,.08); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  box-shadow: inset 0 0 0 1px rgba(244,244,245,.1);
-  transition: background .5s var(--ease), color .5s, transform .4s var(--ease), box-shadow .5s; animation: fadeIn 1.2s var(--ease) 1s both; }
-.switch:hover { transform: scale(1.08); background: rgba(244,244,245,.14); }
-.switch[aria-pressed="true"] { background: rgba(244,244,245,.18); box-shadow: inset 0 0 0 1px rgba(244,244,245,.28); }
-.switch.off { left: calc(50% - min(44vmin, 400px)); top: calc(42% - min(16vmin, 140px)); }
-.switch.on  { left: calc(50% + min(37vmin, 340px)); top: calc(42% + min(10vmin, 90px)); }
-.switch.on[aria-pressed="false"]::after { content: ""; position: absolute; inset: 0; border-radius: 50%;
-  box-shadow: 0 0 0 0 rgba(255,176,138,.5); animation: ring 2.4s ease-out 2.2s infinite; }
-.switch.on[aria-pressed="true"] { color: #1a0d07; background: rgba(255,176,138,.92); box-shadow: 0 0 30px rgba(255,106,61,.55); }
-@keyframes ring { 0% { box-shadow: 0 0 0 0 rgba(255,176,138,.45) } 100% { box-shadow: 0 0 0 22px rgba(255,176,138,0) } }
-.switch:focus-visible { outline: 2px solid var(--teal); outline-offset: 4px; }
-
+.goto { color: var(--ink-soft); text-decoration: none; font: 400 .78rem/1 var(--font-mono); letter-spacing: .14em;
+  pointer-events: auto; border-bottom: 1px solid rgba(244,244,245,.18); padding-bottom: 4px; transition: color .3s, border-color .3s; }
+.goto:hover, .goto:focus-visible { color: var(--ember-hot); border-color: var(--ember); outline: none; }
+.hint { position: fixed; z-index: 3; top: max(30px, env(safe-area-inset-top, 0px)); right: max(24px, env(safe-area-inset-right, 0px));
+  font: 400 .68rem/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint);
+  transition: opacity .8s; animation: fadeIn 1.2s var(--ease) 1.4s both; pointer-events: none; }
+.hint.gone { opacity: 0; }
+.flash { position: fixed; inset: 0; z-index: 4; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle at 50% 42%, #fff4ee 0%, var(--ember-hot) 25%, var(--ember) 55%, var(--ember-deep) 100%); }
+body.diving .ui, body.diving .hint { opacity: 0; transition: opacity .7s var(--ease); }
+body.diving .room { transform: scale(1.25); transition: transform 2.2s cubic-bezier(.6,0,.9,.4); }
 .caption { position: absolute; left: 0; right: 0; bottom: max(9vh, calc(env(safe-area-inset-bottom, 0px) + 40px));
   display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center;
   padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); pointer-events: none; }
@@ -140,9 +135,6 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } }
 
 @media (max-width: 560px) {
-  .switch { width: 50px; height: 50px; font-size: .82rem; }
-  .switch.off { left: max(16px, env(safe-area-inset-left, 0px)); top: 16%; }
-  .switch.on  { left: auto; right: max(16px, env(safe-area-inset-right, 0px)); top: 62%; }
   .line span { white-space: normal; }
   .line { height: 2.6em; }
 }
@@ -151,7 +143,7 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
 }
 </style>
 </head>
-<body>
+<body class="lit">
 
 <div class="room" aria-hidden="true">
   <div class="pool cool"></div>
@@ -164,6 +156,8 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
 </div>
 
 <canvas id="gl" aria-hidden="true"></canvas>
+<div class="flash" id="flash" aria-hidden="true"></div>
+<div class="hint" id="hint">Tap for sound</div>
 
 <div class="ui">
   <a class="brand" href="./?home" aria-label="meritNAMA">
@@ -175,21 +169,18 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
     <span>merit<span class="nama">NAMA</span></span>
   </a>
 
-  <button class="switch off" id="off" type="button" aria-pressed="true" aria-label="Lights and music off">off</button>
-  <button class="switch on"  id="on"  type="button" aria-pressed="false" aria-label="Lights and music on">on</button>
 
   <main class="caption">
     <h1 class="line" id="line" aria-live="polite">
-      <span class="on">A new meritNAMA is on its way</span>
-      <span>Recomputing closing merit</span>
-      <span>Redrawing seat maps</span>
-      <span>Tuning the simulator</span>
-      <span>Polishing every page</span>
+      <span class="on">meritNAMA has a new home</span>
+      <span>Moving you to meritnama.online</span>
+      <span>Bringing your merit tools along</span>
     </h1>
     <div class="meter">
-      <div class="track" role="progressbar" aria-label="Rebuild progress" aria-valuemin="0" aria-valuemax="100" id="track"><div class="fill" id="fill"></div></div>
+      <div class="track" role="progressbar" aria-label="Moving to meritnama.online" aria-valuemin="0" aria-valuemax="100" id="track"><div class="fill" id="fill"></div></div>
       <span class="pct" id="pct">0%</span>
     </div>
+    <a class="goto" id="goto" href="https://meritnama.online/">meritnama.online &rarr;</a>
   </main>
 </div>
 
@@ -199,38 +190,56 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
   "use strict";
   var cfg = window.MERITNAMA_CONFIG || {};
   var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var PCT = typeof cfg.buildProgress === "number" ? Math.max(0, Math.min(100, cfg.buildProgress)) : 64;
+  var NEW_URL = cfg.newSiteUrl || "https://meritnama.online/";
+  var SHIFT_S = typeof cfg.shiftAfterSeconds === "number" ? cfg.shiftAfterSeconds : 8;
+  var preview = !!window.MERITNAMA_PREVIEW;           // artifact preview: play the dive, don't leave
+  var autoShift = SHIFT_S > 0 && !/[?&]stay\b/.test(location.search);
+  var go = document.getElementById("goto");
+  go.href = NEW_URL; go.textContent = NEW_URL.replace(/^https?:\/\//, "").replace(/\/$/, "") + " \u2192";
 
   /* ── Rotating line ─────────────────────────────────── */
   var lines = document.querySelectorAll("#line span"), li = 0;
-  if (!reduce) setInterval(function () { lines[li].classList.remove("on"); li = (li + 1) % lines.length; lines[li].classList.add("on"); }, 3600);
+  if (!reduce) setInterval(function () { if (diving) return; lines[li].classList.remove("on"); li = (li + 1) % lines.length; lines[li].classList.add("on"); }, 3000);
 
-  /* ── Progress ──────────────────────────────────────── */
-  var fill = document.getElementById("fill"), pctEl = document.getElementById("pct");
-  document.getElementById("track").setAttribute("aria-valuenow", PCT);
-  var t0 = null, progressNow = 0;
-  (function grow(ts) {
+  /* ── Shift timeline: bar fills, form becomes the logo, then the dive ── */
+  var fill = document.getElementById("fill"), pctEl = document.getElementById("pct"), track = document.getElementById("track");
+  var t0 = null, progressNow = 0, diving = false, diveStart = 0, DIVE_MS = reduce ? 600 : 2400;
+  function tick(ts) {
     if (t0 === null) t0 = ts;
-    var k = reduce ? 1 : Math.min(1, Math.max(0, (ts - t0 - 900) / 2800)), v = PCT * (1 - Math.pow(1 - k, 4));
-    progressNow = v / 100; fill.style.width = v + "%"; pctEl.textContent = Math.round(v) + "% built";
-    if (k < 1) requestAnimationFrame(grow);
-  })(performance.now());
-
-  /* ── Light state ───────────────────────────────────── */
-  var lit = false, light = 0, lightTarget = 0, flickerUntil = 0;
-  var offBtn = document.getElementById("off"), onBtn = document.getElementById("on");
-  function setLit(v) {
-    if (v === lit) return;
-    lit = v; lightTarget = v ? 1 : 0;
-    if (v) flickerUntil = performance.now() + 650;
-    document.body.classList.toggle("lit", v);
-    onBtn.setAttribute("aria-pressed", String(v)); offBtn.setAttribute("aria-pressed", String(!v));
-    v ? play() : pause();
-    try { localStorage.setItem("meritnama_light", v ? "on" : "off"); } catch (e) {}
+    var dur = Math.max(2, SHIFT_S || 6) * 1000;
+    var k = Math.min(1, Math.max(0, (ts - t0 - 800) / dur));
+    var v = 100 * (k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);
+    progressNow = v / 100; fill.style.width = v + "%"; pctEl.textContent = Math.round(v) + "%";
+    track.setAttribute("aria-valuenow", Math.round(v));
+    if (k >= 1 && autoShift && !diving) dive();
+    if (k < 1) requestAnimationFrame(tick);
   }
-  onBtn.addEventListener("click", function () { setLit(true); });
-  offBtn.addEventListener("click", function () { setLit(false); });
-  window.addEventListener("keydown", function (e) { if (e.key === "l" || e.key === "L" || e.key === "m" || e.key === "M") setLit(!lit); });
+  requestAnimationFrame(tick);
+  function dive() {
+    if (diving) return;
+    diving = true; diveStart = performance.now();
+    document.body.classList.add("diving");
+    if (ctx && master) { master.gain.cancelScheduledValues(ctx.currentTime); master.gain.setValueAtTime(master.gain.value, ctx.currentTime); master.gain.linearRampToValueAtTime(0, ctx.currentTime + DIVE_MS / 1000); }
+  }
+  function arrive() {
+    if (preview) { // replay in the preview instead of navigating away
+      setTimeout(function () { location.reload(); }, 900);
+      return;
+    }
+    location.href = NEW_URL;
+  }
+  go.addEventListener("click", function (e) { e.preventDefault(); dive(); });
+
+  /* ── Lights are on from the start; first tap starts the music ── */
+  var lit = true, light = 0, lightTarget = 1, flickerUntil = performance.now() + 1300;
+  var hint = document.getElementById("hint");
+  window.addEventListener("pointerdown", function first(e) {
+    window.removeEventListener("pointerdown", first);
+    hint.classList.add("gone");
+    if (!diving && e.target !== go) play();
+  });
+  window.addEventListener("keydown", function (e) { if (e.key === "m" || e.key === "M") { hint.classList.add("gone"); playing ? pause() : play(); } });
+  if (!(window.AudioContext || window.webkitAudioContext)) hint.hidden = true;
 
   /* ── Pointer ───────────────────────────────────────── */
   var px = 0, py = 0, sx = 0, sy = 0, wob = 0, lastX = 0, lastY = 0;
@@ -318,6 +327,11 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
     canvas.remove();
     var fb = document.createElement("div"); fb.className = "fallback"; fb.setAttribute("aria-hidden", "true");
     document.body.insertBefore(fb, document.querySelector(".ui"));
+    (function wait() {
+      if (!diving) return requestAnimationFrame(wait);
+      var f = document.getElementById("flash"); f.style.transition = "opacity " + DIVE_MS + "ms ease-in"; f.style.opacity = 1;
+      setTimeout(arrive, DIVE_MS);
+    })();
     return;
   }
   var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
@@ -332,7 +346,7 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
      of the way to becoming the logo. */
   var uniforms = {
     uTime: { value: 0 }, uAmp: { value: .16 }, uMorph: { value: 0 },
-    uLight: { value: 0 }, uEnergy: { value: 0 },
+    uLight: { value: 0 }, uEnergy: { value: 0 }, uDive: { value: 0 },
     uRes: { value: new THREE.Vector2(1, 1) }, uScale: { value: 1 }, uLift: { value: .08 },
     uRot: { value: new THREE.Matrix3() }, uCam: { value: new THREE.Vector2() },
     uCool: { value: new THREE.Color("#2dd4bf") }, uWarm: { value: new THREE.Color("#ff6a3d") },
@@ -344,7 +358,7 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
     fragmentShader: [
       "precision highp float;",
       "uniform vec2 uRes; uniform float uTime; uniform float uAmp; uniform float uMorph; uniform float uLight; uniform float uEnergy;",
-      "uniform float uScale; uniform float uLift; uniform mat3 uRot; uniform vec2 uCam;",
+      "uniform float uScale; uniform float uLift; uniform mat3 uRot; uniform vec2 uCam; uniform float uDive;",
       "uniform vec3 uCool; uniform vec3 uWarm; uniform vec3 uHot; uniform vec3 uDeep;",
       "float sdCap(vec3 p, vec3 a, vec3 b, float r){ vec3 pa=p-a, ba=b-a; float h=clamp(dot(pa,ba)/dot(ba,ba),0.,1.); return length(pa-ba*h)-r; }",
       "float smin(float a,float b,float k){ float h=clamp(.5+.5*(b-a)/k,0.,1.); return mix(b,a,h)-k*h*(1.-h); }",
@@ -375,7 +389,7 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
       "  return smin(db,dl,mix(.55,.05,m)); }",
       "void main(){",
       "  vec2 uv=(gl_FragCoord.xy-.5*uRes)/uRes.y; uv.y-=uLift; uv/=uScale;",
-      "  vec3 ro=vec3(uCam,8.); vec3 ta=vec3(0.); vec3 ww=normalize(ta-ro); vec3 uu=normalize(cross(ww,vec3(0.,1.,0.))); vec3 vv=cross(uu,ww);",
+      "  vec3 ro=vec3(uCam*(1.-uDive),mix(8.,.35,uDive)); vec3 ta=vec3(0.); vec3 ww=normalize(ta-ro); vec3 uu=normalize(cross(ww,vec3(0.,1.,0.))); vec3 vv=cross(uu,ww);",
       "  vec3 rd=normalize(uv.x*uu+uv.y*vv+2.3*ww);",
       "  float bb=dot(ro,rd), cc=dot(ro,ro)-2.4, hh=bb*bb-cc;",
       "  if(hh<0.){ gl_FragColor=vec4(0.); return; }",
@@ -408,6 +422,7 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
       "  vec3 shell=col*.12+vec3(1.,.9,.85)*pow(s1,140.)*1.1;",
       "  col=mix(col,shell+glow,uLight);",
       "  col+=uWarm*fres*.4*uLight;",
+      "  col+=mix(uWarm,uHot,uDive)*uDive*uDive*1.6;",
       "  col=col/(1.+col*.35); col=pow(col,vec3(.92));",
       "  gl_FragColor=vec4(col,1.);",
       "}"
@@ -461,7 +476,7 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
   }
   resize(); window.addEventListener("resize", resize);
 
-  var energy = 0, last = performance.now(), running = true, time = 0;
+  var energy = 0, last = performance.now(), running = true, time = 0, arrived = false, flashEl = document.getElementById("flash");
   document.addEventListener("visibilitychange", function () { running = !document.hidden; if (running) { last = performance.now(); requestAnimationFrame(frame); } });
   function frame(now) {
     if (!running) return;
@@ -482,6 +497,14 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
     if (now < flickerUntil) { var k = (flickerUntil - now) / 650; shown = light * (k > .7 ? .9 : k > .55 ? .15 : k > .4 ? .7 : k > .3 ? .3 : 1); }
     uniforms.uLight.value = shown;
 
+    if (diving) {
+      var dk = Math.min(1, (now - diveStart) / DIVE_MS);
+      var de = dk * dk * dk;                       // slow start, rushing finish
+      uniforms.uDive.value = de;
+      flashEl.style.opacity = Math.max(0, (dk - .55) / .45).toFixed(3);
+      if (dk >= 1 && !arrived) { arrived = true; arrive(); }
+    }
+
     wob *= Math.exp(-dt * 2.5);
     uniforms.uAmp.value = .16 + wob * .08 + energy * .12;
     var ek = 1 - Math.exp(-dt * 2.4); sx += (px - sx) * ek; sy += (py - sy) * ek;
@@ -489,7 +512,7 @@ body.lit .fill { background: linear-gradient(90deg, var(--ember-deep), var(--emb
     var m = Math.max(0, Math.min(1, progressNow + Math.sin(time * .5) * .025 * progressNow));
     uniforms.uMorph.value = m;
     // turns freely as a blob, settles to face you as it becomes the logo
-    var free = 1 - m * .75;
+    var free = (1 - m * .75) * (1 - uniforms.uDive.value);
     var yaw = (Math.sin(time * .18) * .9 + sx * 1.1) * free, pitch = (Math.sin(time * .13) * .25 + sy * .7) * free;
     var cy = Math.cos(yaw), syw = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
     uniforms.uRot.value.set(cy, 0, -syw,  syw * sp, cp, cy * sp,  syw * cp, -sp, cy * cp);
