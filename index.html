@@ -17,7 +17,7 @@
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="site.config.js"></script>
 <script>
 /* Signed-in users of the current app still go straight to it.
@@ -34,22 +34,22 @@
 })();
 </script>
 <style>
-/* Layout: one centred stack (mark, line, sub-line, progress bar) floating in a
-   moving night sky; a study-desk silhouette anchors the bottom edge. */
+/* Layout: one centred stack (mark, wordmark, status line, progress bar)
+   floating under a slow, soft aurora. Palette and fonts follow meritNAMA-app tokens. */
 :root {
-  --night:      #070b14;
-  --night-2:    #0e1628;
-  --ink:        #e7ecf5;
-  --ink-soft:   #a3aec4;
-  --ink-faint:  #5f6a83;
-  --aurora-1:   #3ecf8e;
-  --aurora-2:   #4db8d9;
-  --aurora-3:   #7c65c4;
-  --lamp:       #f2b45a;
-  --silhouette: #03060c;
+  --night:      #07111f;   /* --mn-navy-950 */
+  --night-2:    #0e1b2c;   /* --mn-navy-900 */
+  --ink:        #f2f6fc;   /* --mn-text */
+  --ink-soft:   #a8b8ca;   /* --mn-text-muted */
+  --ink-faint:  #7d90a6;   /* --mn-text-subtle */
+  --cyan:       #42d6d0;   /* --mn-cyan */
+  --cyan-2:     #6be3de;   /* --mn-cyan-strong */
+  --green:      #5fd39a;   /* --mn-success */
+  --teal:       #1f7f80;
 
-  --font-display: "Bricolage Grotesque", "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono:    "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -61,11 +61,11 @@ body {
 }
 
 /* ── Sky ───────────────────────────────────────────── */
-.sky { position: fixed; inset: -4%; z-index: 0; pointer-events: none;
+.sky { position: fixed; inset: -6%; z-index: 0; pointer-events: none;
   background: radial-gradient(120% 90% at 50% 115%, var(--night-2) 0%, var(--night) 62%);
   transition: transform .8s cubic-bezier(.2,.8,.2,1); }
 .sky canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-#aurora { mix-blend-mode: screen; }
+#aurora { mix-blend-mode: screen; filter: blur(28px) saturate(1.05); opacity: .9; transform: scale(1.08); }
 .glyph { position: absolute; bottom: -40px; font-family: var(--font-mono); color: var(--ink-faint);
   white-space: nowrap; opacity: 0; animation: drift linear infinite; }
 @keyframes drift {
@@ -74,44 +74,27 @@ body {
   100% { transform: translate(var(--dx), -110vh) rotate(calc(var(--r) * -1)); opacity: 0 }
 }
 
-/* Desk silhouette */
-.desk { position: fixed; left: 0; right: 0; bottom: 0; height: min(30vh, 260px); z-index: 0; pointer-events: none; }
-.desk::before { content: ""; position: absolute; inset: auto 0 0 0; height: 16px; background: var(--silhouette);
-  box-shadow: 0 -1px 0 rgba(242,180,90,.14); }
-.desk svg { position: absolute; right: max(3vw, 8px); bottom: 0; height: 100%; width: auto; max-width: 100%; }
-.lamp-glow { position: absolute; right: calc(max(3vw, 8px) + min(30vh, 260px) * .55); bottom: 0;
-  width: min(80vh, 640px); height: min(55vh, 440px); transform: translateX(50%);
-  background: radial-gradient(50% 62% at 50% 100%, rgba(242,180,90,.26), rgba(242,180,90,0) 70%);
-  animation: flicker 7s steps(1) infinite, breathe 5s ease-in-out infinite; }
-@keyframes breathe { 50% { filter: brightness(1.25) } }
-@keyframes flicker { 0%,100% { opacity: 1 } 61% { opacity: .7 } 62% { opacity: 1 } 64% { opacity: .82 } 65% { opacity: 1 } }
-.steam path { fill: none; stroke: rgba(231,236,245,.3); stroke-width: 2.2; stroke-linecap: round;
-  stroke-dasharray: 60 120; animation: steam 4.5s linear infinite; }
-.steam path:nth-child(2) { animation-delay: -1.5s } .steam path:nth-child(3) { animation-delay: -3s }
-@keyframes steam { from { stroke-dashoffset: 180; opacity: 0 } 30% { opacity: 1 } to { stroke-dashoffset: 0; opacity: 0 } }
-.page-flip { transform-origin: 112px 172px; animation: flip 6s ease-in-out infinite; }
-@keyframes flip { 0%, 70% { transform: scaleX(1) } 85% { transform: scaleX(-1) } 100% { transform: scaleX(-1); opacity: 0 } }
 
 /* ── Centre stage ──────────────────────────────────── */
 .stage { position: relative; z-index: 1; height: 100%;
   display: grid; place-items: center; text-align: center;
   padding-left: max(20px, env(safe-area-inset-left, 0px));
   padding-right: max(20px, env(safe-area-inset-right, 0px));
-  padding-block: 24px min(30vh, 220px); }
+  padding-block: 24px 64px; }
 .stack { width: min(100%, 640px); display: flex; flex-direction: column; align-items: center; gap: 22px;
   transition: transform .8s cubic-bezier(.2,.8,.2,1); }
 
-.mark { width: 54px; height: 54px; color: var(--aurora-2);
-  filter: drop-shadow(0 0 18px rgba(77,184,217,.55)); animation: float 6s ease-in-out infinite; }
+.mark { width: 54px; height: 54px; color: var(--cyan);
+  filter: drop-shadow(0 0 18px rgba(66,214,208,.45)); animation: float 6s ease-in-out infinite; }
 .mark rect { transform-box: fill-box; transform-origin: bottom; animation: grow 2.4s cubic-bezier(.3,.7,.2,1) infinite alternate; }
 .mark rect:nth-child(2) { animation-delay: .2s } .mark rect:nth-child(3) { animation-delay: .4s }
 @keyframes grow { from { transform: scaleY(.35) } to { transform: scaleY(1) } }
 @keyframes float { 50% { transform: translateY(-8px) } }
 
 h1 { margin: 0; font-weight: 800; letter-spacing: -.04em; line-height: 1;
-  font-size: clamp(2.6rem, 1.4rem + 6vw, 5.4rem); font-variation-settings: "opsz" 96; }
+  font-size: clamp(2.6rem, 6.4vw, 5rem); }
 h1 .ch { display: inline-block; animation: in 1.1s cubic-bezier(.2,.8,.2,1) both, bob 5s ease-in-out infinite; }
-h1 .accent { background: linear-gradient(100deg, var(--aurora-1), var(--aurora-2), var(--aurora-3), var(--aurora-1));
+h1 .accent { background: linear-gradient(100deg, var(--green), var(--cyan), var(--cyan-2), var(--green));
   background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
   animation: in 1.1s cubic-bezier(.2,.8,.2,1) both, bob 5s ease-in-out infinite, flow 6s linear infinite; }
 @keyframes in { from { opacity: 0; transform: translateY(.5em) rotate(8deg); filter: blur(10px) } }
@@ -129,11 +112,11 @@ h1 .accent { background: linear-gradient(100deg, var(--aurora-1), var(--aurora-2
 .track { position: relative; height: 12px; border-radius: 999px; overflow: visible;
   background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.07); }
 .fill { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: inherit; overflow: hidden;
-  background: linear-gradient(90deg, var(--aurora-1), var(--aurora-2), var(--aurora-3), var(--aurora-1));
+  background: linear-gradient(90deg, var(--green), var(--cyan), var(--cyan-2), var(--green));
   background-size: 200% 100%; animation: flow 4s linear infinite;
-  box-shadow: 0 0 24px rgba(77,184,217,.55), 0 0 60px rgba(62,207,142,.25); }
+  box-shadow: 0 0 18px rgba(66,214,208,.3); }
 .fill::before { content: ""; position: absolute; inset: 0;
-  background: repeating-linear-gradient(-45deg, rgba(255,255,255,.18) 0 8px, transparent 8px 16px);
+  background: repeating-linear-gradient(-45deg, rgba(255,255,255,.08) 0 8px, transparent 8px 16px);
   animation: stripes 1s linear infinite; }
 @keyframes stripes { to { background-position: 22.6px 0 } }
 .fill::after { content: ""; position: absolute; inset: 0; width: 40%;
@@ -141,7 +124,7 @@ h1 .accent { background: linear-gradient(100deg, var(--aurora-1), var(--aurora-2
   animation: sheen 2.4s ease-in-out infinite; }
 @keyframes sheen { from { transform: translateX(-120%) } to { transform: translateX(320%) } }
 .head { position: absolute; top: 50%; left: 0; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%;
-  background: #fff; box-shadow: 0 0 12px #fff, 0 0 28px var(--aurora-2), 0 0 56px var(--aurora-1);
+  background: #fff; box-shadow: 0 0 10px rgba(255,255,255,.8), 0 0 26px rgba(66,214,208,.6);
   animation: beat 1.1s ease-in-out infinite; }
 @keyframes beat { 0%,100% { transform: scale(.7) } 12% { transform: scale(1.15) } 24% { transform: scale(.8) } 36% { transform: scale(1) } }
 #sparks { position: absolute; left: -40px; top: -60px; width: calc(100% + 80px); height: 132px; pointer-events: none; }
@@ -151,12 +134,12 @@ h1 .accent { background: linear-gradient(100deg, var(--aurora-1), var(--aurora-2
 
 .sound { position: fixed; z-index: 2; top: max(18px, env(safe-area-inset-top, 0px)); right: max(18px, env(safe-area-inset-right, 0px));
   display: flex; align-items: flex-end; gap: 3px; height: 18px; padding: 0; background: none; border: 0; cursor: pointer; opacity: .75; }
-.sound i { display: block; width: 3px; height: 4px; border-radius: 2px; background: var(--aurora-1); transition: height .3s; }
+.sound i { display: block; width: 3px; height: 4px; border-radius: 2px; background: var(--green); transition: height .3s; }
 .sound.on i { animation: eq 1s ease-in-out infinite; }
 .sound.on i:nth-child(2) { animation-delay: -.25s } .sound.on i:nth-child(3) { animation-delay: -.5s }
 .sound.on i:nth-child(4) { animation-delay: -.75s } .sound.on i:nth-child(5) { animation-delay: -.4s }
 @keyframes eq { 50% { height: 18px } }
-.sound:focus-visible { outline: 2px solid var(--aurora-2); outline-offset: 6px; border-radius: 4px; }
+.sound:focus-visible { outline: 2px solid var(--cyan); outline-offset: 6px; border-radius: 4px; }
 
 .note { position: fixed; z-index: 2; left: 0; right: 0; bottom: max(26px, calc(env(safe-area-inset-bottom, 0px) + 22px));
   text-align: center; font-family: var(--font-mono); font-size: .68rem; letter-spacing: .14em; text-transform: uppercase;
@@ -164,7 +147,6 @@ h1 .accent { background: linear-gradient(100deg, var(--aurora-1), var(--aurora-2
 .note.gone { opacity: 0; }
 @keyframes pulseText { 50% { color: var(--ink-soft) } }
 
-@media (max-width: 600px) { .desk { height: 140px; opacity: .85; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
   .glyph, #sparks { display: none; }
@@ -179,30 +161,6 @@ h1 .accent { background: linear-gradient(100deg, var(--aurora-1), var(--aurora-2
   <div id="glyphs"></div>
 </div>
 
-<div class="desk" aria-hidden="true">
-  <div class="lamp-glow"></div>
-  <svg viewBox="0 0 420 260" preserveAspectRatio="xMaxYMax meet">
-    <g fill="var(--silhouette)">
-      <rect x="236" y="236" width="70" height="10" rx="4"/>
-      <path d="M268 238 L250 130 L256 128 L274 236 Z"/>
-      <path d="M252 132 L300 68 L306 73 L258 136 Z"/>
-      <path d="M282 46 L340 86 L326 102 L268 62 Z"/>
-      <rect x="40" y="216" width="150" height="26" rx="3"/>
-      <rect x="52" y="192" width="132" height="24" rx="3"/>
-      <path d="M50 192 Q112 170 112 176 Q112 170 176 192 Z"/>
-      <rect x="350" y="200" width="42" height="44" rx="6"/>
-    </g>
-    <path class="page-flip" d="M112 176 Q140 166 172 188 L112 190 Z" fill="#0b111d"/>
-    <path d="M326 102 L268 62" stroke="var(--lamp)" stroke-width="3" stroke-linecap="round"/>
-    <path d="M52 229h120M64 204h104" stroke="rgba(242,180,90,.22)" stroke-width="1.5"/>
-    <path d="M392 210 q18 2 16 16 q-2 12 -16 12" fill="none" stroke="var(--silhouette)" stroke-width="7"/>
-    <g class="steam">
-      <path d="M362 192 q-8 -14 0 -26 q8 -12 0 -26"/>
-      <path d="M372 192 q8 -14 0 -26 q-8 -12 0 -26"/>
-      <path d="M382 192 q-8 -14 0 -26 q8 -12 0 -26"/>
-    </g>
-  </svg>
-</div>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <symbol id="i-mark" viewBox="0 0 32 32" fill="currentColor"><rect x="3" y="18" width="5" height="10" rx="1.5" opacity=".55"/><rect x="10" y="12" width="5" height="16" rx="1.5" opacity=".75"/><rect x="17" y="7" width="5" height="21" rx="1.5"/><path d="M24 4h5v5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="m29 4-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
@@ -282,10 +240,10 @@ h1 .accent { background: linear-gradient(100deg, var(--aurora-1), var(--aurora-2
   var dpr = Math.min(window.devicePixelRatio || 1, 2);
   function sizeSparks() { spc.width = spc.clientWidth * dpr; spc.height = spc.clientHeight * dpr; spx.setTransform(dpr, 0, 0, dpr, 0, 0); }
   sizeSparks();
-  var COLS = ["62,207,142", "77,184,217", "124,101,196", "255,255,255"];
+  var COLS = ["95,211,154", "66,214,208", "107,227,222", "242,246,252"];
   function sparkFrame() {
     var w = spc.clientWidth, h = spc.clientHeight, x0 = 40 + (w - 80) * shown / 100, y0 = h / 2;
-    for (var n = 0; n < 3; n++) sparks.push({ x: x0, y: y0, vx: -Math.random() * 1.8 - .2, vy: (Math.random() - .5) * 1.6, life: 1, r: Math.random() * 1.8 + .6, c: COLS[(Math.random() * 4) | 0] });
+    for (var n = 0; n < 2; n++) sparks.push({ x: x0, y: y0, vx: -Math.random() * 1.8 - .2, vy: (Math.random() - .5) * 1.6, life: 1, r: Math.random() * 1.8 + .6, c: COLS[(Math.random() * 4) | 0] });
     spx.clearRect(0, 0, w, h);
     spx.globalCompositeOperation = "lighter";
     for (var i = sparks.length - 1; i >= 0; i--) {
@@ -317,7 +275,7 @@ h1 .accent { background: linear-gradient(100deg, var(--aurora-1), var(--aurora-2
   /* ── Stars, shooting stars, aurora ────────────────── */
   var sc = document.getElementById("stars"), sx = sc.getContext("2d");
   var ac = document.getElementById("aurora"), ax = ac.getContext("2d");
-  var W, H, stars = [], shooters = [], AS = .34;
+  var W, H, stars = [], shooters = [], AS = .25;
   function resize() {
     W = sc.clientWidth; H = sc.clientHeight;
     sc.width = W * dpr; sc.height = H * dpr; sx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -329,46 +287,66 @@ h1 .accent { background: linear-gradient(100deg, var(--aurora-1), var(--aurora-2
   }
   resize(); window.addEventListener("resize", resize);
 
+  /* Each curtain is a filled band whose lower edge follows slow, summed sine
+     waves; a vertical gradient fades it upward. Drawn small, then blurred by
+     CSS, so it reads as soft light rather than rays. No flicker. */
   var ribbons = [
-    { col: [62, 207, 142],  base: .34, amp: .09, len: .30, sp: .00016, f: 2.0, ph: 0 },
-    { col: [77, 184, 217],  base: .25, amp: .08, len: .24, sp: .00012, f: 3.1, ph: 2 },
-    { col: [124, 101, 196], base: .18, amp: .06, len: .22, sp: .00009, f: 1.5, ph: 4 },
-    { col: [62, 207, 142],  base: .42, amp: .05, len: .16, sp: .00021, f: 4.2, ph: 1 }
+    { col: "66,214,208",  base: .40, amp: .060, height: .30, sp: .000045, f: 1.3, ph: 0.0, a: .55 },
+    { col: "95,211,154",  base: .33, amp: .070, height: .26, sp: .000035, f: 1.0, ph: 1.9, a: .45 },
+    { col: "31,127,128",  base: .47, amp: .050, height: .34, sp: .000028, f: 0.8, ph: 3.7, a: .65 },
+    { col: "107,227,222", base: .26, amp: .045, height: .18, sp: .000052, f: 1.7, ph: 5.1, a: .30 }
   ];
-  var energy = 0; // boosted by the music
+  var energy = 0, smooth = 0; // music level, eased again so the sky never jumps
+  function edge(rb, u, t) {
+    return rb.base
+      + Math.sin(u * rb.f * 6.283 + t * rb.sp * 6.283 + rb.ph) * rb.amp
+      + Math.sin(u * rb.f * 2.3 * 6.283 - t * rb.sp * 4.1 + rb.ph * 1.3) * rb.amp * .45;
+  }
   function drawAurora(t) {
     var w = ac.width, h = ac.height;
+    smooth += (energy - smooth) * .03;
     ax.globalCompositeOperation = "source-over"; ax.clearRect(0, 0, w, h);
     ax.globalCompositeOperation = "lighter";
-    var boost = 1 + energy * 1.4;
-    ribbons.forEach(function (rb) {
-      var c = rb.col.join(",");
-      for (var x = 0; x <= w; x += 2) {
-        var u = x / w;
-        var wave = Math.sin(u * rb.f * 6.28 + t * rb.sp * 6.28 + rb.ph) * .6 + Math.sin(u * rb.f * 2.7 * 6.28 - t * rb.sp * 11 + rb.ph * 1.7) * .4;
-        var y = (rb.base + wave * rb.amp) * h;
-        var fl = .55 + .45 * Math.sin(u * 46 + t * .0019 + rb.ph) * Math.sin(u * 19 - t * .0011);
-        var a = Math.max(0, fl) * (.35 + .65 * Math.sin(Math.PI * Math.min(1, Math.max(0, u * 1.1 - .05)))) * boost;
-        var len = rb.len * h * (.7 + .55 * fl) * (1 + energy * .5);
-        var gr = ax.createLinearGradient(0, y - len, 0, y + len * .25);
-        gr.addColorStop(0, "rgba(" + c + ",0)");
-        gr.addColorStop(.72, "rgba(" + c + "," + Math.min(1, .2 * a).toFixed(3) + ")");
-        gr.addColorStop(.92, "rgba(" + c + "," + Math.min(1, .5 * a).toFixed(3) + ")");
-        gr.addColorStop(1, "rgba(" + c + ",0)");
-        ax.fillStyle = gr; ax.fillRect(x, y - len, 2.2, len * 1.25);
+    ribbons.forEach(function (rb, k) {
+      var breathe = .8 + .2 * Math.sin(t * .00018 + k * 1.7);
+      var alpha = rb.a * breathe * (1 + smooth * .9);
+      var top = (rb.base - rb.amp - rb.height * (1 + smooth * .3)) * h;
+      var bottom = (rb.base + rb.amp * 1.5) * h;
+      var gr = ax.createLinearGradient(0, top, 0, bottom);
+      gr.addColorStop(0, "rgba(" + rb.col + ",0)");
+      gr.addColorStop(.65, "rgba(" + rb.col + "," + (alpha * .35).toFixed(3) + ")");
+      gr.addColorStop(.9, "rgba(" + rb.col + "," + Math.min(1, alpha).toFixed(3) + ")");
+      gr.addColorStop(1, "rgba(" + rb.col + ",0)");
+      ax.fillStyle = gr;
+      ax.beginPath();
+      var step = w / 40;
+      for (var x = 0; x <= w + step; x += step) {
+        var u = x / w, y = edge(rb, u, t) * h;
+        var lift = rb.height * h * (1 + smooth * .3) * (.75 + .25 * Math.sin(u * 3.1 + t * rb.sp * 3 + rb.ph));
+        if (x === 0) ax.moveTo(x, y - lift); else ax.lineTo(x, y - lift);
       }
+      for (var x2 = w + step; x2 >= -step; x2 -= step) {
+        var u2 = x2 / w; ax.lineTo(x2, edge(rb, u2, t) * h + rb.amp * .6 * h);
+      }
+      ax.closePath(); ax.fill();
     });
+    // fade the sides so the curtains sit inside the sky
+    ax.globalCompositeOperation = "destination-in";
+    var side = ax.createLinearGradient(0, 0, w, 0);
+    side.addColorStop(0, "rgba(0,0,0,.25)"); side.addColorStop(.2, "#000");
+    side.addColorStop(.8, "#000"); side.addColorStop(1, "rgba(0,0,0,.25)");
+    ax.fillStyle = side; ax.fillRect(0, 0, w, h);
   }
   function drawStars(t) {
     sx.clearRect(0, 0, W, H);
-    sx.fillStyle = "#dfe8ff";
+    sx.fillStyle = "#f2f6fc";
     for (var i = 0; i < stars.length; i++) {
       var s = stars[i];
-      sx.globalAlpha = reduce ? .8 : (.5 + .5 * Math.sin(t * .001 * s.s + s.p)) * .9;
+      sx.globalAlpha = reduce ? .8 : (.6 + .4 * Math.sin(t * .0006 * s.s + s.p)) * .8;
       sx.beginPath(); sx.arc(s.x, s.y, s.r, 0, 6.283); sx.fill();
     }
     sx.globalAlpha = 1;
-    if (!reduce && Math.random() < .006) shooters.push({ x: Math.random() * W * .8 + W * .1, y: Math.random() * H * .35, vx: -(6 + Math.random() * 6), vy: 3 + Math.random() * 3, life: 1 });
+    if (!reduce && Math.random() < .002) shooters.push({ x: Math.random() * W * .8 + W * .1, y: Math.random() * H * .35, vx: -(6 + Math.random() * 6), vy: 3 + Math.random() * 3, life: 1 });
     for (var j = shooters.length - 1; j >= 0; j--) {
       var p = shooters[j]; p.x += p.vx; p.y += p.vy; p.life -= .02;
       if (p.life <= 0) { shooters.splice(j, 1); continue; }
