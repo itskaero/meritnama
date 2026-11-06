@@ -188,6 +188,27 @@ em, .it { font-family: var(--serif); font-style: italic; font-weight: 400; lette
 .tag.live { color: var(--teal-2); box-shadow: inset 0 0 0 1px rgba(45,212,191,.35); }
 .tag.soon { color: var(--ember-hot); box-shadow: inset 0 0 0 1px rgba(255,106,61,.4); }
 
+/* ── Compare ─────────────────────────────────────────── */
+.compare { padding-block: clamp(40px, 7vw, 100px); }
+.cmp { border-top: 1px solid var(--line); }
+.cmp-row { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1fr) minmax(0, 1.2fr); gap: 24px; padding: 20px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.cmp-row > * { min-width: 0; }
+.cmp-head { padding: 14px 0; }
+.cmp-head span { font: 500 .7rem/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); }
+.cmp-head span:last-child { color: var(--teal-2); }
+.cmp-row .topic { font-family: var(--serif); font-size: 1.45rem; line-height: 1.1; }
+.cmp-row .old { color: var(--ink-faint); font-size: .9rem; display: flex; gap: 10px; }
+.cmp-row .new { color: var(--ink); font-size: .95rem; display: flex; gap: 10px; }
+.cmp-row .old::before { content: ""; flex: none; width: 14px; height: 1.5px; margin-top: .7em; background: var(--line-2); }
+.cmp-row .new svg { flex: none; width: 18px; height: 18px; margin-top: .15em; }
+.cmp-row:not(.cmp-head) { transition: background .3s; }
+.cmp-row:not(.cmp-head):hover { background: linear-gradient(90deg, transparent, rgba(45,212,191,.05), transparent); }
+.cmp-row .tagline { display: block; margin-top: 4px; font: 400 .7rem/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
+@media (max-width: 760px) {
+  .cmp-head { display: none; }
+  .cmp-row { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+}
+
 /* ── Numbers ─────────────────────────────────────────── */
 .numbers { padding-block: clamp(60px, 9vw, 120px); }
 .numbers .grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 40px 80px; align-items: start; }
@@ -270,7 +291,7 @@ em, .it { font-family: var(--serif); font-style: italic; font-weight: 400; lette
   <div class="topbar">
     <a class="brand" href="#top" aria-label="meritNAMA home"><svg aria-hidden="true"><use href="#i-mark"/></svg><span>merit<span class="nama">NAMA</span></span></a>
     <nav class="topnav" aria-label="Primary">
-      <a href="#approach">Approach</a><a href="#tools">Tools</a><a href="#progress">Progress</a><a href="#faq">Questions</a>
+      <a href="#approach">Approach</a><a href="#tools">Tools</a><a href="#compare">Compare</a><a href="#progress">Progress</a><a href="#faq">Questions</a>
     </nav>
     <a class="btn btn-light" href="app.html" data-app-link>Open current version</a>
   </div>
@@ -283,7 +304,7 @@ em, .it { font-family: var(--serif); font-style: italic; font-weight: 400; lette
       <div><b id="heroPct">0</b></div>
       <div><span>/ 100 built<br>the new meritNAMA</span><span class="bar"><i id="heroBar"></i></span></div>
     </div>
-    <div class="foot-links"><a href="#tools">Tools</a><a href="#progress">Progress</a><a href="https://meritnama.online/" data-new-site>meritnama.online</a></div>
+    <div class="foot-links"><a href="#tools">Tools</a><a href="#compare">Compare</a><a href="#progress">Progress</a><a href="https://meritnama.online/" data-new-site>meritnama.online</a></div>
   </div>
 </header>
 
@@ -304,11 +325,11 @@ em, .it { font-family: var(--serif); font-style: italic; font-weight: 400; lette
   <section class="split" id="tools-split" aria-label="Five tools">
     <div class="split-stage" id="stage">
       <div class="split-head" id="splitHead"><h2 class="h2">Five tools, <em>one picture</em></h2></div>
-      <div class="tcard" data-i="0"><div class="cap"><span>01</span><b>Closing merit</b></div></div>
-      <div class="tcard" data-i="1"><div class="cap"><span>02</span><b>Simulator</b></div></div>
-      <div class="tcard" data-i="2"><div class="cap"><span>03</span><b>Hospitals</b></div></div>
-      <div class="tcard" data-i="3"><div class="cap"><span>04</span><b>Preference planner</b></div></div>
-      <div class="tcard" data-i="4"><div class="cap"><span>05</span><b>Alerts</b></div></div>
+      <div class="tcard" data-i="0"><div class="cap"><span>01</span><b>Score finder</b></div></div>
+      <div class="tcard" data-i="1"><div class="cap"><span>02</span><b>Merit ladder</b></div></div>
+      <div class="tcard" data-i="2"><div class="cap"><span>03</span><b>Seat flow</b></div></div>
+      <div class="tcard" data-i="3"><div class="cap"><span>04</span><b>Predictions</b></div></div>
+      <div class="tcard" data-i="4"><div class="cap"><span>05</span><b>Preference planner</b></div></div>
       <p class="split-copy" id="splitCopy">One archive of every round sits under all of them, so a number on one screen means the same thing on the next.</p>
     </div>
   </section>
@@ -337,31 +358,50 @@ em, .it { font-family: var(--serif); font-style: italic; font-weight: 400; lette
   <section class="tools wrap" id="tools" aria-labelledby="toolsTitle">
     <div class="tools-head">
       <h2 class="h2 rv" id="toolsTitle">What it <em>does</em></h2>
-      <p class="sub rv">Live tools work today in the current version. New ones arrive with the rebuilt site.</p>
+      <p class="sub rv">Built and being finished in the new app. The current version keeps its closing merit, simulator and hospital pages until launch.</p>
     </div>
     <div class="row rv">
       <span class="n">01</span>
-      <div><h3>Closing merit</h3><span class="tag live">Live</span></div>
-      <ul><li>Every specialty and hospital</li><li>Round by round, year by year</li><li>Trends, not single cutoffs</li></ul>
-      <div class="pv" aria-hidden="true"><svg viewBox="0 0 260 146"><g stroke="#232427"><path d="M16 40H244M16 76H244M16 112H244"/></g><path d="M20 112C60 104 80 108 110 86S170 64 200 52 236 40 240 36" fill="none" stroke="#2dd4bf" stroke-width="2"/><circle cx="240" cy="36" r="4" fill="#5eead4"/><text x="16" y="26" fill="#8a8a93" font-size="9">CLOSING MERIT</text></svg></div>
+      <div><h3>Score finder</h3><span class="tag soon">New</span></div>
+      <ul><li>Where your marks would have reached</li><li>A chance dial on each comparison</li><li>A shortlist you can keep</li></ul>
+      <div class="pv" aria-hidden="true"><svg viewBox="0 0 260 146"><circle cx="130" cy="84" r="46" fill="none" stroke="#2a2b2e" stroke-width="8"/><path d="M84 84a46 46 0 0 1 80-31" fill="none" stroke="#2dd4bf" stroke-width="8" stroke-linecap="round"/><text x="130" y="90" fill="#f4f4f5" font-size="15" text-anchor="middle">likely</text><text x="16" y="26" fill="#8a8a93" font-size="9">YOUR CHANCE · EXAMPLE</text></svg></div>
     </div>
     <div class="row rv">
       <span class="n">02</span>
-      <div><h3>Induction simulator</h3><span class="tag live">Live</span></div>
-      <ul><li>Your score against past rounds</li><li>Where it would have landed</li><li>Round-to-round movement</li></ul>
-      <div class="pv" aria-hidden="true"><svg viewBox="0 0 260 146"><circle cx="130" cy="80" r="46" fill="none" stroke="#2a2b2e" stroke-width="8"/><path d="M84 80a46 46 0 0 1 80-31" fill="none" stroke="#2dd4bf" stroke-width="8" stroke-linecap="round"/><text x="130" y="86" fill="#f4f4f5" font-size="16" text-anchor="middle">#214</text><text x="16" y="26" fill="#8a8a93" font-size="9">EXAMPLE RANK</text></svg></div>
+      <div><h3>Merit ladder</h3><span class="tag soon">New</span></div>
+      <ul><li>Every specialty and hospital, ranked</li><li>A grid of where merit moved</li><li>Round by round, year by year</li></ul>
+      <div class="pv" aria-hidden="true"><svg viewBox="0 0 260 146"><g><rect x="20" y="40" width="34" height="20" rx="3" fill="#0f3d38"/><rect x="58" y="40" width="34" height="20" rx="3" fill="#14564f"/><rect x="96" y="40" width="34" height="20" rx="3" fill="#2dd4bf" opacity=".7"/><rect x="134" y="40" width="34" height="20" rx="3" fill="#b8321a" opacity=".7"/><rect x="172" y="40" width="34" height="20" rx="3" fill="#0f3d38"/><rect x="210" y="40" width="30" height="20" rx="3" fill="#14564f"/>
+        <rect x="20" y="64" width="34" height="20" rx="3" fill="#14564f"/><rect x="58" y="64" width="34" height="20" rx="3" fill="#ff6a3d" opacity=".6"/><rect x="96" y="64" width="34" height="20" rx="3" fill="#0f3d38"/><rect x="134" y="64" width="34" height="20" rx="3" fill="#2dd4bf" opacity=".5"/><rect x="172" y="64" width="34" height="20" rx="3" fill="#14564f"/><rect x="210" y="64" width="30" height="20" rx="3" fill="#0f3d38"/>
+        <rect x="20" y="88" width="34" height="20" rx="3" fill="#0f3d38"/><rect x="58" y="88" width="34" height="20" rx="3" fill="#14564f"/><rect x="96" y="88" width="34" height="20" rx="3" fill="#14564f"/><rect x="134" y="88" width="34" height="20" rx="3" fill="#0f3d38"/><rect x="172" y="88" width="34" height="20" rx="3" fill="#ff6a3d" opacity=".5"/><rect x="210" y="88" width="30" height="20" rx="3" fill="#2dd4bf" opacity=".6"/></g><text x="16" y="26" fill="#8a8a93" font-size="9">WHERE MERIT MOVED</text></svg></div>
     </div>
     <div class="row rv">
       <span class="n">03</span>
-      <div><h3>Hospital profiles</h3><span class="tag live">Live</span></div>
-      <ul><li>Seats and specialties per hospital</li><li>How competitive each one runs</li><li>Names matched across years</li></ul>
-      <div class="pv" aria-hidden="true"><svg viewBox="0 0 260 146"><g fill="#1a1b1d" stroke="#2a2b2e"><rect x="20" y="40" width="68" height="40" rx="6"/><rect x="96" y="40" width="68" height="40" rx="6"/><rect x="172" y="40" width="68" height="40" rx="6"/><rect x="20" y="88" width="68" height="40" rx="6"/><rect x="96" y="88" width="68" height="40" rx="6" stroke="#2dd4bf"/><rect x="172" y="88" width="68" height="40" rx="6"/></g><text x="16" y="26" fill="#8a8a93" font-size="9">HOSPITALS</text></svg></div>
+      <div><h3>Seat flow</h3><span class="tag soon">New</span></div>
+      <ul><li>Seats accepted against seats released</li><li>A funnel of who is still moving</li><li>Each round of an induction</li></ul>
+      <div class="pv" aria-hidden="true"><svg viewBox="0 0 260 146"><path d="M24 44H236L196 72H64Z" fill="#14564f"/><path d="M64 78H196L168 104H92Z" fill="#2dd4bf" opacity=".6"/><path d="M92 110H168L150 130H110Z" fill="#ff6a3d" opacity=".7"/><text x="16" y="28" fill="#8a8a93" font-size="9">ROUND FUNNEL</text></svg></div>
     </div>
     <div class="row rv">
       <span class="n">04</span>
-      <div><h3>Preference planner</h3><span class="tag soon">In the rebuild</span></div>
+      <div><h3>Predictions</h3><span class="tag soon">New</span></div>
+      <ul><li>Next-round closing merit</li><li>Shown as a range, never one number</li><li>With a confidence level</li></ul>
+      <div class="pv" aria-hidden="true"><svg viewBox="0 0 260 146"><g stroke="#232427"><path d="M16 50H244M16 86H244M16 122H244"/></g><path d="M20 118C60 110 90 112 120 94S170 74 196 66" fill="none" stroke="#2dd4bf" stroke-width="2"/><path d="M196 66L240 44V84Z" fill="rgba(255,106,61,.25)"/><path d="M196 66 240 62" stroke="#ffb08a" stroke-width="2" stroke-dasharray="4 4"/><text x="16" y="28" fill="#8a8a93" font-size="9">NEXT ROUND · RANGE</text></svg></div>
+    </div>
+    <div class="row rv">
+      <span class="n">05</span>
+      <div><h3>Preference planner</h3><span class="tag soon">New</span></div>
       <ul><li>Order your choices</li><li>Each checked against closing merit</li><li>Saved to your own account</li></ul>
       <div class="pv" aria-hidden="true"><svg viewBox="0 0 260 146"><g font-size="10"><rect x="20" y="36" width="220" height="26" rx="6" fill="rgba(45,212,191,.08)" stroke="rgba(45,212,191,.35)"/><text x="32" y="53" fill="#f4f4f5">1 · within reach</text><rect x="20" y="70" width="220" height="26" rx="6" fill="#1a1b1d"/><text x="32" y="87" fill="#ffb08a">2 · borderline</text><rect x="20" y="104" width="220" height="26" rx="6" fill="#1a1b1d"/><text x="32" y="121" fill="#8a8a93">3 · stretch</text></g><text x="16" y="24" fill="#8a8a93" font-size="9">PLANNER</text></svg></div>
+    </div>
+  </section>
+
+  <!-- ── Compare: why the new one is better ───────────────── -->
+  <section class="compare wrap" id="compare" aria-labelledby="compareTitle">
+    <div class="tools-head">
+      <h2 class="h2 rv" id="compareTitle">What changes, <em>for you</em></h2>
+      <p class="sub rv">The same purpose, rebuilt on a proper foundation. Here is the current version next to the new one.</p>
+    </div>
+    <div class="cmp" role="table" aria-label="Current version compared with the new meritNAMA">
+      <div class="cmp-row cmp-head" role="row"><span role="columnheader">&nbsp;</span><span role="columnheader">Current version</span><span role="columnheader">New meritNAMA</span></div>
     </div>
   </section>
 
@@ -386,6 +426,8 @@ em, .it { font-family: var(--serif); font-style: italic; font-weight: 400; lette
           <p>No. meritNAMA is an independent analysis of Punjab postgraduate induction. Always confirm decisions against the official merit lists and notifications.</p></details>
         <details class="qa"><summary>Where does the data come from?<i aria-hidden="true"></i></summary>
           <p>From published merit lists for each induction round and the gazette notifications that set seat counts. Hospital and specialty names are matched so years can be compared.</p></details>
+        <details class="qa"><summary>Will I need a new account?<i aria-hidden="true"></i></summary>
+          <p>Yes. You sign in with a link sent to your email, or with Google. To see your own merit record, you verify the email address on that record once.</p></details>
         <details class="qa"><summary>Can I keep using the current version?<i aria-hidden="true"></i></summary>
           <p>Yes. It stays available until the new site opens.</p></details>
         <details class="qa"><summary>When does the new site open?<i aria-hidden="true"></i></summary>
@@ -497,12 +539,15 @@ em, .it { font-family: var(--serif); font-style: italic; font-weight: 400; lette
   setTimeout(function () { countTo($("heroPct"), PCT, 2600); $("heroBar").style.width = PCT + "%"; }, 500);
 
   var items = cfg.buildLog || [
-    { what: "Merit trends and closing cutoffs", status: "done" },
-    { what: "Induction simulator", status: "done" },
-    { what: "New design system", status: "done" },
-    { what: "Private app with secure sign-in", status: "doing" },
+    { what: "Design system and the Beam M brand", status: "done" },
+    { what: "Score finder with chance dial", status: "done" },
+    { what: "Merit ladder and where-merit-moved grid", status: "done" },
+    { what: "Seat flow and round funnel", status: "done" },
+    { what: "Email-link sign-in and record verification", status: "doing" },
+    { what: "Predictions as ranges", status: "doing" },
     { what: "Preference planner", status: "doing" },
-    { what: "Merit and gazette alerts", status: "next" }
+    { what: "Community Q&A, polls and reviews", status: "doing" },
+    { what: "Moving the data across and launch", status: "next" }
   ];
   function pick(s) { return items.filter(function (i) { return i.status === s; }).map(function (i) { return i.what; }); }
   var groups = [
@@ -520,6 +565,28 @@ em, .it { font-family: var(--serif); font-style: italic; font-weight: 400; lette
     if (g.p) { var p = document.createElement("p"); p.textContent = g.p; right.appendChild(p); }
     if (g.list.length) { var ul = document.createElement("ul"); g.list.forEach(function (t) { var li = document.createElement("li"); li.textContent = t; ul.appendChild(li); }); right.appendChild(ul); }
     d.appendChild(b); d.appendChild(right); statsEl.appendChild(d);
+  });
+
+  /* ── Compare rows ──────────────────────────────────── */
+  var CMP = [
+    ["Signing in", "Access", "An email and PIN, checked in your browser.", "A sign-in link sent to your email, or Continue with Google. Every check happens on the server."],
+    ["Your record", "Privacy", "Found by searching the shared lists.", "Linked to your account only after you verify the email on your official record. Only you can see it."],
+    ["Your data", "Privacy", "Large data files downloaded to every visitor.", "Kept on the server. Pages fetch only the figures they show, and personal details never leave it."],
+    ["Speed", "Experience", "Megabytes of data load before a page is usable.", "Pages render on the server and arrive ready, even on a slow phone connection."],
+    ["Reading merit", "Insight", "Closing merit tables per round.", "A merit ladder, a grid of where merit moved, seat flow and a round funnel."],
+    ["Looking ahead", "Insight", "A simulator for past rounds.", "Next-round closing merit as a range with a confidence level, plus a score finder with a chance dial."],
+    ["Choosing seats", "Planning", "Done on paper, outside the site.", "A preference planner that checks each choice against closing merit and saves your list."],
+    ["Community", "People", "A reviews page.", "Questions with accepted answers, polls and structured hospital reviews, with an inbox to follow replies."],
+    ["Accuracy", "Trust", "Data edits go live as they are made.", "Every change is previewed with a diff, published on purpose, can be rolled back and is kept in an audit history."],
+    ["Scoring rules", "Trust", "Fixed in the page code.", "Versioned scoring policies, with exactly one active at a time."]
+  ];
+  var cmp = document.querySelector(".cmp"), checkSvg = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-opacity=".35"/><path d="m8 12 3 3 5-6"/></svg>';
+  CMP.forEach(function (r) {
+    var row = document.createElement("div"); row.className = "cmp-row rv"; row.setAttribute("role", "row");
+    row.innerHTML = '<div role="rowheader"><span class="topic"></span><span class="tagline"></span></div><div class="old" role="cell"></div><div class="new" role="cell">' + checkSvg + '<span></span></div>';
+    row.querySelector(".topic").textContent = r[0]; row.querySelector(".tagline").textContent = r[1];
+    row.querySelector(".old").textContent = r[2]; row.querySelector(".new span").textContent = r[3];
+    cmp.appendChild(row);
   });
 
   /* ── Statement: words light up as you read down ────── */
