@@ -1,0 +1,82 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; }
+    #ck-clip { position: absolute; inset: 0; }
+    #ck-frame { position: absolute; left: 180px; right: 180px; top: 64px; bottom: 64px; border-radius: 36px; border: 1.5px solid rgba(255,255,255,.1); background: rgba(14,14,18,.86); box-shadow: 0 0 110px rgba(110,86,255,.12); }
+    #ck-left { position: absolute; left: 56px; top: 110px; width: 560px; }
+    #ck-h2 { font-size: 72px; font-weight: 500; line-height: 1.1; letter-spacing: -0.03em; }
+    #ck-h2 .v { color: #b9aaff; }
+    #ck-p { margin-top: 26px; font-size: 28px; line-height: 1.45; color: #8b8b93; }
+    /* The real check box: navy, ivory fields, a gold button. */
+    #ck-box { position: absolute; left: 680px; right: 56px; top: 110px; border-radius: 26px; border: 1.5px solid rgba(243,238,229,.15); background: rgba(16,36,58,.78); padding: 38px; }
+    #ck-form { display: grid; grid-template-columns: 240px 1fr auto; gap: 24px; align-items: end; }
+    .ck-lab { font-size: 28px; color: rgba(243,238,229,.8); font-weight: 500; }
+    .ck-in { margin-top: 10px; height: 76px; border-radius: 14px; border: 1.5px solid rgba(243,238,229,.25); background: #f3eee5; color: #10243a; display: flex; align-items: center; padding: 0 20px; font-size: 32px; }
+    #ck-marks { font-family: "IBM Plex Mono", monospace; }
+    #ck-btn { height: 76px; border-radius: 14px; background: #e5a04b; color: #10243a; font-size: 30px; font-weight: 700; display: flex; align-items: center; gap: 12px; padding: 0 30px; }
+    #ck-res { margin-top: 30px; border-top: 1.5px solid rgba(243,238,229,.15); padding-top: 26px; }
+    #ck-sent { font-size: 28px; color: rgba(243,238,229,.85); }
+    #ck-tiles { margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .ck-t { border-radius: 16px; background: rgba(243,238,229,.1); padding: 18px 24px; }
+    .ck-t b { display: block; font-size: 64px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .ck-t span { font-size: 28px; color: rgba(243,238,229,.75); }
+    #ck-t1 b { color: #3ddc97; } #ck-t2 b { color: #e5a04b; } #ck-t3 b { color: #ff7a7a; }
+    #ck-note { margin-top: 20px; font-size: 28px; color: rgba(243,238,229,.7); }
+    #ck-cursor { position: absolute; left: 0; top: 0; width: 64px; height: 64px; filter: drop-shadow(0 6px 14px rgba(0,0,0,.5)); }
+  </style>
+  <div id="root" data-composition-id="check" data-width="1920" data-height="1080">
+    <div id="ck-clip" class="clip" data-start="0" data-duration="4">
+      <div id="ck-frame">
+        <div id="ck-left">
+          <h2 id="ck-h2">Check your marks, <span class="v">free</span></h2>
+          <p id="ck-p">Safe, a target or a reach, from last time's lists.</p>
+        </div>
+        <div id="ck-box">
+          <div id="ck-form">
+            <label><span class="ck-lab">Your marks</span><span class="ck-in" id="ck-marks"><span id="ck-typed"></span><span style="margin-left:auto;color:#56656f;font-size:26px">/30</span></span></label>
+            <label><span class="ck-lab">Programme and quota</span><span class="ck-in">FCPS · Punjab</span></label>
+            <span id="ck-btn">Check →</span>
+          </div>
+          <div id="ck-res">
+            <p id="ck-sent">Last time, 22.5 would have been:</p>
+            <div id="ck-tiles">
+              <div id="ck-t1" class="ck-t"><b id="ck-v1">0</b><span>safe</span></div>
+              <div id="ck-t2" class="ck-t"><b id="ck-v2">0</b><span>borderline</span></div>
+              <div id="ck-t3" class="ck-t"><b id="ck-v3">0</b><span>out of reach</span></div>
+            </div>
+            <p id="ck-note">Free, no sign-in needed.</p>
+          </div>
+        </div>
+      </div>
+      <svg id="ck-cursor" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2 L4 19 L8.6 14.8 L11.6 21.5 L14.6 20.2 L11.7 13.6 L18 13.4 Z" fill="#f3eee5" stroke="#0c0c0e" stroke-width="1.4" stroke-linejoin="round" /></svg>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // Out of card 02: the frame grows in as the card's fill becomes this world.
+    tl.fromTo("#ck-frame", { scale: 0.82, opacity: 0, filter: "blur(12px)" }, { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 0);
+    tl.fromTo(["#ck-h2", "#ck-p"], { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, stagger: 0.15, ease: "power4.out" }, 0.15);
+    tl.fromTo("#ck-box", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, 0.25);
+    // Typing 22.5, a character every 0.08 s.
+    const typed = "22.5", o = { n: 0 }, out = document.querySelector("#ck-typed");
+    tl.fromTo(o, { n: 0 }, { n: typed.length, duration: 0.32, ease: "none", onUpdate: () => { out.textContent = typed.slice(0, Math.round(o.n)); } }, 0.55);
+    // The cursor comes in from off-frame to Check and clicks at 13.5 s.
+    tl.fromTo("#ck-cursor", { x: 1960, y: 900 }, { x: 1610, y: 280, duration: 0.55, ease: "power3.out" }, 0.9);
+    tl.to("#ck-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in", transformOrigin: "10% 10%" }, 1.5);
+    tl.to("#ck-cursor", { scale: 1, duration: 0.12, ease: "power2.out" }, 1.57);
+    tl.to("#ck-btn", { scale: 0.94, duration: 0.07, ease: "power2.in" }, 1.5);
+    tl.to("#ck-btn", { scale: 1, duration: 0.15, ease: "back.out(2)" }, 1.57);
+    tl.to("#ck-cursor", { opacity: 0, x: 1700, y: 360, duration: 0.3, ease: "power2.in" }, 2.2);
+    tl.fromTo("#ck-res", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "expo.out" }, 1.62);
+    // The live site's answer for 22.5 / 30, FCPS · Punjab: 130 safe, 33 borderline, 214 out of reach.
+    [["#ck-t1", "#ck-v1", 130], ["#ck-t2", "#ck-v2", 33], ["#ck-t3", "#ck-v3", 214]].forEach(([tile, val, v], i) => {
+      const at = 1.75 + i * 0.25, c = { v: 0 }, el = document.querySelector(val);
+      tl.fromTo(tile, { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.8)" }, at);
+      tl.fromTo(c, { v: 0 }, { v, duration: 0.6, ease: "power3.out", onUpdate: () => { el.textContent = Math.round(c.v); } }, at);
+    });
+    tl.fromTo("#ck-note", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 2.1);
+    // Scroll on.
+    tl.to("#ck-frame", { y: -1150, filter: "blur(14px)", duration: 0.42, ease: "power3.in" }, 3.58);
+    window.__timelines["check"] = tl;
+  </script>
+</template>

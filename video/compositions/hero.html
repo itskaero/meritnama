@@ -1,0 +1,80 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; }
+    #hero-clip { position: absolute; inset: 0; }
+    /* The landing's frame: rounded, hairline border, near-black glass, a faint violet glow. */
+    #hero-frame { position: absolute; left: 180px; right: 180px; top: 64px; bottom: 64px; border-radius: 36px; border: 1.5px solid rgba(255,255,255,.1); background: rgba(14,14,18,.86); box-shadow: 0 0 110px rgba(110,86,255,.12); overflow: hidden; }
+    #hero-nav { position: absolute; left: 56px; right: 56px; top: 40px; display: flex; align-items: center; justify-content: space-between; }
+    #hero-brand { display: flex; align-items: center; gap: 14px; font-size: 32px; letter-spacing: -0.01em; }
+    #hero-brand b { font-weight: 800; letter-spacing: .02em; }
+    #hero-logo { width: 42px; height: 40px; overflow: visible; }
+    #hero-path { fill: none; stroke: #f3eee5; stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; }
+    #hero-dot { fill: #9b87ff; }
+    #hero-links { display: flex; gap: 40px; font-size: 28px; color: #8b8b93; }
+    #hero-sign { display: flex; align-items: center; gap: 12px; font-size: 28px; font-weight: 600; }
+    #hero-sign i { width: 46px; height: 46px; border-radius: 99px; border: 1.5px solid rgba(255,255,255,.2); display: grid; place-items: center; font-style: normal; font-size: 22px; }
+    #hero-h1 { position: absolute; left: 56px; top: 190px; width: 930px; font-size: 92px; font-weight: 500; line-height: 1.07; letter-spacing: -0.035em; }
+    #hero-h1 span { display: inline-block; margin-right: 0.24em; }
+    #hero-h1 .v { color: #b9aaff; }
+    #hero-sub { position: absolute; left: 56px; top: 750px; width: 860px; font-size: 28px; line-height: 1.45; color: #8b8b93; }
+    #hero-cta { position: absolute; left: 56px; top: 840px; display: flex; align-items: center; gap: 30px; }
+    #hero-btn { display: inline-flex; align-items: center; gap: 20px; height: 76px; padding: 0 12px 0 32px; border-radius: 99px; font-size: 26px; font-weight: 700; letter-spacing: .08em; color: #fff; background: linear-gradient(90deg, rgba(255,255,255,.05) 25%, rgba(110,86,255,.42)); border: 1.5px solid rgba(155,135,255,.6); box-shadow: inset -3px 0 0 #7b61ff, 0 0 26px rgba(110,86,255,.35); }
+    #hero-btn i { width: 54px; height: 54px; border-radius: 99px; background: #7b61ff; display: grid; place-items: center; font-style: normal; font-size: 24px; }
+    #hero-how { font-size: 28px; color: #8b8b93; }
+    #hero-cardwrap { position: absolute; left: 1010px; top: 250px; width: 540px; }
+    #hero-card { border-radius: 34px; border: 1.5px solid rgba(155,135,255,.55); background: linear-gradient(140deg, #0f2a2e, #14102a 60%, #2a1f5c); padding: 34px 38px; box-shadow: 0 0 80px rgba(110,86,255,.4); }
+    #hero-card .top { display: flex; justify-content: space-between; font-size: 30px; }
+    #hero-card .top b { font-weight: 700; }
+    #hero-card .top span { color: #b9aaff; font-size: 28px; }
+    #hero-card .lab { margin-top: 50px; font-size: 28px; color: rgba(243,238,229,.6); }
+    #hero-card .big { font-size: 96px; font-weight: 300; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.05; }
+    #hero-card .big small { font-size: 32px; color: rgba(243,238,229,.6); margin-left: 6px; }
+    #hero-card .row { margin-top: 36px; display: flex; justify-content: space-between; gap: 18px; font-family: "IBM Plex Mono", monospace; font-size: 28px; }
+    #hero-card .row span { display: inline-block; }
+  </style>
+  <div id="root" data-composition-id="hero" data-width="1920" data-height="1080">
+    <div id="hero-clip" class="clip" data-start="0" data-duration="8">
+    <div id="hero-frame">
+      <nav id="hero-nav">
+        <span id="hero-brand"><svg id="hero-logo" viewBox="0 0 110 106"><path id="hero-path" pathLength="1" d="M14 90 V44 a13 13 0 0 1 26 0 V90 M40 44 a13 13 0 0 1 26 0 a14 14 0 1 1 28 0 a14 14 0 1 1 -28 0 V98" /><circle id="hero-dot" cx="80" cy="12" r="6.5" /></svg><span>merit<b>NAMA</b></span></span>
+        <span id="hero-links"><span>Merit lists</span><span>Chances</span><span>Jobs</span><span>FAQ</span><span>Contact</span></span>
+        <span id="hero-sign"><i>↗</i>Sign in</span>
+      </nav>
+      <h1 id="hero-h1"><span class="a">Know</span><span class="a">where</span><span class="a">you</span><span class="a">stand.</span><span class="b">See</span><span class="b">every</span><span class="b v">merit</span><span class="b v">list,</span><span class="b">your</span><span class="b v">chances,</span><span class="b">and</span><span class="b">where</span><span class="b">you'll</span><span class="b">train.</span></h1>
+      <p id="hero-sub">For doctors applying to Punjab's postgraduate training.</p>
+      <div id="hero-cta"><span id="hero-btn">GET STARTED <i>↗</i></span><span id="hero-how">See how it works →</span></div>
+      <div id="hero-cardwrap">
+        <div id="hero-card">
+          <div class="top"><b>meritNAMA</b><span>Induction 21</span></div>
+          <p class="lab">Typical merit · FCPS Punjab</p>
+          <p class="big"><span id="hero-merit">0.00</span><small>/30</small></p>
+          <p class="row"><span id="hero-s" style="color:#3ddc97">194 safe</span><span id="hero-t" style="color:#e5a04b">30 target</span><span id="hero-r" style="color:#ff7a7a">153 reach</span></p>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // The frame settles in, the logo draws, the nav arrives.
+    tl.fromTo("#hero-frame", { scale: 0.96 }, { scale: 1, duration: 1.4, ease: "expo.out" }, 0);
+    tl.fromTo("#hero-path", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.9, ease: "power2.inOut" }, 0.4);
+    tl.fromTo("#hero-dot", { y: -24, opacity: 0, transformOrigin: "50% 50%" }, { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.7)" }, 1.25);
+    tl.fromTo(["#hero-brand > span", "#hero-links span", "#hero-sign"], { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.05, ease: "expo.out" }, 0.9);
+    // "Know where you stand." before the drop; the rest of the headline on it.
+    tl.fromTo("#hero-h1 .a", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, stagger: 0.12, ease: "power4.out" }, 1.9);
+    tl.fromTo("#hero-h1 .b", { opacity: 0, y: 26, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.22, stagger: 0.07, ease: "expo.out" }, 4.0);
+    tl.fromTo("#hero-sub", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power4.out" }, 4.75);
+    // The merit card swings in to the landing's -6 degrees and counts up.
+    tl.fromTo("#hero-cardwrap", { opacity: 0, x: 260, y: 120, rotation: 8, filter: "blur(16px)" }, { opacity: 1, x: 0, y: 0, rotation: -6, filter: "blur(0px)", duration: 0.75, ease: "expo.out" }, 4.5);
+    const m = { v: 0 };
+    tl.fromTo(m, { v: 0 }, { v: 22.93, duration: 0.9, ease: "power3.out", onUpdate: () => { document.querySelector("#hero-merit").textContent = m.v.toFixed(2); } }, 4.7);
+    tl.fromTo("#hero-s", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, 5.5);
+    tl.fromTo("#hero-t", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, 6.0);
+    tl.fromTo("#hero-r", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, 6.5);
+    tl.fromTo("#hero-cta", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.45, ease: "expo.out" }, 6.4);
+    // "See how it works": the page scrolls on to the next section.
+    tl.to("#hero-frame", { y: -1150, filter: "blur(14px)", duration: 0.45, ease: "power3.in" }, 7.55);
+    window.__timelines["hero"] = tl;
+  </script>
+</template>

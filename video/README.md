@@ -4,9 +4,10 @@ The film on the entry page (`index.html`, files in `assets/video/`). It is HTML 
 [HyperFrames](https://hyperframes.heygen.com); the music is synthesised in Python, no samples.
 
 - `synth.py` writes `assets/music.wav` (120 BPM, A minor; drops at 4, 12 and 24 s). Needs `numpy`.
-- `index.html` mounts seven scenes from `compositions/`; `SPEC.md` has the beats, `REVIEW.md` the frame check.
-- Every figure on screen comes from the live merit data of 14 Nov 2026 (14 inductions, 68 rounds,
-  73,298 allocations, induction 21 medians and seats); merit rows show marks and seat only, no names.
+- `index.html` mounts six scenes from `compositions/`; `SPEC.md` has the beats, `REVIEW.md` the frame check.
+- The film is built on the new landing page at meritnama.online, section by section, with the values the
+  live page showed on 14 Nov 2026 (hero merit card, the free marks check for 22.5 / 30, open jobs, the record).
+  `assets/night-study.jpg` is the landing's own photograph.
 
 Re-render (ffmpeg on the PATH):
 

@@ -1,0 +1,64 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; }
+    #ls-clip { position: absolute; inset: 0; }
+    #ls-frame { position: absolute; left: 180px; right: 180px; top: 64px; bottom: 64px; border-radius: 36px; border: 1.5px solid rgba(255,255,255,.1); background: rgba(14,14,18,.86); box-shadow: 0 0 110px rgba(110,86,255,.12); }
+    #ls-h2 { position: absolute; left: 56px; top: 54px; width: 760px; font-size: 64px; font-weight: 500; line-height: 1.12; letter-spacing: -0.03em; }
+    #ls-h2 span { display: inline-block; margin-right: .22em; }
+    #ls-h2 .v { color: #b9aaff; }
+    #ls-photo { position: absolute; left: 56px; top: 270px; width: 720px; height: 620px; border-radius: 28px; overflow: hidden; }
+    #ls-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    #ls-chip { position: absolute; left: 22px; right: 22px; bottom: 22px; display: flex; justify-content: space-between; align-items: center; border-radius: 20px; border: 1.5px solid rgba(255,255,255,.15); background: rgba(0,0,0,.62); padding: 18px 24px; }
+    #ls-chip b { display: block; font-size: 28px; font-weight: 600; }
+    #ls-chip small { font-size: 28px; color: rgba(243,238,229,.72); }
+    #ls-chip em { font-style: normal; font-size: 30px; color: #3ddc97; }
+    #ls-copy { position: absolute; left: 840px; top: 72px; right: 56px; display: grid; grid-template-columns: 1fr 1fr; gap: 34px; font-size: 28px; line-height: 1.4; }
+    #ls-copy .m { color: #8b8b93; }
+    #ls-cards { position: absolute; left: 840px; right: 56px; top: 290px; display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .ls-card { border-radius: 26px; border: 1.5px solid rgba(255,255,255,.08); background: #17171c; padding: 34px 34px 40px; min-height: 250px; }
+    .ls-card .n { font-size: 72px; font-weight: 300; color: #b9aaff; }
+    .ls-card b { display: block; margin-top: 18px; font-size: 40px; font-weight: 600; letter-spacing: -0.01em; }
+    .ls-card p { margin-top: 8px; font-size: 26px; line-height: 1.4; color: #8b8b93; }
+    #ls-c2 { border-color: rgba(155,135,255,.5); }
+  </style>
+  <div id="root" data-composition-id="lists" data-width="1920" data-height="1080">
+    <div id="ls-clip" class="clip" data-start="0" data-duration="4">
+      <div id="ls-frame">
+        <h2 id="ls-h2"><span class="v">Every</span><span class="v">list</span><span>and</span><span>every</span><span>seat,</span><span>in</span><span>one</span><span>place</span></h2>
+        <div id="ls-photo">
+          <img id="ls-img" src="assets/night-study.jpg" alt="A doctor studying late at night" />
+          <div id="ls-chip"><span><b>Round 8 of induction 21</b><small>Median closing merit 21.26</small></span><em>▼ 0.04</em></div>
+        </div>
+        <div id="ls-copy">
+          <p>Every PHF merit list: <span id="ls-alloc">73,298</span> allocations in <span id="ls-rounds">68</span> rounds.</p>
+          <p class="m">Names, marks, seats and consent, easy to search.</p>
+        </div>
+        <div id="ls-cards">
+          <div id="ls-c1" class="ls-card"><span class="n">01</span><b>Merit lists</b></div>
+          <div id="ls-c2" class="ls-card"><span class="n">02</span><b>My chances</b></div>
+          <div id="ls-c3" class="ls-card"><span class="n">03</span><b>Estimates</b></div>
+          <div id="ls-c4" class="ls-card"><span class="n">04</span><b>Community and jobs</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // Arrives on the scroll from below, landing blurred and sharpening.
+    tl.fromTo("#ls-frame", { y: 1150, filter: "blur(14px)" }, { y: 0, filter: "blur(0px)", duration: 0.5, ease: "expo.out" }, 0);
+    tl.fromTo("#ls-h2 span", { opacity: 0.15 }, { opacity: 1, duration: 0.12, stagger: 0.07, ease: "none" }, 0.35);
+    tl.fromTo("#ls-img", { scale: 1.14 }, { scale: 1.0, duration: 3.6, ease: "power2.out" }, 0);
+    tl.fromTo("#ls-chip", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: "expo.out" }, 0.7);
+    tl.fromTo("#ls-copy p", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, stagger: 0.15, ease: "power4.out" }, 0.5);
+    const a = { v: 0 }, al = document.querySelector("#ls-alloc"), rd = document.querySelector("#ls-rounds");
+    tl.fromTo(a, { v: 0 }, { v: 1, duration: 1.0, ease: "power3.out", onUpdate: () => { al.textContent = Math.round(73298 * a.v).toLocaleString("en-US"); rd.textContent = Math.round(68 * a.v); } }, 0.55);
+    // The four features on the beats 9.0, 9.5, 10.0, 10.5.
+    ["#ls-c1", "#ls-c2", "#ls-c3", "#ls-c4"].forEach((id, i) => {
+      tl.fromTo(id, { opacity: 0, y: 50, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 1 + i * 0.4);
+    });
+    // Card 02 "My chances" becomes the next world.
+    tl.to(["#ls-photo", "#ls-h2", "#ls-copy", "#ls-c1", "#ls-c3", "#ls-c4"], { opacity: 0, filter: "blur(14px)", duration: 0.3, ease: "power2.in" }, 3.5);
+    tl.to("#ls-c2", { scale: 5, x: -420, y: 120, opacity: 0, duration: 0.45, ease: "power3.in" }, 3.55);
+    window.__timelines["lists"] = tl;
+  </script>
+</template>
