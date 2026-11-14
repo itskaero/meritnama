@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en" data-composition-variables='[{"id":"url","type":"string","label":"Site","default":"meritnama.online"}]'>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --ground: #0c0c0e;
+        --ink: #f3eee5;
+        --muted: #8b8b93;
+        --violet: #9b87ff;
+        --font-display: "Inter", sans-serif;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--ground); }
+      #root { position: relative; width: 100%; height: 100%; font-family: var(--font-display); color: var(--ink); }
+      /* Untimed full-bleed ground: the site's aurora, drifting slowly all film. */
+      #bg { position: absolute; inset: 0; background: var(--ground); overflow: hidden; }
+      #bg .blob { position: absolute; border-radius: 50%; filter: blur(110px); }
+      #bg-teal { width: 1100px; height: 1100px; left: -260px; top: -380px; background: radial-gradient(circle, rgba(23,107,103,.55), rgba(23,107,103,0) 70%); }
+      #bg-navy { width: 1300px; height: 1000px; right: -300px; bottom: -420px; background: radial-gradient(circle, rgba(38,60,77,.85), rgba(38,60,77,0) 70%); }
+      #bg-violet { width: 900px; height: 900px; right: 120px; top: -320px; background: radial-gradient(circle, rgba(110,86,255,.38), rgba(110,86,255,0) 70%); }
+      #bg-amber { width: 700px; height: 700px; left: 640px; bottom: -380px; background: radial-gradient(circle, rgba(229,160,75,.16), rgba(229,160,75,0) 70%); }
+      #bg-veil { position: absolute; inset: 0; background: radial-gradient(1400px 900px at 50% 50%, transparent 40%, rgba(6,6,8,.75)); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="30" data-width="1920" data-height="1080" data-motion-blur="on">
+      <div id="bg" data-layout-ignore>
+        <div id="bg-teal" class="blob"></div>
+        <div id="bg-navy" class="blob"></div>
+        <div id="bg-violet" class="blob"></div>
+        <div id="bg-amber" class="blob"></div>
+        <div id="bg-veil"></div>
+      </div>
+
+      <div id="intro" data-composition-id="intro" data-composition-src="compositions/intro.html" data-start="0" data-duration="4" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="words" data-composition-id="words" data-composition-src="compositions/words.html" data-start="4" data-duration="4" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="numbers" data-composition-id="numbers" data-composition-src="compositions/numbers.html" data-start="8" data-duration="4" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="chart" data-composition-id="chart" data-composition-src="compositions/chart.html" data-start="12" data-duration="4" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="chances" data-composition-id="chances" data-composition-src="compositions/chances.html" data-start="16" data-duration="4" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="estimate" data-composition-id="estimate" data-composition-src="compositions/estimate.html" data-start="20" data-duration="4" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="endcard" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="24" data-duration="6" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080" data-variable-values='{"url":"meritnama.online"}'></div>
+
+      <audio id="music" class="clip" src="assets/music.wav" data-start="0" data-duration="30" data-track-index="2" data-volume="1"></audio>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      // The ground drifts the whole film (a slow orbit, not a loop) and lifts on the drops.
+      tl.fromTo("#bg-teal", { x: 0, y: 0, scale: 1 }, { x: 260, y: 140, scale: 1.12, duration: 30, ease: "none" }, 0);
+      tl.fromTo("#bg-navy", { x: 0, y: 0 }, { x: -220, y: -120, duration: 30, ease: "none" }, 0);
+      tl.fromTo("#bg-violet", { x: 0, y: 0, opacity: 0.55 }, { x: -380, y: 160, opacity: 1, duration: 30, ease: "none" }, 0);
+      tl.fromTo("#bg-amber", { opacity: 0.4 }, { opacity: 1, duration: 4, ease: "power2.inOut" }, 18);
+      tl.fromTo("#bg-veil", { opacity: 1 }, { opacity: 0.55, duration: 0.6, ease: "power2.out" }, 4);
+      tl.to("#bg-veil", { opacity: 0.85, duration: 1.2, ease: "power2.inOut" }, 20);
+      tl.to("#bg-veil", { opacity: 0.35, duration: 0.5, ease: "power2.out" }, 24);
+      tl.to("#bg-veil", { opacity: 0.6, duration: 1.6, ease: "power2.inOut" }, 28.2);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

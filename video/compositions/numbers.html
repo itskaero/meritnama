@@ -1,0 +1,45 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; }
+    #num-wrap { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; padding: 0 150px; gap: 64px; }
+    #num-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+    .num-tile { border-radius: 26px; border: 1.5px solid rgba(243,238,229,.14); background: rgba(16,36,58,.55); padding: 34px 36px 38px; box-shadow: 0 30px 80px rgba(0,0,0,.35); }
+    .num-tile p { font-size: 28px; color: rgba(243,238,229,.7); }
+    .num-tile b { display: block; margin-top: 10px; font-size: 92px; font-weight: 900; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+    #num-t3 { border-color: rgba(155,135,255,.6); box-shadow: 0 0 60px rgba(110,86,255,.35); }
+    #num-t3 b { color: #c4b8ff; }
+    #num-t4 b { color: #e5a04b; }
+    #num-line { display: flex; gap: 22px; font-size: 84px; font-weight: 700; letter-spacing: -0.035em; }
+    #num-line span { display: inline-block; }
+    #num-line .hi { color: #3ddc97; }
+  </style>
+  <div id="root" data-composition-id="numbers" data-width="1920" data-height="1080">
+    <div id="num-wrap" class="clip" data-start="0" data-duration="4">
+      <div id="num-tiles">
+        <div id="num-t1" class="num-tile"><p>Inductions</p><b id="num-v1">0</b></div>
+        <div id="num-t2" class="num-tile"><p>Rounds published</p><b id="num-v2">0</b></div>
+        <div id="num-t3" class="num-tile"><p>Allocations on record</p><b id="num-v3">0</b></div>
+        <div id="num-t4" class="num-tile"><p>Seats in induction 21</p><b id="num-v4">0</b></div>
+      </div>
+      <p id="num-line"><span>Every</span><span class="hi">seat.</span><span>Every</span><span class="hi">round.</span><span>One</span><span>place.</span></p>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const fmt = (n) => Math.round(n).toLocaleString("en-US");
+    const vals = [14, 68, 73298, 1449];
+    const tiles = ["#num-t1", "#num-t2", "#num-t3", "#num-t4"];
+    const outs = ["#num-v1", "#num-v2", "#num-v3", "#num-v4"];
+    vals.forEach((v, i) => {
+      const at = i * 0.5;
+      const out = document.querySelector(outs[i]);
+      tl.fromTo(tiles[i], { opacity: 0, y: 70, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.5, ease: "expo.out" }, at);
+      const o = { v: 0 };
+      tl.fromTo(o, { v: 0 }, { v, duration: 0.9, ease: "power3.out", onUpdate: () => { out.textContent = fmt(o.v); } }, at + 0.05);
+    });
+    tl.fromTo("#num-line span", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, stagger: 0.08, ease: "power4.out" }, 2.2);
+    // Whip left into the chart.
+    tl.to("#num-wrap", { x: -700, opacity: 0, filter: "blur(18px)", duration: 0.3, ease: "power3.in" }, 3.68);
+    window.__timelines["numbers"] = tl;
+  </script>
+</template>

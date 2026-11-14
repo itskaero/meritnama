@@ -1,0 +1,55 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; }
+    #est-card { position: absolute; left: 150px; right: 150px; top: 130px; bottom: 150px; border-radius: 30px; border: 2.5px dashed rgba(229,160,75,.55); background: radial-gradient(800px 500px at 100% 0%, rgba(229,160,75,.18), transparent 70%), rgba(16,36,58,.72); padding: 50px 60px; display: flex; flex-direction: column; gap: 34px; }
+    #est-crumb { font-size: 28px; color: rgba(243,238,229,.7); display: flex; gap: 14px; align-items: center; }
+    #est-pill { border: 1.5px dashed rgba(229,160,75,.8); color: #e5a04b; border-radius: 99px; padding: 4px 18px; font-weight: 600; font-size: 28px; }
+    #est-title { font-size: 104px; font-weight: 900; letter-spacing: -0.045em; line-height: 1; }
+    #est-row { display: grid; grid-template-columns: 1.3fr 1fr; gap: 30px; }
+    .est-glass { border-radius: 22px; border: 1.5px solid rgba(243,238,229,.14); background: rgba(16,36,58,.55); padding: 26px 30px; }
+    .est-glass small { display: flex; justify-content: space-between; font-size: 28px; color: rgba(243,238,229,.7); }
+    .est-glass small b { color: #e5a04b; font-size: 34px; }
+    #est-ticks { display: flex; gap: 5px; margin-top: 18px; height: 40px; }
+    #est-ticks i { flex: 1; border-radius: 3px; background: rgba(243,238,229,.12); }
+    #est-seats b { display: block; margin-top: 8px; font-size: 84px; font-weight: 900; letter-spacing: -0.04em; }
+    #est-band { margin-top: 10px; height: 18px; border-radius: 99px; background: repeating-linear-gradient(90deg, rgba(229,160,75,.65) 0 12px, rgba(229,160,75,.3) 12px 24px); background-size: 48px 100%; box-shadow: 0 0 18px rgba(229,160,75,.45); }
+    #est-chips { display: flex; flex-wrap: wrap; gap: 14px; font-size: 28px; }
+    #est-chips span { border-radius: 99px; border: 1.5px solid rgba(61,220,151,.5); color: #3ddc97; padding: 8px 20px; }
+    #est-line { font-size: 52px; font-weight: 700; letter-spacing: -0.03em; }
+    #est-line .hi { color: #e5a04b; }
+  </style>
+  <div id="root" data-composition-id="estimate" data-width="1920" data-height="1080">
+    <div id="est-card" class="clip" data-start="0" data-duration="4">
+      <p id="est-crumb">Merit lists / Induction 21 · <span id="est-pill">Estimate · not official</span></p>
+      <h2 id="est-title">Estimated round 9</h2>
+      <div id="est-row">
+        <div class="est-glass"><small><span>Consent replies in</span><b id="est-pct">0%</b></small>
+          <div id="est-ticks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+        <div id="est-seats" class="est-glass"><small><span>Seats in the estimate</span></small><b>1,207</b><div id="est-band"></div></div>
+      </div>
+      <div id="est-chips"><span>✓ Official gazette</span><span>✓ Verification + amendment</span><span>✓ Official round 8</span><span>✓ Consent replies, round 8</span></div>
+      <p id="est-line">Where you may move, <span class="hi">before PHF publishes.</span></p>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#est-card", { opacity: 0, scale: 0.94, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.6, ease: "expo.out" }, 0.05);
+    tl.fromTo(["#est-crumb", "#est-title"], { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, stagger: 0.12, ease: "power4.out" }, 0.2);
+    tl.fromTo(".est-glass", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: "expo.out" }, 0.55);
+    // 35 of 40 ticks light up as the replies come in (87%).
+    const ticks = [...document.querySelectorAll("#est-ticks i")];
+    ticks.slice(0, 35).forEach((t, i) => {
+      const k = i / 39;
+      tl.fromTo(t, { backgroundColor: "rgba(243,238,229,0.12)" }, { backgroundColor: `hsl(${38 - k * 6}, 78%, ${50 + k * 10}%)`, duration: 0.08, ease: "none" }, 0.8 + i * 0.045);
+    });
+    const p = { v: 0 };
+    tl.fromTo(p, { v: 0 }, { v: 87, duration: 1.6, ease: "none", onUpdate: () => { document.querySelector("#est-pct").textContent = `${Math.round(p.v)}%`; } }, 0.8);
+    tl.fromTo("#est-band", { backgroundPositionX: "0px" }, { backgroundPositionX: "192px", duration: 3.4, ease: "none" }, 0.6);
+    tl.fromTo("#est-chips span", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.3, stagger: 0.12, ease: "back.out(1.6)" }, 1.4);
+    tl.fromTo("#est-line", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 0.9);
+    // Zoom through the card into the final drop.
+    tl.to("#est-card", { scale: 3, opacity: 0, filter: "blur(20px)", duration: 0.4, ease: "power3.in" }, 3.6);
+    window.__timelines["estimate"] = tl;
+  </script>
+</template>

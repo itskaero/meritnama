@@ -1,0 +1,37 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; display: grid; place-items: center; }
+    #intro-stage { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 56px; }
+    #intro-logo { width: 300px; height: 289px; overflow: visible; }
+    #intro-path { fill: none; stroke: #f3eee5; stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; }
+    #intro-dot { fill: #9b87ff; }
+    #intro-ping { fill: none; stroke: #9b87ff; stroke-width: 2; }
+    #intro-q { display: flex; gap: 22px; font-size: 76px; font-weight: 700; letter-spacing: -0.03em; }
+    #intro-q span { display: inline-block; }
+    #intro-q .hi { color: #9b87ff; }
+    #intro-flood { position: absolute; width: 60px; height: 60px; border-radius: 50%; background: #6e56ff; left: 50%; top: 50%; }
+  </style>
+  <div id="root" data-composition-id="intro" data-width="1920" data-height="1080">
+    <div id="intro-stage" class="clip" data-start="0" data-duration="4">
+      <svg id="intro-logo" viewBox="0 0 110 106" aria-label="meritNAMA">
+        <path id="intro-path" pathLength="1" d="M14 90 V44 a13 13 0 0 1 26 0 V90 M40 44 a13 13 0 0 1 26 0 a14 14 0 1 1 28 0 a14 14 0 1 1 -28 0 V98" />
+        <circle id="intro-ping" cx="80" cy="12" r="6.5" />
+        <circle id="intro-dot" cx="80" cy="12" r="6.5" />
+      </svg>
+      <p id="intro-q"><span>Where</span><span>will</span><span>your</span><span class="hi">marks</span><span>land?</span></p>
+    </div>
+    <div id="intro-flood" class="clip" data-start="3.55" data-duration="0.45" data-layout-ignore></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#intro-path", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.5, ease: "power2.inOut" }, 0.4);
+    tl.fromTo("#intro-dot", { y: -40, opacity: 0, scale: 0.6, transformOrigin: "50% 50%" }, { y: 0, opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" }, 1.9);
+    tl.fromTo("#intro-ping", { scale: 1, opacity: 0.8, transformOrigin: "50% 50%" }, { scale: 2.8, opacity: 0, duration: 0.8, ease: "power2.out" }, 2.25);
+    tl.fromTo("#intro-q span", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, stagger: 0.09, ease: "power4.out" }, 2.3);
+    // The question leaves first, then the dot becomes the next world.
+    tl.to("#intro-q span", { opacity: 0, filter: "blur(8px)", duration: 0.16, stagger: 0.03, ease: "power2.in" }, 3.4);
+    tl.to("#intro-path", { opacity: 0, duration: 0.2, ease: "power2.in" }, 3.5);
+    tl.fromTo("#intro-flood", { xPercent: -50, yPercent: -50, x: 128, y: -320, scale: 0.2 }, { x: 0, y: 0, scale: 48, duration: 0.42, ease: "power3.in" }, 3.56);
+    window.__timelines["intro"] = tl;
+  </script>
+</template>
