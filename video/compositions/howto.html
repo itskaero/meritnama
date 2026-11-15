@@ -1,0 +1,67 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; }
+    #hw-clip { position: absolute; inset: 0; }
+    #hw-win { position: absolute; left: 110px; top: 150px; width: 1220px; height: 806px; border-radius: 22px; overflow: hidden; border: 1.5px solid rgba(255,255,255,.14); background: #0c0c0e; box-shadow: 0 40px 120px rgba(0,0,0,.6), 0 0 90px rgba(110,86,255,.22); }
+    #hw-bar { height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 18px; background: #18181d; border-bottom: 1px solid rgba(255,255,255,.08); }
+    #hw-bar i { width: 13px; height: 13px; border-radius: 99px; background: #3a3a42; }
+    #hw-url { margin-left: 18px; height: 28px; flex: 1; max-width: 520px; border-radius: 8px; background: #0e0e12; display: flex; align-items: center; padding: 0 14px; font-size: 17px; color: #8b8b93; }
+    #hw-screen { position: relative; width: 1220px; height: 762px; background: url("assets/howto-first.jpg") center / cover; }
+    #hw-vid { position: absolute; inset: 0; width: 1220px; height: 762px; object-fit: cover; }
+    #hw-last { position: absolute; inset: 0; width: 1220px; height: 762px; object-fit: cover; opacity: 0; }
+    #hw-side { position: absolute; left: 1400px; right: 100px; top: 160px; }
+    #hw-k { font-size: 30px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: #b9aaff; }
+    #hw-h { margin-top: 14px; font-size: 64px; font-weight: 600; letter-spacing: -0.04em; line-height: 1.02; }
+    #hw-steps { margin-top: 40px; display: grid; gap: 16px; }
+    .hw-s { display: flex; gap: 20px; align-items: flex-start; padding: 18px 20px; border-radius: 20px; border: 1.5px solid rgba(255,255,255,.08); background: rgba(23,23,28,.7); opacity: .45; }
+    .hw-s span { flex: none; width: 48px; height: 48px; border-radius: 99px; display: grid; place-items: center; font-size: 28px; font-weight: 700; background: rgba(155,135,255,.18); color: #d6ccff; }
+    .hw-s b { display: block; font-size: 32px; line-height: 1.15; font-weight: 600; letter-spacing: -0.02em; }
+    .hw-s p { margin-top: 4px; font-size: 28px; color: #a9a9b2; }
+  </style>
+  <div id="root" data-composition-id="howto" data-width="1920" data-height="1080">
+    <div id="hw-clip" data-layout-allow-overflow>
+      <div id="hw-win">
+        <div id="hw-bar"><i></i><i></i><i></i><span id="hw-url" data-layout-ignore>meritnama.online/portal</span></div>
+        <div id="hw-screen">
+          <img id="hw-last" src="assets/howto-last.jpg" alt="">
+          <video id="hw-vid" class="clip" src="assets/howto.mp4" data-start="0.6" data-duration="15" muted playsinline></video>
+        </div>
+      </div>
+      <div id="hw-side">
+        <p id="hw-k">How it works</p>
+        <h2 id="hw-h">Three steps to where you stand.</h2>
+        <div id="hw-steps">
+          <div id="hw-s1" class="hw-s"><span>1</span><div><b>Open a merit list</b><p>Round 8, median 21.26</p></div></div>
+          <div id="hw-s2" class="hw-s"><span>2</span><div><b>Type your marks</b><p>22.5 gives 177 safe seats</p></div></div>
+          <div id="hw-s3" class="hw-s"><span>3</span><div><b>Find a hospital</b><p>Seats and closing merit</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // The window rises in; the side copy follows.
+    tl.fromTo("#hw-win", { y: 260, scale: 0.92, opacity: 0, filter: "blur(14px)" }, { y: 0, scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.6, ease: "expo.out" }, 0);
+    tl.fromTo("#hw-k", { opacity: 0, x: 30 }, { opacity: 1, x: 0, duration: 0.4, ease: "expo.out" }, 0.25);
+    tl.fromTo("#hw-h", { opacity: 0, x: 30, filter: "blur(8px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.5, ease: "expo.out" }, 0.35);
+    ["#hw-s1", "#hw-s2", "#hw-s3"].forEach((id, i) => {
+      tl.fromTo(id, { y: 30, filter: "blur(6px)" }, { y: 0, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 0.55 + i * 0.12);
+    });
+    // Each step lights while the clip shows it (clip cuts at 5.3 and 11.7 s, from 0.6 s).
+    const on = { opacity: 1, borderColor: "rgba(155,135,255,.8)", boxShadow: "0 0 50px rgba(110,86,255,.3)", duration: 0.3, ease: "power2.out" };
+    const off = { opacity: 0.45, borderColor: "rgba(255,255,255,.08)", boxShadow: "0 0 0px rgba(110,86,255,0)", duration: 0.3, ease: "power2.out" };
+    tl.to("#hw-s1", on, 0.6);
+    tl.to("#hw-s1", off, 5.9);
+    tl.to("#hw-s2", on, 5.9);
+    tl.to("#hw-s2", off, 12.3);
+    tl.to("#hw-s3", on, 12.3);
+    // The clip's last frame holds under the exit.
+    tl.set("#hw-last", { opacity: 1 }, 15.5);
+    // A slow push on the window while it plays.
+    tl.to("#hw-win", { scale: 1.025, duration: 14.6, ease: "none" }, 0.6);
+    // Out into the final drop.
+    tl.to("#hw-win", { scale: 0.9, opacity: 0, filter: "blur(16px)", duration: 0.45, ease: "power3.in" }, 15.5);
+    tl.to("#hw-side", { x: 60, opacity: 0, filter: "blur(10px)", duration: 0.45, ease: "power3.in" }, 15.5);
+    window.__timelines["howto"] = tl;
+  </script>
+</template>

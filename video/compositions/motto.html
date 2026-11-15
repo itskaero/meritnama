@@ -1,0 +1,43 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; }
+    #mt-clip { position: absolute; inset: 0; }
+    #mt-lock { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 46px; }
+    #mt-row { display: flex; align-items: center; gap: 30px; }
+    #mt-logo { width: 120px; height: 116px; overflow: visible; }
+    #mt-path { fill: none; stroke: #f3eee5; stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; }
+    #mt-dot { fill: #9b87ff; }
+    #mt-word { font-size: 80px; letter-spacing: -0.035em; }
+    #mt-word b { font-weight: 800; letter-spacing: .02em; }
+    #mt-tag { font-size: 150px; font-weight: 700; letter-spacing: -0.045em; display: flex; gap: 34px; line-height: 1; }
+    #mt-tag span { display: inline-block; }
+    #mt-tag .v { color: #b9aaff; }
+    #mt-cta { display: inline-flex; align-items: center; gap: 24px; height: 100px; padding: 0 14px 0 42px; border-radius: 99px; font-size: 36px; font-weight: 700; color: #fff; background: linear-gradient(90deg, rgba(255,255,255,.05) 25%, rgba(110,86,255,.5)); border: 2px solid rgba(155,135,255,.75); box-shadow: inset -4px 0 0 #7b61ff, 0 0 50px rgba(110,86,255,.5); }
+    #mt-cta i { width: 72px; height: 72px; border-radius: 99px; background: #7b61ff; display: grid; place-items: center; font-style: normal; font-size: 32px; }
+  </style>
+  <div id="root" data-composition-id="motto" data-width="1920" data-height="1080">
+    <div id="mt-clip" class="clip" data-start="0" data-duration="8">
+      <div id="mt-lock">
+        <div id="mt-row">
+          <svg id="mt-logo" viewBox="0 0 110 106" aria-label="meritNAMA"><path id="mt-path" d="M14 90 V44 a13 13 0 0 1 26 0 V90 M40 44 a13 13 0 0 1 26 0 a14 14 0 1 1 28 0 a14 14 0 1 1 -28 0 V98" /><circle id="mt-dot" cx="80" cy="12" r="6.5" /></svg>
+          <p id="mt-word">merit<b>NAMA</b></p>
+        </div>
+        <p id="mt-tag"><span>Know</span><span>where</span><span>you</span><span class="v">stand.</span></p>
+        <span id="mt-cta">Enter at meritnama.online <i>↗</i></span>
+      </div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // The motto on the final drop, one word a half beat.
+    tl.fromTo("#mt-tag span", { opacity: 0, y: 40, scale: 1.15, filter: "blur(14px)" }, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.35, stagger: 0.25, ease: "expo.out" }, 0);
+    tl.fromTo("#mt-row", { opacity: 0, y: -30, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6, ease: "expo.out" }, 1.5);
+    tl.fromTo("#mt-cta", { opacity: 0, scale: 0.88, filter: "blur(8px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.5, ease: "back.out(1.5)" }, 2.5);
+    // The closing hit at 36 s: one flare on the button, then still to the end.
+    tl.to("#mt-cta", { boxShadow: "inset -4px 0 0 #9b87ff, 0 0 120px rgba(110,86,255,.95)", duration: 0.2, ease: "power2.out" }, 4.0);
+    tl.to("#mt-cta", { boxShadow: "inset -4px 0 0 #7b61ff, 0 0 60px rgba(110,86,255,.55)", duration: 1.0, ease: "power2.inOut" }, 4.2);
+    tl.fromTo("#mt-dot", { scale: 1, transformOrigin: "50% 50%" }, { scale: 1.5, duration: 0.15, ease: "power2.out" }, 4.0);
+    tl.to("#mt-dot", { scale: 1, duration: 0.6, ease: "power2.inOut" }, 4.15);
+    window.__timelines["motto"] = tl;
+  </script>
+</template>

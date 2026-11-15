@@ -1,5 +1,6 @@
 # Review
 
-`hyperframes check`: lint, runtime, layout, motion, contrast, audio pass; two type-floor notes left on decorative 26 px labels.
-Snapshots at 0, 2.6, 4.9, 6.9, 9.2, 10.9, 13.9, 15.2, 17.6, 21.9, 24.9, 27.2 s and frames from the render at 1, 24.6, 29.5 s:
-each section matches the live landing; values match the live page; scene changes on bar lines; end card holds still from 27.7 s.
+`hyperframes check`: passes; one note left (the clip's 0.6 s start is scene-local on purpose).
+Snapshots at 0, 0.5, 1.2, 1.5, 2.4, 3.5, 5.7, 7, 9.5, 10, 12.5, 15.7, 17, 20, 22, 28.5, 31.7, 32.6, 34, 37, 39.75 s.
+Fixed after the first pass: the mark now starts centred; the feature grid and the step list fit the frame;
+the window holds the clip's last frame under its exit. No names or IDs in the recording.

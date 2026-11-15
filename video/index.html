@@ -26,7 +26,7 @@
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="30" data-width="1920" data-height="1080" data-motion-blur="on">
+    <div id="root" data-composition-id="main" data-start="0" data-duration="40" data-width="1920" data-height="1080" data-motion-blur="on">
       <div id="bg" data-layout-ignore>
         <div id="bg-teal" class="blob"></div>
         <div id="bg-navy" class="blob"></div>
@@ -35,26 +35,24 @@
         <div id="bg-veil"></div>
       </div>
 
-      <div id="hero" data-composition-id="hero" data-composition-src="compositions/hero.html" data-start="0" data-duration="8" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
-      <div id="lists" data-composition-id="lists" data-composition-src="compositions/lists.html" data-start="8" data-duration="4" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
-      <div id="check" data-composition-id="check" data-composition-src="compositions/check.html" data-start="12" data-duration="4" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
-      <div id="more" data-composition-id="more" data-composition-src="compositions/more.html" data-start="16" data-duration="4" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
-      <div id="jobs" data-composition-id="jobs" data-composition-src="compositions/jobs.html" data-start="20" data-duration="4" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
-      <div id="end" data-composition-id="end" data-composition-src="compositions/end.html" data-start="24" data-duration="6" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="logo" data-composition-id="logo" data-composition-src="compositions/logo.html" data-start="0" data-duration="6" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="features" data-composition-id="features" data-composition-src="compositions/features.html" data-start="6" data-duration="10" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="howto" data-composition-id="howto" data-composition-src="compositions/howto.html" data-start="16" data-duration="16" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="motto" data-composition-id="motto" data-composition-src="compositions/motto.html" data-start="32" data-duration="8" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
-      <audio id="music" class="clip" src="assets/music.wav" data-start="0" data-duration="30" data-track-index="2" data-volume="1"></audio>
+      <audio id="music" class="clip" src="assets/music.wav" data-start="0" data-duration="40" data-track-index="2" data-volume="1"></audio>
     </div>
     <script>
       const tl = gsap.timeline({ paused: true });
-      // The ground drifts the whole film (a slow orbit, not a loop) and lifts on the drops.
-      tl.fromTo("#bg-teal", { x: 0, y: 0, scale: 1 }, { x: 260, y: 140, scale: 1.12, duration: 30, ease: "none" }, 0);
-      tl.fromTo("#bg-navy", { x: 0, y: 0 }, { x: -220, y: -120, duration: 30, ease: "none" }, 0);
-      tl.fromTo("#bg-violet", { x: 0, y: 0, opacity: 0.55 }, { x: -380, y: 160, opacity: 1, duration: 30, ease: "none" }, 0);
-      tl.fromTo("#bg-amber", { opacity: 0.4 }, { opacity: 1, duration: 4, ease: "power2.inOut" }, 18);
-      tl.fromTo("#bg-veil", { opacity: 1 }, { opacity: 0.55, duration: 0.6, ease: "power2.out" }, 4);
-      tl.to("#bg-veil", { opacity: 0.85, duration: 1.2, ease: "power2.inOut" }, 20);
-      tl.to("#bg-veil", { opacity: 0.35, duration: 0.5, ease: "power2.out" }, 24);
-      tl.to("#bg-veil", { opacity: 0.6, duration: 1.6, ease: "power2.inOut" }, 28.2);
+      // The ground drifts the whole film and lifts on the drops (6, 32); it dims for the how-to.
+      tl.fromTo("#bg-teal", { x: 0, y: 0, scale: 1 }, { x: 260, y: 140, scale: 1.12, duration: 40, ease: "none" }, 0);
+      tl.fromTo("#bg-navy", { x: 0, y: 0 }, { x: -220, y: -120, duration: 40, ease: "none" }, 0);
+      tl.fromTo("#bg-violet", { x: 0, y: 0, opacity: 0.55 }, { x: -380, y: 160, opacity: 1, duration: 40, ease: "none" }, 0);
+      tl.fromTo("#bg-amber", { opacity: 0.4 }, { opacity: 1, duration: 4, ease: "power2.inOut" }, 28);
+      tl.fromTo("#bg-veil", { opacity: 1 }, { opacity: 0.5, duration: 0.6, ease: "power2.out" }, 6);
+      tl.to("#bg-veil", { opacity: 0.8, duration: 1.0, ease: "power2.inOut" }, 16);
+      tl.to("#bg-veil", { opacity: 0.35, duration: 0.5, ease: "power2.out" }, 32);
+      tl.to("#bg-veil", { opacity: 0.6, duration: 1.6, ease: "power2.inOut" }, 36.2);
       window.__timelines = window.__timelines || {};
       window.__timelines["main"] = tl;
     </script>

@@ -1,0 +1,52 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; }
+    #ft-clip { position: absolute; inset: 0; }
+    #ft-wrap { position: absolute; left: 150px; right: 150px; top: 104px; bottom: 90px; }
+    #ft-h { font-size: 96px; font-weight: 600; letter-spacing: -0.04em; line-height: 1; }
+    #ft-h .v { color: #b9aaff; }
+    #ft-grid { margin-top: 60px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+    .ft-c { position: relative; border-radius: 30px; border: 1.5px solid rgba(255,255,255,.1); background: rgba(23,23,28,.92); padding: 30px 38px 32px; overflow: hidden; }
+    .ft-c::after { content: ""; position: absolute; right: -80px; top: -80px; width: 240px; height: 240px; border-radius: 50%; background: radial-gradient(circle, rgba(110,86,255,.28), rgba(110,86,255,0) 70%); }
+    .ft-top { display: flex; align-items: center; justify-content: space-between; }
+    .ft-ic { width: 64px; height: 64px; border-radius: 18px; background: rgba(110,86,255,.18); border: 1.5px solid rgba(155,135,255,.45); display: grid; place-items: center; }
+    .ft-ic svg { width: 34px; height: 34px; fill: none; stroke: #d6ccff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .ft-n { font-size: 30px; font-weight: 600; color: #8b8b93; font-variant-numeric: tabular-nums; }
+    .ft-c b { display: block; margin-top: 22px; font-size: 46px; font-weight: 600; letter-spacing: -0.03em; }
+    .ft-c p { margin-top: 10px; font-size: 30px; color: #a9a9b2; line-height: 1.3; }
+    .ft-c strong { display: block; margin-top: 16px; font-size: 50px; font-weight: 700; letter-spacing: -0.03em; color: #c4b8ff; font-variant-numeric: tabular-nums; }
+    .ft-c strong.a { color: #e5a04b; }
+    .ft-c strong.g { color: #3ddc97; }
+  </style>
+  <div id="root" data-composition-id="features" data-width="1920" data-height="1080">
+    <div id="ft-clip" class="clip" data-start="0" data-duration="10">
+      <div id="ft-wrap">
+        <h2 id="ft-h">Everything, <span class="v">in one place.</span></h2>
+        <div id="ft-grid">
+          <div id="ft-1" class="ft-c"><div class="ft-top"><span class="ft-ic"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg></span><span class="ft-n">01</span></div><b>Merit lists</b><p>Every round and every seat.</p><strong>73,298</strong></div>
+          <div id="ft-2" class="ft-c"><div class="ft-top"><span class="ft-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></span><span class="ft-n">02</span></div><b>My chances</b><p>Safe, target and reach.</p><strong class="g">Free check</strong></div>
+          <div id="ft-3" class="ft-c"><div class="ft-top"><span class="ft-ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c1-2 5-2 6 0M14 10h4M14 13h4"/></svg></span><span class="ft-n">03</span></div><b>Candidates</b><p>The gazette and preferences.</p><strong>3,474</strong></div>
+          <div id="ft-4" class="ft-c"><div class="ft-top"><span class="ft-ic"><svg viewBox="0 0 24 24"><path d="M4 21V7l8-4 8 4v14M9 21v-5h6v5M9 10h.01M15 10h.01M12 10h.01"/></svg></span><span class="ft-n">04</span></div><b>Hospitals</b><p>Seats and closing merit.</p><strong>69</strong></div>
+          <div id="ft-5" class="ft-c"><div class="ft-top"><span class="ft-ic"><svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/></svg></span><span class="ft-n">05</span></div><b>Estimates</b><p>The next list, early.</p><strong class="a">Round 9</strong></div>
+          <div id="ft-6" class="ft-c"><div class="ft-top"><span class="ft-ic"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/></svg></span><span class="ft-n">06</span></div><b>Jobs</b><p>Doctor posts, every 6 hours.</p><strong>30 open</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // On the drop: the heading, then one card a beat.
+    tl.fromTo("#ft-h", { opacity: 0, y: 40, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.5, ease: "expo.out" }, 0);
+    ["#ft-1", "#ft-2", "#ft-3", "#ft-4", "#ft-5", "#ft-6"].forEach((id, i) => {
+      tl.fromTo(id, { opacity: 0, y: 80, scale: 0.94, filter: "blur(10px)" }, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.55, ease: "expo.out" }, 0.5 + i * 0.5);
+    });
+    // A light passes over each card in turn while the music builds.
+    ["#ft-1", "#ft-2", "#ft-3", "#ft-4", "#ft-5", "#ft-6"].forEach((id, i) => {
+      tl.to(id, { borderColor: "rgba(155,135,255,.75)", boxShadow: "0 0 60px rgba(110,86,255,.35)", duration: 0.25, ease: "power2.out" }, 4.0 + i * 0.75);
+      tl.to(id, { borderColor: "rgba(255,255,255,.1)", boxShadow: "0 0 0px rgba(110,86,255,0)", duration: 0.5, ease: "power2.inOut" }, 4.25 + i * 0.75);
+    });
+    // Out on the riser: the grid falls back and fades.
+    tl.to("#ft-wrap", { scale: 0.86, opacity: 0, filter: "blur(16px)", duration: 0.5, ease: "power3.in" }, 9.45);
+    window.__timelines["features"] = tl;
+  </script>
+</template>

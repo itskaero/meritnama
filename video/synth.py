@@ -1,7 +1,7 @@
-"""meritNAMA promo score: 30 s, 120 BPM, A minor. Synthesised from scratch (no samples).
+"""meritNAMA showcase score: 40 s, 120 BPM, A minor. Synthesised from scratch (no samples).
 
-Bars are 2 s. Sections: intro 0-4 (pad + riser), drop 4-12, section B 12-20 (adds lead stabs),
-breakdown 20-24 (filtered, no kick, riser), final drop 24-28, closing hit 28 with a tail to 30.
+Bars are 2 s. Sections: intro 0-6 (pad + riser, logo), drop 6-16 (cards, lead stabs), groove 16-30
+(the how-to clip), breakdown 30-32 (filtered, roll), final drop 32-36, closing hit 36 with a tail to 40.
 Writes music.wav (44.1 kHz, 16-bit stereo) and beats.json (hit times the visuals key off).
 """
 import json
@@ -9,7 +9,7 @@ import wave
 import numpy as np
 
 SR = 44100
-DUR = 30.0
+DUR = 40.0
 N = int(SR * DUR)
 BPM = 120
 BEAT = 60 / BPM          # 0.5 s
@@ -83,7 +83,7 @@ def chord_at(t):
 kick_times = []
 for b in range(int(DUR / BEAT)):
     t = b * BEAT
-    if 4 <= t < 20 or 24 <= t < 28:
+    if 6 <= t < 30 or 32 <= t < 36:
         kick_times.append(t)
 duck = np.ones(N)
 for kt in kick_times:
@@ -109,19 +109,19 @@ def bus_add(bl, br, sig, start, gain=1.0, pan=0.0):
 
 
 # ── Pad: detuned saws per chord, every bar until the closing hit ─────────────
-for bar in range(14):
+for bar in range(18):
     t0 = bar * BAR
     notes = CHORDS[bar % 4]
-    cutoff = 900 if t0 < 4 else (1500 if 20 <= t0 < 24 else 2600)
+    cutoff = 900 if t0 < 6 else (1500 if 30 <= t0 < 32 else (2000 if 16 <= t0 < 30 else 2600))
     for n in notes:
         for det, pan in ((-0.004, -0.7), (0.004, 0.7)):
-            s = saw(midi(n), BAR + 0.25, harmonics_to=cutoff, detune=det) * adsr(BAR + 0.25, a=0.25 if t0 < 4 else 0.04, dcy=0.3, s=0.8, r=0.25)
+            s = saw(midi(n), BAR + 0.25, harmonics_to=cutoff, detune=det) * adsr(BAR + 0.25, a=0.25 if t0 < 6 else 0.04, dcy=0.3, s=0.8, r=0.25)
             bus_add(padL, padR, s, t0, 0.055, pan)
 
 # ── Bass: root eighths with an octave pop on the off-beat ────────────────────
 for b in range(int(DUR / (BEAT / 2))):
     t = b * BEAT / 2
-    if not (4 <= t < 20 or 22 <= t < 28):
+    if not (6 <= t < 30 or 31 <= t < 36):
         continue
     root = ROOTS[chord_at(t)]
     n = root + (12 if b % 2 else 0)
@@ -133,12 +133,12 @@ for b in range(int(DUR / (BEAT / 2))):
 pattern = [0, 1, 2, 3, 4, 3, 2, 1]
 for b in range(int(DUR / (BEAT / 4))):
     t = b * BEAT / 4
-    if not (4 <= t < 28):
+    if not (6 <= t < 36):
         continue
     notes = CHORDS[chord_at(t)]
     n = notes[pattern[b % 8]] + 12
     d = BEAT / 4
-    bright = 3200 if not (20 <= t < 24) else 1200 + 2200 * (t - 20) / 4
+    bright = (1200 + 2000 * (t - 30) / 2) if 30 <= t < 32 else (2200 if 16 <= t < 30 else 3200)
     s = saw(midi(n), d * 1.6, harmonics_to=bright) * adsr(d * 1.6, a=0.002, dcy=0.09, s=0.15, r=0.05)
     bus_add(arpL, arpR, s, t, 0.11, -0.45 if b % 2 else 0.45)
 
@@ -183,29 +183,29 @@ for kt in kick_times:
     add(K, kt, 0.95)
 for b in range(int(DUR / BEAT)):
     t = b * BEAT
-    if (4 <= t < 20 or 24 <= t < 28) and b % 2 == 1:
+    if (6 <= t < 30 or 32 <= t < 36) and b % 2 == 1:
         add(clap(), t, 0.42, 0.05)
 for b in range(int(DUR / (BEAT / 2))):
     t = b * BEAT / 2
-    if 2 <= t < 4 and b % 2 == 1:
+    if 3 <= t < 6 and b % 2 == 1:
         add(hat(), t, 0.10, 0.3)
-    elif 4 <= t < 20 or 24 <= t < 28:
-        add(hat(open_=(b % 2 == 1 and t >= 12)), t, 0.16 if b % 2 else 0.09, 0.35 if b % 2 else -0.25)
+    elif 6 <= t < 30 or 32 <= t < 36:
+        add(hat(open_=(b % 2 == 1 and (t < 16 or t >= 32))), t, 0.16 if b % 2 else 0.09, 0.35 if b % 2 else -0.25)
 
-# Snare roll into the final drop (22-24 s), getting faster and louder.
-roll_t = 22.0
+# Snare roll into the final drop (30-32 s), getting faster and louder.
+roll_t = 30.0
 step = BEAT / 2
-while roll_t < 24:
-    g = 0.12 + 0.3 * (roll_t - 22) / 2
+while roll_t < 32:
+    g = 0.12 + 0.3 * (roll_t - 30) / 2
     add(clap(), roll_t, g, 0.0)
     roll_t += step
-    if roll_t > 23:
+    if roll_t > 31:
         step = BEAT / 4
-    if roll_t > 23.5:
+    if roll_t > 31.5:
         step = BEAT / 8
 
 # ── Lead stabs in section B (12-20) and the final drop (24-28) ───────────────
-for bar_t in (12, 14, 16, 18, 24, 26):
+for bar_t in (8, 10, 12, 14, 32, 34):
     notes = CHORDS[chord_at(bar_t)]
     for off in (0, 0.75, 1.5):
         for n in notes[1:4]:
@@ -233,21 +233,21 @@ def impact():
     return np.tanh((boom + smooth * 3) * 1.4)
 
 
-add(riser(3.6), 0.4, 0.22)
-add(riser(3.8, 200, 8000), 20.2, 0.26)
-add(riser(1.8), 10.2, 0.08)
-for hit in (4.0, 12.0, 24.0, 28.0):
-    add(impact(), hit, 0.75 if hit in (4.0, 24.0) else 0.5)
+add(riser(5.4), 0.6, 0.22)
+add(riser(1.8), 14.2, 0.1)
+add(riser(3.8, 200, 8000), 28.2, 0.26)
+for hit in (6.0, 16.0, 32.0, 36.0):
+    add(impact(), hit, 0.75 if hit in (6.0, 32.0) else 0.5)
 
-# Closing chord at 28: wide, bright, held to the end.
+# Closing chord at 36: wide, bright, held to the end.
 for n in CHORDS[0] + [69, 76]:
     for det, pan in ((-0.006, -0.8), (0.006, 0.8)):
         s = saw(midi(n), 2.0, harmonics_to=3000, detune=det) * adsr(2.0, a=0.005, dcy=0.6, s=0.5, r=1.2)
-        add(s, 28.0, 0.06, pan)
+        add(s, 36.0, 0.06, pan)
 
 # Sub swell in the intro.
-t = tt(4.0)
-add(np.sin(2 * np.pi * midi(33) * t) * (t / 4) ** 1.5, 0.0, 0.35)
+t = tt(6.0)
+add(np.sin(2 * np.pi * midi(33) * t) * (t / 6) ** 1.5, 0.0, 0.35)
 
 # ── Space: a short convolution reverb (decaying stereo noise) ────────────────
 def reverb(x, seconds=1.6, mix=0.18, seed=1):
@@ -267,7 +267,7 @@ R = reverb(R, seed=2)
 
 # ── Master: gentle glue, fade the tail, soft clip, normalise to -1 dBFS ──────
 fade = np.ones(N)
-fade[int(29.2 * SR):] = np.linspace(1, 0, N - int(29.2 * SR))
+fade[int(38.8 * SR):] = np.linspace(1, 0, N - int(38.8 * SR))
 L, R = L * fade, R * fade
 L, R = np.tanh(L * 1.3), np.tanh(R * 1.3)
 peak = max(np.max(np.abs(L)), np.max(np.abs(R)))
@@ -280,5 +280,5 @@ with wave.open("assets/music.wav", "wb") as w:
     w.setframerate(SR)
     w.writeframes(pcm.tobytes())
 
-json.dump({"bpm": BPM, "beat": BEAT, "bar": BAR, "drops": [4, 12, 24], "closing": 28, "breakdown": [20, 24]}, open("assets/beats.json", "w"))
+json.dump({"bpm": BPM, "beat": BEAT, "bar": BAR, "drops": [6, 16, 32], "closing": 36, "breakdown": [30, 32]}, open("beats.json", "w"))
 print("music.wav written,", round(N / SR, 2), "s")

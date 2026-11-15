@@ -1,0 +1,46 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; }
+    #lg-clip { position: absolute; inset: 0; }
+    #lg-lock { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 44px; }
+    #lg-row { display: flex; align-items: center; gap: 40px; }
+    #lg-logo { width: 240px; height: 231px; overflow: visible; }
+    #lg-path { fill: none; stroke: #f3eee5; stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; }
+    #lg-dot { fill: #9b87ff; }
+    #lg-ping { fill: none; stroke: #9b87ff; stroke-width: 2; }
+    #lg-glow { position: absolute; left: 50%; top: 50%; width: 900px; height: 900px; margin: -450px 0 0 -450px; border-radius: 50%; background: radial-gradient(circle, rgba(110,86,255,.35), rgba(110,86,255,0) 65%); }
+    #lg-word { font-size: 156px; letter-spacing: -0.035em; }
+    #lg-word b { font-weight: 800; letter-spacing: .02em; }
+    #lg-sub { font-size: 40px; font-weight: 500; letter-spacing: .28em; text-transform: uppercase; color: #b9aaff; }
+  </style>
+  <div id="root" data-composition-id="logo" data-width="1920" data-height="1080">
+    <div id="lg-clip" class="clip" data-start="0" data-duration="6" data-layout-allow-overlap>
+      <div id="lg-glow"></div>
+      <div id="lg-lock">
+        <div id="lg-row">
+          <svg id="lg-logo" viewBox="0 0 110 106" aria-label="meritNAMA"><path id="lg-path" pathLength="1" d="M14 90 V44 a13 13 0 0 1 26 0 V90 M40 44 a13 13 0 0 1 26 0 a14 14 0 1 1 28 0 a14 14 0 1 1 -28 0 V98" /><circle id="lg-ping" cx="80" cy="12" r="6.5" /><circle id="lg-dot" cx="80" cy="12" r="6.5" /></svg>
+          <p id="lg-word">merit<b>NAMA</b></p>
+        </div>
+        <p id="lg-sub">The new site is here</p>
+      </div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // Frame 0: the violet dot alone, breathing; the mark draws under the riser.
+    tl.fromTo("#lg-glow", { opacity: 0.35, scale: 0.7 }, { opacity: 1, scale: 1, duration: 2.4, ease: "power2.out" }, 0);
+    tl.fromTo("#lg-dot", { scale: 1.6, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.8, ease: "power2.inOut" }, 0);
+    tl.fromTo("#lg-path", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.5, ease: "power3.inOut" }, 0.3);
+    tl.fromTo("#lg-ping", { opacity: 0, scale: 1, transformOrigin: "50% 50%" }, { opacity: 0.9, duration: 0.02 }, 1.9);
+    tl.to("#lg-ping", { scale: 3.2, opacity: 0, duration: 0.8, ease: "power2.out" }, 1.92);
+    // The mark starts centred and slides left as the wordmark wipes in beside it.
+    tl.fromTo("#lg-row", { x: 380 }, { x: 0, duration: 0.7, ease: "power3.inOut" }, 2.0);
+    tl.fromTo("#lg-word", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.7, ease: "power3.inOut" }, 2.0);
+    tl.fromTo("#lg-sub", { opacity: 0, scale: 1.12, filter: "blur(8px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.8, ease: "expo.out" }, 3.0);
+    // A held breath, then it all lifts and fades away into the drop at 6 s.
+    tl.to("#lg-lock", { scale: 1.035, duration: 1.6, ease: "none" }, 3.8);
+    tl.to("#lg-lock", { scale: 1.35, opacity: 0, filter: "blur(18px)", duration: 0.55, ease: "power3.in" }, 5.42);
+    tl.to("#lg-glow", { scale: 1.8, opacity: 0, duration: 0.55, ease: "power3.in" }, 5.42);
+    window.__timelines["logo"] = tl;
+  </script>
+</template>
